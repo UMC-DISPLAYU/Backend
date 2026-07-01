@@ -1,0 +1,328 @@
+name: Sync to Notion
+
+on:
+  issues:
+    types: [opened, closed, reopened, assigned, unassigned]
+  pull_request:
+    types: [opened, ready_for_review, closed, reopened, assigned, unassigned]
+  push:
+    branches:
+      - '**'
+
+concurrency:
+  group: notion-sync-${{ github.event.issue.number || github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  sync-issue:
+    name: Sync Issue → Notion
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+      NOTION_VERSION: "2022-06-28"
+      ISSUE_NUM: ${{ github.event.issue.number }}
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      ISSUE_ACTION: ${{ github.event.action }}
+      REPO_NAME: ${{ github.event.repository.name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Find existing Notion page by GitHub Number
+        id: find
+        run: |
+          RESP=$(curl -s -X POST \
+            "https://api.notion.com/v1/databases/$NOTION_DB_ID/query" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "{\"filter\": {\"property\": \"GitHub Number\", \"number\": {\"equals\": $ISSUE_NUM}}}")
+
+          PAGE_ID=$(echo "$RESP" | jq -r '.results[0].id // empty')
+          echo "page_id=$PAGE_ID" >> "$GITHUB_OUTPUT"
+          echo "Found existing page: ${PAGE_ID:-none}"
+
+      - name: Create Notion page (Issue opened)
+        if: env.ISSUE_ACTION == 'opened' && steps.find.outputs.page_id == ''
+        id: create
+        run: |
+          # Strip [DU-N] prefix if already present from a re-run or manual edit.
+          CLEAN_TITLE=$(echo "$ISSUE_TITLE" | sed -E 's/^\[DU-[0-9]+\] *//')
+
+          # GitHub repository name → Notion repository select option mapping.
+          # Update this case statement if the actual repository names differ.
+          case "$REPO_NAME" in
+            Backend|backend|displayU-backend|du-backend)      REPO_TAG="backend" ;;
+            Frontend|frontend|displayU-frontend|du-frontend)  REPO_TAG="frontend" ;;
+            AiModel|ai|displayU-ai|du-ai)                    REPO_TAG="ai" ;;
+            *)                                               REPO_TAG=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]') ;;
+          esac
+
+          TODAY=$(date -u +%Y-%m-%d)
+          ASSIGNEES=$(jq -r '(.issue.assignees // []) | map(.login) | join(", ")' "$GITHUB_EVENT_PATH")
+
+          BODY=$(jq -nc \
+            --arg db "$NOTION_DB_ID" \
+            --arg title "$CLEAN_TITLE" \
+            --arg url "$ISSUE_URL" \
+            --argjson num "$ISSUE_NUM" \
+            --arg repo "$REPO_TAG" \
+            --arg date "$TODAY" \
+            --arg assignees "$ASSIGNEES" \
+            '{
+              parent: {database_id: $db},
+              properties: {
+                "이름": {title: [{text: {content: $title}}]},
+                "repository": {select: {name: $repo}},
+                "GitHub URL": {url: $url},
+                "상태": {status: {name: "이슈"}},
+                "GitHub Number": {number: $num},
+                "담당자": {rich_text: (if $assignees == "" then [] else [{text: {content: $assignees}}] end)},
+                "시작 날짜": {date: {start: $date}}
+              }
+            }')
+
+          RESP=$(curl -s -X POST "https://api.notion.com/v1/pages" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "$BODY")
+
+          PAGE_ID=$(echo "$RESP" | jq -r '.id // empty')
+          if [ -z "$PAGE_ID" ]; then
+            echo "::error::Failed to create Notion page"
+            echo "$RESP"
+            exit 1
+          fi
+
+          # Extract auto-issued DU-N from 티켓 property.
+          # Notion property type must be Unique ID with prefix DU.
+          DU_NUM=$(echo "$RESP" | jq -r '.properties["티켓"].unique_id.number // empty')
+          DU_PREFIX=$(echo "$RESP" | jq -r '.properties["티켓"].unique_id.prefix // "DU"')
+          if [ -z "$DU_NUM" ]; then
+            echo "::warning::Could not extract DU ticket number from new page. Check that Notion property '티켓' is Unique ID."
+            exit 0
+          fi
+
+          echo "page_id=$PAGE_ID" >> "$GITHUB_OUTPUT"
+          echo "ticket=${DU_PREFIX}-${DU_NUM}" >> "$GITHUB_OUTPUT"
+          echo "clean_title=$CLEAN_TITLE" >> "$GITHUB_OUTPUT"
+          echo "Created page $PAGE_ID with ticket ${DU_PREFIX}-${DU_NUM}"
+
+      - name: Update Notion issue assignees
+        if: steps.find.outputs.page_id != ''
+        env:
+          PAGE_ID: ${{ steps.find.outputs.page_id }}
+        run: |
+          ASSIGNEES=$(jq -r '(.issue.assignees // []) | map(.login) | join(", ")' "$GITHUB_EVENT_PATH")
+
+          BODY=$(jq -nc \
+            --arg assignees "$ASSIGNEES" \
+            '{properties: {
+              "담당자": {rich_text: (if $assignees == "" then [] else [{text: {content: $assignees}}] end)}
+            }}')
+
+          curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "$BODY"
+          echo "Updated $PAGE_ID assignees: ${ASSIGNEES:-<none>}"
+
+      - name: Update GitHub Issue title with [DU-N]
+        if: steps.create.outputs.ticket != ''
+        env:
+          TICKET: ${{ steps.create.outputs.ticket }}
+          CLEAN_TITLE: ${{ steps.create.outputs.clean_title }}
+        run: |
+          if echo "$ISSUE_TITLE" | grep -qE '^\[DU-[0-9]+\]'; then
+            echo "Title already has DU prefix, skipping"
+            exit 0
+          fi
+
+          NEW_TITLE="[$TICKET] $CLEAN_TITLE"
+          gh issue edit "$ISSUE_NUM" --repo "$GH_REPO" --title "$NEW_TITLE"
+          echo "Updated issue title to: $NEW_TITLE"
+
+      - name: Mark Notion page as 완료 (Issue closed)
+        if: env.ISSUE_ACTION == 'closed' && steps.find.outputs.page_id != ''
+        env:
+          PAGE_ID: ${{ steps.find.outputs.page_id }}
+        run: |
+          curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d '{"properties":{"상태":{"status":{"name":"완료"}}}}'
+          echo "Marked $PAGE_ID as 완료"
+
+      - name: Reopen Notion page (Issue reopened)
+        if: env.ISSUE_ACTION == 'reopened' && steps.find.outputs.page_id != ''
+        env:
+          PAGE_ID: ${{ steps.find.outputs.page_id }}
+        run: |
+          curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d '{"properties":{"상태":{"status":{"name":"이슈"}}}}'
+          echo "Reopened $PAGE_ID as 이슈"
+
+  sync-pr:
+    name: Sync PR → Notion
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+      NOTION_VERSION: "2022-06-28"
+      PR_BRANCH: ${{ github.head_ref }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_ACTION: ${{ github.event.action }}
+      PR_MERGED: ${{ github.event.pull_request.merged }}
+
+    steps:
+      - name: Extract DU ticket from branch name
+        id: extract
+        run: |
+          TICKET=$(echo "$PR_BRANCH" | grep -oE 'DU-[0-9]+' | head -1)
+          if [ -z "$TICKET" ]; then
+            echo "::warning::No DU-N in branch '$PR_BRANCH'. Skipping Notion sync. Use branch names like feat/DU-3 or fix/DU-3."
+            exit 0
+          fi
+
+          NUM=$(echo "$TICKET" | grep -oE '[0-9]+')
+          echo "ticket=$TICKET" >> "$GITHUB_OUTPUT"
+          echo "num=$NUM" >> "$GITHUB_OUTPUT"
+          echo "Matched ticket: $TICKET"
+
+      - name: Determine target status
+        id: status
+        if: steps.extract.outputs.ticket != ''
+        run: |
+          STATUS=""
+          if [ "$PR_ACTION" = "closed" ] && [ "$PR_MERGED" = "true" ]; then
+            STATUS="완료"
+          elif [ "$PR_ACTION" = "opened" ] || [ "$PR_ACTION" = "reopened" ] || [ "$PR_ACTION" = "ready_for_review" ] || [ "$PR_ACTION" = "assigned" ] || [ "$PR_ACTION" = "unassigned" ]; then
+            STATUS="리뷰중"
+          fi
+
+          if [ -z "$STATUS" ]; then
+            echo "No status mapping for action=$PR_ACTION (merged=$PR_MERGED). Skipping."
+            exit 0
+          fi
+
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Find Notion page by 티켓
+        id: find
+        if: steps.status.outputs.status != ''
+        env:
+          NUM: ${{ steps.extract.outputs.num }}
+        run: |
+          RESP=$(curl -s -X POST \
+            "https://api.notion.com/v1/databases/$NOTION_DB_ID/query" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "{\"filter\":{\"property\":\"티켓\",\"unique_id\":{\"equals\":$NUM}}}")
+
+          PAGE_ID=$(echo "$RESP" | jq -r '.results[0].id // empty')
+          if [ -z "$PAGE_ID" ]; then
+            echo "::warning::No Notion page found for ${{ steps.extract.outputs.ticket }}"
+            exit 0
+          fi
+
+          echo "page_id=$PAGE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Update Notion page status + PR URL
+        if: steps.find.outputs.page_id != ''
+        env:
+          PAGE_ID: ${{ steps.find.outputs.page_id }}
+          STATUS: ${{ steps.status.outputs.status }}
+        run: |
+          ASSIGNEES=$(jq -r '(.pull_request.assignees // []) | map(.login) | join(", ")' "$GITHUB_EVENT_PATH")
+
+          BODY=$(jq -nc \
+            --arg status "$STATUS" \
+            --arg url "$PR_URL" \
+            --arg assignees "$ASSIGNEES" \
+            '{properties: {
+              "상태": {status: {name: $status}},
+              "GitHub URL": {url: $url},
+              "담당자": {rich_text: (if $assignees == "" then [] else [{text: {content: $assignees}}] end)}
+            }}')
+
+          curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "$BODY"
+          echo "Updated $PAGE_ID → 상태: $STATUS"
+
+  sync-push:
+    name: Sync Push → Notion
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+      NOTION_VERSION: "2022-06-28"
+      REF_NAME: ${{ github.ref_name }}
+
+    steps:
+      - name: Extract DU ticket from branch name
+        id: extract
+        run: |
+          TICKET=$(echo "$REF_NAME" | grep -oE 'DU-[0-9]+' | head -1)
+          if [ -z "$TICKET" ]; then
+            echo "No DU-N in branch '$REF_NAME'. Skipping. Use branch names like feat/DU-3 or fix/DU-3."
+            exit 0
+          fi
+
+          NUM=$(echo "$TICKET" | grep -oE '[0-9]+')
+          echo "ticket=$TICKET" >> "$GITHUB_OUTPUT"
+          echo "num=$NUM" >> "$GITHUB_OUTPUT"
+          echo "Matched ticket: $TICKET"
+
+      - name: Find Notion page + current status
+        id: find
+        if: steps.extract.outputs.ticket != ''
+        env:
+          NUM: ${{ steps.extract.outputs.num }}
+        run: |
+          RESP=$(curl -s -X POST \
+            "https://api.notion.com/v1/databases/$NOTION_DB_ID/query" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d "{\"filter\":{\"property\":\"티켓\",\"unique_id\":{\"equals\":$NUM}}}")
+
+          PAGE_ID=$(echo "$RESP" | jq -r '.results[0].id // empty')
+          CUR=$(echo "$RESP" | jq -r '.results[0].properties["상태"].status.name // empty')
+          if [ -z "$PAGE_ID" ]; then
+            echo "::warning::No Notion page found for ${{ steps.extract.outputs.ticket }}"
+            exit 0
+          fi
+
+          echo "page_id=$PAGE_ID" >> "$GITHUB_OUTPUT"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+          echo "Current status: ${CUR:-<none>}"
+
+      - name: Promote to 진행중 (only if current is 이슈)
+        if: steps.find.outputs.page_id != '' && steps.find.outputs.current == '이슈'
+        env:
+          PAGE_ID: ${{ steps.find.outputs.page_id }}
+        run: |
+          curl -s -X PATCH "https://api.notion.com/v1/pages/$PAGE_ID" \
+            -H "Authorization: Bearer $NOTION_TOKEN" \
+            -H "Notion-Version: $NOTION_VERSION" \
+            -H "Content-Type: application/json" \
+            -d '{"properties":{"상태":{"status":{"name":"진행중"}}}}'
+          echo "Promoted $PAGE_ID → 진행중"
