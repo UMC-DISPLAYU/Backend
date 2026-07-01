@@ -18,6 +18,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  branch-name:
+    name: Check branch name
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Validate pull request branch name
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+        run: |
+          PATTERN='^(feat|fix|refactor|chore|docs|test|hotfix|release)/DU-[0-9]+$'
+
+          if [[ ! "$BRANCH_NAME" =~ $PATTERN ]]; then
+            echo "::error::Invalid branch name: $BRANCH_NAME"
+            echo "Branch name must match:"
+            echo "  feat/DU-4"
+            echo "Allowed prefixes: feat, fix, refactor, chore, docs, test, hotfix, release"
+            exit 1
+          fi
+
   build:
     name: Build and test
     runs-on: ubuntu-latest
