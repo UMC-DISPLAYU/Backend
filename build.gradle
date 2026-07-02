@@ -61,7 +61,7 @@ spotless {
   }
 
   format 'misc', {
-    target '*.gradle', '*.md', '*.yml', '*.yaml', '.github/**/*.yml', '.github/**/*.yaml'
+    target '*.gradle', '*.yml', '*.yaml', '.github/**/*.yml', '.github/**/*.yaml'
     trimTrailingWhitespace()
     leadingTabsToSpaces(2)
     endWithNewline()
