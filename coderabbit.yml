@@ -1,0 +1,145 @@
+language: ko-KR
+
+reviews:
+  profile: assertive
+  high_level_summary: true
+  review_status: true
+  request_changes_workflow: false
+  auto_review:
+    enabled: true
+    drafts: true
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        다음 항목들을 꼼꼼하게 검토해줘.
+
+        1. **리뷰 결과 정리 방식**
+        - 리뷰 코멘트는 반드시 심각도와 우선순위에 따라 정리해줘.
+        - 발견사항은 Critical > High > Medium > Low > Suggestion 순서로 리스트업해줘.
+        - Critical: 보안 취약점, 데이터 유실/오염, 결제/인증/권한 우회, 운영 장애를 유발할 수 있는 문제.
+        - High: 런타임 예외, 트랜잭션 불일치, 잘못된 비즈니스 결과, 심각한 성능 저하, API 호환성 깨짐.
+        - Medium: 유지보수성 저하, 테스트 누락, 경계값 오류 가능성, 불필요한 쿼리, 설계상 개선이 필요한 문제.
+        - Low: 네이밍, 가독성, 작은 중복, 사소한 스타일 문제.
+        - Suggestion: 당장 수정하지 않아도 되지만 장기적으로 품질을 높이는 개선 제안.
+        - 각 이슈는 `[심각도] 제목` 형식으로 시작하고, 영향 범위와 수정 방향을 함께 제시해줘.
+        - 같은 성격의 이슈가 여러 개 있을 경우 중복 코멘트를 남발하지 말고 대표 위치와 공통 해결 방향을 제시해줘.
+        - 차단해야 할 문제와 참고 수준의 문제를 명확히 구분해줘.
+        - 문제가 없는 항목은 억지로 코멘트하지 말고, 실제 위험이 있는 변경에 집중해줘.
+
+        2. **예외 처리**
+        - 예외가 적절히 처리되었는지 확인해줘. (try-catch, throws, ExceptionAdvice)
+        - 공통 예외 처리 모듈(예: GlobalHandler, ApiResponse 등)을 잘 활용했는지 확인.
+        - RuntimeException을 남발하지 않고, 의미 있는 커스텀 예외를 사용하는지 검토.
+        - 예외 메시지에 민감 정보(DB 정보, 사용자 정보 등)가 노출되지 않게 했는지 점검.
+
+        3. **코드 품질 & 가독성**
+        - 메소드/클래스가 단일 책임 원칙(SRP)에 맞게 구성되어 있는지.
+        - 중복 코드가 있는 경우, 유틸/공통 컴포넌트로 추출 가능한지.
+        - 의미 있는 변수명과 메소드명을 사용했는지.
+        - 매직 넘버, 하드코딩된 값이 존재하는지 점검.
+
+        4. **성능 및 효율성**
+        - 불필요한 DB 쿼리 호출, N+1 문제 가능성이 있는지 확인.
+        - Stream, loop, recursion 사용 시 시간복잡도/메모리 효율성을 고려했는지.
+        - 캐시 적용 가능성이 있거나, 과도한 연산이 반복되는 구간이 있는지.
+
+        5. **트랜잭션 관리**
+        - @Transactional이 필요한 메소드에 누락되지 않았는지.
+        - 읽기 전용 트랜잭션(readOnly = true)을 적절히 사용했는지.
+        - DB 일관성, 롤백 정책이 올바른지 검토.
+
+        6. **입력 검증 및 보안**
+        - @Valid, Bean Validation 등을 통한 입력값 검증이 되어 있는지.
+        - Controller의 @RequestBody, @PathVariable, @RequestParam 검증이 누락되지 않았는지.
+        - DTO의 validation annotation(@NotNull, @NotBlank, @Size, @Pattern 등)이 비즈니스 규칙과 일치하는지.
+        - 비밀번호, 토큰 등 민감한 정보가 로깅되지 않는지.
+        - 인증/인가 체크가 Controller 또는 Service 계층에서 누락되지 않았는지.
+        - SecurityContext, JWT, 세션, 쿠키 처리 시 사용자 식별과 권한 검증이 안전한지.
+        - CORS, CSRF, SecurityFilterChain 설정이 운영 환경에 과도하게 열려 있지 않은지.
+        - SQL Injection, SpEL Injection, Path Traversal, Mass Assignment 가능성이 없는지.
+
+        7. **테스트**
+        - 단위 테스트가 충분히 작성되었는지, 핵심 로직의 검증이 누락되지 않았는지.
+        - Mocking을 통한 독립 테스트 구조를 유지했는지.
+        - 경계값 테스트, 예외 케이스 테스트가 포함되어 있는지.
+        - Controller 테스트에서 요청 검증, 응답 상태 코드, 에러 응답 포맷을 확인했는지.
+        - Service 테스트에서 트랜잭션, 예외 흐름, 권한 분기, 외부 의존성 실패를 검증했는지.
+        - Repository 테스트에서 쿼리 조건, 페이징, 정렬, 연관관계 로딩을 확인했는지.
+        - SpringBootTest가 불필요하게 남용되지 않았고, slice test(@WebMvcTest, @DataJpaTest 등)를 적절히 사용했는지.
+        - 테스트 데이터가 서로 격리되어 있으며 실행 순서에 의존하지 않는지.
+
+        8. **구조 및 설계**
+        - Controller, Service, Repository 등 계층 구조가 올바르게 나뉘어 있는지.
+        - DTO, Entity, Domain 객체 간 변환 로직이 명확하고 중복되지 않는지.
+        - Config 클래스에서 Bean 등록이 과도하거나 순환 참조 위험이 없는지.
+        - Controller에 비즈니스 로직이 들어가지 않고 요청/응답 처리에 집중하는지.
+        - Service가 너무 많은 책임을 갖지 않으며 도메인 로직과 애플리케이션 로직이 구분되는지.
+        - Repository가 데이터 접근 책임을 벗어나 비즈니스 판단을 포함하지 않는지.
+        - 패키지 구조가 기능별 또는 계층별로 일관성 있게 유지되는지.
+        - 순환 의존성, 과도한 양방향 의존성, 불필요한 Bean 주입이 없는지.
+
+        9. **Spring Boot 설정 및 의존성**
+        - application.yml/properties에서 환경별 설정(local/dev/prod)이 안전하게 분리되어 있는지.
+        - 운영 환경에 민감한 설정(debug, show-sql, ddl-auto=create/update 등)이 노출되지 않았는지.
+        - @ConfigurationProperties를 사용할 수 있는 설정을 @Value로 흩뿌리지 않았는지.
+        - Bean 등록 조건(@Profile, @ConditionalOnProperty 등)이 의도와 맞는지.
+        - 불필요하거나 충돌 가능성이 있는 의존성이 추가되지 않았는지.
+        - deprecated API, deprecated Spring Security 설정 방식, 구버전 패턴을 사용하지 않았는지.
+
+        10. **JPA/Hibernate 및 데이터 접근**
+        - Entity 연관관계(fetch type, cascade, orphanRemoval)가 의도와 맞는지.
+        - Lazy loading으로 인한 LazyInitializationException 가능성이 없는지.
+        - N+1 문제를 막기 위해 fetch join, EntityGraph, batch size 등을 적절히 고려했는지.
+        - 양방향 연관관계의 편의 메소드가 일관성을 보장하는지.
+        - equals/hashCode/toString 구현이 Entity 식별자와 연관관계 순환 문제를 고려하는지.
+        - 변경 감지와 명시적 save 호출이 혼동되어 불필요한 update가 발생하지 않는지.
+        - JPQL/native query의 조건, 정렬, 페이징, null 처리, 인덱스 활용 가능성을 검토했는지.
+        - 대량 조회/수정/삭제 시 메모리 사용량과 영속성 컨텍스트 크기를 고려했는지.
+
+        11. **API 설계 및 응답 일관성**
+        - RESTful한 HTTP method, URI, status code를 사용하는지.
+        - 생성/수정/삭제/조회 API의 응답 포맷이 프로젝트 표준과 일치하는지.
+        - 에러 응답이 공통 형식(ApiResponse, ErrorResponse 등)을 따르는지.
+        - Page, Slice, Cursor 등 페이징 응답이 일관적이고 과도한 전체 count 쿼리를 유발하지 않는지.
+        - DTO에 Entity가 직접 노출되지 않으며 내부 필드가 API 응답으로 새지 않는지.
+        - API 버전 관리 또는 하위 호환성이 필요한 변경인지 검토했는지.
+
+        12. **로깅 및 관측성**
+        - 로그 레벨(debug/info/warn/error)이 상황에 맞게 사용되었는지.
+        - 예외 로그가 중복으로 찍히거나 스택트레이스가 불필요하게 남발되지 않는지.
+        - 요청 ID, 사용자 ID 등 추적에 필요한 정보가 안전한 범위에서 남는지.
+        - 민감 정보(비밀번호, 토큰, 주민번호, 이메일 전체, 전화번호 등)가 로그에 노출되지 않는지.
+        - 외부 API 호출, 배치, 비동기 작업 등 장애 추적에 필요한 로그가 충분한지.
+
+        13. **외부 연동 및 장애 대응**
+        - 외부 API/DB/메시지 브로커 호출에 timeout, retry, fallback 정책이 있는지.
+        - retry가 멱등성 없는 작업에 적용되어 중복 처리 위험을 만들지 않는지.
+        - RestTemplate/WebClient/Feign 사용 시 에러 응답, 타임아웃, 역직렬화 실패를 처리하는지.
+        - 외부 연동 DTO와 내부 도메인 모델이 과도하게 결합되지 않았는지.
+        - 장애 상황에서 사용자에게 과도한 내부 정보가 노출되지 않는지.
+
+        14. **비동기, 스케줄러, 이벤트**
+        - @Async, @Scheduled, 이벤트 리스너 사용 시 예외 처리와 트랜잭션 경계가 명확한지.
+        - 스케줄러가 다중 인스턴스 환경에서 중복 실행될 위험이 없는지.
+        - 비동기 작업에서 SecurityContext, MDC, 트랜잭션 컨텍스트 전파가 필요한지 검토했는지.
+        - 이벤트 발행 시 커밋 전/후 실행 시점이 의도와 맞는지(@TransactionalEventListener 등).
+
+        15. **동시성 및 데이터 일관성**
+        - 동시에 같은 리소스를 수정할 때 lost update, race condition 가능성이 없는지.
+        - 낙관적 락(@Version), 비관적 락, 유니크 제약조건 등 일관성 보장 수단이 필요한지.
+        - 재고, 포인트, 결제, 쿠폰 등 숫자 기반 자원 변경에서 원자성이 보장되는지.
+        - 중복 요청 방지, idempotency key, unique constraint가 필요한 API인지 검토했는지.
+
+        16. **마이그레이션 및 운영 안정성**
+        - DB 스키마 변경이 기존 데이터와 하위 호환성을 고려하는지.
+        - nullable/default/index/constraint 변경이 운영 배포 중 장애를 만들지 않는지.
+        - Flyway/Liquibase 등을 사용하는 경우 마이그레이션 순서와 rollback 전략이 적절한지.
+        - 대용량 테이블 변경 시 lock, migration time, 배포 순서를 고려했는지.
+        - 운영 배포 시 feature flag 또는 단계적 전환이 필요한 변경인지 검토했는지.
+  path_filters:
+    - "!infra/**"
+    - "!build/**"
+    - "!.gradle/**"
+    - "!**/*.min.js"
+    - "!**/node_modules/**"
+    - "!config/**"
