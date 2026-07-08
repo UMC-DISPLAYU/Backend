@@ -78,7 +78,17 @@ reviews:
         - 패키지 구조가 기능별 또는 계층별로 일관성 있게 유지되는지.
         - 순환 의존성, 과도한 양방향 의존성, 불필요한 Bean 주입이 없는지.
 
-        9. **Spring Boot 설정 및 의존성**
+        9. **DDD 구조 검토**
+        - `docs/project_architecture_guide.md`의 DDD 기준을 참고해 계층 책임과 의존 방향을 검토해줘.
+        - 도메인 모델이 단순 setter 중심이 아니라 `cancel()`, `join()`, `disable()`, `changeIntro()`처럼 비즈니스 행위를 드러내는 메서드로 상태를 변경하는지 확인해줘.
+        - Application Service가 유스케이스 흐름 조율, 트랜잭션 경계, Repository 호출, Aggregate 도메인 메서드 호출에 집중하고 도메인 로직을 직접 구현하지 않는지 확인해줘.
+        - Domain 영역이 Infrastructure, JPA 구현체, HTTP 객체, 외부 API 구현 세부사항을 직접 의존하지 않는지 확인해줘.
+        - Repository Interface는 Domain 영역에 두고, 구현체와 Spring Data JPA Repository는 Infrastructure 영역에 격리했는지 확인해줘.
+        - Aggregate Root가 내부 Entity/Value Object의 상태 변경을 통제하고, 내부 객체를 외부에서 직접 수정하지 않도록 설계했는지 확인해줘.
+        - API DTO, Application Command/Result, Domain Model, JpaEntity 간 변환 책임이 Presentation Mapper와 Persistence Mapper로 분리되어 있는지 확인해줘.
+        - Command와 Query가 섞이지 않고, 조회 최적화가 필요한 경우 Query Service/Query Repository/Read Model로 분리되어 있는지 확인해줘.
+
+        10. **Spring Boot 설정 및 의존성**
         - application.yml/properties에서 환경별 설정(local/dev/prod)이 안전하게 분리되어 있는지.
         - 운영 환경에 민감한 설정(debug, show-sql, ddl-auto=create/update 등)이 노출되지 않았는지.
         - @ConfigurationProperties를 사용할 수 있는 설정을 @Value로 흩뿌리지 않았는지.
@@ -86,7 +96,7 @@ reviews:
         - 불필요하거나 충돌 가능성이 있는 의존성이 추가되지 않았는지.
         - deprecated API, deprecated Spring Security 설정 방식, 구버전 패턴을 사용하지 않았는지.
 
-        10. **JPA/Hibernate 및 데이터 접근**
+        11. **JPA/Hibernate 및 데이터 접근**
         - Entity 연관관계(fetch type, cascade, orphanRemoval)가 의도와 맞는지.
         - Lazy loading으로 인한 LazyInitializationException 가능성이 없는지.
         - N+1 문제를 막기 위해 fetch join, EntityGraph, batch size 등을 적절히 고려했는지.
@@ -96,7 +106,7 @@ reviews:
         - JPQL/native query의 조건, 정렬, 페이징, null 처리, 인덱스 활용 가능성을 검토했는지.
         - 대량 조회/수정/삭제 시 메모리 사용량과 영속성 컨텍스트 크기를 고려했는지.
 
-        11. **API 설계 및 응답 일관성**
+        12. **API 설계 및 응답 일관성**
         - RESTful한 HTTP method, URI, status code를 사용하는지.
         - 생성/수정/삭제/조회 API의 응답 포맷이 프로젝트 표준과 일치하는지.
         - 에러 응답이 공통 형식(ApiResponse, ErrorResponse 등)을 따르는지.
@@ -104,33 +114,33 @@ reviews:
         - DTO에 Entity가 직접 노출되지 않으며 내부 필드가 API 응답으로 새지 않는지.
         - API 버전 관리 또는 하위 호환성이 필요한 변경인지 검토했는지.
 
-        12. **로깅 및 관측성**
+        13. **로깅 및 관측성**
         - 로그 레벨(debug/info/warn/error)이 상황에 맞게 사용되었는지.
         - 예외 로그가 중복으로 찍히거나 스택트레이스가 불필요하게 남발되지 않는지.
         - 요청 ID, 사용자 ID 등 추적에 필요한 정보가 안전한 범위에서 남는지.
         - 민감 정보(비밀번호, 토큰, 주민번호, 이메일 전체, 전화번호 등)가 로그에 노출되지 않는지.
         - 외부 API 호출, 배치, 비동기 작업 등 장애 추적에 필요한 로그가 충분한지.
 
-        13. **외부 연동 및 장애 대응**
+        14. **외부 연동 및 장애 대응**
         - 외부 API/DB/메시지 브로커 호출에 timeout, retry, fallback 정책이 있는지.
         - retry가 멱등성 없는 작업에 적용되어 중복 처리 위험을 만들지 않는지.
         - RestTemplate/WebClient/Feign 사용 시 에러 응답, 타임아웃, 역직렬화 실패를 처리하는지.
         - 외부 연동 DTO와 내부 도메인 모델이 과도하게 결합되지 않았는지.
         - 장애 상황에서 사용자에게 과도한 내부 정보가 노출되지 않는지.
 
-        14. **비동기, 스케줄러, 이벤트**
+        15. **비동기, 스케줄러, 이벤트**
         - @Async, @Scheduled, 이벤트 리스너 사용 시 예외 처리와 트랜잭션 경계가 명확한지.
         - 스케줄러가 다중 인스턴스 환경에서 중복 실행될 위험이 없는지.
         - 비동기 작업에서 SecurityContext, MDC, 트랜잭션 컨텍스트 전파가 필요한지 검토했는지.
         - 이벤트 발행 시 커밋 전/후 실행 시점이 의도와 맞는지(@TransactionalEventListener 등).
 
-        15. **동시성 및 데이터 일관성**
+        16. **동시성 및 데이터 일관성**
         - 동시에 같은 리소스를 수정할 때 lost update, race condition 가능성이 없는지.
         - 낙관적 락(@Version), 비관적 락, 유니크 제약조건 등 일관성 보장 수단이 필요한지.
         - 재고, 포인트, 결제, 쿠폰 등 숫자 기반 자원 변경에서 원자성이 보장되는지.
         - 중복 요청 방지, idempotency key, unique constraint가 필요한 API인지 검토했는지.
 
-        16. **마이그레이션 및 운영 안정성**
+        17. **마이그레이션 및 운영 안정성**
         - DB 스키마 변경이 기존 데이터와 하위 호환성을 고려하는지.
         - nullable/default/index/constraint 변경이 운영 배포 중 장애를 만들지 않는지.
         - Flyway/Liquibase 등을 사용하는 경우 마이그레이션 순서와 rollback 전략이 적절한지.
