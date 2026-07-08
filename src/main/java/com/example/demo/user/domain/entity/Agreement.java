@@ -1,0 +1,43 @@
+package com.example.demo.user.domain.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Builder
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="Agreement")
+public class Agreement {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "agreeId")
+    private Long id;
+
+    @Column(name="title", nullable=false)
+    private String title;
+
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
+
+    @Column(name="isRequired", nullable=false)
+    private boolean isRequired;
+
+    @CreationTimestamp
+    @Column(name="createdAt", nullable=false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name="updatedAt", nullable=false)
+    private LocalDateTime updatedAt;
+
+
+}
