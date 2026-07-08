@@ -1,14 +1,13 @@
 package com.example.demo.user.domain.entity;
 
 
+import com.example.demo.global.entity.BaseTimeEntity;
 import com.example.demo.user.domain.enums.Provider;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -18,8 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="User")
-public class User {
+@Table(name = "User")
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,39 +29,28 @@ public class User {
     @Column(name = "provider", nullable = false)
     private Provider provider;
 
-    @Column(name="providerId",nullable = false)
+    @Column(name = "providerId", nullable = false)
     private String providerId;
 
-    @Column(name="name", nullable=false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name="nickname", nullable=false)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
-
     @Builder.Default
-    @Column(name="isVerified",nullable=false)
-    private boolean isVerified=false; //작가 인증여부
+    @Column(name = "isVerified", nullable = false)
+    private boolean isVerified = false; // 작가 인증여부
 
-    @Column(name="socialEmail", nullable=false)
+    @Column(name = "socialEmail", nullable = false)
     private String socialEmail;
 
-    @Column(name="schoolEmail")
+    @Column(name = "schoolEmail")
     private String schoolEmail;
 
-    @CreationTimestamp
-    @Column(name="createdAt", nullable=false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name="updatedAt", nullable=false)
-    private LocalDateTime updatedAt;
-
-    @Column(name="deletedAt")
+    @Column(name = "deletedAt")
     private LocalDateTime deletedAt;
 
-    @Column(name="nicknameChangedAt")
+    @Column(name = "nicknameChangedAt")
     private LocalDateTime nicknameChangedAt;
-
-
 }

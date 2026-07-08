@@ -38,17 +38,17 @@ public enum GlobalErrorCode implements BaseErrorCode {
   }
 
   @Override
-  public HttpStatus status() {
+  public HttpStatus getStatus() {
     return status;
   }
 
   @Override
-  public String code() {
+  public String getCode() {
     return code;
   }
 
   @Override
-  public String message() {
+  public String getMessage() {
     return message;
   }
 }

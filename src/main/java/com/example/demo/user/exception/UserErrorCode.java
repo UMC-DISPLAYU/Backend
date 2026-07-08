@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements BaseErrorCode {
 
@@ -30,18 +31,5 @@ public enum UserErrorCode implements BaseErrorCode {
     private final String code;
     private final String message;
 
-    @Override
-    public HttpStatus status() {
-        return status;
-    }
 
-    @Override
-    public String code() {
-        return code;
-    }
-
-    @Override
-    public String message() {
-        return message;
-    }
 }

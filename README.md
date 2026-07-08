@@ -47,6 +47,8 @@ src
 │   │       ├── exhibition
 │   │       │   ├── presentation
 │   │       │   │   ├── ExhibitionController.java
+│   │       │   │   ├── mapper
+│   │       │   │   │   └── ExhibitionPresentationMapper.java
 │   │       │   │   ├── request
 │   │       │   │   │   └── CreateExhibitionRequest.java
 │   │       │   │   └── response
@@ -57,6 +59,10 @@ src
 │   │       │   │   │   └── CreateExhibitionUseCase.java
 │   │       │   │   ├── service
 │   │       │   │   │   └── ExhibitionService.java
+│   │       │   │   ├── query
+│   │       │   │   │   ├── ExhibitionQueryService.java
+│   │       │   │   │   ├── ExhibitionQueryRepository.java
+│   │       │   │   │   └── ExhibitionSummaryQueryResult.java
 │   │       │   │   ├── command
 │   │       │   │   │   └── CreateExhibitionCommand.java
 │   │       │   │   └── result
@@ -65,6 +71,10 @@ src
 │   │       │   ├── domain
 │   │       │   │   ├── entity
 │   │       │   │   │   └── Exhibition.java
+│   │       │   │   ├── event
+│   │       │   │   │   └── ExhibitionCreatedEvent.java
+│   │       │   │   ├── repository
+│   │       │   │   │   └── ExhibitionRepository.java
 │   │       │   │   ├── vo
 │   │       │   │   │   └── ExhibitionTitle.java
 │   │       │   │   ├── policy
@@ -76,7 +86,9 @@ src
 │   │       │       ├── persistence
 │   │       │       │   ├── ExhibitionJpaEntity.java
 │   │       │       │   ├── ExhibitionJpaRepository.java
-│   │       │       │   └── ExhibitionPersistenceAdapter.java
+│   │       │       │   ├── ExhibitionPersistenceAdapter.java
+│   │       │       │   ├── ExhibitionPersistenceMapper.java
+│   │       │       │   └── ExhibitionQueryRepositoryAdapter.java
 │   │       │       └── client
 │   │       │           └── ExternalExhibitionApiClient.java
 │   │       │
