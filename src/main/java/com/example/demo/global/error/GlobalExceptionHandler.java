@@ -4,6 +4,7 @@ import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.response.ApiResponseBody.ErrorBody;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(BusinessException.class)
@@ -89,6 +91,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponseBody<Void>> handleException(
       Exception exception, HttpServletRequest request) {
+    log.error("Unhandled exception occurred. uri={}", request.getRequestURI(), exception);
     BaseErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
