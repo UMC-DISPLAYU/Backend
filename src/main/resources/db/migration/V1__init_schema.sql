@@ -55,7 +55,7 @@ CREATE TABLE `ArtworkFeelingReply` (
                                        `content`	TEXT	NOT NULL,
                                        `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                        `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                       `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                                       `deletedAt`	DATETIME	NULL,
                                        `feelingId`	BIGINT	NOT NULL
 );
 
@@ -74,7 +74,7 @@ CREATE TABLE `ArtworkQuestionReply` (
                                         `content`	TEXT	NOT NULL,
                                         `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                         `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                        `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                                        `deletedAt`	DATETIME	NULL,
                                         `artQueId`	BIGINT	NOT NULL
 );
 
@@ -142,7 +142,7 @@ CREATE TABLE `DisplayArtwork` (
                                   `workSortOrder`	INT	NOT NULL,
                                   `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                   `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                  `deletedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
+                                  `deletedAt`	DATETIME	NULL,
                                   `displayId`	BIGINT	NOT NULL
 );
 
@@ -156,7 +156,7 @@ CREATE TABLE `ArtworkImage` (
                                 `height`	INT	NOT NULL,
                                 `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                 `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                                `deletedAt`	DATETIME	NULL,
                                 `displayArtworkId`	BIGINT	NOT NULL
 );
 
@@ -191,7 +191,7 @@ CREATE TABLE `ArtworkQuestion` (
                                    `answerStatus`	ENUM('WAITING', 'ANSWERED')	NOT NULL	DEFAULT 'WAITING'	COMMENT 'WAITING, ANSWERED',
                                    `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                    `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                   `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                                   `deletedAt`	DATETIME	NULL,
                                    `displayArtworkId`	BIGINT	NOT NULL,
                                    `userId`	BIGINT	NOT NULL
 );
@@ -238,7 +238,7 @@ CREATE TABLE `ArtworkFeeling` (
                                   `content`	TEXT	NOT NULL,
                                   `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                                   `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                                  `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                                  `deletedAt`	DATETIME	NULL,
                                   `displayArtworkId`	BIGINT	NOT NULL,
                                   `userId`	BIGINT	NOT NULL
 );
@@ -249,7 +249,7 @@ CREATE TABLE `Memo` (
                         `visitDate`	DATE	NULL,
                         `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                         `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                        `deletedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
+                        `deletedAt`	DATETIME	NULL,
                         `archiveAgreeId`	BIGINT	NULL,
                         `archiveWorkId`	BIGINT	NULL
 );
@@ -265,7 +265,7 @@ CREATE TABLE `User` (
                         `schoolEmail`	VARCHAR(255)	NULL,
                         `createdAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
                         `updatedAt`	DATETIME	NOT NULL	DEFAULT CURRENT_TIMESTAMP,
-                        `deletedAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP,
+                        `deletedAt`	DATETIME	NULL,
                         `nicknameChangeAt`	DATETIME	NULL	DEFAULT CURRENT_TIMESTAMP	COMMENT '닉네임 변경 날짜'
 );
 
