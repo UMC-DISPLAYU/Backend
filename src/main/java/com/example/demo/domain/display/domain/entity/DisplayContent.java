@@ -1,12 +1,12 @@
 package com.example.demo.domain.display.domain.entity;
 
-import com.example.demo.domain.display.domain.vo.DisplayContentId;
 import com.example.demo.global.entity.BaseTimeEntity;
-import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -18,9 +18,10 @@ import lombok.Getter;
 @Table(name = "DisplayContent")
 public class DisplayContent extends BaseTimeEntity {
 
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "displayContentId"))
-  private DisplayContentId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "displayContentId")
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "categoryId", nullable = false)
@@ -39,9 +40,8 @@ public class DisplayContent extends BaseTimeEntity {
 
   protected DisplayContent() {}
 
-  public DisplayContent(
-      DisplayContentId id, String imageUrl, int width, int height, int sortOrder) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+  public DisplayContent(Long id, String imageUrl, int width, int height, int sortOrder) {
+    this.id = id;
     this.imageUrl = imageUrl;
     this.width = requirePositive(width, "width");
     this.height = requirePositive(height, "height");

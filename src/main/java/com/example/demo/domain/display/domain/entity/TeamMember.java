@@ -2,16 +2,17 @@ package com.example.demo.domain.display.domain.entity;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
-import com.example.demo.domain.display.domain.vo.TeamMemberId;
 import com.example.demo.domain.display.domain.vo.UserId;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,9 +24,10 @@ import lombok.Getter;
 @Table(name = "TeamMember")
 public class TeamMember {
 
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "teamId"))
-  private TeamMemberId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "teamId")
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "displayId", nullable = false)
@@ -48,12 +50,8 @@ public class TeamMember {
   protected TeamMember() {}
 
   public TeamMember(
-      TeamMemberId id,
-      UserId userId,
-      String displayNickname,
-      TeamMemberRole role,
-      boolean accepted) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+      Long id, UserId userId, String displayNickname, TeamMemberRole role, boolean accepted) {
+    this.id = id;
     this.userId = Objects.requireNonNull(userId, "userId must not be null.");
     this.displayNickname = requireNonBlank(displayNickname, "displayNickname");
     this.role = Objects.requireNonNull(role, "role must not be null.");

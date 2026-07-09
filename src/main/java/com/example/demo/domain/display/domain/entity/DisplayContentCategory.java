@@ -1,15 +1,14 @@
 package com.example.demo.domain.display.domain.entity;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
-import com.example.demo.domain.display.domain.vo.DisplayContentCategoryId;
-import com.example.demo.domain.display.domain.vo.DisplayContentId;
 import com.example.demo.global.entity.BaseTimeEntity;
-import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -25,9 +24,10 @@ import lombok.Getter;
 @Table(name = "DisplayContentCategory")
 public class DisplayContentCategory extends BaseTimeEntity {
 
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "categoryId"))
-  private DisplayContentCategoryId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "categoryId")
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "displayId", nullable = false)
@@ -48,12 +48,8 @@ public class DisplayContentCategory extends BaseTimeEntity {
   protected DisplayContentCategory() {}
 
   public DisplayContentCategory(
-      DisplayContentCategoryId id,
-      String name,
-      String description,
-      int sortOrder,
-      List<DisplayContent> contents) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+      Long id, String name, String description, int sortOrder, List<DisplayContent> contents) {
+    this.id = id;
     changeInfo(name, description);
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
     if (contents != null) {
@@ -84,7 +80,7 @@ public class DisplayContentCategory extends BaseTimeEntity {
     contents.add(displayContent);
   }
 
-  public void removeContent(DisplayContentId contentId) {
+  public void removeContent(Long contentId) {
     contents.removeIf(content -> content.getId().equals(contentId));
   }
 

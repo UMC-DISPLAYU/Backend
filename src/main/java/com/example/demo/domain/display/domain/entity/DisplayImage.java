@@ -2,15 +2,15 @@ package com.example.demo.domain.display.domain.entity;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
-import com.example.demo.domain.display.domain.vo.DisplayImageId;
 import com.example.demo.global.entity.BaseTimeEntity;
-import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,9 +23,10 @@ import lombok.Getter;
 @Table(name = "DisplayImage")
 public class DisplayImage extends BaseTimeEntity {
 
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "disImageId"))
-  private DisplayImageId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "disImageId")
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "displayId", nullable = false)
@@ -52,14 +53,14 @@ public class DisplayImage extends BaseTimeEntity {
   protected DisplayImage() {}
 
   public DisplayImage(
-      DisplayImageId id,
+      Long id,
       String imageUrl,
       DisplayImageType imageType,
       int width,
       int height,
       int sortOrder,
       LocalDateTime deletedAt) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+    this.id = id;
     this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
     this.imageType = Objects.requireNonNull(imageType, "imageType must not be null.");
     this.width = requirePositive(width, "width");

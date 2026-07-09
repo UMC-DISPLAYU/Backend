@@ -1,14 +1,15 @@
 package com.example.demo.domain.display.domain.entity;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
-import com.example.demo.domain.display.domain.vo.DisplayInvitationId;
 import com.example.demo.domain.display.domain.vo.UserId;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -22,9 +23,10 @@ import lombok.Getter;
 @Table(name = "DisplayInvitation")
 public class DisplayInvitation {
 
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "disInvitationId"))
-  private DisplayInvitationId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "disInvitationId")
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "displayId", nullable = false)
@@ -46,12 +48,12 @@ public class DisplayInvitation {
   protected DisplayInvitation() {}
 
   public DisplayInvitation(
-      DisplayInvitationId id,
+      Long id,
       UserId inviterUserId,
       UserId inviteeUserId,
       LocalDateTime createdAt,
       LocalDateTime deletedAt) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+    this.id = id;
     this.inviterUserId = Objects.requireNonNull(inviterUserId, "inviterUserId must not be null.");
     this.inviteeUserId = Objects.requireNonNull(inviteeUserId, "inviteeUserId must not be null.");
     this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null.");

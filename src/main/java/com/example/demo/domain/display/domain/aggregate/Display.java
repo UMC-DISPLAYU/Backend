@@ -8,13 +8,8 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
-import com.example.demo.domain.display.domain.vo.DisplayContentCategoryId;
-import com.example.demo.domain.display.domain.vo.DisplayId;
-import com.example.demo.domain.display.domain.vo.DisplayImageId;
-import com.example.demo.domain.display.domain.vo.DisplayInvitationId;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
-import com.example.demo.domain.display.domain.vo.TeamMemberId;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.AttributeOverride;
@@ -22,10 +17,12 @@ import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -41,9 +38,10 @@ import lombok.Getter;
 public class Display extends BaseTimeEntity {
 
   // 식별자와 소유자 정보: 전시 Aggregate의 정체성과 생성/관리 주체를 나타낸다.
-  @EmbeddedId
-  @AttributeOverride(name = "value", column = @Column(name = "displayId"))
-  private DisplayId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "displayId")
+  private Long id;
 
   @Embedded
   @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
@@ -128,7 +126,7 @@ public class Display extends BaseTimeEntity {
   protected Display() {}
 
   public Display(
-      DisplayId id,
+      Long id,
       UserId ownerUserId,
       String title,
       String subtitle,
@@ -150,7 +148,7 @@ public class Display extends BaseTimeEntity {
       List<DisplayContentCategory> contentCategories,
       List<TeamMember> teamMembers,
       List<DisplayInvitation> invitations) {
-    this.id = Objects.requireNonNull(id, "id must not be null.");
+    this.id = id;
     this.ownerUserId = Objects.requireNonNull(ownerUserId, "ownerUserId must not be null.");
     changeBasicInfo(title, subtitle, content, qnaAccount, note, organization, department);
     changeLocation(location);
@@ -258,7 +256,7 @@ public class Display extends BaseTimeEntity {
   }
 
   // 전시 이미지 목록에서 특정 이미지를 제거한다.
-  public void removeImage(DisplayImageId imageId) {
+  public void removeImage(Long imageId) {
     images.removeIf(image -> image.getId().equals(imageId));
   }
 
@@ -271,7 +269,7 @@ public class Display extends BaseTimeEntity {
   }
 
   // 전시 소개 콘텐츠 카테고리를 제거한다.
-  public void removeContentCategory(DisplayContentCategoryId categoryId) {
+  public void removeContentCategory(Long categoryId) {
     contentCategories.removeIf(category -> category.getId().equals(categoryId));
   }
 
@@ -283,7 +281,7 @@ public class Display extends BaseTimeEntity {
   }
 
   // 전시 팀원을 제거한다.
-  public void removeTeamMember(TeamMemberId teamMemberId) {
+  public void removeTeamMember(Long teamMemberId) {
     teamMembers.removeIf(teamMember -> teamMember.getId().equals(teamMemberId));
   }
 
@@ -296,7 +294,7 @@ public class Display extends BaseTimeEntity {
   }
 
   // 전시 초대 정보를 제거한다.
-  public void removeInvitation(DisplayInvitationId invitationId) {
+  public void removeInvitation(Long invitationId) {
     invitations.removeIf(invitation -> invitation.getId().equals(invitationId));
   }
 
