@@ -194,12 +194,12 @@ public class Display extends BaseTimeEntity {
       String organization,
       String department) {
     this.title = requireNonBlank(title, "title");
-    this.subtitle = requireNonBlank(subtitle, "subtitle");
-    this.content = requireNonBlank(content, "content");
-    this.qnaAccount = requireNonBlank(qnaAccount, "qnaAccount");
-    this.note = requireNonBlank(note, "note");
+    this.subtitle = nullToEmpty(subtitle);
+    this.content = nullToEmpty(content);
+    this.qnaAccount = nullToEmpty(qnaAccount);
+    this.note = nullToEmpty(note);
     this.organization = requireNonBlank(organization, "organization");
-    this.department = requireNonBlank(department, "department");
+    this.department = nullToEmpty(department);
   }
 
   // 전시 장소와 좌표 정보를 변경한다.
@@ -314,5 +314,9 @@ public class Display extends BaseTimeEntity {
       throw new IllegalArgumentException(fieldName + " must not be blank.");
     }
     return value;
+  }
+
+  private static String nullToEmpty(String value) {
+    return value == null ? "" : value;
   }
 }
