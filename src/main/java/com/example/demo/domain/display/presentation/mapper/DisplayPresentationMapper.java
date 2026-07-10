@@ -1,13 +1,20 @@
 package com.example.demo.domain.display.presentation.mapper;
 
+import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
+import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+
+  public ClosingSoonDisplayResponse toResponse(ClosingSoonDisplayResult result) {
+    return new ClosingSoonDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList());
+  }
 
   public DisplayMapResponse toResponse(DisplayMapResult result) {
     return new DisplayMapResponse(
@@ -42,6 +49,17 @@ public class DisplayPresentationMapper {
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
         result.invitations().stream().map(this::toResponse).toList());
+  }
+
+  private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(
+      ClosingSoonDisplayResult.ExhibitionResult result) {
+    return new ClosingSoonDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {

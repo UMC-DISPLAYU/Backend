@@ -1,5 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_REQUEST_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_REQUEST_EXAMPLE;
@@ -23,10 +25,12 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.T
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
+import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -56,16 +60,19 @@ public class DisplayController {
   private final CreateDisplayService createDisplayService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
+  private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
       CreateDisplayService createDisplayService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayMapUseCase getDisplayMapUseCase,
+      GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
+    this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
     this.mapper = mapper;
   }
 
@@ -109,6 +116,14 @@ public class DisplayController {
     return ApiResponseBody.success(
         mapper.toResponse(getDisplayMapUseCase.getDisplayMap(displayMapRequest.toQuery())),
         request);
+  }
+
+  @GetMapping("/api/v1/display/closing-soon")
+  @Operation(summary = CLOSING_SOON_SUMMARY, description = CLOSING_SOON_DESCRIPTION)
+  public ApiResponseBody<ClosingSoonDisplayResponse> getClosingSoonDisplays(
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(getClosingSoonDisplaysUseCase.getClosingSoonDisplays()), request);
   }
 
   @GetMapping("/api/v1/display/{displayId}")
