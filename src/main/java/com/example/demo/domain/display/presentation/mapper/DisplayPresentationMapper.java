@@ -1,11 +1,22 @@
 package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
+import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+
+  public DisplayMapResponse toResponse(DisplayMapResult result) {
+    return new DisplayMapResponse(
+        result.markers().stream().map(this::toResponse).toList(),
+        new DisplayMapResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
 
   public DisplayDetailResponse toResponse(DisplayDetailResult result) {
     return new DisplayDetailResponse(
@@ -31,6 +42,18 @@ public class DisplayPresentationMapper {
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
         result.invitations().stream().map(this::toResponse).toList());
+  }
+
+  private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
+    return new DisplayMapResponse.MarkerResponse(
+        result.displayId(),
+        result.title(),
+        result.startDate(),
+        result.endDate(),
+        result.locationName(),
+        result.posterImageUrl(),
+        result.latitude(),
+        result.longitude());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(
