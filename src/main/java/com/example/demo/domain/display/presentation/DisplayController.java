@@ -105,7 +105,7 @@ public class DisplayController {
                                 "organization": "중앙대학교",
                                 "department": "디자인학부",
                                 "displayType": "GRADUATION",
-                                "displayField": "DESIGN",
+                                "displayFields": ["DESIGN", "VIDEO"],
                                 "period": {
                                   "startDate": "2026-05-28",
                                   "endDate": "2026-06-05",
@@ -182,7 +182,7 @@ public class DisplayController {
                                 "organization": "디스플레이유",
                                 "department": "디자인학과",
                                 "displayType": "GRADUATION",
-                                "displayField": "DESIGN",
+                                "displayFields": ["DESIGN", "VIDEO"],
                                 "period": {
                                   "startDate": "2026-07-01",
                                   "endDate": "2026-07-10",

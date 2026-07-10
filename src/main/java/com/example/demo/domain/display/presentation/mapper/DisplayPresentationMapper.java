@@ -20,7 +20,7 @@ public class DisplayPresentationMapper {
         result.organization(),
         result.department(),
         result.displayType(),
-        result.displayField(),
+        result.displayFields(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),

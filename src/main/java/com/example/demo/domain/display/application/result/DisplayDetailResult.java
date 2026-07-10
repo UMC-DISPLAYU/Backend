@@ -3,6 +3,7 @@ package com.example.demo.domain.display.application.result;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
+import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
@@ -24,7 +25,7 @@ public record DisplayDetailResult(
     String organization,
     String department,
     String displayType,
-    String displayField,
+    List<String> displayFields,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -49,7 +50,7 @@ public record DisplayDetailResult(
         display.getOrganization(),
         display.getDepartment(),
         display.getDisplayType().name(),
-        display.getDisplayField().name(),
+        display.getFieldSelections().stream().map(FieldResult::from).toList(),
         PeriodResult.from(display),
         display.getArtworkContentOpen().name(),
         display.getExhibitionContentOpen().name(),
@@ -81,6 +82,13 @@ public record DisplayDetailResult(
           display.getPeriod().endDate(),
           display.getPeriod().startTime(),
           display.getPeriod().endTime());
+    }
+  }
+
+  private static class FieldResult {
+
+    private static String from(DisplayFieldSelection fieldSelection) {
+      return fieldSelection.getField().name();
     }
   }
 
