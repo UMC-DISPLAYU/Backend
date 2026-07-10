@@ -1,6 +1,7 @@
 package com.example.demo.domain.lounge.application.command;
 
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
+import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.entity.LoungeCommentLike;
@@ -10,6 +11,7 @@ import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,8 @@ public class LoungeCommentCommandService {
     }
 
     @Transactional
-    public Long createComment(Long loungePostId, Long authorUserId, LoungeCommentContentCommand command) {
+    public LoungeCommentListResult createComment(
+            Long loungePostId, Long authorUserId, LoungeCommentContentCommand command) {
         Objects.requireNonNull(command, "command must not be null.");
         LoungePost loungePost = getActivePost(loungePostId);
 
@@ -41,11 +44,11 @@ public class LoungeCommentCommandService {
                 command.content());
 
         LoungeComment savedComment = loungeCommentRepository.save(comment);
-        return savedComment.getId();
+        return LoungeCommentListResult.from(savedComment, 0, List.of());
     }
 
     @Transactional
-    public Long createReply(
+    public LoungeCommentListResult createReply(
             Long loungePostId,
             Long parentCommentId,
             Long authorUserId,
@@ -65,7 +68,7 @@ public class LoungeCommentCommandService {
                 command.content());
 
         LoungeComment savedReply = loungeCommentRepository.save(reply);
-        return savedReply.getId();
+        return LoungeCommentListResult.from(savedReply, 0, List.of());
     }
 
     @Transactional
