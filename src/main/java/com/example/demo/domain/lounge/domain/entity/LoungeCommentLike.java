@@ -18,17 +18,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Entity
-@Table(name = "LoungePostLike")
+@Table(name = "LoungeCommentLike")
 @EntityListeners(AuditingEntityListener.class)
-public class LoungePostLike {
+public class LoungeCommentLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "loungePostLikeId")
+    @Column(name = "loungeCommentLikeId")
     private Long id;
 
     @Column(nullable = false)
-    private Long loungePostId;
+    private Long loungeCommentId;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
@@ -38,16 +38,16 @@ public class LoungePostLike {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    protected LoungePostLike() {
+    protected LoungeCommentLike() {
     }
 
-    public static LoungePostLike create(Long loungePostId, UserId userId) {
-        return new LoungePostLike(null, loungePostId, userId);
+    public static LoungeCommentLike create(Long loungeCommentId, UserId userId) {
+        return new LoungeCommentLike(null, loungeCommentId, userId);
     }
 
-    public LoungePostLike(Long id, Long loungePostId, UserId userId) {
+    public LoungeCommentLike(Long id, Long loungeCommentId, UserId userId) {
         this.id = id;
-        this.loungePostId = requirePositive(loungePostId, "loungePostId");
+        this.loungeCommentId = requirePositive(loungeCommentId, "loungeCommentId");
         this.userId = Objects.requireNonNull(userId, "userId must not be null.");
     }
 

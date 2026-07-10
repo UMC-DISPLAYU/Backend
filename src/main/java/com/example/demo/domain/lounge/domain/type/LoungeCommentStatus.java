@@ -1,3 +1,7 @@
 package com.example.demo.domain.lounge.domain.type;
 
-public enum LoungeCommentStatus {}
+public enum LoungeCommentStatus {
+    ACTIVE,
+    HIDDEN,
+    DELETED
+}
