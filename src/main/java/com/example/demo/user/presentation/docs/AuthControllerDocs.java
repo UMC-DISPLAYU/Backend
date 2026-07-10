@@ -16,9 +16,10 @@ import jakarta.servlet.http.HttpServletRequest;
 @Tag(name = "인증 API")
 public interface AuthControllerDocs {
 
-    @Operation(
-            summary = "회원가입 API",
-            description = """
+  @Operation(
+      summary = "회원가입 API",
+      description =
+          """
                     ## 회원가입
 
                     OAuth 인증이 완료된 사용자가 닉네임과 약관 동의를 입력하여 회원가입합니다.
@@ -26,15 +27,17 @@ public interface AuthControllerDocs {
                     ### 요청 사항
                     - nickname : 사용할 닉네임
                     - agreements : 약관 동의 목록
-                    """
-    )
-    @RequestBody(
-            required = true,
-            content = @Content(
-                    mediaType = "application/json",
-                    examples = @ExampleObject(
-                            name = "회원가입 요청",
-                            value = """
+                    """)
+  @RequestBody(
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "회원가입 요청",
+                      value =
+                          """
                                     {
                                       "nickname": "maya",
                                       "agreements": [
@@ -80,20 +83,19 @@ public interface AuthControllerDocs {
                                         }
                                       ]
                                     }
-                                    """
-                    )
-            )
-    )
-    @ApiResponses({
-
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "회원가입 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiResponseBody.class),
-                            examples = @ExampleObject(
-                                    value = """
+                                    """)))
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "회원가입 성공",
+        content =
+            @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseBody.class),
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "SUCCESS",
                                               "success": {
@@ -117,18 +119,17 @@ public interface AuthControllerDocs {
                                                 }
                                               }
                                             }
-                                            """
-                            )
-                    )
-            ),
-
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "필수 약관 미동의",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
+                                            """))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "필수 약관 미동의",
+        content =
+            @Content(
+                mediaType = "application/json",
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "FAIL",
                                               "fail": {
@@ -144,18 +145,17 @@ public interface AuthControllerDocs {
                                                 }
                                               }
                                             }
-                                            """
-                            )
-                    )
-            ),
-
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "닉네임 중복",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
+                                            """))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "닉네임 중복",
+        content =
+            @Content(
+                mediaType = "application/json",
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "FAIL",
                                               "fail": {
@@ -171,18 +171,17 @@ public interface AuthControllerDocs {
                                                 }
                                               }
                                             }
-                                            """
-                            )
-                    )
-            ),
-
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "이미 가입된 사용자",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
+                                            """))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "이미 가입된 사용자",
+        content =
+            @Content(
+                mediaType = "application/json",
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "FAIL",
                                               "fail": {
@@ -198,13 +197,8 @@ public interface AuthControllerDocs {
                                                 }
                                               }
                                             }
-                                            """
-                            )
-                    )
-            )
-    })
-    ApiResponseBody<SignupResponse.Signup> signup(
-            SignupRequest request,
-            HttpServletRequest httpRequest
-    );
+                                            """)))
+  })
+  ApiResponseBody<SignupResponse.Signup> signup(
+      SignupRequest request, HttpServletRequest httpRequest);
 }

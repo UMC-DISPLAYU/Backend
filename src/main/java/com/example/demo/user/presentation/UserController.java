@@ -1,4 +1,3 @@
 package com.example.demo.user.presentation;
 
-public class UserController {
-}
+public class UserController {}

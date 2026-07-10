@@ -1,13 +1,11 @@
 package com.example.demo.user.domain.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-
 
 @Builder
 @Getter
@@ -17,23 +15,23 @@ import java.time.LocalDateTime;
 @Table(name = "UserAgreement")
 public class UserAgreement {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userAgreeId")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "userAgreeId")
+  private Long id;
 
-    @Builder.Default
-    @Column(name = "isAgreed", nullable = false)
-    private Boolean isAgreed = false;
+  @Builder.Default
+  @Column(name = "isAgreed", nullable = false)
+  private Boolean isAgreed = false;
 
-    @Column(name = "agreedAt", nullable = false)
-    private LocalDateTime agreedAt;
+  @Column(name = "agreedAt", nullable = false)
+  private LocalDateTime agreedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "userId", nullable = false)
+  private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agreeId", nullable = false)
-    private Agreement agreement;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "agreeId", nullable = false)
+  private Agreement agreement;
 }

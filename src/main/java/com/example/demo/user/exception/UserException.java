@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class UserException extends BusinessException {
 
-    public UserException(BaseErrorCode errorCode) {
-        super(errorCode);
-    }
+  public UserException(BaseErrorCode errorCode) {
+    super(errorCode);
+  }
 }
