@@ -1,6 +1,5 @@
 package com.example.demo.user.domain.entity;
 
-import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,11 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "UserAgreement")
-public class UserAgreement extends BaseTimeEntity {
+public class UserAgreement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserAgreeId")
+    @Column(name = "userAgreeId")
     private Long id;
 
     @Builder.Default

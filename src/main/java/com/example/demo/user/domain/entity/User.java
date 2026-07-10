@@ -51,6 +51,6 @@ public class User extends BaseTimeEntity {
     @Column(name = "deletedAt")
     private LocalDateTime deletedAt;
 
-    @Column(name = "nicknameChangedAt")
-    private LocalDateTime nicknameChangedAt;
+    @Column(name = "nicknameChangeAt")
+    private LocalDateTime nicknameChangeAt;
 }
