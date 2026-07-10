@@ -98,3 +98,21 @@
 - 남은 주의사항이 있는지
 
 장황한 설명보다 실제 변경 내용과 이유를 명확히 전달한다.
+
+## 8. DDD / 아키텍처 구현 원칙
+
+도메인, 애플리케이션, 인프라, 프레젠테이션 계층 코드를 작성할 때는
+`docs/project_architecture_guide.md`의 구조와 원칙을 우선한다.
+
+특히 다음 원칙을 지킨다.
+
+- 도메인은 데이터가 아니라 행위와 규칙 중심으로 설계한다.
+- Entity는 무분별한 setter 대신 비즈니스 행위를 드러내는 메서드로 상태를 변경한다.
+- Application Service는 유스케이스 흐름 조율, 트랜잭션 경계, Repository 호출만 담당한다.
+- 도메인 로직을 Controller나 Application Service에 과도하게 넣지 않는다.
+- Domain 영역은 Infrastructure, JPA 구현체, HTTP 객체를 직접 의존하지 않는다.
+- Repository Interface는 Domain 영역에 두고 구현체는 Infrastructure 영역에 둔다.
+- DTO, Command/Result, Domain Model, JpaEntity 간 변환은 Mapper로 분리한다.
+- Aggregate Root가 내부 Entity/Value Object의 상태 변경을 통제한다.
+- Command와 Query는 필요 시 분리한다.
+- 단순 CRUD라도 기존 아키텍처 문서의 방향을 벗어나는 구조를 임의로 만들지 않는다.
