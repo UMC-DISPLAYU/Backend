@@ -15,12 +15,15 @@ import lombok.NoArgsConstructor;
 @Table(name = "RefreshToken")
 public class RefreshToken extends BaseTimeEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "tokenId")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "tokenId")
+    private Long id;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userId", nullable = false, unique = true)
-  private User user;
+    @Column(name = "refreshToken", nullable = false)
+    private String refreshToken;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false, unique = true)
+    private User user;
 }
