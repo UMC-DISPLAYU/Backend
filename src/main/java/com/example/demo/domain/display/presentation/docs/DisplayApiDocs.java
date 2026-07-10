@@ -18,6 +18,9 @@ public final class DisplayApiDocs {
   public static final String CLOSING_SOON_SUMMARY = "마감 임박 전시 조회";
   public static final String CLOSING_SOON_DESCRIPTION = "현재 날짜 기준 종료일이 가까운 발행 전시 목록을 조회합니다.";
 
+  public static final String GRADUATION_SUMMARY = "졸업 전시 랜덤 추천 조회";
+  public static final String GRADUATION_DESCRIPTION = "발행된 졸업 전시 중 요청한 개수만큼 랜덤 추천 목록을 조회합니다.";
+
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";

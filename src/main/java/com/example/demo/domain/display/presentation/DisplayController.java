@@ -17,6 +17,8 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.D
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_DESCRIPTION;
@@ -27,9 +29,11 @@ import com.example.demo.domain.display.application.query.GetDisplayDetailService
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
+import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
+import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
@@ -61,6 +65,7 @@ public class DisplayController {
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
+  private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -68,11 +73,13 @@ public class DisplayController {
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
+      GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
+    this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
     this.mapper = mapper;
   }
 
@@ -124,6 +131,18 @@ public class DisplayController {
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(getClosingSoonDisplaysUseCase.getClosingSoonDisplays()), request);
+  }
+
+  @GetMapping("/api/v1/display/graduation")
+  @Operation(summary = GRADUATION_SUMMARY, description = GRADUATION_DESCRIPTION)
+  public ApiResponseBody<ClosingSoonDisplayResponse> getRandomGraduationDisplays(
+      @Valid @ModelAttribute GraduationDisplayRequest graduationDisplayRequest,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            getRandomGraduationDisplaysUseCase.getRandomGraduationDisplays(
+                graduationDisplayRequest.requestedSize())),
+        request);
   }
 
   @GetMapping("/api/v1/display/{displayId}")
