@@ -38,6 +38,11 @@ import lombok.Getter;
 @Table(name = "Display")
 public class Display extends BaseTimeEntity {
 
+  // 이미지 크기 입력 필드가 추가되기 전까지 대표 이미지의 임시 크기값으로 사용한다.
+  private static final int DEFAULT_MAIN_IMAGE_WIDTH = 1;
+  private static final int DEFAULT_MAIN_IMAGE_HEIGHT = 1;
+  private static final int MAIN_IMAGE_SORT_ORDER = 0;
+
   // 식별자와 소유자 정보: 전시 Aggregate의 정체성과 생성/관리 주체를 나타낸다.
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -161,7 +166,15 @@ public class Display extends BaseTimeEntity {
         DisplayStatus.DRAFT,
         null,
         null,
-        List.of(new DisplayImage(null, posterImageUrl, DisplayImageType.MAIN, 1, 1, 0, null)),
+        List.of(
+            new DisplayImage(
+                null,
+                posterImageUrl,
+                DisplayImageType.MAIN,
+                DEFAULT_MAIN_IMAGE_WIDTH,
+                DEFAULT_MAIN_IMAGE_HEIGHT,
+                MAIN_IMAGE_SORT_ORDER,
+                null)),
         List.of(),
         List.of(),
         List.of());
