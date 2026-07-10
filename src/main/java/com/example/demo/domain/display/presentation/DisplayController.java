@@ -17,6 +17,8 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.D
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_DESCRIPTION;
@@ -29,14 +31,17 @@ import com.example.demo.domain.display.application.query.GetDisplayDetailService
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
+import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
+import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
+import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -66,6 +71,7 @@ public class DisplayController {
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
   private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
+  private final GetDuPicksUseCase getDuPicksUseCase;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -74,12 +80,14 @@ public class DisplayController {
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
       GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
+      GetDuPicksUseCase getDuPicksUseCase,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
     this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
+    this.getDuPicksUseCase = getDuPicksUseCase;
     this.mapper = mapper;
   }
 
@@ -143,6 +151,14 @@ public class DisplayController {
             getRandomGraduationDisplaysUseCase.getRandomGraduationDisplays(
                 graduationDisplayRequest.requestedSize())),
         request);
+  }
+
+  @GetMapping("/api/v1/display/du-picks")
+  @Operation(summary = DU_PICKS_SUMMARY, description = DU_PICKS_DESCRIPTION)
+  public ApiResponseBody<DuPickResponse> getDuPicks(
+      @Valid @ModelAttribute DuPickRequest duPickRequest, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(getDuPicksUseCase.getDuPicks(duPickRequest.toQuery())), request);
   }
 
   @GetMapping("/api/v1/display/{displayId}")

@@ -3,13 +3,24 @@ package com.example.demo.domain.display.presentation.mapper;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
+import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
+import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+
+  public DuPickResponse toResponse(DuPickResult result) {
+    return new DuPickResponse(
+        result.duPicks().stream().map(this::toResponse).toList(),
+        new DuPickResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
 
   public ClosingSoonDisplayResponse toResponse(ClosingSoonDisplayResult result) {
     return new ClosingSoonDisplayResponse(
@@ -49,6 +60,16 @@ public class DisplayPresentationMapper {
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
         result.invitations().stream().map(this::toResponse).toList());
+  }
+
+  private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {
+    return new DuPickResponse.DuPickItemResponse(
+        result.duPickId(),
+        result.title(),
+        result.subtitle(),
+        result.bannerImageUrl(),
+        result.authorName(),
+        result.createdAt());
   }
 
   private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(

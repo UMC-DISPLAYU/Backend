@@ -21,6 +21,9 @@ public final class DisplayApiDocs {
   public static final String GRADUATION_SUMMARY = "졸업 전시 랜덤 추천 조회";
   public static final String GRADUATION_DESCRIPTION = "발행된 졸업 전시 중 요청한 개수만큼 랜덤 추천 목록을 조회합니다.";
 
+  public static final String DU_PICKS_SUMMARY = "DU Picks 조회";
+  public static final String DU_PICKS_DESCRIPTION = "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다.";
+
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
