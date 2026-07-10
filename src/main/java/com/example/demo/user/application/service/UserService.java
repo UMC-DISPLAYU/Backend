@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,16 +40,36 @@ public class UserService {
             SocialUserInfo socialUserInfo
     ) {
 
+        Optional<User> existingUser =
+                userRepository.findByProviderAndProviderId(
+                        socialUserInfo.provider(),
+                        socialUserInfo.providerId()
+                );
+
+        if (existingUser.isPresent()) {
+            throw new UserException(
+                    UserErrorCode.ALREADY_REGISTERED_USER
+            );
+        }
+
+
         validateNickname(command.nickname());
 
-        validateRequiredAgreements(command.agreements());
-
-        User user = userMapper.toUser(
-                command,
-                socialUserInfo
+        validateRequiredAgreements(
+                command.agreements()
         );
 
-        User savedUser = userRepository.save(user);
+
+        User user =
+                userMapper.toUser(
+                        command,
+                        socialUserInfo
+                );
+
+
+        User savedUser =
+                userRepository.save(user);
+
 
         saveUserAgreements(
                 savedUser,
@@ -63,9 +85,12 @@ public class UserService {
     }
 
 
-    private void validateNickname(String nickname) {
+    private void validateNickname(
+            String nickname
+    ) {
 
         if (userRepository.existsByNickname(nickname)) {
+
             throw new UserException(
                     UserErrorCode.DUPLICATE_NICKNAME
             );
@@ -77,23 +102,27 @@ public class UserService {
             List<AgreementCommand> agreements
     ) {
 
-        List<Agreement> requiredAgreements =
-                agreementRepository.findRequiredAgreements();
+        List<Long> requiredAgreementIds =
+                agreementRepository.findAllByIsRequiredTrue()
+                        .stream()
+                        .map(Agreement::getId)
+                        .toList();
 
 
         boolean isAllAccepted =
-                requiredAgreements.stream()
-                        .allMatch(required ->
+                requiredAgreementIds.stream()
+                        .allMatch(requiredId ->
                                 agreements.stream()
                                         .anyMatch(request ->
                                                 request.agreeId()
-                                                        .equals(required.getId())
+                                                        .equals(requiredId)
                                                         && request.isAgreed()
                                         )
                         );
 
 
         if (!isAllAccepted) {
+
             throw new UserException(
                     UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED
             );
@@ -106,25 +135,29 @@ public class UserService {
             List<AgreementCommand> agreements
     ) {
 
-        List<UserAgreement> userAgreements;
-        userAgreements = agreements.stream()
-                .map(command -> {
+        List<UserAgreement> userAgreements =
+                agreements.stream()
+                        .map(command -> {
 
-                    Agreement agreement =
-                            agreementRepository.findById(
-                                            command.agreeId()
-                                    )
-                                    .orElseThrow();
-
-                    return userAgreementMapper.toUserAgreement(
-                            user,
-                            agreement,
-                            command
-                    );
-                })
-                .toList();
+                            Agreement agreement =
+                                    agreementRepository.findById(
+                                                    command.agreeId()
+                                            )
+                                            .orElseThrow();
 
 
-        userAgreementRepository.saveAll(userAgreements);
+                            return userAgreementMapper
+                                    .toUserAgreement(
+                                            user,
+                                            agreement,
+                                            command
+                                    );
+                        })
+                        .toList();
+
+
+        userAgreementRepository.saveAll(
+                userAgreements
+        );
     }
 }

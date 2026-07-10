@@ -1,5 +1,6 @@
 package com.example.demo.user.presentation;
 
+import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.user.application.auth.SocialUserInfo;
 import com.example.demo.user.application.command.AgreementCommand;
 import com.example.demo.user.application.command.SignupCommand;
@@ -7,8 +8,11 @@ import com.example.demo.user.application.mapper.SignupResponseMapper;
 import com.example.demo.user.application.result.SignupResult;
 import com.example.demo.user.application.service.UserService;
 import com.example.demo.user.domain.enums.Provider;
+import com.example.demo.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.user.presentation.request.SignupRequest;
 import com.example.demo.user.presentation.response.SignupResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,14 +24,17 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-public class AuthController {
+public class AuthController implements AuthControllerDocs {
 
     private final UserService userService;
     private final SignupResponseMapper signupResponseMapper;
 
+
+    @Override
     @PostMapping("/signup")
-    public SignupResponse.Signup signup(
-            @RequestBody SignupRequest request
+    public ApiResponseBody<SignupResponse.Signup> signup(
+            @Valid @org.springframework.web.bind.annotation.RequestBody SignupRequest request,
+            HttpServletRequest httpRequest
     ) {
 
         List<AgreementCommand> agreements =
@@ -49,10 +56,11 @@ public class AuthController {
                 );
 
 
+        // TODO: OAuth 인증 후 주입받도록 변경
         SocialUserInfo socialUserInfo =
                 new SocialUserInfo(
                         Provider.Kakao,
-                        "displayu_maya",
+                        "kakao-0012",
                         "마야",
                         "maya@gmail.com"
                 );
@@ -65,10 +73,17 @@ public class AuthController {
                 );
 
 
-        return signupResponseMapper.toResponse(
-                result.user(),
-                result.accessToken(),
-                result.refreshToken()
+        SignupResponse.Signup response =
+                signupResponseMapper.toResponse(
+                        result.user(),
+                        result.accessToken(),
+                        result.refreshToken()
+                );
+
+
+        return ApiResponseBody.success(
+                response,
+                httpRequest
         );
     }
 }

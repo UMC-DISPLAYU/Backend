@@ -25,4 +25,9 @@ public class AgreementPersistenceAdapter implements AgreementRepository {
     public Optional<Agreement> findById(Long id) {
         return agreementJpaRepository.findById(id);
     }
+
+    @Override
+    public List<Agreement> findAllByIsRequiredTrue() {
+        return agreementJpaRepository.findAllByIsRequiredTrue();
+    }
 }

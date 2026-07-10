@@ -9,4 +9,6 @@ public interface AgreementJpaRepository extends JpaRepository<Agreement, Long> {
 
     List<Agreement> findByIsRequiredTrue();
 
+    List<Agreement> findAllByIsRequiredTrue();
+
 }

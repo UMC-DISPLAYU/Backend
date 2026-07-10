@@ -11,4 +11,6 @@ public interface AgreementRepository {
 
     Optional<Agreement> findById(Long id);
 
+    List<Agreement> findAllByIsRequiredTrue();
+
 }
