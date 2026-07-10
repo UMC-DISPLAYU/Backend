@@ -124,8 +124,7 @@ public class DisplayController {
                                     "imageType": "MAIN",
                                     "width": 1,
                                     "height": 1,
-                                    "sortOrder": 0,
-                                    "deletedAt": null
+                                    "sortOrder": 0
                                   }
                                 ],
                                 "contentCategories": [],
@@ -201,8 +200,7 @@ public class DisplayController {
                                     "imageType": "MAIN",
                                     "width": 1200,
                                     "height": 800,
-                                    "sortOrder": 0,
-                                    "deletedAt": null
+                                    "sortOrder": 0
                                   },
                                   {
                                     "imageId": 2,
@@ -210,8 +208,7 @@ public class DisplayController {
                                     "imageType": "DETAIL",
                                     "width": 1200,
                                     "height": 800,
-                                    "sortOrder": 1,
-                                    "deletedAt": null
+                                    "sortOrder": 1
                                   }
                                 ],
                                 "contentCategories": [
@@ -252,8 +249,7 @@ public class DisplayController {
                                     "invitationId": 1,
                                     "inviterUserId": 10,
                                     "inviteeUserId": 11,
-                                    "createdAt": "2026-06-20T12:00:00",
-                                    "deletedAt": null
+                                    "createdAt": "2026-06-20T12:00:00"
                                   }
                                 ]
                               }

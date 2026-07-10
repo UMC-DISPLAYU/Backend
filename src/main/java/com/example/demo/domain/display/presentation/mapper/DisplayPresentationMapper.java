@@ -51,8 +51,7 @@ public class DisplayPresentationMapper {
         result.imageType(),
         result.width(),
         result.height(),
-        result.sortOrder(),
-        result.deletedAt());
+        result.sortOrder());
   }
 
   private DisplayDetailResponse.ContentCategoryResponse toResponse(
@@ -84,10 +83,6 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.InvitationResponse toResponse(
       DisplayDetailResult.InvitationResult result) {
     return new DisplayDetailResponse.InvitationResponse(
-        result.invitationId(),
-        result.inviterUserId(),
-        result.inviteeUserId(),
-        result.createdAt(),
-        result.deletedAt());
+        result.invitationId(), result.inviterUserId(), result.inviteeUserId(), result.createdAt());
   }
 }
