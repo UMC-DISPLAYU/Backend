@@ -1,3 +1,3 @@
 package com.example.demo.domain.lounge.application.command;
 
-public record CreateLoungePostCommand() {}
+public record LoungeCommentContentCommand(String content) {}

@@ -1,3 +1,6 @@
 package com.example.demo.domain.lounge.application.result;
 
-public record LoungeCommentLikeResult() {}
+public record LoungeCommentLikeResult(
+        Long loungeCommentId,
+        boolean liked,
+        long likeCount) {}
