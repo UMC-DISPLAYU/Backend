@@ -6,6 +6,7 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -124,6 +125,47 @@ public class Display extends BaseTimeEntity {
   private final List<DisplayInvitation> invitations = new ArrayList<>();
 
   protected Display() {}
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      DisplayType displayType,
+      DisplayField displayField,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
+    return new Display(
+        null,
+        ownerUserId,
+        title,
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        displayType,
+        displayField,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen,
+        DisplayStatus.DRAFT,
+        null,
+        null,
+        List.of(new DisplayImage(null, posterImageUrl, DisplayImageType.MAIN, 1, 1, 0, null)),
+        List.of(),
+        List.of(),
+        List.of());
+  }
 
   public Display(
       Long id,
