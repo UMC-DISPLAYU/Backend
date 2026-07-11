@@ -4,10 +4,12 @@ import com.example.demo.domain.display.application.result.ClosingSoonDisplayResu
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,6 +26,15 @@ public class DisplayPresentationMapper {
 
   public ClosingSoonDisplayResponse toResponse(ClosingSoonDisplayResult result) {
     return new ClosingSoonDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList(),
+        new ClosingSoonDisplayResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
+
+  public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
+    return new GraduationDisplayResponse(
         result.exhibitions().stream().map(this::toResponse).toList());
   }
 
@@ -68,13 +79,23 @@ public class DisplayPresentationMapper {
         result.title(),
         result.subtitle(),
         result.bannerImageUrl(),
-        result.authorName(),
         result.createdAt());
   }
 
   private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(
       ClosingSoonDisplayResult.ExhibitionResult result) {
     return new ClosingSoonDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft());
+  }
+
+  private GraduationDisplayResponse.ExhibitionResponse toResponse(
+      GraduationDisplayResult.ExhibitionResult result) {
+    return new GraduationDisplayResponse.ExhibitionResponse(
         result.displayId(),
         result.title(),
         result.posterImageUrl(),

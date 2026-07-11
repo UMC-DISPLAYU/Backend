@@ -14,15 +14,25 @@ public final class DisplayApiDocs {
 
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
   public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
+  public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
+  public static final String MAP_SUCCESS_EXAMPLE_NAME = "Display map success";
 
   public static final String CLOSING_SOON_SUMMARY = "마감 임박 전시 조회";
-  public static final String CLOSING_SOON_DESCRIPTION = "현재 날짜 기준 종료일이 가까운 발행 전시 목록을 조회합니다.";
+  public static final String CLOSING_SOON_DESCRIPTION =
+      "현재 날짜 기준 종료되지 않은 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
+          + "cursor는 마지막으로 조회한 전시의 endedAt과 displayId를 ':'로 연결한 값입니다. 예: 2026-07-15:5";
+  public static final String CLOSING_SOON_SUCCESS_DESCRIPTION = "마감 임박 전시 조회 성공";
+  public static final String CLOSING_SOON_SUCCESS_EXAMPLE_NAME = "Closing soon display success";
 
   public static final String GRADUATION_SUMMARY = "졸업 전시 랜덤 추천 조회";
   public static final String GRADUATION_DESCRIPTION = "발행된 졸업 전시 중 요청한 개수만큼 랜덤 추천 목록을 조회합니다.";
+  public static final String GRADUATION_SUCCESS_DESCRIPTION = "졸업 전시 랜덤 추천 조회 성공";
+  public static final String GRADUATION_SUCCESS_EXAMPLE_NAME = "Graduation display success";
 
   public static final String DU_PICKS_SUMMARY = "DU Picks 조회";
   public static final String DU_PICKS_DESCRIPTION = "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다.";
+  public static final String DU_PICKS_SUCCESS_DESCRIPTION = "DU Picks 조회 성공";
+  public static final String DU_PICKS_SUCCESS_EXAMPLE_NAME = "DU Picks success";
 
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
@@ -105,6 +115,126 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String MAP_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "markers": [
+              {
+                "displayId": 15,
+                "title": "내면의 풍경",
+                "startDate": "2026-05-20",
+                "endDate": "2026-05-28",
+                "locationName": "홍익대학교 현대미술관",
+                "posterImageUrl": "https://cdn.displayu.com/posters/inner_view.png",
+                "latitude": 37.5513,
+                "longitude": 126.9248
+              }
+            ],
+            "pagination": {
+              "nextCursor": 15,
+              "size": 20,
+              "hasNext": true
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/map"
+        }
+      }
+      """;
+
+  public static final String CLOSING_SOON_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "exhibitions": [
+              {
+                "displayId": 5,
+                "title": "ABOUT THE FLOW OF TIME",
+                "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "startedAt": "2026-06-20",
+                "endedAt": "2026-07-15",
+                "dayLeft": 3
+              }
+            ],
+            "pagination": {
+              "nextCursor": "2026-07-15:5",
+              "size": 20,
+              "hasNext": true
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/closing-soon"
+        }
+      }
+      """;
+
+  public static final String GRADUATION_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "exhibitions": [
+              {
+                "displayId": 7,
+                "title": "2026 졸업 전시",
+                "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "startedAt": "2026-05-20",
+                "endedAt": "2026-05-28",
+                "dayLeft": 0
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/graduation"
+        }
+      }
+      """;
+
+  public static final String DU_PICKS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "duPicks": [
+              {
+                "duPickId": 1,
+                "title": "THE ESSENCE IN MOTION",
+                "subtitle": "색과 형태, 우리가 마주한 순간들",
+                "bannerImageUrl": "https://cdn.displayu.com/home/du_pick_1.png",
+                "createdAt": "2026-06-30"
+              }
+            ],
+            "pagination": {
+              "nextCursor": 1,
+              "size": 20,
+              "hasNext": true
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/du-picks"
         }
       }
       """;

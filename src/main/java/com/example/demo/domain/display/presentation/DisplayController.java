@@ -1,6 +1,9 @@
 package com.example.demo.domain.display.presentation;
 
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_REQUEST_DESCRIPTION;
@@ -18,10 +21,19 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.D
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_NAME;
@@ -34,6 +46,7 @@ import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
+import com.example.demo.domain.display.presentation.request.ClosingSoonDisplayRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
@@ -42,6 +55,7 @@ import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayR
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -126,6 +140,14 @@ public class DisplayController {
 
   @GetMapping("/api/v1/display/map")
   @Operation(summary = MAP_SUMMARY, description = MAP_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = MAP_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = MAP_SUCCESS_EXAMPLE_NAME, value = MAP_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayMapResponse> getDisplayMap(
       @Valid @ModelAttribute DisplayMapRequest displayMapRequest, HttpServletRequest request) {
     return ApiResponseBody.success(
@@ -135,15 +157,39 @@ public class DisplayController {
 
   @GetMapping("/api/v1/display/closing-soon")
   @Operation(summary = CLOSING_SOON_SUMMARY, description = CLOSING_SOON_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = CLOSING_SOON_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = CLOSING_SOON_SUCCESS_EXAMPLE_NAME,
+                      value = CLOSING_SOON_SUCCESS_EXAMPLE)))
   public ApiResponseBody<ClosingSoonDisplayResponse> getClosingSoonDisplays(
+      @Valid @ModelAttribute ClosingSoonDisplayRequest closingSoonDisplayRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(getClosingSoonDisplaysUseCase.getClosingSoonDisplays()), request);
+        mapper.toResponse(
+            getClosingSoonDisplaysUseCase.getClosingSoonDisplays(
+                closingSoonDisplayRequest.toQuery())),
+        request);
   }
 
   @GetMapping("/api/v1/display/graduation")
   @Operation(summary = GRADUATION_SUMMARY, description = GRADUATION_DESCRIPTION)
-  public ApiResponseBody<ClosingSoonDisplayResponse> getRandomGraduationDisplays(
+  @ApiResponse(
+      responseCode = "200",
+      description = GRADUATION_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = GRADUATION_SUCCESS_EXAMPLE_NAME,
+                      value = GRADUATION_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<GraduationDisplayResponse> getRandomGraduationDisplays(
       @Valid @ModelAttribute GraduationDisplayRequest graduationDisplayRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
@@ -155,6 +201,16 @@ public class DisplayController {
 
   @GetMapping("/api/v1/display/du-picks")
   @Operation(summary = DU_PICKS_SUMMARY, description = DU_PICKS_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = DU_PICKS_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = DU_PICKS_SUCCESS_EXAMPLE_NAME,
+                      value = DU_PICKS_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DuPickResponse> getDuPicks(
       @Valid @ModelAttribute DuPickRequest duPickRequest, HttpServletRequest request) {
     return ApiResponseBody.success(
