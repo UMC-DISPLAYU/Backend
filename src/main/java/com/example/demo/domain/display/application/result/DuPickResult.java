@@ -7,12 +7,7 @@ import java.util.List;
 public record DuPickResult(List<DuPickItemResult> duPicks, PaginationResult pagination) {
 
   public record DuPickItemResult(
-      Long duPickId,
-      String title,
-      String subtitle,
-      String bannerImageUrl,
-      String authorName,
-      LocalDate createdAt) {
+      Long duPickId, String title, String subtitle, String bannerImageUrl, LocalDate createdAt) {
 
     public static DuPickItemResult from(DuPickQueryResult queryResult) {
       return new DuPickItemResult(
@@ -20,7 +15,6 @@ public record DuPickResult(List<DuPickItemResult> duPicks, PaginationResult pagi
           queryResult.title(),
           queryResult.subtitle(),
           queryResult.bannerImageUrl(),
-          queryResult.authorName(),
           queryResult.createdAt().toLocalDate());
     }
   }

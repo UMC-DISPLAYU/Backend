@@ -22,14 +22,12 @@ class GetDuPicksServiceTest {
                     "THE ESSENCE IN MOTION",
                     "색과 형태, 우리가 마주한 순간들",
                     "https://cdn.displayu.com/home/du_pick_1.png",
-                    "에디터 디유",
                     LocalDateTime.of(2026, 6, 30, 11, 0)),
                 new DuPickQueryResult(
                     2L,
                     "시선이 머무는 각도",
                     "공간을 채우는 젊은 예술가 인터뷰",
                     "https://cdn.displayu.com/home/du_pick_2.png",
-                    "에디터 디유",
                     LocalDateTime.of(2026, 6, 30, 11, 0))));
     GetDuPicksService service = new GetDuPicksService(queryRepository);
 

@@ -37,7 +37,6 @@ class JpaDuPickQueryRepositoryAdapterTest {
 
     assertThat(results).extracting(DuPickQueryResult::duPickId).containsExactly(1L, 2L);
     assertThat(results.getFirst().subtitle()).isEqualTo("첫 번째 내용");
-    assertThat(results.getFirst().authorName()).isEqualTo("에디터 디유");
   }
 
   @Test

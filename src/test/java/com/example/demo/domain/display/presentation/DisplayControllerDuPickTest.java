@@ -40,7 +40,7 @@ class DisplayControllerDuPickTest {
         .andExpect(
             jsonPath("$.success.data.duPicks[0].bannerImageUrl")
                 .value("https://cdn.displayu.com/home/du_pick_1.png"))
-        .andExpect(jsonPath("$.success.data.duPicks[0].authorName").value("에디터 디유"))
+        .andExpect(jsonPath("$.success.data.duPicks[0].authorName").doesNotExist())
         .andExpect(jsonPath("$.success.data.duPicks[0].createdAt").value("2026-06-30"))
         .andExpect(jsonPath("$.success.data.pagination.nextCursor").value(1))
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))

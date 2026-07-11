@@ -17,7 +17,6 @@ public interface SpringDataDuPickQueryJpaRepository
         c.name,
         c.content,
         c.columnImageUrl,
-        '에디터 디유',
         c.createdAt
       )
       from DuPickColumnJpaEntity c
