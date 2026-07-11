@@ -3,9 +3,11 @@ package com.example.demo.domain.artworkcommunication.presentation.mapper;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
+import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,6 +52,13 @@ public class ArtworkQuestionPresentationMapper {
                 result.deletedAt(),
                 result.displayArtworkId(),
                 result.userId()
+        );
+    }
+
+    public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
+        return new DeletedArtworkQuestionResponse(
+                result.artQueId(),
+                result.deletedAt()
         );
     }
 }
