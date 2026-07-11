@@ -33,7 +33,8 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
 
   @Override
   public ArchiveDisplay save(ArchiveDisplay archiveDisplay) {
-    return jpaRepository.save(archiveDisplay);
+    // 유니크 제약 위반을 save() 호출 시점에 바로 감지하기 위해 flush 시점을 명시적으로 고정한다.
+    return jpaRepository.saveAndFlush(archiveDisplay);
   }
 
   @Override
