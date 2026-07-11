@@ -17,3 +17,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+app:
+  kakao:
+    client:
+      id: ${KAKAO_CLIENT_ID}
+
+jwt:
+  secret: ${JWT_SECRET}
+
