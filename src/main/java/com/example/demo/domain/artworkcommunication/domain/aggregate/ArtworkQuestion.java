@@ -71,4 +71,17 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
                 userId
         );
     }
+
+    public void update(String content, Boolean isPublic) {
+        this.content = content;
+        this.isPublic = isPublic;
+    }
+
+    public boolean isWrittenBy(Long userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean belongsToArtwork(Long displayArtworkId) {
+        return this.displayArtworkId.equals(displayArtworkId);
+    }
 }

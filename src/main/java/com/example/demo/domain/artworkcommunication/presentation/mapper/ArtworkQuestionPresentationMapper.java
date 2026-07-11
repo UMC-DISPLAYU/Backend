@@ -1,8 +1,10 @@
 package com.example.demo.domain.artworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
+import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
+import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,21 @@ public class ArtworkQuestionPresentationMapper {
     ) {
         return new CreateArtworkQuestionCommand(
                 artworkId,
+                userId,
+                request.content(),
+                request.isPublic()
+        );
+    }
+
+    public UpdateArtworkQuestionCommand toCommand(
+            Long artworkId,
+            Long questionId,
+            Long userId,
+            UpdateArtworkQuestionRequest request
+    ) {
+        return new UpdateArtworkQuestionCommand(
+                artworkId,
+                questionId,
                 userId,
                 request.content(),
                 request.isPublic()
