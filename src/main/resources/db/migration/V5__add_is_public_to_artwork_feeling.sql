@@ -1,0 +1,2 @@
+ALTER TABLE `ArtworkFeeling`
+    ADD COLUMN `isPublic` BOOLEAN NOT NULL DEFAULT TRUE AFTER `content`;
