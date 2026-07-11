@@ -148,6 +148,12 @@ public class UserService {
         }
     }
 
+    public boolean isNicknameAvailable(String rawNickname) {
+        // 형식이 틀리면 여기서 INVALID_NICKNAME_FORMAT 예외 발생 (VO 자체 검증)
+        Nickname nickname = Nickname.of(rawNickname);
+        return !userRepository.existsByNickname(nickname.value());
+    }
+
     private void saveUserAgreements(User user, List<AgreementCommand> agreements) {
         List<Long> agreeIds = agreements.stream().map(AgreementCommand::agreeId).toList();
 

@@ -14,6 +14,11 @@ public enum UserErrorCode implements BaseErrorCode {
             "DUPLICATE_NICKNAME",
             "이미 사용 중인 닉네임입니다."
     ),
+    AGREEMENT_NOT_FOUND(
+            HttpStatus.BAD_REQUEST,
+            "AGREEMENT_NOT_FOUND",
+            "존재하지 않는 약관입니다."
+    ),
 
     INVALID_NICKNAME_FORMAT(
             HttpStatus.BAD_REQUEST,
@@ -31,6 +36,12 @@ public enum UserErrorCode implements BaseErrorCode {
             HttpStatus.CONFLICT,
             "ALREADY_REGISTERED_USER",
             "이미 가입된 사용자입니다."
+    ),
+
+    MISSING_NICKNAME(
+            HttpStatus.BAD_REQUEST,
+            "MISSING_NICKNAME",
+            "닉네임을 입력해주세요."
     );
 
     private final HttpStatus status;
