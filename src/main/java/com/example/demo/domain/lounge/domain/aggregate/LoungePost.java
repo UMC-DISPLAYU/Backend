@@ -102,6 +102,10 @@ public class LoungePost extends SoftDeleteBaseEntity {
     return this.status == LoungePostStatus.ACTIVE;
   }
 
+  public boolean isAuthoredBy(Long userId) {
+    return userId != null && this.authorUserId.value().equals(userId);
+  }
+
   @Override
   public void delete() {
     this.status = LoungePostStatus.DELETED;

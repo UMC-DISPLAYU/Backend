@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.application.query;
 import com.example.demo.domain.lounge.application.result.LoungeCommentCursorResult;
 import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
 import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult;
+import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
@@ -102,14 +103,19 @@ public class LoungeCommentQueryService {
             comment ->
                 LoungeCommentListResult.from(
                     comment,
-                    writers.getOrDefault(
-                        comment.getAuthorUserId().value(),
-                        LoungeWriter.unknown(comment.getAuthorUserId().value())),
+                    toWriterView(
+                        writers.getOrDefault(
+                            comment.getAuthorUserId().value(),
+                            LoungeWriter.unknown(comment.getAuthorUserId().value()))),
                     likeCounts.getOrDefault(comment.getId(), 0L),
                     replyCounts.getOrDefault(comment.getId(), 0L),
                     likedCommentIds.contains(comment.getId()),
                     viewerUserId))
         .toList();
+  }
+
+  private WriterView toWriterView(LoungeWriter writer) {
+    return new WriterView(writer.userId(), writer.nickname(), writer.profileImageUrl());
   }
 
   private LoungePost getActivePost(Long loungePostId) {

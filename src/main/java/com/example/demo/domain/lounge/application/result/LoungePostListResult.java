@@ -1,12 +1,11 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
-import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import java.time.LocalDateTime;
 
 public record LoungePostListResult(
     Long loungePostId,
-    LoungeWriter writer,
+    WriterView writer,
     String title,
     String postImageUrl,
     String category,
@@ -17,7 +16,7 @@ public record LoungePostListResult(
     LocalDateTime createdAt) {
   public static LoungePostListResult from(
       LoungePost loungePost,
-      LoungeWriter writer,
+      WriterView writer,
       long likeCount,
       long commentCount,
       boolean isLiked,
@@ -31,7 +30,7 @@ public record LoungePostListResult(
         likeCount,
         commentCount,
         isLiked,
-        loungePost.getAuthorUserId().value().equals(viewerUserId),
+        loungePost.isAuthoredBy(viewerUserId),
         loungePost.getCreatedAt());
   }
 }

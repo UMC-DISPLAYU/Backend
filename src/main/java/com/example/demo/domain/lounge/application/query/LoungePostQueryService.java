@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.application.query;
 import com.example.demo.domain.lounge.application.result.LoungePostCursorResult;
 import com.example.demo.domain.lounge.application.result.LoungePostDetailResult;
 import com.example.demo.domain.lounge.application.result.LoungePostListResult;
+import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
@@ -59,8 +60,12 @@ public class LoungePostQueryService {
     Map<Long, Long> likeCounts = loungePostLikeRepository.countByLoungePostIds(loungePostIds);
     Map<Long, Long> commentCounts =
         loungeCommentRepository.countActiveByLoungePostIds(loungePostIds);
+    boolean hasViewer = viewerUserId != null;
     Set<Long> likedPostIds =
-        loungePostLikeRepository.findLikedLoungePostIds(loungePostIds, new UserId(viewerUserId));
+        hasViewer
+            ? loungePostLikeRepository.findLikedLoungePostIds(
+                loungePostIds, new UserId(viewerUserId))
+            : Set.of();
     Map<Long, LoungeWriter> writers =
         loungeWriterRepository.findByUserIds(
             loungePosts.stream().map(post -> post.getAuthorUserId().value()).distinct().toList());
@@ -71,9 +76,10 @@ public class LoungePostQueryService {
                 loungePost ->
                     LoungePostListResult.from(
                         loungePost,
-                        writers.getOrDefault(
-                            loungePost.getAuthorUserId().value(),
-                            LoungeWriter.unknown(loungePost.getAuthorUserId().value())),
+                        toWriterView(
+                            writers.getOrDefault(
+                                loungePost.getAuthorUserId().value(),
+                                LoungeWriter.unknown(loungePost.getAuthorUserId().value()))),
                         likeCounts.getOrDefault(loungePost.getId(), 0L),
                         commentCounts.getOrDefault(loungePost.getId(), 0L),
                         likedPostIds.contains(loungePost.getId()),
@@ -97,8 +103,7 @@ public class LoungePostQueryService {
             .filter(LoungePost::isActive)
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
 
-    Long resolvedViewerUserId =
-        viewerUserId == null ? loungePost.getAuthorUserId().value() : viewerUserId;
+    boolean hasViewer = viewerUserId != null;
     List<Long> loungePostIds = List.of(loungePost.getId());
     LoungeWriter writer =
         loungeWriterRepository
@@ -109,15 +114,21 @@ public class LoungePostQueryService {
 
     return LoungePostDetailResult.from(
         loungePost,
-        writer,
+        toWriterView(writer),
         loungePostLikeRepository.countByLoungePostId(loungePost.getId()),
         loungeCommentRepository.countActiveByLoungePostId(loungePost.getId()),
-        loungePostLikeRepository
-            .findLikedLoungePostIds(loungePostIds, new UserId(resolvedViewerUserId))
-            .contains(loungePost.getId()),
-        loungePostScrapRepository
-            .findScrappedLoungePostIds(loungePostIds, new UserId(resolvedViewerUserId))
-            .contains(loungePost.getId()),
-        resolvedViewerUserId);
+        hasViewer
+            && loungePostLikeRepository
+                .findLikedLoungePostIds(loungePostIds, new UserId(viewerUserId))
+                .contains(loungePost.getId()),
+        hasViewer
+            && loungePostScrapRepository
+                .findScrappedLoungePostIds(loungePostIds, new UserId(viewerUserId))
+                .contains(loungePost.getId()),
+        viewerUserId);
+  }
+
+  private WriterView toWriterView(LoungeWriter writer) {
+    return new WriterView(writer.userId(), writer.nickname(), writer.profileImageUrl());
   }
 }

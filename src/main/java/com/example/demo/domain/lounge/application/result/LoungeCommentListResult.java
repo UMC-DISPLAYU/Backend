@@ -1,7 +1,6 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
-import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import java.time.LocalDateTime;
 
 public record LoungeCommentListResult(
@@ -9,7 +8,7 @@ public record LoungeCommentListResult(
     Long parentCommentId,
     String content,
     String commentStatus,
-    LoungeWriter writer,
+    WriterView writer,
     long likeCount,
     long replyCount,
     boolean isLiked,
@@ -19,7 +18,7 @@ public record LoungeCommentListResult(
 
   public static LoungeCommentListResult from(
       LoungeComment comment,
-      LoungeWriter writer,
+      WriterView writer,
       long likeCount,
       long replyCount,
       boolean isLiked,

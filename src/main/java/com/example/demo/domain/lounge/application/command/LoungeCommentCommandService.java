@@ -2,12 +2,12 @@ package com.example.demo.domain.lounge.application.command;
 
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
+import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
-import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -43,7 +43,7 @@ public class LoungeCommentCommandService {
 
     LoungeComment savedComment = loungeCommentRepository.save(comment);
     return LoungeCommentListResult.from(
-        savedComment, LoungeWriter.unknown(authorUserId), 0, 0, false, authorUserId);
+        savedComment, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional
@@ -63,7 +63,7 @@ public class LoungeCommentCommandService {
 
     LoungeComment savedReply = loungeCommentRepository.save(reply);
     return LoungeCommentListResult.from(
-        savedReply, LoungeWriter.unknown(authorUserId), 0, 0, false, authorUserId);
+        savedReply, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional

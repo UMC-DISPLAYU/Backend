@@ -129,7 +129,7 @@ public class LoungePostCommandService {
   }
 
   private void validateAuthor(LoungePost loungePost, UserId requesterUserId) {
-    if (!loungePost.getAuthorUserId().equals(requesterUserId)) {
+    if (!loungePost.isAuthoredBy(requesterUserId.value())) {
       throw new BusinessException(GlobalErrorCode.FORBIDDEN);
     }
   }

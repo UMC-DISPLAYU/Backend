@@ -9,7 +9,7 @@ import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostListResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult;
-import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
+import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
@@ -65,7 +65,7 @@ public class LoungePresentationMapper {
         result.isMyPost());
   }
 
-  public LoungeWriterResponse toResponse(LoungeWriter writer) {
+  public LoungeWriterResponse toResponse(WriterView writer) {
     return new LoungeWriterResponse(writer.userId(), writer.nickname(), writer.profileImageUrl());
   }
 
