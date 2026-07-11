@@ -1,6 +1,5 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
-import com.example.demo.domain.artworkcommunication.application.result.UpdatedArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
@@ -14,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UpdateArtworkFeelingService {
+public class DeleteArtworkFeelingService {
 
     private final ArtworkFeelingRepository artworkFeelingRepository;
     private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
     private final UserExistenceRepository userExistenceRepository;
 
-    public UpdatedArtworkFeelingResult updateFeeling(UpdateArtworkFeelingCommand command) {
+    public void deleteFeeling(DeleteArtworkFeelingCommand command) {
         validateDisplayArtworkExists(command.displayArtworkId());
         validateUserExists(command.userId());
 
@@ -33,16 +32,8 @@ public class UpdateArtworkFeelingService {
         validateArtworkFeelingBelongsToArtwork(artworkFeeling, command.displayArtworkId());
         validateWriter(artworkFeeling, command.userId());
 
-        artworkFeeling.updateContent(command.content());
-
-        ArtworkFeeling savedFeeling =
-                artworkFeelingRepository.save(artworkFeeling);
-
-        return new UpdatedArtworkFeelingResult(
-                savedFeeling.getFeelingId(),
-                savedFeeling.getContent(),
-                savedFeeling.getUpdatedAt()
-        );
+        artworkFeeling.delete();
+        artworkFeelingRepository.save(artworkFeeling);
     }
 
     private void validateDisplayArtworkExists(Long displayArtworkId) {

@@ -2,6 +2,8 @@ package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkFeelingService;
+import com.example.demo.domain.artworkcommunication.application.command.DeleteArtworkFeelingCommand;
+import com.example.demo.domain.artworkcommunication.application.command.DeleteArtworkFeelingService;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingService;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
@@ -25,6 +27,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
     private final CreateArtworkFeelingService createArtworkFeelingService;
     private final UpdateArtworkFeelingService updateArtworkFeelingService;
+    private final DeleteArtworkFeelingService deleteArtworkFeelingService;
     private final ArtworkFeelingPresentationMapper mapper;
 
     @Override
@@ -68,5 +71,22 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
                 mapper.toResponse(result);
 
         return ApiResponseBody.success(response, httpServletRequest);
+    }
+
+    @Override
+    @DeleteMapping("/{feelingId}")
+    // 감상평 삭제
+    public ApiResponseBody<Void> deleteFeeling(
+            @PathVariable Long artworkId,
+            @PathVariable Long feelingId,
+            @RequestHeader("X-User-Id") Long userId, //테스트용
+            HttpServletRequest httpServletRequest
+    ) {
+        DeleteArtworkFeelingCommand command =
+                new DeleteArtworkFeelingCommand(artworkId, feelingId, userId);
+
+        deleteArtworkFeelingService.deleteFeeling(command);
+
+        return ApiResponseBody.success(null, httpServletRequest);
     }
 }

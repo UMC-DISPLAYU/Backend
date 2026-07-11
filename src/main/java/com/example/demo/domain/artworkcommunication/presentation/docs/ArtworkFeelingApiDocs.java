@@ -126,7 +126,7 @@ public interface ArtworkFeelingApiDocs {
                             "success": null,
                             "error": {
                               "code": "ARTWORK_FEELING_FORBIDDEN",
-                              "message": "감상평을 수정할 권한이 없습니다.",
+                              "message": "감상평에 대한 권한이 없습니다.",
                               "details": null
                             },
                             "meta": {
@@ -150,7 +150,7 @@ public interface ArtworkFeelingApiDocs {
                             "resultType": "FAIL",
                             "success": null,
                             "error": {
-                              "code": "ARTWORK_FEELING_NOT_FOUND",
+                              "code": "FEELING_NOT_FOUND",
                               "message": "감상평을 찾을 수 없습니다.",
                               "details": null
                             },
@@ -170,5 +170,90 @@ public interface ArtworkFeelingApiDocs {
               example = "1")
           Long userId,
       UpdateArtworkFeelingRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 삭제", description = "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 감상평 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling delete success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": null
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "감상평 삭제 권한 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling delete forbidden",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "ARTWORK_FEELING_FORBIDDEN",
+                              "message": "감상평에 대한 권한이 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "작품, 사용자 또는 감상평 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling delete not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "FEELING_NOT_FOUND",
+                              "message": "감상평을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<Void> deleteFeeling(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
+      @Parameter(description = "삭제할 감상평 ID", example = "1") Long feelingId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
       HttpServletRequest httpServletRequest);
 }
