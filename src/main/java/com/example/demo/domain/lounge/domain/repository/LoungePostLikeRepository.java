@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface LoungePostLikeRepository {
 
-    Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
+  Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
 
-    LoungePostLike save(LoungePostLike loungePostLike);
+  LoungePostLike save(LoungePostLike loungePostLike);
 
-    void delete(LoungePostLike loungePostLike);
+  void delete(LoungePostLike loungePostLike);
 
-    long countByLoungePostId(Long loungePostId);
+  long countByLoungePostId(Long loungePostId);
 }

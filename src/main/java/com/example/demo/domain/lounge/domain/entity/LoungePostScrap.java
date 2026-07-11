@@ -22,39 +22,38 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class LoungePostScrap {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "loungePostScrapId")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "loungePostScrapId")
+  private Long id;
 
-    @Column(nullable = false)
-    private Long loungePostId;
+  @Column(nullable = false)
+  private Long loungePostId;
 
-    @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
-    private UserId userId;
+  @Embedded
+  @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
+  private UserId userId;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+  @CreatedDate
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    protected LoungePostScrap() {
+  protected LoungePostScrap() {}
+
+  public static LoungePostScrap create(Long loungePostId, UserId userId) {
+    return new LoungePostScrap(null, loungePostId, userId);
+  }
+
+  public LoungePostScrap(Long id, Long loungePostId, UserId userId) {
+    this.id = id;
+    this.loungePostId = requirePositive(loungePostId, "loungePostId");
+    this.userId = Objects.requireNonNull(userId, "userId must not be null.");
+  }
+
+  private static Long requirePositive(Long value, String fieldName) {
+    if (value == null || value <= 0) {
+      throw new IllegalArgumentException(fieldName + " must be positive.");
     }
-
-    public static LoungePostScrap create(Long loungePostId, UserId userId) {
-        return new LoungePostScrap(null, loungePostId, userId);
-    }
-
-    public LoungePostScrap(Long id, Long loungePostId, UserId userId) {
-        this.id = id;
-        this.loungePostId = requirePositive(loungePostId, "loungePostId");
-        this.userId = Objects.requireNonNull(userId, "userId must not be null.");
-    }
-
-    private static Long requirePositive(Long value, String fieldName) {
-        if (value == null || value <= 0) {
-            throw new IllegalArgumentException(fieldName + " must be positive.");
-        }
-        return value;
-    }
+    return value;
+  }
 }

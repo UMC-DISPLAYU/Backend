@@ -37,9 +37,10 @@ public class OpenApiConfig {
 
       Paths sortedPaths = new Paths();
       openApi.getPaths().entrySet().stream()
-          .sorted(Comparator
-              .comparingInt((Map.Entry<String, PathItem> entry) -> tagOrder(entry.getValue()))
-              .thenComparing(Map.Entry::getKey))
+          .sorted(
+              Comparator.comparingInt(
+                      (Map.Entry<String, PathItem> entry) -> tagOrder(entry.getValue()))
+                  .thenComparing(Map.Entry::getKey))
           .forEach(entry -> sortedPaths.addPathItem(entry.getKey(), entry.getValue()));
       openApi.setPaths(sortedPaths);
     };
@@ -55,7 +56,9 @@ public class OpenApiConfig {
 
   private static int tagOrder(PathItem pathItem) {
     return pathItem.readOperations().stream()
-        .flatMap(operation -> operation.getTags() == null ? Stream.empty() : operation.getTags().stream())
+        .flatMap(
+            operation ->
+                operation.getTags() == null ? Stream.empty() : operation.getTags().stream())
         .mapToInt(OpenApiConfig::tagOrder)
         .min()
         .orElse(TAG_ORDER.size());

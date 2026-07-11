@@ -24,105 +24,94 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class LoungeCommentController implements LoungeCommentControllerDocs {
 
-    private static final Long TEMP_USER_ID = 1L;
+  private static final Long TEMP_USER_ID = 1L;
 
-    private final LoungeCommentCommandService loungeCommentCommandService;
-    private final LoungeCommentQueryService loungeCommentQueryService;
-    private final LoungePresentationMapper mapper;
+  private final LoungeCommentCommandService loungeCommentCommandService;
+  private final LoungeCommentQueryService loungeCommentQueryService;
+  private final LoungePresentationMapper mapper;
 
-    public LoungeCommentController(
-            LoungeCommentCommandService loungeCommentCommandService,
-            LoungeCommentQueryService loungeCommentQueryService,
-            LoungePresentationMapper mapper) {
-        this.loungeCommentCommandService = loungeCommentCommandService;
-        this.loungeCommentQueryService = loungeCommentQueryService;
-        this.mapper = mapper;
-    }
+  public LoungeCommentController(
+      LoungeCommentCommandService loungeCommentCommandService,
+      LoungeCommentQueryService loungeCommentQueryService,
+      LoungePresentationMapper mapper) {
+    this.loungeCommentCommandService = loungeCommentCommandService;
+    this.loungeCommentQueryService = loungeCommentQueryService;
+    this.mapper = mapper;
+  }
 
-    @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Override
-    public ApiResponseBody<LoungeCommentListResponse> createComment(
-            @PathVariable Long loungePostId,
-            @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toResponse(
-                        loungeCommentCommandService.createComment(
-                                loungePostId,
-                                TEMP_USER_ID,
-                                loungeCommentRequest.toCommand())),
-                request);
-    }
+  @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Override
+  public ApiResponseBody<LoungeCommentListResponse> createComment(
+      @PathVariable Long loungePostId,
+      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungeCommentCommandService.createComment(
+                loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        request);
+  }
 
-    @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments/{parentCommentId}/replies")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Override
-    public ApiResponseBody<LoungeCommentListResponse> createReply(
-            @PathVariable Long loungePostId,
-            @PathVariable Long parentCommentId,
-            @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toResponse(
-                        loungeCommentCommandService.createReply(
-                                loungePostId,
-                                parentCommentId,
-                                TEMP_USER_ID,
-                                loungeCommentRequest.toCommand())),
-                request);
-    }
+  @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments/{parentCommentId}/replies")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Override
+  public ApiResponseBody<LoungeCommentListResponse> createReply(
+      @PathVariable Long loungePostId,
+      @PathVariable Long parentCommentId,
+      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungeCommentCommandService.createReply(
+                loungePostId, parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        request);
+  }
 
-    @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
-    @Override
-    public ApiResponseBody<Void> updateComment(
-            @PathVariable Long loungeCommentId,
-            @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
-            HttpServletRequest request) {
-        loungeCommentCommandService.updateComment(
-                loungeCommentId,
-                TEMP_USER_ID,
-                loungeCommentRequest.toCommand());
+  @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
+  @Override
+  public ApiResponseBody<Void> updateComment(
+      @PathVariable Long loungeCommentId,
+      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      HttpServletRequest request) {
+    loungeCommentCommandService.updateComment(
+        loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
 
-        return ApiResponseBody.success(null, request);
-    }
+    return ApiResponseBody.success(null, request);
+  }
 
-    @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")
-    @Override
-    public ApiResponseBody<Void> deleteComment(
-            @PathVariable Long loungeCommentId,
-            HttpServletRequest request) {
-        loungeCommentCommandService.deleteComment(loungeCommentId, TEMP_USER_ID);
-        return ApiResponseBody.success(null, request);
-    }
+  @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")
+  @Override
+  public ApiResponseBody<Void> deleteComment(
+      @PathVariable Long loungeCommentId, HttpServletRequest request) {
+    loungeCommentCommandService.deleteComment(loungeCommentId, TEMP_USER_ID);
+    return ApiResponseBody.success(null, request);
+  }
 
-    @PostMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
-    @Override
-    public ApiResponseBody<LoungeCommentLikeResponse> likeComment(
-            @PathVariable Long loungeCommentId,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toResponse(loungeCommentCommandService.likeComment(loungeCommentId, TEMP_USER_ID)),
-                request);
-    }
+  @PostMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
+  @Override
+  public ApiResponseBody<LoungeCommentLikeResponse> likeComment(
+      @PathVariable Long loungeCommentId, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(loungeCommentCommandService.likeComment(loungeCommentId, TEMP_USER_ID)),
+        request);
+  }
 
-    @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
-    @Override
-    public ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
-            @PathVariable Long loungeCommentId,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toResponse(loungeCommentCommandService.cancelLikeComment(loungeCommentId, TEMP_USER_ID)),
-                request);
-    }
+  @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
+  @Override
+  public ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
+      @PathVariable Long loungeCommentId, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungeCommentCommandService.cancelLikeComment(loungeCommentId, TEMP_USER_ID)),
+        request);
+  }
 
-    @GetMapping("/api/v1/lounge/posts/{loungePostId}/comments")
-    @Override
-    public ApiResponseBody<List<LoungeCommentListResponse>> getComments(
-            @PathVariable Long loungePostId,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toCommentResponses(loungeCommentQueryService.getComments(loungePostId)),
-                request);
-    }
+  @GetMapping("/api/v1/lounge/posts/{loungePostId}/comments")
+  @Override
+  public ApiResponseBody<List<LoungeCommentListResponse>> getComments(
+      @PathVariable Long loungePostId, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toCommentResponses(loungeCommentQueryService.getComments(loungePostId)), request);
+  }
 }

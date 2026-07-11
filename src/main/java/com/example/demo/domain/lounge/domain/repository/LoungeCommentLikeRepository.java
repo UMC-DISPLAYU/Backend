@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface LoungeCommentLikeRepository {
 
-    Optional<LoungeCommentLike> findByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId);
+  Optional<LoungeCommentLike> findByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId);
 
-    LoungeCommentLike save(LoungeCommentLike loungeCommentLike);
+  LoungeCommentLike save(LoungeCommentLike loungeCommentLike);
 
-    void delete(LoungeCommentLike loungeCommentLike);
+  void delete(LoungeCommentLike loungeCommentLike);
 
-    long countByLoungeCommentId(Long loungeCommentId);
+  long countByLoungeCommentId(Long loungeCommentId);
 }

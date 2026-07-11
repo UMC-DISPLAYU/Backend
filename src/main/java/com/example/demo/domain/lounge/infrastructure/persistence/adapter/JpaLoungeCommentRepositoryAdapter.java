@@ -10,29 +10,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepository {
 
-    private final SpringDataLoungeCommentJpaRepository jpaRepository;
+  private final SpringDataLoungeCommentJpaRepository jpaRepository;
 
-    public JpaLoungeCommentRepositoryAdapter(SpringDataLoungeCommentJpaRepository jpaRepository) {
-        this.jpaRepository = jpaRepository;
-    }
+  public JpaLoungeCommentRepositoryAdapter(SpringDataLoungeCommentJpaRepository jpaRepository) {
+    this.jpaRepository = jpaRepository;
+  }
 
-    @Override
-    public Optional<LoungeComment> findById(Long loungeCommentId) {
-        return jpaRepository.findById(loungeCommentId);
-    }
+  @Override
+  public Optional<LoungeComment> findById(Long loungeCommentId) {
+    return jpaRepository.findById(loungeCommentId);
+  }
 
-    @Override
-    public List<LoungeComment> findByLoungePostId(Long loungePostId) {
-        return jpaRepository.findByLoungePostId(loungePostId);
-    }
+  @Override
+  public List<LoungeComment> findByLoungePostId(Long loungePostId) {
+    return jpaRepository.findByLoungePostId(loungePostId);
+  }
 
-    @Override
-    public LoungeComment save(LoungeComment loungeComment) {
-        return jpaRepository.save(loungeComment);
-    }
+  @Override
+  public LoungeComment save(LoungeComment loungeComment) {
+    return jpaRepository.save(loungeComment);
+  }
 
-    @Override
-    public void delete(LoungeComment loungeComment) {
-        jpaRepository.delete(loungeComment);
-    }
+  @Override
+  public void delete(LoungeComment loungeComment) {
+    jpaRepository.delete(loungeComment);
+  }
 }

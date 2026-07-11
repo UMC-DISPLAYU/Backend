@@ -18,54 +18,58 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class LoungePostQueryService {
 
-    private final LoungePostRepository loungePostRepository;
-    private final LoungePostLikeRepository loungePostLikeRepository;
-    private final LoungePostScrapRepository loungePostScrapRepository;
-    private final LoungeCommentRepository loungeCommentRepository;
+  private final LoungePostRepository loungePostRepository;
+  private final LoungePostLikeRepository loungePostLikeRepository;
+  private final LoungePostScrapRepository loungePostScrapRepository;
+  private final LoungeCommentRepository loungeCommentRepository;
 
-    public LoungePostQueryService(
-            LoungePostRepository loungePostRepository,
-            LoungePostLikeRepository loungePostLikeRepository,
-            LoungePostScrapRepository loungePostScrapRepository,
-            LoungeCommentRepository loungeCommentRepository) {
-        this.loungePostRepository = loungePostRepository;
-        this.loungePostLikeRepository = loungePostLikeRepository;
-        this.loungePostScrapRepository = loungePostScrapRepository;
-        this.loungeCommentRepository = loungeCommentRepository;
-    }
+  public LoungePostQueryService(
+      LoungePostRepository loungePostRepository,
+      LoungePostLikeRepository loungePostLikeRepository,
+      LoungePostScrapRepository loungePostScrapRepository,
+      LoungeCommentRepository loungeCommentRepository) {
+    this.loungePostRepository = loungePostRepository;
+    this.loungePostLikeRepository = loungePostLikeRepository;
+    this.loungePostScrapRepository = loungePostScrapRepository;
+    this.loungeCommentRepository = loungeCommentRepository;
+  }
 
-    @Transactional(readOnly = true)
-    public List<LoungePostListResult> getPosts() {
-        return loungePostRepository.findAll().stream()
-                .filter(loungePost -> !loungePost.isDeleted())
-                .filter(LoungePost::isActive)
-                .sorted(Comparator.comparing(LoungePost::getCreatedAt).reversed())
-                .map(loungePost -> LoungePostListResult.from(
-                        loungePost,
-                        loungePostLikeRepository.countByLoungePostId(loungePost.getId()),
-                        countActiveComments(loungePost.getId()),
-                        loungePostScrapRepository.countByLoungePostId(loungePost.getId())))
-                .toList();
-    }
+  @Transactional(readOnly = true)
+  public List<LoungePostListResult> getPosts() {
+    return loungePostRepository.findAll().stream()
+        .filter(loungePost -> !loungePost.isDeleted())
+        .filter(LoungePost::isActive)
+        .sorted(Comparator.comparing(LoungePost::getCreatedAt).reversed())
+        .map(
+            loungePost ->
+                LoungePostListResult.from(
+                    loungePost,
+                    loungePostLikeRepository.countByLoungePostId(loungePost.getId()),
+                    countActiveComments(loungePost.getId()),
+                    loungePostScrapRepository.countByLoungePostId(loungePost.getId())))
+        .toList();
+  }
 
-    @Transactional(readOnly = true)
-    public LoungePostDetailResult getPostDetail(Long loungePostId) {
-        LoungePost loungePost = loungePostRepository.findById(loungePostId)
-                .filter(post -> !post.isDeleted())
-                .filter(LoungePost::isActive)
-                .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+  @Transactional(readOnly = true)
+  public LoungePostDetailResult getPostDetail(Long loungePostId) {
+    LoungePost loungePost =
+        loungePostRepository
+            .findById(loungePostId)
+            .filter(post -> !post.isDeleted())
+            .filter(LoungePost::isActive)
+            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
 
-        return LoungePostDetailResult.from(
-                loungePost,
-                loungePostLikeRepository.countByLoungePostId(loungePost.getId()),
-                countActiveComments(loungePost.getId()),
-                loungePostScrapRepository.countByLoungePostId(loungePost.getId()));
-    }
+    return LoungePostDetailResult.from(
+        loungePost,
+        loungePostLikeRepository.countByLoungePostId(loungePost.getId()),
+        countActiveComments(loungePost.getId()),
+        loungePostScrapRepository.countByLoungePostId(loungePost.getId()));
+  }
 
-    private long countActiveComments(Long loungePostId) {
-        return loungeCommentRepository.findByLoungePostId(loungePostId).stream()
-                .filter(comment -> !comment.isDeleted())
-                .filter(LoungeComment::isActive)
-                .count();
-    }
+  private long countActiveComments(Long loungePostId) {
+    return loungeCommentRepository.findByLoungePostId(loungePostId).stream()
+        .filter(comment -> !comment.isDeleted())
+        .filter(LoungeComment::isActive)
+        .count();
+  }
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataLoungePostLikeJpaRepository extends JpaRepository<LoungePostLike, Long> {
 
-    Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
+  Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
 
-    long countByLoungePostId(Long loungePostId);
+  long countByLoungePostId(Long loungePostId);
 }

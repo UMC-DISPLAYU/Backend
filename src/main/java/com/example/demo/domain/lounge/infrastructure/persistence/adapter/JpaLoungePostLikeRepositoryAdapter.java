@@ -10,29 +10,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JpaLoungePostLikeRepositoryAdapter implements LoungePostLikeRepository {
 
-    private final SpringDataLoungePostLikeJpaRepository jpaRepository;
+  private final SpringDataLoungePostLikeJpaRepository jpaRepository;
 
-    public JpaLoungePostLikeRepositoryAdapter(SpringDataLoungePostLikeJpaRepository jpaRepository) {
-        this.jpaRepository = jpaRepository;
-    }
+  public JpaLoungePostLikeRepositoryAdapter(SpringDataLoungePostLikeJpaRepository jpaRepository) {
+    this.jpaRepository = jpaRepository;
+  }
 
-    @Override
-    public Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
-        return jpaRepository.findByLoungePostIdAndUserId(loungePostId, userId);
-    }
+  @Override
+  public Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
+    return jpaRepository.findByLoungePostIdAndUserId(loungePostId, userId);
+  }
 
-    @Override
-    public LoungePostLike save(LoungePostLike loungePostLike) {
-        return jpaRepository.save(loungePostLike);
-    }
+  @Override
+  public LoungePostLike save(LoungePostLike loungePostLike) {
+    return jpaRepository.save(loungePostLike);
+  }
 
-    @Override
-    public void delete(LoungePostLike loungePostLike) {
-        jpaRepository.delete(loungePostLike);
-    }
+  @Override
+  public void delete(LoungePostLike loungePostLike) {
+    jpaRepository.delete(loungePostLike);
+  }
 
-    @Override
-    public long countByLoungePostId(Long loungePostId) {
-        return jpaRepository.countByLoungePostId(loungePostId);
-    }
+  @Override
+  public long countByLoungePostId(Long loungePostId) {
+    return jpaRepository.countByLoungePostId(loungePostId);
+  }
 }

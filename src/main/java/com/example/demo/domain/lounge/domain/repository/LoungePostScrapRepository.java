@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface LoungePostScrapRepository {
 
-    Optional<LoungePostScrap> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
+  Optional<LoungePostScrap> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
 
-    LoungePostScrap save(LoungePostScrap loungePostScrap);
+  LoungePostScrap save(LoungePostScrap loungePostScrap);
 
-    void delete(LoungePostScrap loungePostScrap);
+  void delete(LoungePostScrap loungePostScrap);
 
-    long countByLoungePostId(Long loungePostId);
+  long countByLoungePostId(Long loungePostId);
 }

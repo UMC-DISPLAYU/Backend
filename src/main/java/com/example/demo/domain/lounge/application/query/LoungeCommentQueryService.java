@@ -18,57 +18,61 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class LoungeCommentQueryService {
 
-    private final LoungePostRepository loungePostRepository;
-    private final LoungeCommentRepository loungeCommentRepository;
-    private final LoungeCommentLikeRepository loungeCommentLikeRepository;
+  private final LoungePostRepository loungePostRepository;
+  private final LoungeCommentRepository loungeCommentRepository;
+  private final LoungeCommentLikeRepository loungeCommentLikeRepository;
 
-    public LoungeCommentQueryService(
-            LoungePostRepository loungePostRepository,
-            LoungeCommentRepository loungeCommentRepository,
-            LoungeCommentLikeRepository loungeCommentLikeRepository) {
-        this.loungePostRepository = loungePostRepository;
-        this.loungeCommentRepository = loungeCommentRepository;
-        this.loungeCommentLikeRepository = loungeCommentLikeRepository;
-    }
+  public LoungeCommentQueryService(
+      LoungePostRepository loungePostRepository,
+      LoungeCommentRepository loungeCommentRepository,
+      LoungeCommentLikeRepository loungeCommentLikeRepository) {
+    this.loungePostRepository = loungePostRepository;
+    this.loungeCommentRepository = loungeCommentRepository;
+    this.loungeCommentLikeRepository = loungeCommentLikeRepository;
+  }
 
-    @Transactional(readOnly = true)
-    public List<LoungeCommentListResult> getComments(Long loungePostId) {
-        LoungePost loungePost = getActivePost(loungePostId);
-        List<LoungeComment> comments = loungeCommentRepository.findByLoungePostId(loungePost.getId())
-                .stream()
-                .filter(comment -> !comment.isDeleted())
-                .filter(LoungeComment::isActive)
-                .toList();
+  @Transactional(readOnly = true)
+  public List<LoungeCommentListResult> getComments(Long loungePostId) {
+    LoungePost loungePost = getActivePost(loungePostId);
+    List<LoungeComment> comments =
+        loungeCommentRepository.findByLoungePostId(loungePost.getId()).stream()
+            .filter(comment -> !comment.isDeleted())
+            .filter(LoungeComment::isActive)
+            .toList();
 
-        Map<Long, List<LoungeComment>> repliesByParentId = comments.stream()
-                .filter(LoungeComment::isReply)
-                .collect(Collectors.groupingBy(LoungeComment::getParentCommentId));
+    Map<Long, List<LoungeComment>> repliesByParentId =
+        comments.stream()
+            .filter(LoungeComment::isReply)
+            .collect(Collectors.groupingBy(LoungeComment::getParentCommentId));
 
-        return comments.stream()
-                .filter(LoungeComment::isRootComment)
-                .sorted(Comparator.comparing(LoungeComment::getCreatedAt))
-                .map(comment -> LoungeCommentListResult.from(
-                        comment,
-                        countLikes(comment),
-                        toReplyResults(repliesByParentId.getOrDefault(comment.getId(), List.of()))))
-                .toList();
-    }
+    return comments.stream()
+        .filter(LoungeComment::isRootComment)
+        .sorted(Comparator.comparing(LoungeComment::getCreatedAt))
+        .map(
+            comment ->
+                LoungeCommentListResult.from(
+                    comment,
+                    countLikes(comment),
+                    toReplyResults(repliesByParentId.getOrDefault(comment.getId(), List.of()))))
+        .toList();
+  }
 
-    private List<LoungeCommentListResult> toReplyResults(List<LoungeComment> replies) {
-        return replies.stream()
-                .sorted(Comparator.comparing(LoungeComment::getCreatedAt))
-                .map(reply -> LoungeCommentListResult.from(reply, countLikes(reply), List.of()))
-                .toList();
-    }
+  private List<LoungeCommentListResult> toReplyResults(List<LoungeComment> replies) {
+    return replies.stream()
+        .sorted(Comparator.comparing(LoungeComment::getCreatedAt))
+        .map(reply -> LoungeCommentListResult.from(reply, countLikes(reply), List.of()))
+        .toList();
+  }
 
-    private long countLikes(LoungeComment comment) {
-        return loungeCommentLikeRepository.countByLoungeCommentId(comment.getId());
-    }
+  private long countLikes(LoungeComment comment) {
+    return loungeCommentLikeRepository.countByLoungeCommentId(comment.getId());
+  }
 
-    private LoungePost getActivePost(Long loungePostId) {
-        return loungePostRepository.findById(loungePostId)
-                .filter(post -> !post.isDeleted())
-                .filter(LoungePost::isActive)
-                .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-    }
+  private LoungePost getActivePost(Long loungePostId) {
+    return loungePostRepository
+        .findById(loungePostId)
+        .filter(post -> !post.isDeleted())
+        .filter(LoungePost::isActive)
+        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+  }
 }

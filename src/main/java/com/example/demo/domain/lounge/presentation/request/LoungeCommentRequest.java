@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record LoungeCommentRequest(@NotBlank String content) {
 
-    public LoungeCommentContentCommand toCommand() {
-        return new LoungeCommentContentCommand(content);
-    }
+  public LoungeCommentContentCommand toCommand() {
+    return new LoungeCommentContentCommand(content);
+  }
 }
