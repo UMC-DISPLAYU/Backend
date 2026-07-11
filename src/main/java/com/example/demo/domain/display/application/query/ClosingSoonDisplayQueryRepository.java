@@ -5,5 +5,6 @@ import java.util.List;
 
 public interface ClosingSoonDisplayQueryRepository {
 
-  List<ClosingSoonDisplayQueryResult> findClosingSoonDisplays(LocalDate today);
+  List<ClosingSoonDisplayQueryResult> findClosingSoonDisplays(
+      ClosingSoonDisplayQuery query, LocalDate today, int limit);
 }

@@ -5,7 +5,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-public record ClosingSoonDisplayResult(List<ExhibitionResult> exhibitions) {
+public record ClosingSoonDisplayResult(
+    List<ExhibitionResult> exhibitions, PaginationResult pagination) {
 
   public record ExhibitionResult(
       Long displayId,
@@ -26,4 +27,6 @@ public record ClosingSoonDisplayResult(List<ExhibitionResult> exhibitions) {
           ChronoUnit.DAYS.between(today, queryResult.endedAt()));
     }
   }
+
+  public record PaginationResult(String nextCursor, int size, boolean hasNext) {}
 }

@@ -2,6 +2,8 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery;
+import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery.Cursor;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -12,6 +14,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.config.JpaAuditingConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(JpaClosingSoonDisplayQueryRepositoryAdapter.class)
+@Import({JpaClosingSoonDisplayQueryRepositoryAdapter.class, JpaAuditingConfig.class})
 class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
 
   @Autowired private ClosingSoonDisplayQueryRepository queryRepository;
@@ -32,21 +35,47 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;
 
   @Test
-  void findClosingSoonDisplaysReturnsPublishedDisplaysOrderedByClosestEndDate() {
+  void findClosingSoonDisplaysReturnsPublishedDisplaysOrderedByEndDateAsc() {
     LocalDate today = LocalDate.of(2026, 7, 11);
-    Display endsInFiveDays = publishedDisplay("5일 남은 전시", today.minusDays(5), today.plusDays(5));
-    Display endsToday = publishedDisplay("오늘 종료 전시", today.minusDays(3), today);
+    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(5));
+    Display second = publishedDisplay("두 번째 전시", today.minusDays(3), today);
     Display draft = draftDisplay("초안 전시", today.minusDays(1), today.plusDays(1));
     Display ended = publishedDisplay("종료된 전시", today.minusDays(10), today.minusDays(1));
-    jpaRepository.saveAllAndFlush(List.of(endsInFiveDays, endsToday, draft, ended));
+    jpaRepository.saveAllAndFlush(List.of(first, second, draft, ended));
 
-    List<ClosingSoonDisplayQueryResult> results = queryRepository.findClosingSoonDisplays(today);
+    List<ClosingSoonDisplayQueryResult> results =
+        queryRepository.findClosingSoonDisplays(new ClosingSoonDisplayQuery(null, 20), today, 20);
 
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::title)
-        .containsExactly("오늘 종료 전시", "5일 남은 전시");
+        .containsExactly("두 번째 전시", "첫 번째 전시");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
+  }
+
+  @Test
+  void findClosingSoonDisplaysAppliesCursorAndLimit() {
+    LocalDate today = LocalDate.of(2026, 7, 11);
+    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(5));
+    Display second = publishedDisplay("두 번째 전시", today.minusDays(3), today);
+    Display third = publishedDisplay("세 번째 전시", today.minusDays(3), today.plusDays(3));
+    jpaRepository.saveAllAndFlush(List.of(first, second, third));
+
+    List<ClosingSoonDisplayQueryResult> firstPage =
+        queryRepository.findClosingSoonDisplays(new ClosingSoonDisplayQuery(null, 1), today, 1);
+    List<ClosingSoonDisplayQueryResult> secondPage =
+        queryRepository.findClosingSoonDisplays(
+            new ClosingSoonDisplayQuery(
+                new Cursor(firstPage.getFirst().endedAt(), firstPage.getFirst().displayId()), 10),
+            today,
+            10);
+
+    assertThat(firstPage)
+        .extracting(ClosingSoonDisplayQueryResult::title)
+        .containsExactly("두 번째 전시");
+    assertThat(secondPage)
+        .extracting(ClosingSoonDisplayQueryResult::title)
+        .containsExactly("세 번째 전시", "첫 번째 전시");
   }
 
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {

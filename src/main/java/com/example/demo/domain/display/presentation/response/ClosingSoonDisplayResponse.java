@@ -3,7 +3,8 @@ package com.example.demo.domain.display.presentation.response;
 import java.time.LocalDate;
 import java.util.List;
 
-public record ClosingSoonDisplayResponse(List<ExhibitionResponse> exhibitions) {
+public record ClosingSoonDisplayResponse(
+    List<ExhibitionResponse> exhibitions, CursorPaginationResponse pagination) {
 
   public record ExhibitionResponse(
       Long displayId,
@@ -12,4 +13,6 @@ public record ClosingSoonDisplayResponse(List<ExhibitionResponse> exhibitions) {
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft) {}
+
+  public record CursorPaginationResponse(String nextCursor, int size, boolean hasNext) {}
 }

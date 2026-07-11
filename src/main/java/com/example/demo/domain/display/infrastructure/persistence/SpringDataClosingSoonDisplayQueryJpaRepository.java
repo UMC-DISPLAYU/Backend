@@ -5,6 +5,7 @@ import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,8 +35,20 @@ public interface SpringDataClosingSoonDisplayQueryJpaRepository
         )
       where d.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
         and d.period.endDate >= :today
-      order by d.period.endDate asc, d.id desc
+        and (
+          :cursorEndedAt is null
+          or d.period.endDate > :cursorEndedAt
+          or (
+            d.period.endDate = :cursorEndedAt
+            and d.id > :cursorDisplayId
+          )
+        )
+      order by d.period.endDate asc, d.id asc
       """)
   List<ClosingSoonDisplayQueryResult> findClosingSoonDisplays(
-      @Param("today") LocalDate today, @Param("mainImageType") DisplayImageType mainImageType);
+      @Param("today") LocalDate today,
+      @Param("cursorEndedAt") LocalDate cursorEndedAt,
+      @Param("cursorDisplayId") Long cursorDisplayId,
+      @Param("mainImageType") DisplayImageType mainImageType,
+      Pageable pageable);
 }
