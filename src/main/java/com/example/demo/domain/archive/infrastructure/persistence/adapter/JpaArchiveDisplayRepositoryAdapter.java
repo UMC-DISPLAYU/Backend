@@ -27,8 +27,8 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
   }
 
   @Override
-  public List<ArchiveDisplay> findAllByUserIdOrderByIdDesc(Long userId) {
-    return jpaRepository.findAllByUserIdOrderByIdDesc(userId);
+  public List<ArchiveDisplay> findAllByUserIdOrderBySavedAtDescIdDesc(Long userId) {
+    return jpaRepository.findAllByUserIdOrderBySavedAtDescIdDesc(userId);
   }
 
   @Override

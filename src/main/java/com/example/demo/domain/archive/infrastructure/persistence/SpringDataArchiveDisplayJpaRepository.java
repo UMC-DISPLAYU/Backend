@@ -9,5 +9,5 @@ public interface SpringDataArchiveDisplayJpaRepository extends JpaRepository<Arc
 
   Optional<ArchiveDisplay> findByUserIdAndDisplayId(Long userId, Long displayId);
 
-  List<ArchiveDisplay> findAllByUserIdOrderByIdDesc(Long userId);
+  List<ArchiveDisplay> findAllByUserIdOrderBySavedAtDescIdDesc(Long userId);
 }

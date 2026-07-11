@@ -1,3 +1,6 @@
 package com.example.demo.domain.archive.application.result;
 
-public record ArchiveDisplayResult(Long archiveDisplayId, Long displayId, Long userId) {}
+import java.time.LocalDateTime;
+
+public record ArchiveDisplayResult(
+    Long archiveDisplayId, Long displayId, Long userId, LocalDateTime savedAt) {}

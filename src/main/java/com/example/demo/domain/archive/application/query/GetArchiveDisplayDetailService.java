@@ -24,6 +24,9 @@ public class GetArchiveDisplayDetailService {
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
     return new ArchiveDisplayResult(
-        archiveDisplay.getId(), archiveDisplay.getDisplayId(), archiveDisplay.getUserId());
+        archiveDisplay.getId(),
+        archiveDisplay.getDisplayId(),
+        archiveDisplay.getUserId(),
+        archiveDisplay.getSavedAt());
   }
 }

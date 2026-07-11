@@ -11,10 +11,11 @@ public class ArchivePresentationMapper {
 
   public ArchiveDisplayResponse toResponse(ArchiveDisplayResult result) {
     return new ArchiveDisplayResponse(
-        result.archiveDisplayId(), result.displayId(), result.userId());
+        result.archiveDisplayId(), result.displayId(), result.userId(), result.savedAt());
   }
 
   public ArchiveDisplayToggleResponse toResponse(ArchiveDisplayToggleResult result) {
-    return new ArchiveDisplayToggleResponse(result.exhibitionId(), result.isArchived());
+    // 도메인 용어(displayId) -> API 응답 용어(exhibitionId) 변환은 여기(Presentation Mapper)에서만 담당
+    return new ArchiveDisplayToggleResponse(result.displayId(), result.isArchived());
   }
 }

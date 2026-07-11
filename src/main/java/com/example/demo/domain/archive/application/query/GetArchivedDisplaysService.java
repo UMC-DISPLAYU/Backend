@@ -15,13 +15,14 @@ public class GetArchivedDisplaysService {
   }
 
   public List<ArchiveDisplayResult> getArchivedDisplays(Long userId) {
-    return archiveDisplayRepository.findAllByUserIdOrderByIdDesc(userId).stream()
+    return archiveDisplayRepository.findAllByUserIdOrderBySavedAtDescIdDesc(userId).stream()
         .map(
             archiveDisplay ->
                 new ArchiveDisplayResult(
                     archiveDisplay.getId(),
                     archiveDisplay.getDisplayId(),
-                    archiveDisplay.getUserId()))
+                    archiveDisplay.getUserId(),
+                    archiveDisplay.getSavedAt()))
         .toList();
   }
 }
