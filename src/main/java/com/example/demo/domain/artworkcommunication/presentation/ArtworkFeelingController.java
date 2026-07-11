@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkFeelingService;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFeelingApiDocs;
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkFeelingPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
@@ -15,11 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/artworks/{artworkId}/feelings")
-public class ArtworkFeelingController {
+public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
     private final CreateArtworkFeelingService createArtworkFeelingService;
     private final ArtworkFeelingPresentationMapper mapper;
 
+    @Override
     @PostMapping
     public ApiResponseBody<ArtworkFeelingResponse> createFeeling(
             @PathVariable Long artworkId,
