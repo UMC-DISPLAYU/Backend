@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
-import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ class GetRandomGraduationDisplaysServiceTest {
     GetRandomGraduationDisplaysService service =
         new GetRandomGraduationDisplaysService(queryRepository);
 
-    ClosingSoonDisplayResult result = service.getRandomGraduationDisplays(5);
+    GraduationDisplayResult result = service.getRandomGraduationDisplays(5);
 
     assertThat(queryRepository.requestedSize).isEqualTo(5);
     assertThat(result.exhibitions()).hasSize(1);

@@ -12,6 +12,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.config.JpaAuditingConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,7 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(JpaGraduationDisplayQueryRepositoryAdapter.class)
+@Import({JpaGraduationDisplayQueryRepositoryAdapter.class, JpaAuditingConfig.class})
 class JpaGraduationDisplayQueryRepositoryAdapterTest {
 
   @Autowired private GraduationDisplayQueryRepository queryRepository;

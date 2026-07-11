@@ -1,8 +1,8 @@
 package com.example.demo.domain.display.application.usecase;
 
-import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 
 public interface GetRandomGraduationDisplaysUseCase {
 
-  ClosingSoonDisplayResult getRandomGraduationDisplays(int size);
+  GraduationDisplayResult getRandomGraduationDisplays(int size);
 }
