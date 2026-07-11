@@ -2,6 +2,7 @@ package com.example.demo.domain.lounge.presentation;
 
 import com.example.demo.domain.lounge.application.command.LoungeCommentCommandService;
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryService;
+import com.example.demo.domain.lounge.presentation.docs.LoungeCommentControllerDocs;
 import com.example.demo.domain.lounge.presentation.mapper.LoungePresentationMapper;
 import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class LoungeCommentController {
+public class LoungeCommentController implements LoungeCommentControllerDocs {
 
     private static final Long TEMP_USER_ID = 1L;
 
@@ -40,6 +41,7 @@ public class LoungeCommentController {
 
     @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public ApiResponseBody<LoungeCommentListResponse> createComment(
             @PathVariable Long loungePostId,
             @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -55,6 +57,7 @@ public class LoungeCommentController {
 
     @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments/{parentCommentId}/replies")
     @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public ApiResponseBody<LoungeCommentListResponse> createReply(
             @PathVariable Long loungePostId,
             @PathVariable Long parentCommentId,
@@ -70,16 +73,8 @@ public class LoungeCommentController {
                 request);
     }
 
-    @GetMapping("/api/v1/lounge/posts/{loungePostId}/comments")
-    public ApiResponseBody<List<LoungeCommentListResponse>> getComments(
-            @PathVariable Long loungePostId,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toCommentResponses(loungeCommentQueryService.getComments(loungePostId)),
-                request);
-    }
-
     @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
+    @Override
     public ApiResponseBody<Void> updateComment(
             @PathVariable Long loungeCommentId,
             @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -93,6 +88,7 @@ public class LoungeCommentController {
     }
 
     @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")
+    @Override
     public ApiResponseBody<Void> deleteComment(
             @PathVariable Long loungeCommentId,
             HttpServletRequest request) {
@@ -101,6 +97,7 @@ public class LoungeCommentController {
     }
 
     @PostMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
+    @Override
     public ApiResponseBody<LoungeCommentLikeResponse> likeComment(
             @PathVariable Long loungeCommentId,
             HttpServletRequest request) {
@@ -110,11 +107,22 @@ public class LoungeCommentController {
     }
 
     @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
+    @Override
     public ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
             @PathVariable Long loungeCommentId,
             HttpServletRequest request) {
         return ApiResponseBody.success(
                 mapper.toResponse(loungeCommentCommandService.cancelLikeComment(loungeCommentId, TEMP_USER_ID)),
+                request);
+    }
+
+    @GetMapping("/api/v1/lounge/posts/{loungePostId}/comments")
+    @Override
+    public ApiResponseBody<List<LoungeCommentListResponse>> getComments(
+            @PathVariable Long loungePostId,
+            HttpServletRequest request) {
+        return ApiResponseBody.success(
+                mapper.toCommentResponses(loungeCommentQueryService.getComments(loungePostId)),
                 request);
     }
 }

@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.presentation;
 import com.example.demo.domain.lounge.application.command.LoungePostCommandService;
 import com.example.demo.domain.lounge.application.query.LoungePostQueryService;
 import com.example.demo.domain.lounge.application.result.LoungePostDetailResult;
+import com.example.demo.domain.lounge.presentation.docs.LoungePostControllerDocs;
 import com.example.demo.domain.lounge.presentation.mapper.LoungePresentationMapper;
 import com.example.demo.domain.lounge.presentation.request.LoungePostRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResponse;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class LoungePostController {
+public class LoungePostController implements LoungePostControllerDocs {
 
     private static final Long TEMP_USER_ID = 1L;
 
@@ -43,6 +44,7 @@ public class LoungePostController {
 
     @PostMapping("/api/v1/lounge/posts")
     @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public ApiResponseBody<LoungePostDetailResponse> createPost(
             @Valid @RequestBody LoungePostRequest loungePostRequest,
             HttpServletRequest request) {
@@ -51,24 +53,8 @@ public class LoungePostController {
         return ApiResponseBody.success(mapper.toResponse(result), request);
     }
 
-    @GetMapping("/api/v1/lounge/posts")
-    public ApiResponseBody<List<LoungePostListResponse>> getPosts(HttpServletRequest request) {
-        List<LoungePostListResponse> responses = loungePostQueryService.getPosts().stream()
-                .map(mapper::toResponse)
-                .toList();
-        return ApiResponseBody.success(responses, request);
-    }
-
-    @GetMapping("/api/v1/lounge/posts/{loungePostId}")
-    public ApiResponseBody<LoungePostDetailResponse> getPostDetail(
-            @PathVariable Long loungePostId,
-            HttpServletRequest request) {
-        return ApiResponseBody.success(
-                mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId)),
-                request);
-    }
-
     @PatchMapping("/api/v1/lounge/posts/{loungePostId}")
+    @Override
     public ApiResponseBody<LoungePostDetailResponse> updatePost(
             @PathVariable Long loungePostId,
             @Valid @RequestBody LoungePostRequest loungePostRequest,
@@ -80,6 +66,7 @@ public class LoungePostController {
     }
 
     @DeleteMapping("/api/v1/lounge/posts/{loungePostId}")
+    @Override
     public ApiResponseBody<Void> deletePost(
             @PathVariable Long loungePostId,
             HttpServletRequest request) {
@@ -88,6 +75,7 @@ public class LoungePostController {
     }
 
     @PostMapping("/api/v1/lounge/posts/{loungePostId}/likes")
+    @Override
     public ApiResponseBody<LoungePostLikeResponse> likePost(
             @PathVariable Long loungePostId,
             HttpServletRequest request) {
@@ -97,6 +85,7 @@ public class LoungePostController {
     }
 
     @DeleteMapping("/api/v1/lounge/posts/{loungePostId}/likes")
+    @Override
     public ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
             @PathVariable Long loungePostId,
             HttpServletRequest request) {
@@ -106,6 +95,7 @@ public class LoungePostController {
     }
 
     @PostMapping("/api/v1/lounge/posts/{loungePostId}/scraps")
+    @Override
     public ApiResponseBody<LoungePostScrapResponse> scrapPost(
             @PathVariable Long loungePostId,
             HttpServletRequest request) {
@@ -115,11 +105,31 @@ public class LoungePostController {
     }
 
     @DeleteMapping("/api/v1/lounge/posts/{loungePostId}/scraps")
+    @Override
     public ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
             @PathVariable Long loungePostId,
             HttpServletRequest request) {
         return ApiResponseBody.success(
                 mapper.toResponse(loungePostCommandService.cancelScrapPost(loungePostId, TEMP_USER_ID)),
+                request);
+    }
+
+    @GetMapping("/api/v1/lounge/posts")
+    @Override
+    public ApiResponseBody<List<LoungePostListResponse>> getPosts(HttpServletRequest request) {
+        List<LoungePostListResponse> responses = loungePostQueryService.getPosts().stream()
+                .map(mapper::toResponse)
+                .toList();
+        return ApiResponseBody.success(responses, request);
+    }
+
+    @GetMapping("/api/v1/lounge/posts/{loungePostId}")
+    @Override
+    public ApiResponseBody<LoungePostDetailResponse> getPostDetail(
+            @PathVariable Long loungePostId,
+            HttpServletRequest request) {
+        return ApiResponseBody.success(
+                mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId)),
                 request);
     }
 }
