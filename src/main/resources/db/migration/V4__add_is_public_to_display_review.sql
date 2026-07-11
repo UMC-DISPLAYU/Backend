@@ -1,0 +1,2 @@
+ALTER TABLE `DisplayReview`
+    ADD COLUMN `isPublic` BOOLEAN NOT NULL DEFAULT TRUE AFTER `content`;
