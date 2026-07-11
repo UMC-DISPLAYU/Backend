@@ -1,14 +1,16 @@
 package com.example.demo.domain.lounge.presentation.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record LoungeCommentListResponse(
     Long loungeCommentId,
     Long parentCommentId,
-    Long authorUserId,
     String content,
-    long likeCount,
+    String commentStatus,
+    LoungeWriterResponse writer,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    List<LoungeCommentListResponse> replies) {}
+    long likeCount,
+    long replyCount,
+    boolean isLiked,
+    boolean isMyComment) {}

@@ -1,13 +1,51 @@
 package com.example.demo.domain.lounge.infrastructure.persistence;
 
 import com.example.demo.domain.lounge.domain.entity.LoungePostLike;
-import com.example.demo.domain.lounge.domain.vo.UserId;
-import java.util.Optional;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface SpringDataLoungePostLikeJpaRepository extends JpaRepository<LoungePostLike, Long> {
 
-  Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId);
+  @Modifying
+  @Query(
+      value =
+          """
+          INSERT IGNORE INTO LoungePostLike (loungePostId, userId)
+          VALUES (:loungePostId, :userId)
+          """,
+      nativeQuery = true)
+  void insertIgnore(@Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
+
+  @Modifying
+  @Query(
+      """
+      DELETE FROM LoungePostLike postLike
+      WHERE postLike.loungePostId = :loungePostId AND postLike.userId.value = :userId
+      """)
+  void deleteByLoungePostIdAndUserId(
+      @Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
 
   long countByLoungePostId(Long loungePostId);
+
+  @Query(
+      """
+      SELECT postLike.loungePostId, COUNT(postLike)
+      FROM LoungePostLike postLike
+      WHERE postLike.loungePostId IN :loungePostIds
+      GROUP BY postLike.loungePostId
+      """)
+  List<Object[]> countByLoungePostIds(@Param("loungePostIds") List<Long> loungePostIds);
+
+  @Query(
+      """
+      SELECT postLike.loungePostId
+      FROM LoungePostLike postLike
+      WHERE postLike.loungePostId IN :loungePostIds
+        AND postLike.userId.value = :userId
+      """)
+  List<Long> findLikedLoungePostIds(
+      @Param("loungePostIds") List<Long> loungePostIds, @Param("userId") Long userId);
 }

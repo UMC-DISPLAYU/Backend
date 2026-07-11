@@ -3,6 +3,7 @@ spring:
     name: demo
 
 springdoc:
+  api-docs:
+    enabled: false
   swagger-ui:
-    doc-expansion: list
-    display-request-duration: true
+    enabled: false

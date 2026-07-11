@@ -80,14 +80,10 @@ public class LoungePost extends SoftDeleteBaseEntity {
     this.status = Objects.requireNonNullElse(status, LoungePostStatus.ACTIVE);
   }
 
-  public void changeContent(String title, String content) {
-    changeContent(title, this.postImageUrl, content);
-  }
-
   public void changeContent(String title, String postImageUrl, String content) {
-    this.title = requireNonBlack(title, "title");
+    this.title = requireNonBlank(title, "title");
     this.postImageUrl = postImageUrl;
-    this.content = requireNonBlack(content, "content");
+    this.content = requireNonBlank(content, "content");
   }
 
   public void changeCategory(LoungePostCategory category) {
@@ -118,8 +114,8 @@ public class LoungePost extends SoftDeleteBaseEntity {
     super.restore();
   }
 
-  private static String requireNonBlack(String value, String fieldName) {
-    if (value == null || value.isEmpty()) {
+  private static String requireNonBlank(String value, String fieldName) {
+    if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(fieldName + " must not be blank");
     }
     return value;

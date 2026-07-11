@@ -16,8 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-  private static final List<String> TAG_ORDER =
-      List.of("Health", "Display", "Lounge Post", "Lounge Comment");
+  private static final List<String> TAG_ORDER = swaggerTags().stream().map(Tag::getName).toList();
 
   @Bean
   public OpenAPI openAPI() {

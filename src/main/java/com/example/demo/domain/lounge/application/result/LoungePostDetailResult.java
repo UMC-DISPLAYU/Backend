@@ -1,27 +1,36 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import java.time.LocalDateTime;
 
 public record LoungePostDetailResult(
     Long loungePostId,
-    Long authorUserId,
+    LoungeWriter writer,
     String title,
     String postImageUrl,
     String content,
     String category,
-    String status,
+    String postStatus,
     long likeCount,
     long commentCount,
-    long scrapCount,
+    boolean isLiked,
+    boolean isScrapped,
+    boolean isMyPost,
     LocalDateTime createdAt,
     LocalDateTime updatedAt) {
 
   public static LoungePostDetailResult from(
-      LoungePost loungePost, long likeCount, long commentCount, long scrapCount) {
+      LoungePost loungePost,
+      LoungeWriter writer,
+      long likeCount,
+      long commentCount,
+      boolean isLiked,
+      boolean isScrapped,
+      Long viewerUserId) {
     return new LoungePostDetailResult(
         loungePost.getId(),
-        loungePost.getAuthorUserId().value(),
+        writer,
         loungePost.getTitle(),
         loungePost.getPostImageUrl(),
         loungePost.getContent(),
@@ -29,7 +38,9 @@ public record LoungePostDetailResult(
         loungePost.getStatus().name(),
         likeCount,
         commentCount,
-        scrapCount,
+        isLiked,
+        isScrapped,
+        loungePost.getAuthorUserId().value().equals(viewerUserId),
         loungePost.getCreatedAt(),
         loungePost.getUpdatedAt());
   }

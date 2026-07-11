@@ -1,29 +1,37 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import java.time.LocalDateTime;
 
 public record LoungePostListResult(
     Long loungePostId,
-    Long authorUserId,
+    LoungeWriter writer,
     String title,
     String postImageUrl,
     String category,
     long likeCount,
     long commentCount,
-    long scrapCount,
+    boolean isLiked,
+    boolean isMyPost,
     LocalDateTime createdAt) {
   public static LoungePostListResult from(
-      LoungePost loungePost, long likeCount, long commentCount, long scrapCount) {
+      LoungePost loungePost,
+      LoungeWriter writer,
+      long likeCount,
+      long commentCount,
+      boolean isLiked,
+      Long viewerUserId) {
     return new LoungePostListResult(
         loungePost.getId(),
-        loungePost.getAuthorUserId().value(),
+        writer,
         loungePost.getTitle(),
         loungePost.getPostImageUrl(),
         loungePost.getCategory().name(),
         likeCount,
         commentCount,
-        scrapCount,
+        isLiked,
+        loungePost.getAuthorUserId().value().equals(viewerUserId),
         loungePost.getCreatedAt());
   }
 }

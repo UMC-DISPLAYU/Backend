@@ -1,10 +1,12 @@
 package com.example.demo.domain.lounge.infrastructure.persistence.adapter;
 
-import com.example.demo.domain.lounge.domain.entity.LoungePostLike;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostLikeJpaRepository;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,22 +19,30 @@ public class JpaLoungePostLikeRepositoryAdapter implements LoungePostLikeReposit
   }
 
   @Override
-  public Optional<LoungePostLike> findByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
-    return jpaRepository.findByLoungePostIdAndUserId(loungePostId, userId);
+  public void saveIfAbsent(Long loungePostId, UserId userId) {
+    jpaRepository.insertIgnore(loungePostId, userId.value());
   }
 
   @Override
-  public LoungePostLike save(LoungePostLike loungePostLike) {
-    return jpaRepository.save(loungePostLike);
-  }
-
-  @Override
-  public void delete(LoungePostLike loungePostLike) {
-    jpaRepository.delete(loungePostLike);
+  public void deleteByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
+    jpaRepository.deleteByLoungePostIdAndUserId(loungePostId, userId.value());
   }
 
   @Override
   public long countByLoungePostId(Long loungePostId) {
     return jpaRepository.countByLoungePostId(loungePostId);
+  }
+
+  @Override
+  public Map<Long, Long> countByLoungePostIds(List<Long> loungePostIds) {
+    return jpaRepository.countByLoungePostIds(loungePostIds).stream()
+        .collect(
+            Collectors.toMap(
+                row -> ((Number) row[0]).longValue(), row -> ((Number) row[1]).longValue()));
+  }
+
+  @Override
+  public Set<Long> findLikedLoungePostIds(List<Long> loungePostIds, UserId userId) {
+    return Set.copyOf(jpaRepository.findLikedLoungePostIds(loungePostIds, userId.value()));
   }
 }

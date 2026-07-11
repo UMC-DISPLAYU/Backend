@@ -4,14 +4,13 @@ import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult
 import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
-import com.example.demo.domain.lounge.domain.entity.LoungeCommentLike;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
-import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,21 +42,18 @@ public class LoungeCommentCommandService {
             loungePost.getId(), new UserId(authorUserId), command.content());
 
     LoungeComment savedComment = loungeCommentRepository.save(comment);
-    return LoungeCommentListResult.from(savedComment, 0, List.of());
+    return LoungeCommentListResult.from(
+        savedComment, LoungeWriter.unknown(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional
   public LoungeCommentListResult createReply(
-      Long loungePostId,
-      Long parentCommentId,
-      Long authorUserId,
-      LoungeCommentContentCommand command) {
+      Long parentCommentId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
-    LoungePost loungePost = getActivePost(loungePostId);
     LoungeComment parentComment = getActiveComment(parentCommentId);
+    LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
 
-    if (!parentComment.getLoungePostId().equals(loungePost.getId())
-        || !parentComment.isRootComment()) {
+    if (!parentComment.isRootComment()) {
       throw new BusinessException(GlobalErrorCode.INVALID_REQUEST);
     }
 
@@ -66,7 +62,8 @@ public class LoungeCommentCommandService {
             loungePost.getId(), parentComment.getId(), new UserId(authorUserId), command.content());
 
     LoungeComment savedReply = loungeCommentRepository.save(reply);
-    return LoungeCommentListResult.from(savedReply, 0, List.of());
+    return LoungeCommentListResult.from(
+        savedReply, LoungeWriter.unknown(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional
@@ -93,12 +90,7 @@ public class LoungeCommentCommandService {
     LoungeComment comment = getActiveComment(loungeCommentId);
     UserId likeUserId = new UserId(userId);
 
-    loungeCommentLikeRepository
-        .findByLoungeCommentIdAndUserId(comment.getId(), likeUserId)
-        .orElseGet(
-            () ->
-                loungeCommentLikeRepository.save(
-                    LoungeCommentLike.create(comment.getId(), likeUserId)));
+    loungeCommentLikeRepository.saveIfAbsent(comment.getId(), likeUserId);
 
     return new LoungeCommentLikeResult(
         comment.getId(), true, loungeCommentLikeRepository.countByLoungeCommentId(comment.getId()));
@@ -109,9 +101,7 @@ public class LoungeCommentCommandService {
     LoungeComment comment = getActiveComment(loungeCommentId);
     UserId likeUserId = new UserId(userId);
 
-    loungeCommentLikeRepository
-        .findByLoungeCommentIdAndUserId(comment.getId(), likeUserId)
-        .ifPresent(loungeCommentLikeRepository::delete);
+    loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
 
     return new LoungeCommentLikeResult(
         comment.getId(),

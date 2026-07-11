@@ -1,18 +1,20 @@
 package com.example.demo.domain.lounge.presentation.docs;
 
+import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.presentation.request.LoungePostRequest;
+import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostLikeResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungePostListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Lounge Post", description = "라운지 게시글 API")
 public interface LoungePostControllerDocs {
@@ -46,8 +48,14 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
       @PathVariable Long loungePostId, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 목록 조회", description = "라운지 게시글 목록을 조회합니다.")
-  ApiResponseBody<List<LoungePostListResponse>> getPosts(HttpServletRequest request);
+  @Operation(summary = "라운지 게시글 목록 조회", description = "라운지 게시글 목록을 커서 방식으로 조회합니다.")
+  ApiResponseBody<LoungePostCursorResponse> getPosts(
+      @Parameter(description = "라운지 게시글 카테고리. 없으면 전체 조회") @RequestParam(required = false)
+          LoungePostCategory category,
+      @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
+          Long cursorId,
+      @Parameter(description = "한 번에 불러올 게시글 개수") @RequestParam(defaultValue = "10") int size,
+      HttpServletRequest request);
 
   @Operation(summary = "라운지 게시글 상세 조회", description = "라운지 게시글 상세 정보를 조회합니다.")
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(

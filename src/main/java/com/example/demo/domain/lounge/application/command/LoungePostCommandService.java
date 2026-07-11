@@ -3,8 +3,6 @@ package com.example.demo.domain.lounge.application.command;
 import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
-import com.example.demo.domain.lounge.domain.entity.LoungePostLike;
-import com.example.demo.domain.lounge.domain.entity.LoungePostScrap;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostScrapRepository;
@@ -70,12 +68,7 @@ public class LoungePostCommandService {
     LoungePost loungePost = getActivePost(loungePostId);
     UserId likeUserId = new UserId(userId);
 
-    loungePostLikeRepository
-        .findByLoungePostIdAndUserId(loungePost.getId(), likeUserId)
-        .orElseGet(
-            () ->
-                loungePostLikeRepository.save(
-                    LoungePostLike.create(loungePost.getId(), likeUserId)));
+    loungePostLikeRepository.saveIfAbsent(loungePost.getId(), likeUserId);
 
     return new LoungePostLikeResult(
         loungePost.getId(), true, loungePostLikeRepository.countByLoungePostId(loungePost.getId()));
@@ -86,9 +79,7 @@ public class LoungePostCommandService {
     LoungePost loungePost = getActivePost(loungePostId);
     UserId likeUserId = new UserId(userId);
 
-    loungePostLikeRepository
-        .findByLoungePostIdAndUserId(loungePost.getId(), likeUserId)
-        .ifPresent(loungePostLikeRepository::delete);
+    loungePostLikeRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), likeUserId);
 
     return new LoungePostLikeResult(
         loungePost.getId(),
@@ -101,12 +92,7 @@ public class LoungePostCommandService {
     LoungePost loungePost = getActivePost(loungePostId);
     UserId scrapUserId = new UserId(userId);
 
-    loungePostScrapRepository
-        .findByLoungePostIdAndUserId(loungePost.getId(), scrapUserId)
-        .orElseGet(
-            () ->
-                loungePostScrapRepository.save(
-                    LoungePostScrap.create(loungePost.getId(), scrapUserId)));
+    loungePostScrapRepository.saveIfAbsent(loungePost.getId(), scrapUserId);
 
     return new LoungePostScrapResult(
         loungePost.getId(),
@@ -119,9 +105,7 @@ public class LoungePostCommandService {
     LoungePost loungePost = getActivePost(loungePostId);
     UserId scrapUserId = new UserId(userId);
 
-    loungePostScrapRepository
-        .findByLoungePostIdAndUserId(loungePost.getId(), scrapUserId)
-        .ifPresent(loungePostScrapRepository::delete);
+    loungePostScrapRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), scrapUserId);
 
     return new LoungePostScrapResult(
         loungePost.getId(),

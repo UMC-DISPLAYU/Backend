@@ -5,12 +5,13 @@ import com.example.demo.domain.lounge.application.query.LoungeCommentQueryServic
 import com.example.demo.domain.lounge.presentation.docs.LoungeCommentControllerDocs;
 import com.example.demo.domain.lounge.presentation.mapper.LoungePresentationMapper;
 import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
+import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,18 +55,17 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
         request);
   }
 
-  @PostMapping("/api/v1/lounge/posts/{loungePostId}/comments/{parentCommentId}/replies")
+  @PostMapping("/api/v1/lounge/comments/{parentCommentId}/replies")
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<LoungeCommentListResponse> createReply(
-      @PathVariable Long loungePostId,
       @PathVariable Long parentCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
             loungeCommentCommandService.createReply(
-                loungePostId, parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+                parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
         request);
   }
 
@@ -109,9 +110,27 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   @GetMapping("/api/v1/lounge/posts/{loungePostId}/comments")
   @Override
-  public ApiResponseBody<List<LoungeCommentListResponse>> getComments(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+  public ApiResponseBody<LoungeCommentCursorResponse> getComments(
+      @PathVariable Long loungePostId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toCommentResponses(loungeCommentQueryService.getComments(loungePostId)), request);
+        mapper.toResponse(
+            loungeCommentQueryService.getComments(loungePostId, cursorId, size, TEMP_USER_ID)),
+        request);
+  }
+
+  @GetMapping("/api/v1/lounge/comments/{parentCommentId}/replies")
+  @Override
+  public ApiResponseBody<LoungeReplyCursorResponse> getReplies(
+      @PathVariable Long parentCommentId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, TEMP_USER_ID)),
+        request);
   }
 }

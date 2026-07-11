@@ -1,29 +1,40 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record LoungeCommentListResult(
     Long loungeCommentId,
     Long parentCommentId,
-    Long authorUserId,
     String content,
+    String commentStatus,
+    LoungeWriter writer,
     long likeCount,
+    long replyCount,
+    boolean isLiked,
+    boolean isMyComment,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    List<LoungeCommentListResult> replies) {
+    LocalDateTime updatedAt) {
 
   public static LoungeCommentListResult from(
-      LoungeComment comment, long likeCount, List<LoungeCommentListResult> replies) {
+      LoungeComment comment,
+      LoungeWriter writer,
+      long likeCount,
+      long replyCount,
+      boolean isLiked,
+      Long viewerUserId) {
     return new LoungeCommentListResult(
         comment.getId(),
         comment.getParentCommentId(),
-        comment.getAuthorUserId().value(),
         comment.getContent(),
+        comment.getStatus().name(),
+        writer,
         likeCount,
+        replyCount,
+        isLiked,
+        comment.getAuthorUserId().value().equals(viewerUserId),
         comment.getCreatedAt(),
-        comment.getUpdatedAt(),
-        replies);
+        comment.getUpdatedAt());
   }
 }

@@ -4,14 +4,16 @@ import java.time.LocalDateTime;
 
 public record LoungePostDetailResponse(
     Long loungePostId,
-    Long authorUserId,
     String title,
     String postImageUrl,
     String content,
     String category,
-    String status,
-    long likeCount,
-    long commentCount,
-    long scrapCount,
+    String postStatus,
+    LoungeWriterResponse writer,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt,
+    long commentCount,
+    long likeCount,
+    boolean isLiked,
+    boolean isScrapped,
+    boolean isMyPost) {}
