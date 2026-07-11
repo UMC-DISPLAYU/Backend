@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
@@ -56,20 +55,15 @@ public class ArtworkFeeling extends SoftDeleteBaseEntity {
         );
     }
 
-    public static ArtworkFeeling of(
-            Long feelingId,
-            Long displayArtworkId,
-            Long userId,
-            String content,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt,
-            LocalDateTime deletedAt
-    ) {
-        return new ArtworkFeeling(
-                feelingId,
-                displayArtworkId,
-                userId,
-                content
-        );
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public boolean isWrittenBy(Long userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean belongsToArtwork(Long displayArtworkId) {
+        return this.displayArtworkId.equals(displayArtworkId);
     }
 }

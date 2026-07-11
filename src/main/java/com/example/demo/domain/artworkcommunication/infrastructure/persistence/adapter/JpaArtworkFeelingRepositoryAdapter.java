@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingJpaRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,10 @@ public class JpaArtworkFeelingRepositoryAdapter implements ArtworkFeelingReposit
     @Override
     public ArtworkFeeling save(ArtworkFeeling artworkFeeling) {
         return artworkFeelingJpaRepository.save(artworkFeeling);
+    }
+
+    @Override
+    public Optional<ArtworkFeeling> findById(Long feelingId) {
+        return artworkFeelingJpaRepository.findById(feelingId);
     }
 }
