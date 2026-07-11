@@ -11,6 +11,7 @@ import com.example.demo.domain.user.domain.repository.AgreementRepository;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserAgreementRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.global.security.TokenProvider;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -140,49 +142,30 @@ public class UserService {
 
 
 
-    private void validateNickname(
-            String nickname
-    ) {
-
-        if (userRepository.existsByNickname(nickname)) {
-
-            throw new UserException(
-                    UserErrorCode.DUPLICATE_NICKNAME
-            );
+    private void validateNickname(Nickname nickname) {
+        if (userRepository.existsByNickname(nickname.value())) {
+            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
     }
 
+    private void saveUserAgreements(User user, List<AgreementCommand> agreements) {
+        List<Long> agreeIds = agreements.stream().map(AgreementCommand::agreeId).toList();
 
-
-    private void saveUserAgreements(
-            User user,
-            List<AgreementCommand> agreements
-    ) {
+        Map<Long, Agreement> agreementsById =
+                agreementRepository.findAllById(agreeIds)
+                        .stream()
+                        .collect(Collectors.toMap(Agreement::getId, a -> a));
 
         List<UserAgreement> userAgreements =
                 agreements.stream()
-                        .map(
-                                command -> {
-
-                                    Agreement agreement =
-                                            agreementRepository.findById(
-                                                            command.agreeId()
-                                                    )
-                                                    .orElseThrow();
-
-
-                                    return userAgreementMapper.toUserAgreement(
-                                            user,
-                                            agreement,
-                                            command
-                                    );
-                                }
-                        )
+                        .map(command -> {
+                            Agreement agreement = Optional.ofNullable(agreementsById.get(command.agreeId()))
+                                    .orElseThrow(() -> new UserException(UserErrorCode.AGREEMENT_NOT_FOUND));
+                            return userAgreementMapper.toUserAgreement(user, agreement, command);
+                        })
                         .toList();
 
-
-        userAgreementRepository.saveAll(
-                userAgreements
-        );
+        userAgreementRepository.saveAll(userAgreements);
     }
+
 }

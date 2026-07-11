@@ -9,6 +9,7 @@ import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.mapper.SignupResponseMapper;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
+import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
@@ -65,7 +66,7 @@ public class AuthController
 
         SignupCommand command =
                 new SignupCommand(
-                        request.nickname(),
+                        Nickname.of(request.nickname()),
                         agreements
                 );
 

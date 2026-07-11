@@ -155,21 +155,7 @@ public class AuthService {
 
 
 
-    private void saveRefreshToken(
-            User user,
-            String refreshToken
-    ) {
-
-        RefreshToken token =
-                refreshTokenRepository
-                        .findByUserId(user.getId())
-                        .orElse(
-                                RefreshToken.builder()
-                                        .user(user)
-                                        .build()
-                        );
-
-
+    private void saveRefreshToken(User user, String refreshToken) {
         refreshTokenRepository.findByUserId(user.getId())
                 .ifPresent(refreshTokenRepository::delete);
 
@@ -179,10 +165,6 @@ public class AuthService {
                         .refreshToken(refreshToken)
                         .build()
         );
-
-
-        refreshTokenRepository.save(
-                token
-        );
     }
+
 }
