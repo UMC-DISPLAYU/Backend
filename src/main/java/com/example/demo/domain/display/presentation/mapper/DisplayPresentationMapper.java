@@ -20,7 +20,7 @@ public class DisplayPresentationMapper {
         result.organization(),
         result.department(),
         result.displayType(),
-        result.displayFields(),
+        result.displayField(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -51,7 +51,8 @@ public class DisplayPresentationMapper {
         result.imageType(),
         result.width(),
         result.height(),
-        result.sortOrder());
+        result.sortOrder(),
+        result.deletedAt());
   }
 
   private DisplayDetailResponse.ContentCategoryResponse toResponse(
@@ -83,6 +84,10 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.InvitationResponse toResponse(
       DisplayDetailResult.InvitationResult result) {
     return new DisplayDetailResponse.InvitationResponse(
-        result.invitationId(), result.inviterUserId(), result.inviteeUserId(), result.createdAt());
+        result.invitationId(),
+        result.inviterUserId(),
+        result.inviteeUserId(),
+        result.createdAt(),
+        result.deletedAt());
   }
 }

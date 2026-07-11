@@ -56,7 +56,7 @@ public class DisplayInvitation {
     this.id = id;
     this.inviterUserId = Objects.requireNonNull(inviterUserId, "inviterUserId must not be null.");
     this.inviteeUserId = Objects.requireNonNull(inviteeUserId, "inviteeUserId must not be null.");
-    this.createdAt = createdAt;
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null.");
     this.deletedAt = deletedAt;
   }
 

@@ -81,7 +81,7 @@ public class DisplayContentCategory extends BaseTimeEntity {
   }
 
   public void removeContent(Long contentId) {
-    contents.removeIf(content -> Objects.equals(content.getId(), contentId));
+    contents.removeIf(content -> content.getId().equals(contentId));
   }
 
   private static String requireNonBlank(String value, String fieldName) {

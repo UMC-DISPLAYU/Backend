@@ -47,7 +47,7 @@ public record CreateDisplayRequest(
         organization(),
         department(),
         type.toDisplayType(),
-        fields.stream().map(Field::toDisplayField).toList(),
+        fields.get(0).toDisplayField(),
         startDate,
         endDate,
         openTime,

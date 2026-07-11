@@ -2,10 +2,14 @@ package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.application.result.CreateDisplayResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.DisplayImageType;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +28,10 @@ public class CreateDisplayService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display =
-        Display.create(
+        new Display(
+            null,
             new UserId(command.ownerUserId()),
             command.title(),
-            command.posterImageUrl(),
             command.subtitle(),
             command.content(),
             new DisplayLocation(command.placeName(), command.latitude(), command.longitude()),
@@ -36,11 +40,20 @@ public class CreateDisplayService {
             command.organization(),
             command.department(),
             command.displayType(),
-            command.displayFields(),
+            command.displayField(),
             new DisplayPeriod(
                 command.startDate(), command.endDate(), command.startTime(), command.endTime()),
             command.artworkContentOpen(),
-            command.exhibitionContentOpen());
+            command.exhibitionContentOpen(),
+            DisplayStatus.DRAFT,
+            null,
+            null,
+            List.of(
+                new DisplayImage(
+                    null, command.posterImageUrl(), DisplayImageType.MAIN, 1, 1, 0, null)),
+            List.of(),
+            List.of(),
+            List.of());
 
     Display savedDisplay = displayRepository.save(display);
     return new CreateDisplayResult(savedDisplay.getId());
