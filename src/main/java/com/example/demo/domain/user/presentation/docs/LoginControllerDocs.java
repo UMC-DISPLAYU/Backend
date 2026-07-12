@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
-@Tag(name = "로그인 API")
+
 public interface LoginControllerDocs {
 
 

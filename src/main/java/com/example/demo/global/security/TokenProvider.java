@@ -107,25 +107,30 @@ public class TokenProvider {
 
 
 
-    public boolean validateToken(
+    public boolean validateAccessToken(
             String token
     ) {
 
         try {
 
-            jwtFactory.parse(
-                    token
-            );
+            Claims claims =
+                    jwtFactory.parse(
+                            token
+                    );
 
-            return true;
-
+            return "ACCESS"
+                    .equals(
+                            claims.get(
+                                    "type",
+                                    String.class
+                            )
+                    );
 
         } catch (Exception e) {
 
             return false;
         }
     }
-
 
 
     public boolean validateRefreshToken(

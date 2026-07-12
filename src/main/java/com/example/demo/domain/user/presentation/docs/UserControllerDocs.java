@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
-@Tag(name = "회원 API")
+
 public interface UserControllerDocs {
 
     @Operation(

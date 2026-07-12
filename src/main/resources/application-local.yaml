@@ -26,7 +26,9 @@ app:
 
 jwt:
   secret: ${JWT_SECRET}
-
+  access-expiration: 3600000
+  refresh-expiration: 1209600000
+  signup-expiration: 600000
 
 
 springdoc:
@@ -36,4 +38,3 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
-

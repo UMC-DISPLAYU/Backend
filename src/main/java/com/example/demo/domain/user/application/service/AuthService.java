@@ -1,4 +1,3 @@
-
 package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
@@ -9,20 +8,25 @@ import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
+import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+
     private final KakaoOAuthVerifier kakaoOAuthVerifier;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProvider tokenProvider;
+
 
 
     public LoginResult login(
@@ -44,8 +48,10 @@ public class AuthService {
                         .orElse(null);
 
 
+
         // 기존 회원
         if (user != null) {
+
 
             String accessToken =
                     tokenProvider.createAccessToken(
@@ -73,6 +79,7 @@ public class AuthService {
         }
 
 
+
         // 신규 회원
         String signupToken =
                 tokenProvider.createSignupToken(
@@ -88,12 +95,13 @@ public class AuthService {
 
 
 
+
+
     public String refresh(
             String refreshToken
     ) {
 
 
-        // refreshToken 검증
         if (!tokenProvider.validateRefreshToken(
                 refreshToken
         )) {
@@ -104,10 +112,12 @@ public class AuthService {
         }
 
 
+
         Long userId =
                 tokenProvider.getUserId(
                         refreshToken
                 );
+
 
 
         User user =
@@ -119,13 +129,15 @@ public class AuthService {
                         );
 
 
-        // 탈퇴 회원 확인
+
         if (user.getDeletedAt() != null) {
 
             throw new BusinessException(
                     AuthErrorCode.WITHDRAWAL_USER
             );
         }
+
+
 
 
         RefreshToken savedToken =
@@ -138,7 +150,7 @@ public class AuthService {
                         );
 
 
-        // 저장된 refreshToken과 비교
+
         if (!savedToken.getRefreshToken()
                 .equals(refreshToken)) {
 
@@ -148,6 +160,7 @@ public class AuthService {
         }
 
 
+
         return tokenProvider.createAccessToken(
                 user
         );
@@ -155,9 +168,149 @@ public class AuthService {
 
 
 
-    private void saveRefreshToken(User user, String refreshToken) {
+
+
+    /**
+     * 로그아웃
+     */
+    public void logout(
+            LogoutRequest request,
+            HttpServletRequest httpRequest
+    ) {
+
+
+        String accessToken =
+                resolveAccessToken(
+                        httpRequest
+                );
+
+
+        String refreshToken =
+                request.refreshToken();
+
+
+
+
+        // AccessToken 검증
+        if (!tokenProvider.validateAccessToken(accessToken)) {
+
+            throw new BusinessException(
+                    AuthErrorCode.INVALID_ACCESS_TOKEN
+            );
+        }
+
+
+
+        Long accessUserId =
+                tokenProvider.getUserId(
+                        accessToken
+                );
+
+
+
+
+        // RefreshToken 검증
+        if (!tokenProvider.validateRefreshToken(refreshToken)) {
+
+            throw new BusinessException(
+                    AuthErrorCode.INVALID_REFRESH_TOKEN
+            );
+        }
+
+
+
+        Long refreshUserId =
+                tokenProvider.getUserId(
+                        refreshToken
+                );
+
+
+
+
+        // 사용자 일치 확인
+        if (!accessUserId.equals(refreshUserId)) {
+
+            throw new BusinessException(
+                    AuthErrorCode.TOKEN_USER_MISMATCH
+            );
+        }
+
+
+
+
+        RefreshToken savedToken =
+                refreshTokenRepository
+                        .findByUserId(accessUserId)
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        AuthErrorCode.REFRESH_TOKEN_NOT_FOUND
+                                )
+                        );
+
+
+
+
+        if (!savedToken.getRefreshToken()
+                .equals(refreshToken)) {
+
+            throw new BusinessException(
+                    AuthErrorCode.INVALID_REFRESH_TOKEN
+            );
+        }
+
+
+
+
+        refreshTokenRepository.delete(
+                savedToken
+        );
+    }
+
+
+
+
+
+    private String resolveAccessToken(
+            HttpServletRequest request
+    ) {
+
+
+        String authorization =
+                request.getHeader(
+                        "Authorization"
+                );
+
+
+
+        if (
+                authorization == null ||
+                        !authorization.startsWith("Bearer ")
+        ) {
+
+            throw new BusinessException(
+                    AuthErrorCode.INVALID_ACCESS_TOKEN
+            );
+        }
+
+
+
+        return authorization.substring(7);
+    }
+
+
+
+
+
+    private void saveRefreshToken(
+            User user,
+            String refreshToken
+    ) {
+
         refreshTokenRepository.findByUserId(user.getId())
-                .ifPresent(refreshTokenRepository::delete);
+                .ifPresent(
+                        refreshTokenRepository::delete
+                );
+
 
         refreshTokenRepository.save(
                 RefreshToken.builder()
