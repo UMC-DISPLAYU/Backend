@@ -11,20 +11,20 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class AgreementPersistenceAdapter implements AgreementRepository {
 
-  private final AgreementJpaRepository agreementJpaRepository;
+    private final AgreementJpaRepository agreementJpaRepository;
 
-  @Override
-  public List<Agreement> findRequiredAgreements() {
-    return agreementJpaRepository.findByIsRequiredTrue();
-  }
+    @Override
+    public Optional<Agreement> findById(Long id) {
+        return agreementJpaRepository.findById(id);
+    }
 
-  @Override
-  public Optional<Agreement> findById(Long id) {
-    return agreementJpaRepository.findById(id);
-  }
+    @Override
+    public List<Agreement> findAllById(List<Long> ids) {
+        return agreementJpaRepository.findAllById(ids);
+    }
 
-  @Override
-  public List<Agreement> findAllByIsRequiredTrue() {
-    return agreementJpaRepository.findAllByIsRequiredTrue();
-  }
+    @Override
+    public List<Agreement> findAllByIsRequiredTrue() {
+        return agreementJpaRepository.findAllByIsRequiredTrue();
+    }
 }

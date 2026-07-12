@@ -97,7 +97,7 @@ public interface UserControllerDocs {
                                               "success": null,
                                               "error": {
                                                 "code": "INVALID_NICKNAME_FORMAT",
-                                                "message": "닉네임은 한글, 영문, 숫자로 5~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."
+                                                "message": "닉네임 형식이 올바르지 않습니다."
                                               },
                                               "meta": {
                                                 "timestamp": "2026-06-30T22:10:00",
@@ -134,4 +134,4 @@ public interface UserControllerDocs {
             String nickname,
             HttpServletRequest httpRequest
     );
-}git
+}
