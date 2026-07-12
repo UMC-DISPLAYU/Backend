@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
+import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -94,6 +95,10 @@ public class Display extends BaseTimeEntity {
   private DisplayType displayType;
 
   @Embedded private DisplayPeriod period;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private DisplayRegion region;
 
   // 공개 정책과 발행 상태: 작품/전시 콘텐츠 공개 시점과 초안/발행 상태를 관리한다.
   @Enumerated(EnumType.STRING)
@@ -209,6 +214,7 @@ public class Display extends BaseTimeEntity {
     changeLocation(location);
     changeClassification(displayType);
     changePeriod(period);
+    changeRegion(DisplayRegion.OTHERS);
     changeOpenPolicy(artworkContentOpen, exhibitionContentOpen);
     this.status = Objects.requireNonNullElse(status, DisplayStatus.DRAFT);
     this.invitationToken = invitationToken;
@@ -276,6 +282,11 @@ public class Display extends BaseTimeEntity {
   // 전시 기간과 운영 시간을 변경한다.
   public void changePeriod(DisplayPeriod period) {
     this.period = Objects.requireNonNull(period, "period must not be null.");
+  }
+
+  // 전시 지역을 변경한다.
+  public void changeRegion(DisplayRegion region) {
+    this.region = Objects.requireNonNull(region, "region must not be null.");
   }
 
   // 작품 콘텐츠와 전시 콘텐츠의 공개 시점 정책을 변경한다.
