@@ -4,6 +4,7 @@ import com.example.demo.domain.archive.application.result.ArchiveWorkResult;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GetArchivedWorksService {
@@ -14,6 +15,7 @@ public class GetArchivedWorksService {
     this.archiveWorkRepository = archiveWorkRepository;
   }
 
+  @Transactional(readOnly = true)
   public List<ArchiveWorkResult> getArchivedWorks(Long userId) {
     return archiveWorkRepository.findAllByUserIdOrderBySavedAtDescIdDesc(userId).stream()
         .map(

@@ -6,6 +6,7 @@ import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.global.error.BusinessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GetArchiveWorkDetailService {
@@ -18,6 +19,7 @@ public class GetArchiveWorkDetailService {
 
   // TODO: DisplayArtwork와 조인해서 title/artistName/thumbnailUrl 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만
   // 반환.
+  @Transactional(readOnly = true)
   public ArchiveWorkResult getArchiveWorkDetail(Long userId, Long archiveWorkId) {
     ArchiveWork archiveWork =
         archiveWorkRepository
