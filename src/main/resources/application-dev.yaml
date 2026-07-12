@@ -16,6 +16,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
 
@@ -30,3 +31,12 @@ jwt:
   access-expiration: 3600000
   refresh-expiration: 1209600000
   signup-expiration: 600000
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    doc-expansion: list
+    display-request-duration: true
