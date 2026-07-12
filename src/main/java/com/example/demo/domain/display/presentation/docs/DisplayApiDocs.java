@@ -6,7 +6,8 @@ public final class DisplayApiDocs {
   public static final String TAG_DESCRIPTION = "전시 API";
 
   public static final String CREATE_SUMMARY = "전시 생성";
-  public static final String CREATE_DESCRIPTION = "전시 기본 정보와 일정/장소 정보를 생성합니다.";
+  public static final String CREATE_DESCRIPTION =
+      "전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다.";
   public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
@@ -55,6 +56,7 @@ public final class DisplayApiDocs {
         "posterImageUrl": "https://cdn...",
         "type": "GRADUATION",
         "fields": ["DESIGN", "MEDIA"],
+        "region": "SEOUL",
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부",
         "hostOrganizationName": null,
@@ -92,6 +94,7 @@ public final class DisplayApiDocs {
             "department": "디자인학부",
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -299,6 +302,7 @@ public final class DisplayApiDocs {
             "department": "디자인학과",
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
             "period": {
               "startDate": "2026-07-01",
               "endDate": "2026-07-10",

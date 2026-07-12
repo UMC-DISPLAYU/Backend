@@ -152,10 +152,10 @@ public class Display extends BaseTimeEntity {
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
       ContentOpenPolicy exhibitionContentOpen) {
-    return new Display(
-        null,
+    return create(
         ownerUserId,
         title,
+        posterImageUrl,
         subtitle,
         content,
         location,
@@ -164,25 +164,62 @@ public class Display extends BaseTimeEntity {
         organization,
         department,
         displayType,
+        displayFields,
+        DisplayRegion.OTHERS,
         period,
         artworkContentOpen,
-        exhibitionContentOpen,
-        DisplayStatus.DRAFT,
-        null,
-        null,
-        List.of(
-            new DisplayImage(
-                null,
-                posterImageUrl,
-                DisplayImageType.MAIN,
-                DEFAULT_MAIN_IMAGE_WIDTH,
-                DEFAULT_MAIN_IMAGE_HEIGHT,
-                MAIN_IMAGE_SORT_ORDER,
-                null)),
-        List.of(),
-        toFieldSelections(displayFields),
-        List.of(),
-        List.of());
+        exhibitionContentOpen);
+  }
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayRegion region,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
+    return new Display(
+            null,
+            ownerUserId,
+            title,
+            subtitle,
+            content,
+            location,
+            qnaAccount,
+            note,
+            organization,
+            department,
+            displayType,
+            period,
+            artworkContentOpen,
+            exhibitionContentOpen,
+            DisplayStatus.DRAFT,
+            null,
+            null,
+            List.of(
+                new DisplayImage(
+                    null,
+                    posterImageUrl,
+                    DisplayImageType.MAIN,
+                    DEFAULT_MAIN_IMAGE_WIDTH,
+                    DEFAULT_MAIN_IMAGE_HEIGHT,
+                    MAIN_IMAGE_SORT_ORDER,
+                    null)),
+            List.of(),
+            toFieldSelections(displayFields),
+            List.of(),
+            List.of())
+        .withRegion(region);
   }
 
   public Display(
@@ -287,6 +324,11 @@ public class Display extends BaseTimeEntity {
   // 전시 지역을 변경한다.
   public void changeRegion(DisplayRegion region) {
     this.region = Objects.requireNonNull(region, "region must not be null.");
+  }
+
+  private Display withRegion(DisplayRegion region) {
+    changeRegion(region);
+    return this;
   }
 
   // 작품 콘텐츠와 전시 콘텐츠의 공개 시점 정책을 변경한다.

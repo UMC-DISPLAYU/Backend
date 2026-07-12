@@ -3,6 +3,7 @@ package com.example.demo.domain.display.presentation.request;
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +19,7 @@ public record CreateDisplayRequest(
     @NotBlank String posterImageUrl,
     @NotNull Type type,
     @NotEmpty List<Field> fields,
+    @NotNull DisplayRegion region,
     String schoolOrOrganization,
     String departmentOrClub,
     String hostOrganizationName,
@@ -48,6 +50,7 @@ public record CreateDisplayRequest(
         department(),
         type.toDisplayType(),
         fields.stream().map(Field::toDisplayField).toList(),
+        region,
         startDate,
         endDate,
         openTime,
@@ -66,6 +69,10 @@ public record CreateDisplayRequest(
 
   @AssertTrue(message = "CLUB, JOINT, ETC 타입은 hostOrganizationName이 필수입니다.") public boolean isHostOrganizationNameValid() {
     return requiresSchoolInfo() || hasText(hostOrganizationName);
+  }
+
+  @AssertTrue(message = "region은 ALL이 될 수 없습니다.") public boolean isRegionValid() {
+    return region != DisplayRegion.ALL;
   }
 
   private boolean requiresSchoolInfo() {

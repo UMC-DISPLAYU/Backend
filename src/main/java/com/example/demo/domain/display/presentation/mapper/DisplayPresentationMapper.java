@@ -72,6 +72,7 @@ public class DisplayPresentationMapper {
         result.department(),
         result.displayType(),
         result.displayFields(),
+        result.region(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
