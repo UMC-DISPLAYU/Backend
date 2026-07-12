@@ -7,6 +7,7 @@ import com.example.demo.domain.user.domain.entity.User;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.infrastructure.oauth.GoogleOAuthVerifier;
 import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
@@ -23,6 +24,7 @@ public class AuthService {
 
 
     private final KakaoOAuthVerifier kakaoOAuthVerifier;
+    private final GoogleOAuthVerifier googleOAuthVerifier;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProvider tokenProvider;
@@ -33,10 +35,27 @@ public class AuthService {
             SocialLoginRequest request
     ) {
 
-        SocialUserInfo socialUserInfo =
-                kakaoOAuthVerifier.verify(
-                        request.idToken()
-                );
+        SocialUserInfo socialUserInfo;
+
+        switch (request.provider()) {
+
+            case Kakao ->
+                    socialUserInfo =
+                            kakaoOAuthVerifier.verify(
+                                    request.idToken()
+                            );
+
+            case Google ->
+                    socialUserInfo =
+                            googleOAuthVerifier.verify(
+                                    request.idToken()
+                            );
+
+            default ->
+                    throw new BusinessException(
+                            AuthErrorCode.INVALID_SOCIAL_TOKEN
+                    );
+        }
 
 
         User user =
@@ -48,28 +67,19 @@ public class AuthService {
                         .orElse(null);
 
 
-
         // 기존 회원
         if (user != null) {
 
-
             String accessToken =
-                    tokenProvider.createAccessToken(
-                            user
-                    );
-
+                    tokenProvider.createAccessToken(user);
 
             String refreshToken =
-                    tokenProvider.createRefreshToken(
-                            user
-                    );
-
+                    tokenProvider.createRefreshToken(user);
 
             saveRefreshToken(
                     user,
                     refreshToken
             );
-
 
             return LoginResult.login(
                     user,
@@ -79,13 +89,11 @@ public class AuthService {
         }
 
 
-
         // 신규 회원
         String signupToken =
                 tokenProvider.createSignupToken(
                         socialUserInfo
                 );
-
 
         return LoginResult.signup(
                 signupToken,
