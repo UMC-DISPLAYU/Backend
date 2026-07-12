@@ -11,15 +11,15 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JpaArtworkQuestionRepositoryAdapter implements ArtworkQuestionRepository {
 
-    private final ArtworkQuestionJpaRepository artworkQuestionJpaRepository;
+  private final ArtworkQuestionJpaRepository artworkQuestionJpaRepository;
 
-    @Override
-    public ArtworkQuestion save(ArtworkQuestion artworkQuestion) {
-        return artworkQuestionJpaRepository.save(artworkQuestion);
-    }
+  @Override
+  public ArtworkQuestion save(ArtworkQuestion artworkQuestion) {
+    return artworkQuestionJpaRepository.save(artworkQuestion);
+  }
 
-    @Override
-    public Optional<ArtworkQuestion> findById(Long artQueId) {
-        return artworkQuestionJpaRepository.findById(artQueId);
-    }
+  @Override
+  public Optional<ArtworkQuestion> findById(Long artQueId) {
+    return artworkQuestionJpaRepository.findById(artQueId);
+  }
 }

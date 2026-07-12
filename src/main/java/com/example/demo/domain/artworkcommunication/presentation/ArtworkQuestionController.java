@@ -32,72 +32,61 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/artworks/{artworkId}/questions")
 public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
-    private final CreateArtworkQuestionService createArtworkQuestionService;
-    private final UpdateArtworkQuestionService updateArtworkQuestionService;
-    private final DeleteArtworkQuestionService deleteArtworkQuestionService;
-    private final ArtworkQuestionPresentationMapper mapper;
+  private final CreateArtworkQuestionService createArtworkQuestionService;
+  private final UpdateArtworkQuestionService updateArtworkQuestionService;
+  private final DeleteArtworkQuestionService deleteArtworkQuestionService;
+  private final ArtworkQuestionPresentationMapper mapper;
 
-    @Override
-    @PostMapping
-    // 질문 등록
-    public ApiResponseBody<ArtworkQuestionResponse> createQuestion(
-            @PathVariable Long artworkId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            @Valid @RequestBody CreateArtworkQuestionRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-        CreateArtworkQuestionCommand command =
-                mapper.toCommand(artworkId, userId, request);
+  @Override
+  @PostMapping
+  // 질문 등록
+  public ApiResponseBody<ArtworkQuestionResponse> createQuestion(
+      @PathVariable Long artworkId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody CreateArtworkQuestionRequest request,
+      HttpServletRequest httpServletRequest) {
+    CreateArtworkQuestionCommand command = mapper.toCommand(artworkId, userId, request);
 
-        ArtworkQuestionResult result =
-                createArtworkQuestionService.createQuestion(command);
+    ArtworkQuestionResult result = createArtworkQuestionService.createQuestion(command);
 
-        ArtworkQuestionResponse response =
-                mapper.toResponse(result);
+    ArtworkQuestionResponse response = mapper.toResponse(result);
 
-        return ApiResponseBody.success(response, httpServletRequest);
-    }
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
-    @Override
-    @PatchMapping("/{questionId}")
-    // 질문 수정
-    public ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
-            @PathVariable Long artworkId,
-            @PathVariable Long questionId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            @Valid @RequestBody UpdateArtworkQuestionRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-        UpdateArtworkQuestionCommand command =
-                mapper.toCommand(artworkId, questionId, userId, request);
+  @Override
+  @PatchMapping("/{questionId}")
+  // 질문 수정
+  public ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody UpdateArtworkQuestionRequest request,
+      HttpServletRequest httpServletRequest) {
+    UpdateArtworkQuestionCommand command = mapper.toCommand(artworkId, questionId, userId, request);
 
-        ArtworkQuestionResult result =
-                updateArtworkQuestionService.updateQuestion(command);
+    ArtworkQuestionResult result = updateArtworkQuestionService.updateQuestion(command);
 
-        ArtworkQuestionResponse response =
-                mapper.toResponse(result);
+    ArtworkQuestionResponse response = mapper.toResponse(result);
 
-        return ApiResponseBody.success(response, httpServletRequest);
-    }
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
-    @Override
-    @DeleteMapping("/{questionId}")
-    // 질문 삭제
-    public ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
-            @PathVariable Long artworkId,
-            @PathVariable Long questionId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            HttpServletRequest httpServletRequest
-    ) {
-        DeleteArtworkQuestionCommand command =
-                new DeleteArtworkQuestionCommand(artworkId, questionId, userId);
+  @Override
+  @DeleteMapping("/{questionId}")
+  // 질문 삭제
+  public ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    DeleteArtworkQuestionCommand command =
+        new DeleteArtworkQuestionCommand(artworkId, questionId, userId);
 
-        DeletedArtworkQuestionResult result =
-                deleteArtworkQuestionService.deleteQuestion(command);
+    DeletedArtworkQuestionResult result = deleteArtworkQuestionService.deleteQuestion(command);
 
-        DeletedArtworkQuestionResponse response =
-                mapper.toResponse(result);
+    DeletedArtworkQuestionResponse response = mapper.toResponse(result);
 
-        return ApiResponseBody.success(response, httpServletRequest);
-    }
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 }

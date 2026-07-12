@@ -4,7 +4,7 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeel
 import java.util.Optional;
 
 public interface ArtworkFeelingRepository {
-    ArtworkFeeling save(ArtworkFeeling artworkFeeling);
+  ArtworkFeeling save(ArtworkFeeling artworkFeeling);
 
-    Optional<ArtworkFeeling> findById(Long feelingId);
+  Optional<ArtworkFeeling> findById(Long feelingId);
 }

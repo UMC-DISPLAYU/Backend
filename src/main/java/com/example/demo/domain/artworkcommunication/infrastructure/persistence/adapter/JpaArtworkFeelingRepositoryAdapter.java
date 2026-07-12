@@ -11,15 +11,15 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JpaArtworkFeelingRepositoryAdapter implements ArtworkFeelingRepository {
 
-    private final ArtworkFeelingJpaRepository artworkFeelingJpaRepository;
+  private final ArtworkFeelingJpaRepository artworkFeelingJpaRepository;
 
-    @Override
-    public ArtworkFeeling save(ArtworkFeeling artworkFeeling) {
-        return artworkFeelingJpaRepository.save(artworkFeeling);
-    }
+  @Override
+  public ArtworkFeeling save(ArtworkFeeling artworkFeeling) {
+    return artworkFeelingJpaRepository.save(artworkFeeling);
+  }
 
-    @Override
-    public Optional<ArtworkFeeling> findById(Long feelingId) {
-        return artworkFeelingJpaRepository.findById(feelingId);
-    }
+  @Override
+  public Optional<ArtworkFeeling> findById(Long feelingId) {
+    return artworkFeelingJpaRepository.findById(feelingId);
+  }
 }

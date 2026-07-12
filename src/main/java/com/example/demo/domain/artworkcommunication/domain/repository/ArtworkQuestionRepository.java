@@ -4,7 +4,7 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import java.util.Optional;
 
 public interface ArtworkQuestionRepository {
-    ArtworkQuestion save(ArtworkQuestion artworkQuestion);
+  ArtworkQuestion save(ArtworkQuestion artworkQuestion);
 
-    Optional<ArtworkQuestion> findById(Long artQueId);
+  Optional<ArtworkQuestion> findById(Long artQueId);
 }

@@ -233,7 +233,9 @@ public interface ArtworkQuestionApiDocs {
       UpdateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 Q&A 질문 삭제", description = "사용자가 본인이 작성한 작품 Q&A 질문을 soft delete 방식으로 삭제합니다.")
+  @Operation(
+      summary = "작품 Q&A 질문 삭제",
+      description = "사용자가 본인이 작성한 작품 Q&A 질문을 soft delete 방식으로 삭제합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 Q&A 질문 삭제 성공",

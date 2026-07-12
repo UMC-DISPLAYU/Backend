@@ -16,63 +16,59 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DeleteArtworkQuestionService {
 
-    private final ArtworkQuestionRepository artworkQuestionRepository;
-    private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
-    private final UserExistenceRepository userExistenceRepository;
+  private final ArtworkQuestionRepository artworkQuestionRepository;
+  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  private final UserExistenceRepository userExistenceRepository;
 
-    public DeletedArtworkQuestionResult deleteQuestion(DeleteArtworkQuestionCommand command) {
-        validateDisplayArtworkExists(command.displayArtworkId());
-        validateUserExists(command.userId());
+  public DeletedArtworkQuestionResult deleteQuestion(DeleteArtworkQuestionCommand command) {
+    validateDisplayArtworkExists(command.displayArtworkId());
+    validateUserExists(command.userId());
 
-        ArtworkQuestion artworkQuestion =
-                artworkQuestionRepository.findById(command.questionId())
-                        .orElseThrow(() ->
-                                new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
+    ArtworkQuestion artworkQuestion =
+        artworkQuestionRepository
+            .findById(command.questionId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
 
-        validateNotDeleted(artworkQuestion);
-        validateArtworkQuestionBelongsToArtwork(artworkQuestion, command.displayArtworkId());
-        validateWriter(artworkQuestion, command.userId());
+    validateNotDeleted(artworkQuestion);
+    validateArtworkQuestionBelongsToArtwork(artworkQuestion, command.displayArtworkId());
+    validateWriter(artworkQuestion, command.userId());
 
-        artworkQuestion.delete();
-        ArtworkQuestion savedQuestion =
-                artworkQuestionRepository.save(artworkQuestion);
+    artworkQuestion.delete();
+    ArtworkQuestion savedQuestion = artworkQuestionRepository.save(artworkQuestion);
 
-        return new DeletedArtworkQuestionResult(
-                savedQuestion.getArtQueId(),
-                savedQuestion.getDeletedAt()
-        );
+    return new DeletedArtworkQuestionResult(
+        savedQuestion.getArtQueId(), savedQuestion.getDeletedAt());
+  }
+
+  private void validateDisplayArtworkExists(Long displayArtworkId) {
+    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
     }
+  }
 
-    private void validateDisplayArtworkExists(Long displayArtworkId) {
-        if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-        }
+  private void validateUserExists(Long userId) {
+    if (!userExistenceRepository.existsById(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
     }
+  }
 
-    private void validateUserExists(Long userId) {
-        if (!userExistenceRepository.existsById(userId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-        }
+  private void validateNotDeleted(ArtworkQuestion artworkQuestion) {
+    if (artworkQuestion.isDeleted()) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
     }
+  }
 
-    private void validateNotDeleted(ArtworkQuestion artworkQuestion) {
-        if (artworkQuestion.isDeleted()) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
-        }
+  private void validateArtworkQuestionBelongsToArtwork(
+      ArtworkQuestion artworkQuestion, Long displayArtworkId) {
+    if (!artworkQuestion.belongsToArtwork(displayArtworkId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
     }
+  }
 
-    private void validateArtworkQuestionBelongsToArtwork(
-            ArtworkQuestion artworkQuestion,
-            Long displayArtworkId
-    ) {
-        if (!artworkQuestion.belongsToArtwork(displayArtworkId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
-        }
+  private void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
+    if (!artworkQuestion.isWrittenBy(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
     }
-
-    private void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
-        if (!artworkQuestion.isWrittenBy(userId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
-        }
-    }
+  }
 }

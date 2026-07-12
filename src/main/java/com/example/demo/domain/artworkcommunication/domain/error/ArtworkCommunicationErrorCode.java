@@ -8,10 +8,8 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   FEELING_NOT_FOUND(HttpStatus.NOT_FOUND, "FEELING_NOT_FOUND", "감상평을 찾을 수 없습니다."),
   QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "질문을 찾을 수 없습니다."),
-  INVALID_QUESTION_CONTENT(
-      HttpStatus.BAD_REQUEST, "INVALID_QUESTION_CONTENT", "질문 내용을 입력해주세요."),
-  ARTWORK_FEELING_FORBIDDEN(
-      HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
+  INVALID_QUESTION_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_QUESTION_CONTENT", "질문 내용을 입력해주세요."),
+  ARTWORK_FEELING_FORBIDDEN(HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
   ARTWORK_QUESTION_FORBIDDEN(
       HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다.");
 

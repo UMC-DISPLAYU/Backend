@@ -13,37 +13,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class ArtworkFeelingPresentationMapper {
 
-    public ArtworkFeelingCommand toCommand(
-            Long artworkId,
-            Long userId,
-            CreateArtworkFeelingRequest request
-    ) {
-        return new ArtworkFeelingCommand(artworkId, userId, request.content());
-    }
+  public ArtworkFeelingCommand toCommand(
+      Long artworkId, Long userId, CreateArtworkFeelingRequest request) {
+    return new ArtworkFeelingCommand(artworkId, userId, request.content());
+  }
 
-    public UpdateArtworkFeelingCommand toCommand(
-            Long artworkId,
-            Long feelingId,
-            Long userId,
-            UpdateArtworkFeelingRequest request
-    ) {
-        return new UpdateArtworkFeelingCommand(artworkId, feelingId, userId, request.content());
-    }
+  public UpdateArtworkFeelingCommand toCommand(
+      Long artworkId, Long feelingId, Long userId, UpdateArtworkFeelingRequest request) {
+    return new UpdateArtworkFeelingCommand(artworkId, feelingId, userId, request.content());
+  }
 
-    public ArtworkFeelingResponse toResponse(ArtworkFeelingResult result) {
-        return new ArtworkFeelingResponse(
-                result.feelingId(),
-                result.userId(),
-                result.content(),
-                result.createdAt()
-        );
-    }
+  public ArtworkFeelingResponse toResponse(ArtworkFeelingResult result) {
+    return new ArtworkFeelingResponse(
+        result.feelingId(), result.userId(), result.content(), result.createdAt());
+  }
 
-    public UpdatedArtworkFeelingResponse toResponse(UpdatedArtworkFeelingResult result) {
-        return new UpdatedArtworkFeelingResponse(
-                result.feelingId(),
-                result.content(),
-                result.updatedAt()
-        );
-    }
+  public UpdatedArtworkFeelingResponse toResponse(UpdatedArtworkFeelingResult result) {
+    return new UpdatedArtworkFeelingResponse(
+        result.feelingId(), result.content(), result.updatedAt());
+  }
 }

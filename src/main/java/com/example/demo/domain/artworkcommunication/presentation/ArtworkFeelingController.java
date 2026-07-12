@@ -25,68 +25,59 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/artworks/{artworkId}/feelings")
 public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
-    private final CreateArtworkFeelingService createArtworkFeelingService;
-    private final UpdateArtworkFeelingService updateArtworkFeelingService;
-    private final DeleteArtworkFeelingService deleteArtworkFeelingService;
-    private final ArtworkFeelingPresentationMapper mapper;
+  private final CreateArtworkFeelingService createArtworkFeelingService;
+  private final UpdateArtworkFeelingService updateArtworkFeelingService;
+  private final DeleteArtworkFeelingService deleteArtworkFeelingService;
+  private final ArtworkFeelingPresentationMapper mapper;
 
-    @Override
-    @PostMapping
-    // 감상평 작성
-    public ApiResponseBody<ArtworkFeelingResponse> createFeeling(
-            @PathVariable Long artworkId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            @Valid @RequestBody CreateArtworkFeelingRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-        ArtworkFeelingCommand command =
-                mapper.toCommand(artworkId, userId, request);
+  @Override
+  @PostMapping
+  // 감상평 작성
+  public ApiResponseBody<ArtworkFeelingResponse> createFeeling(
+      @PathVariable Long artworkId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody CreateArtworkFeelingRequest request,
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingCommand command = mapper.toCommand(artworkId, userId, request);
 
-        ArtworkFeelingResult result =
-                createArtworkFeelingService.createFeeling(command);
+    ArtworkFeelingResult result = createArtworkFeelingService.createFeeling(command);
 
-        ArtworkFeelingResponse response =
-                mapper.toResponse(result);
+    ArtworkFeelingResponse response = mapper.toResponse(result);
 
-        return ApiResponseBody.success(response, httpServletRequest);
-    }
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
-    @Override
-    @PatchMapping("/{feelingId}")
-    // 감상평 수정
-    public ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
-            @PathVariable Long artworkId,
-            @PathVariable Long feelingId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            @Valid @RequestBody UpdateArtworkFeelingRequest request,
-            HttpServletRequest httpServletRequest
-    ) {
-        UpdateArtworkFeelingCommand command =
-                mapper.toCommand(artworkId, feelingId, userId, request);
+  @Override
+  @PatchMapping("/{feelingId}")
+  // 감상평 수정
+  public ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody UpdateArtworkFeelingRequest request,
+      HttpServletRequest httpServletRequest) {
+    UpdateArtworkFeelingCommand command = mapper.toCommand(artworkId, feelingId, userId, request);
 
-        UpdatedArtworkFeelingResult result =
-                updateArtworkFeelingService.updateFeeling(command);
+    UpdatedArtworkFeelingResult result = updateArtworkFeelingService.updateFeeling(command);
 
-        UpdatedArtworkFeelingResponse response =
-                mapper.toResponse(result);
+    UpdatedArtworkFeelingResponse response = mapper.toResponse(result);
 
-        return ApiResponseBody.success(response, httpServletRequest);
-    }
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
-    @Override
-    @DeleteMapping("/{feelingId}")
-    // 감상평 삭제
-    public ApiResponseBody<Void> deleteFeeling(
-            @PathVariable Long artworkId,
-            @PathVariable Long feelingId,
-            @RequestHeader("X-User-Id") Long userId, //테스트용
-            HttpServletRequest httpServletRequest
-    ) {
-        DeleteArtworkFeelingCommand command =
-                new DeleteArtworkFeelingCommand(artworkId, feelingId, userId);
+  @Override
+  @DeleteMapping("/{feelingId}")
+  // 감상평 삭제
+  public ApiResponseBody<Void> deleteFeeling(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    DeleteArtworkFeelingCommand command =
+        new DeleteArtworkFeelingCommand(artworkId, feelingId, userId);
 
-        deleteArtworkFeelingService.deleteFeeling(command);
+    deleteArtworkFeelingService.deleteFeeling(command);
 
-        return ApiResponseBody.success(null, httpServletRequest);
-    }
+    return ApiResponseBody.success(null, httpServletRequest);
+  }
 }

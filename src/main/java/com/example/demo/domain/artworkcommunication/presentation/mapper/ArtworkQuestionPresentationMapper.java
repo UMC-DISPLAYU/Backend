@@ -13,52 +13,32 @@ import org.springframework.stereotype.Component;
 @Component
 public class ArtworkQuestionPresentationMapper {
 
-    public CreateArtworkQuestionCommand toCommand(
-            Long artworkId,
-            Long userId,
-            CreateArtworkQuestionRequest request
-    ) {
-        return new CreateArtworkQuestionCommand(
-                artworkId,
-                userId,
-                request.content(),
-                request.isPublic()
-        );
-    }
+  public CreateArtworkQuestionCommand toCommand(
+      Long artworkId, Long userId, CreateArtworkQuestionRequest request) {
+    return new CreateArtworkQuestionCommand(
+        artworkId, userId, request.content(), request.isPublic());
+  }
 
-    public UpdateArtworkQuestionCommand toCommand(
-            Long artworkId,
-            Long questionId,
-            Long userId,
-            UpdateArtworkQuestionRequest request
-    ) {
-        return new UpdateArtworkQuestionCommand(
-                artworkId,
-                questionId,
-                userId,
-                request.content(),
-                request.isPublic()
-        );
-    }
+  public UpdateArtworkQuestionCommand toCommand(
+      Long artworkId, Long questionId, Long userId, UpdateArtworkQuestionRequest request) {
+    return new UpdateArtworkQuestionCommand(
+        artworkId, questionId, userId, request.content(), request.isPublic());
+  }
 
-    public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
-        return new ArtworkQuestionResponse(
-                result.artQueId(),
-                result.content(),
-                result.isPublic(),
-                result.answerStatus(),
-                result.createdAt(),
-                result.updatedAt(),
-                result.deletedAt(),
-                result.displayArtworkId(),
-                result.userId()
-        );
-    }
+  public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
+    return new ArtworkQuestionResponse(
+        result.artQueId(),
+        result.content(),
+        result.isPublic(),
+        result.answerStatus(),
+        result.createdAt(),
+        result.updatedAt(),
+        result.deletedAt(),
+        result.displayArtworkId(),
+        result.userId());
+  }
 
-    public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
-        return new DeletedArtworkQuestionResponse(
-                result.artQueId(),
-                result.deletedAt()
-        );
-    }
+  public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
+    return new DeletedArtworkQuestionResponse(result.artQueId(), result.deletedAt());
+  }
 }

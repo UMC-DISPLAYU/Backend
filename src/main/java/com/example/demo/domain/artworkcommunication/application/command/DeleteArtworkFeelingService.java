@@ -15,57 +15,56 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DeleteArtworkFeelingService {
 
-    private final ArtworkFeelingRepository artworkFeelingRepository;
-    private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
-    private final UserExistenceRepository userExistenceRepository;
+  private final ArtworkFeelingRepository artworkFeelingRepository;
+  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  private final UserExistenceRepository userExistenceRepository;
 
-    public void deleteFeeling(DeleteArtworkFeelingCommand command) {
-        validateDisplayArtworkExists(command.displayArtworkId());
-        validateUserExists(command.userId());
+  public void deleteFeeling(DeleteArtworkFeelingCommand command) {
+    validateDisplayArtworkExists(command.displayArtworkId());
+    validateUserExists(command.userId());
 
-        ArtworkFeeling artworkFeeling =
-                artworkFeelingRepository.findById(command.feelingId())
-                        .orElseThrow(() ->
-                                new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
+    ArtworkFeeling artworkFeeling =
+        artworkFeelingRepository
+            .findById(command.feelingId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
 
-        validateNotDeleted(artworkFeeling);
-        validateArtworkFeelingBelongsToArtwork(artworkFeeling, command.displayArtworkId());
-        validateWriter(artworkFeeling, command.userId());
+    validateNotDeleted(artworkFeeling);
+    validateArtworkFeelingBelongsToArtwork(artworkFeeling, command.displayArtworkId());
+    validateWriter(artworkFeeling, command.userId());
 
-        artworkFeeling.delete();
-        artworkFeelingRepository.save(artworkFeeling);
+    artworkFeeling.delete();
+    artworkFeelingRepository.save(artworkFeeling);
+  }
+
+  private void validateDisplayArtworkExists(Long displayArtworkId) {
+    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
     }
+  }
 
-    private void validateDisplayArtworkExists(Long displayArtworkId) {
-        if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-        }
+  private void validateUserExists(Long userId) {
+    if (!userExistenceRepository.existsById(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
     }
+  }
 
-    private void validateUserExists(Long userId) {
-        if (!userExistenceRepository.existsById(userId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-        }
+  private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
+    if (artworkFeeling.isDeleted()) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
     }
+  }
 
-    private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
-        if (artworkFeeling.isDeleted()) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
-        }
+  private void validateArtworkFeelingBelongsToArtwork(
+      ArtworkFeeling artworkFeeling, Long displayArtworkId) {
+    if (!artworkFeeling.belongsToArtwork(displayArtworkId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
     }
+  }
 
-    private void validateArtworkFeelingBelongsToArtwork(
-            ArtworkFeeling artworkFeeling,
-            Long displayArtworkId
-    ) {
-        if (!artworkFeeling.belongsToArtwork(displayArtworkId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
-        }
+  private void validateWriter(ArtworkFeeling artworkFeeling, Long userId) {
+    if (!artworkFeeling.isWrittenBy(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_FORBIDDEN);
     }
-
-    private void validateWriter(ArtworkFeeling artworkFeeling, Long userId) {
-        if (!artworkFeeling.isWrittenBy(userId)) {
-            throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_FORBIDDEN);
-        }
-    }
+  }
 }

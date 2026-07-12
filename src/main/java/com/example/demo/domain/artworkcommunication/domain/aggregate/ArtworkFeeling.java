@@ -14,56 +14,42 @@ import lombok.Getter;
 @Table(name = "ArtworkFeeling")
 public class ArtworkFeeling extends SoftDeleteBaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "feelingId")
-    private Long feelingId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "feelingId")
+  private Long feelingId;
 
-    @Column(name = "displayArtworkId", nullable = false)
-    private Long displayArtworkId;
+  @Column(name = "displayArtworkId", nullable = false)
+  private Long displayArtworkId;
 
-    @Column(name = "userId", nullable = false)
-    private Long userId;
+  @Column(name = "userId", nullable = false)
+  private Long userId;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-    private String content;
+  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+  private String content;
 
-    protected ArtworkFeeling() {}
+  protected ArtworkFeeling() {}
 
-    private ArtworkFeeling(
-            Long feelingId,
-            Long displayArtworkId,
-            Long userId,
-            String content
-    ) {
-        this.feelingId = feelingId;
-        this.displayArtworkId = displayArtworkId;
-        this.userId = userId;
-        this.content = content;
-    }
+  private ArtworkFeeling(Long feelingId, Long displayArtworkId, Long userId, String content) {
+    this.feelingId = feelingId;
+    this.displayArtworkId = displayArtworkId;
+    this.userId = userId;
+    this.content = content;
+  }
 
-    public static ArtworkFeeling create(
-            Long displayArtworkId,
-            Long userId,
-            String content
-    ) {
-        return new ArtworkFeeling(
-                null,
-                displayArtworkId,
-                userId,
-                content
-        );
-    }
+  public static ArtworkFeeling create(Long displayArtworkId, Long userId, String content) {
+    return new ArtworkFeeling(null, displayArtworkId, userId, content);
+  }
 
-    public void updateContent(String content) {
-        this.content = content;
-    }
+  public void updateContent(String content) {
+    this.content = content;
+  }
 
-    public boolean isWrittenBy(Long userId) {
-        return this.userId.equals(userId);
-    }
+  public boolean isWrittenBy(Long userId) {
+    return this.userId.equals(userId);
+  }
 
-    public boolean belongsToArtwork(Long displayArtworkId) {
-        return this.displayArtworkId.equals(displayArtworkId);
-    }
+  public boolean belongsToArtwork(Long displayArtworkId) {
+    return this.displayArtworkId.equals(displayArtworkId);
+  }
 }
