@@ -35,6 +35,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.M
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_NAME;
 
@@ -45,17 +50,20 @@ import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplay
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
+import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.ClosingSoonDisplayRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
+import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
+import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -86,6 +94,7 @@ public class DisplayController {
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
   private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
   private final GetDuPicksUseCase getDuPicksUseCase;
+  private final SearchDisplaysUseCase searchDisplaysUseCase;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -95,6 +104,7 @@ public class DisplayController {
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
       GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
       GetDuPicksUseCase getDuPicksUseCase,
+      SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
@@ -102,6 +112,7 @@ public class DisplayController {
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
     this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
     this.getDuPicksUseCase = getDuPicksUseCase;
+    this.searchDisplaysUseCase = searchDisplaysUseCase;
     this.mapper = mapper;
   }
 
@@ -152,6 +163,26 @@ public class DisplayController {
       @Valid @ModelAttribute DisplayMapRequest displayMapRequest, HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(getDisplayMapUseCase.getDisplayMap(displayMapRequest.toQuery())),
+        request);
+  }
+
+  @GetMapping("/api/v1/display/search")
+  @Operation(summary = SEARCH_SUMMARY, description = SEARCH_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = SEARCH_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = SEARCH_SUCCESS_EXAMPLE_NAME,
+                      value = SEARCH_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<SearchDisplayResponse> searchDisplays(
+      @Valid @ModelAttribute SearchDisplayRequest searchDisplayRequest,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(searchDisplaysUseCase.searchDisplays(searchDisplayRequest.toQuery())),
         request);
   }
 

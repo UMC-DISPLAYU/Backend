@@ -17,6 +17,13 @@ public final class DisplayApiDocs {
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
   public static final String MAP_SUCCESS_EXAMPLE_NAME = "Display map success";
 
+  public static final String SEARCH_SUMMARY = "전시 검색";
+  public static final String SEARCH_DESCRIPTION =
+      "발행된 전시를 displayId 오름차순 커서 방식으로 검색합니다. "
+          + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다.";
+  public static final String SEARCH_SUCCESS_DESCRIPTION = "전시 검색 성공";
+  public static final String SEARCH_SUCCESS_EXAMPLE_NAME = "Display search success";
+
   public static final String CLOSING_SOON_SUMMARY = "마감 임박 전시 조회";
   public static final String CLOSING_SOON_DESCRIPTION =
       "현재 날짜 기준 종료되지 않은 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
@@ -179,6 +186,37 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
           "path": "/api/v1/display/closing-soon"
+        }
+      }
+      """;
+
+  public static final String SEARCH_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "exhibitions": [
+              {
+                "displayId": 15,
+                "title": "2026 디자인 졸업전시",
+                "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "startedAt": "2026-07-10",
+                "endedAt": "2026-07-20",
+                "dayLeft": 8
+              }
+            ],
+            "pagination": {
+              "nextCursor": 15,
+              "size": 10,
+              "hasNext": true
+            }
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/search"
         }
       }
       """;
