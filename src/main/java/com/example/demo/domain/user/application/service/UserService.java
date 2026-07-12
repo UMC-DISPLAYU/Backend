@@ -20,15 +20,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
+
 
     private final UserMapper userMapper;
     private final UserAgreementMapper userAgreementMapper;
@@ -70,10 +71,14 @@ public class UserService {
         );
 
 
+
+        // 필수 약관 조회
         List<Agreement> requiredAgreements =
                 agreementRepository.findAllByIsRequiredTrue();
 
 
+
+        // 사용자가 동의한 약관 ID만 추출
         Set<Long> agreedIds =
                 command.agreements()
                         .stream()
@@ -88,10 +93,13 @@ public class UserService {
                         );
 
 
+
+        // 필수 약관 동의 여부 검증
         agreementPolicy.validate(
                 requiredAgreements,
                 agreedIds
         );
+
 
 
         User user =
@@ -107,10 +115,12 @@ public class UserService {
                 );
 
 
+
         saveUserAgreements(
                 savedUser,
                 command.agreements()
         );
+
 
 
         String accessToken =
@@ -125,12 +135,14 @@ public class UserService {
                 );
 
 
+
         refreshTokenRepository.save(
                 RefreshToken.builder()
                         .user(savedUser)
                         .refreshToken(refreshToken)
                         .build()
         );
+
 
 
         return new SignupResult(
@@ -142,36 +154,78 @@ public class UserService {
 
 
 
-    private void validateNickname(Nickname nickname) {
+
+
+    private void validateNickname(
+            Nickname nickname
+    ) {
+
         if (userRepository.existsByNickname(nickname.value())) {
-            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
+
+            throw new UserException(
+                    UserErrorCode.DUPLICATE_NICKNAME
+            );
         }
     }
 
-    public boolean isNicknameAvailable(String rawNickname) {
-        // 형식이 틀리면 여기서 INVALID_NICKNAME_FORMAT 예외 발생 (VO 자체 검증)
-        Nickname nickname = Nickname.of(rawNickname);
-        return !userRepository.existsByNickname(nickname.value());
+
+
+
+
+    public boolean isNicknameAvailable(
+            String rawNickname
+    ) {
+
+        Nickname nickname =
+                Nickname.of(rawNickname);
+
+        return !userRepository.existsByNickname(
+                nickname.value()
+        );
     }
 
-    private void saveUserAgreements(User user, List<AgreementCommand> agreements) {
-        List<Long> agreeIds = agreements.stream().map(AgreementCommand::agreeId).toList();
 
-        Map<Long, Agreement> agreementsById =
-                agreementRepository.findAllById(agreeIds)
-                        .stream()
-                        .collect(Collectors.toMap(Agreement::getId, a -> a));
+
+
+
+    /**
+     * 동의한 약관만 저장
+     */
+    private void saveUserAgreements(
+            User user,
+            List<AgreementCommand> agreements
+    ) {
 
         List<UserAgreement> userAgreements =
                 agreements.stream()
+                        .filter(
+                                AgreementCommand::isAgreed
+                        )
                         .map(command -> {
-                            Agreement agreement = Optional.ofNullable(agreementsById.get(command.agreeId()))
-                                    .orElseThrow(() -> new UserException(UserErrorCode.AGREEMENT_NOT_FOUND));
-                            return userAgreementMapper.toUserAgreement(user, agreement, command);
+
+                            Agreement agreement =
+                                    agreementRepository.findById(
+                                                    command.agreeId()
+                                            )
+                                            .orElseThrow(() ->
+                                                    new UserException(
+                                                            UserErrorCode.AGREEMENT_NOT_FOUND
+                                                    )
+                                            );
+
+
+                            return userAgreementMapper.toUserAgreement(
+                                    user,
+                                    agreement,
+                                    command
+                            );
                         })
                         .toList();
 
-        userAgreementRepository.saveAll(userAgreements);
+
+        userAgreementRepository.saveAll(
+                userAgreements
+        );
     }
 
 }
