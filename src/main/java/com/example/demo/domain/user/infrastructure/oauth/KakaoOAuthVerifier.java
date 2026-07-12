@@ -10,194 +10,109 @@ import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.Date;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class KakaoOAuthVerifier {
 
-    // 현재 카카오만 구현
-    // 추후 Google 추가 시 Provider별 Verifier 분리 예정
-    @Value("${app.kakao.client.id}")
-    private String kakaoClientId;
+  // 현재 카카오만 구현
+  // 추후 Google 추가 시 Provider별 Verifier 분리 예정
+  @Value("${app.kakao.client.id}")
+  private String kakaoClientId;
 
+  private final KakaoJwkClient kakaoJwkClient;
 
-    private final KakaoJwkClient kakaoJwkClient;
+  public SocialUserInfo verify(String idToken) {
 
+    try {
 
-    public SocialUserInfo verify(String idToken) {
+      SignedJWT signedJWT = SignedJWT.parse(idToken);
 
-        try {
+      validateSignature(signedJWT);
 
-            SignedJWT signedJWT =
-                    SignedJWT.parse(idToken);
+      JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
 
+      validateIssuer(claims);
+      validateAudience(claims);
+      validateExpiration(claims);
 
-            validateSignature(signedJWT);
+      return new SocialUserInfo(
+          Provider.Kakao,
+          claims.getSubject(),
+          claims.getStringClaim("nickname"),
+          claims.getStringClaim("email"));
 
+    } catch (Exception e) {
 
-            JWTClaimsSet claims =
-                    signedJWT.getJWTClaimsSet();
-
-
-            validateIssuer(claims);
-            validateAudience(claims);
-            validateExpiration(claims);
-
-
-            return new SocialUserInfo(
-                    Provider.Kakao,
-                    claims.getSubject(),
-                    claims.getStringClaim("nickname"),
-                    claims.getStringClaim("email")
-            );
-
-
-        }catch (Exception e) {
-
-            throw new BusinessException(
-                    AuthErrorCode.INVALID_SOCIAL_TOKEN
-            );
-        }
-
+      throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
+  }
 
+  private void validateSignature(SignedJWT signedJWT) throws Exception {
 
-    private void validateSignature(
-            SignedJWT signedJWT
-    ) throws Exception {
+    JWSHeader header = signedJWT.getHeader();
 
+    KakaoJwkKey jwk = kakaoJwkClient.getKey(header.getKeyID());
 
-        JWSHeader header =
-                signedJWT.getHeader();
+    RSAPublicKey publicKey = generatePublicKey(jwk);
 
+    JWSVerifier verifier = new RSASSAVerifier(publicKey);
 
-        KakaoJwkKey jwk =
-                kakaoJwkClient.getKey(
-                        header.getKeyID()
-                );
+    if (!signedJWT.verify(verifier)) {
 
-
-        RSAPublicKey publicKey =
-                generatePublicKey(jwk);
-
-
-        JWSVerifier verifier =
-                new RSASSAVerifier(publicKey);
-
-
-        if (!signedJWT.verify(verifier)) {
-
-            throw new IllegalArgumentException(
-                    "Invalid signature"
-            );
-        }
+      throw new IllegalArgumentException("Invalid signature");
     }
+  }
 
+  private RSAPublicKey generatePublicKey(KakaoJwkKey jwk) throws Exception {
 
-    private RSAPublicKey generatePublicKey(
-            KakaoJwkKey jwk
-    ) throws Exception {
+    byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getN());
 
+    byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getE());
 
-        byte[] modulusBytes =
-                Base64.getUrlDecoder()
-                        .decode(jwk.getN());
+    BigInteger modulus = new BigInteger(1, modulusBytes);
 
+    BigInteger exponent = new BigInteger(1, exponentBytes);
 
-        byte[] exponentBytes =
-                Base64.getUrlDecoder()
-                        .decode(jwk.getE());
+    RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, exponent);
 
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
-        BigInteger modulus =
-                new BigInteger(
-                        1,
-                        modulusBytes
-                );
+    return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+  }
 
+  private void validateIssuer(JWTClaimsSet claims) {
 
-        BigInteger exponent =
-                new BigInteger(
-                        1,
-                        exponentBytes
-                );
+    if (!"https://kauth.kakao.com".equals(claims.getIssuer())) {
 
-
-        RSAPublicKeySpec keySpec =
-                new RSAPublicKeySpec(
-                        modulus,
-                        exponent
-                );
-
-
-        KeyFactory keyFactory =
-                KeyFactory.getInstance("RSA");
-
-
-        return (RSAPublicKey)
-                keyFactory.generatePublic(keySpec);
+      throw new IllegalArgumentException("Invalid issuer");
     }
+  }
 
+  private void validateAudience(JWTClaimsSet claims) {
 
-    private void validateIssuer(
-            JWTClaimsSet claims
-    ) {
+    if (claims.getAudience() == null || !claims.getAudience().contains(kakaoClientId)) {
 
-
-        if (!"https://kauth.kakao.com"
-                .equals(claims.getIssuer())) {
-
-
-            throw new IllegalArgumentException(
-                    "Invalid issuer"
-            );
-        }
+      throw new IllegalArgumentException("Invalid audience");
     }
+  }
 
+  private void validateExpiration(JWTClaimsSet claims) {
 
-    private void validateAudience(
-            JWTClaimsSet claims
-    ) {
+    Date expiration = claims.getExpirationTime();
 
+    if (expiration == null || expiration.before(new Date())) {
 
-        if (claims.getAudience() == null
-                || !claims.getAudience()
-                .contains(kakaoClientId)) {
-
-
-            throw new IllegalArgumentException(
-                    "Invalid audience"
-            );
-        }
+      throw new IllegalArgumentException("Expired token");
     }
-
-
-    private void validateExpiration(
-            JWTClaimsSet claims
-    ) {
-
-
-        Date expiration =
-                claims.getExpirationTime();
-
-
-        if (expiration == null
-                || expiration.before(new Date())) {
-
-
-            throw new IllegalArgumentException(
-                    "Expired token"
-            );
-        }
-    }
+  }
 }

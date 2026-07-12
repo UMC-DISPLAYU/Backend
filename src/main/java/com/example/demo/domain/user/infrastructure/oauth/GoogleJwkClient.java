@@ -10,48 +10,22 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class GoogleJwkClient {
 
-    private static final String GOOGLE_JWK_URL =
-            "https://www.googleapis.com/oauth2/v3/certs";
+  private static final String GOOGLE_JWK_URL = "https://www.googleapis.com/oauth2/v3/certs";
 
+  private final RestTemplate restTemplate;
 
-    private final RestTemplate restTemplate;
+  public GoogleJwkKey getKey(String kid) {
 
+    GoogleJwkResponse response = restTemplate.getForObject(GOOGLE_JWK_URL, GoogleJwkResponse.class);
 
-    public GoogleJwkKey getKey(
-            String kid
-    ) {
+    if (response == null || response.getKeys() == null) {
 
-        GoogleJwkResponse response =
-                restTemplate.getForObject(
-                        GOOGLE_JWK_URL,
-                        GoogleJwkResponse.class
-                );
-
-
-        if (
-                response == null ||
-                        response.getKeys() == null
-        ) {
-
-            throw new IllegalStateException(
-                    "Failed to load Google JWK."
-            );
-        }
-
-
-        return response.getKeys()
-                .stream()
-                .filter(
-                        key ->
-                                key.getKid()
-                                        .equals(kid)
-                )
-                .findFirst()
-                .orElseThrow(
-                        () ->
-                                new IllegalArgumentException(
-                                        "No matching Google JWK found."
-                                )
-                );
+      throw new IllegalStateException("Failed to load Google JWK.");
     }
+
+    return response.getKeys().stream()
+        .filter(key -> key.getKid().equals(kid))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No matching Google JWK found."));
+  }
 }

@@ -6,21 +6,13 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    boolean existsByNickname(String nickname);
+  boolean existsByNickname(String nickname);
 
-    boolean existsByProviderAndProviderId(
-            Provider provider,
-            String providerId
-    );
+  boolean existsByProviderAndProviderId(Provider provider, String providerId);
 
-    Optional<User> findByProviderAndProviderId(
-            Provider provider,
-            String providerId
-    );
+  Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
-    Optional<User> findById(
-            Long userId
-    );
+  Optional<User> findById(Long userId);
 
-    User save(User user);
+  User save(User user);
 }

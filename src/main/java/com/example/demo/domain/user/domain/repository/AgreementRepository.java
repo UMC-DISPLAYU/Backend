@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AgreementRepository {
-    Optional<Agreement> findById(Long id);
-    List<Agreement> findAllById(List<Long> ids);
-    List<Agreement> findAllByIsRequiredTrue();
+  Optional<Agreement> findById(Long id);
+
+  List<Agreement> findAllById(List<Long> ids);
+
+  List<Agreement> findAllByIsRequiredTrue();
 }

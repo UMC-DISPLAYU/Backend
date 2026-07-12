@@ -13,10 +13,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface LogoutControllerDocs {
 
-    @Operation(
-            summary = "로그아웃 API",
-            description =
-                    """
+  @Operation(
+      summary = "로그아웃 API",
+      description =
+          """
                     ## 로그아웃
 
                     사용자가 로그아웃 버튼을 눌렀을 때 호출하는 API입니다.
@@ -26,35 +26,32 @@ public interface LogoutControllerDocs {
                     - 요청 Body의 refreshToken이 해당 사용자에게 발급된 토큰인지 확인합니다.
                     - accessToken의 사용자와 refreshToken의 사용자가 일치하면 서버에 저장된 refreshToken을 삭제합니다.
                     - 삭제가 완료되면 로그인 세션이 종료됩니다.
-                    """
-    )
-    @RequestBody(
-            required = true,
-            content = @Content(
-                    mediaType = "application/json",
-                    examples = @ExampleObject(
-                            value =
-                                    """
+                    """)
+  @RequestBody(
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
                                     {
                                       "refreshToken": "eyJhbGciOi..."
                                     }
-                                    """
-                    )
-            )
-    )
-    @ApiResponses({
-
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "로그아웃 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ApiResponseBody.class
-                            ),
-                            examples = @ExampleObject(
-                                    value =
-                                            """
+                                    """)))
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "로그아웃 성공",
+        content =
+            @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseBody.class),
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "SUCCESS",
                                               "success": {
@@ -66,33 +63,11 @@ public interface LogoutControllerDocs {
                                                 "path": "/api/v1/auth/logout"
                                               }
                                             }
-                                            """
-                            )
-                    )
-            ),
-
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "유효하지 않은 액세스 토큰"
-            ),
-
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "유효하지 않은 리프레시 토큰"
-            ),
-
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "저장된 리프레시 토큰 없음"
-            ),
-
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "토큰 사용자 불일치"
-            )
-    })
-    ApiResponseBody<Void> logout(
-            LogoutRequest request,
-            HttpServletRequest httpRequest
-    );
+                                            """))),
+    @ApiResponse(responseCode = "401", description = "유효하지 않은 액세스 토큰"),
+    @ApiResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰"),
+    @ApiResponse(responseCode = "401", description = "저장된 리프레시 토큰 없음"),
+    @ApiResponse(responseCode = "403", description = "토큰 사용자 불일치")
+  })
+  ApiResponseBody<Void> logout(LogoutRequest request, HttpServletRequest httpRequest);
 }

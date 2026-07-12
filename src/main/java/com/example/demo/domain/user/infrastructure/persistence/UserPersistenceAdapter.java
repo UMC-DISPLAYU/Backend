@@ -11,51 +11,30 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class UserPersistenceAdapter implements UserRepository {
 
-    private final UserJpaRepository userJpaRepository;
+  private final UserJpaRepository userJpaRepository;
 
+  @Override
+  public User save(User user) {
+    return userJpaRepository.save(user);
+  }
 
-    @Override
-    public User save(User user) {
-        return userJpaRepository.save(user);
-    }
+  @Override
+  public boolean existsByNickname(String nickname) {
+    return userJpaRepository.existsByNickname(nickname);
+  }
 
+  @Override
+  public boolean existsByProviderAndProviderId(Provider provider, String providerId) {
+    return userJpaRepository.existsByProviderAndProviderId(provider, providerId);
+  }
 
-    @Override
-    public boolean existsByNickname(String nickname) {
-        return userJpaRepository.existsByNickname(nickname);
-    }
+  @Override
+  public Optional<User> findByProviderAndProviderId(Provider provider, String providerId) {
+    return userJpaRepository.findByProviderAndProviderId(provider, providerId);
+  }
 
-
-    @Override
-    public boolean existsByProviderAndProviderId(
-            Provider provider,
-            String providerId
-    ) {
-        return userJpaRepository.existsByProviderAndProviderId(
-                provider,
-                providerId
-        );
-    }
-
-
-    @Override
-    public Optional<User> findByProviderAndProviderId(
-            Provider provider,
-            String providerId
-    ) {
-        return userJpaRepository.findByProviderAndProviderId(
-                provider,
-                providerId
-        );
-    }
-
-
-    @Override
-    public Optional<User> findById(
-            Long userId
-    ) {
-        return userJpaRepository.findById(
-                userId
-        );
-    }
+  @Override
+  public Optional<User> findById(Long userId) {
+    return userJpaRepository.findById(userId);
+  }
 }

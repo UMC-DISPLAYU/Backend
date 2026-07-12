@@ -4,120 +4,60 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class JwtFactory {
 
+  private final JwtProperties jwtProperties;
 
-    private final JwtProperties jwtProperties;
+  public String create(String subject, long expiration, String tokenType) {
 
+    Date now = new Date();
 
-    public String create(
-            String subject,
-            long expiration,
-            String tokenType
-    ) {
+    return Jwts.builder()
+        .setSubject(subject)
+        .claim("type", tokenType)
+        .setIssuedAt(now)
+        .setExpiration(new Date(now.getTime() + expiration))
+        .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+        .compact();
+  }
 
-        Date now = new Date();
+  public String createSignupToken(SocialUserInfo socialUserInfo) {
 
+    Date now = new Date();
 
-        return Jwts.builder()
-                .setSubject(subject)
-                .claim(
-                        "type",
-                        tokenType
-                )
-                .setIssuedAt(now)
-                .setExpiration(
-                        new Date(
-                                now.getTime()
-                                        + expiration
-                        )
-                )
-                .signWith(
-                        getSecretKey(),
-                        SignatureAlgorithm.HS256
-                )
-                .compact();
-    }
+    return Jwts.builder()
+        .claim("type", "SIGNUP")
+        .claim("provider", socialUserInfo.provider().name())
+        .claim("providerId", socialUserInfo.providerId())
+        .claim("name", socialUserInfo.name())
+        .claim("socialEmail", socialUserInfo.socialEmail())
+        .setIssuedAt(now)
+        .setExpiration(new Date(now.getTime() + jwtProperties.getSignupExpiration()))
+        .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+        .compact();
+  }
 
+  public Claims parse(String token) {
 
+    return Jwts.parserBuilder()
+        .setSigningKey(getSecretKey())
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+  }
 
-    public String createSignupToken(
-            SocialUserInfo socialUserInfo
-    ) {
+  private SecretKeySpec getSecretKey() {
 
-        Date now = new Date();
-
-
-        return Jwts.builder()
-                .claim(
-                        "type",
-                        "SIGNUP"
-                )
-                .claim(
-                        "provider",
-                        socialUserInfo.provider().name()
-                )
-                .claim(
-                        "providerId",
-                        socialUserInfo.providerId()
-                )
-                .claim(
-                        "name",
-                        socialUserInfo.name()
-                )
-                .claim(
-                        "socialEmail",
-                        socialUserInfo.socialEmail()
-                )
-                .setIssuedAt(now)
-                .setExpiration(
-                        new Date(
-                                now.getTime()
-                                        + jwtProperties.getSignupExpiration()
-                        )
-                )
-                .signWith(
-                        getSecretKey(),
-                        SignatureAlgorithm.HS256
-                )
-                .compact();
-    }
-
-
-
-    public Claims parse(
-            String token
-    ) {
-
-        return Jwts.parserBuilder()
-                .setSigningKey(
-                        getSecretKey()
-                )
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-
-
-    private SecretKeySpec getSecretKey() {
-
-        return new SecretKeySpec(
-                jwtProperties.getSecret()
-                        .getBytes(
-                                StandardCharsets.UTF_8
-                        ),
-                SignatureAlgorithm.HS256
-                        .getJcaName()
-        );
-    }
+    return new SecretKeySpec(
+        jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8),
+        SignatureAlgorithm.HS256.getJcaName());
+  }
 }
