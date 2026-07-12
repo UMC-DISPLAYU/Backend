@@ -77,7 +77,8 @@ public class ArchiveWorkController {
       @Parameter(description = "저장된 작품(아카이브 기록) ID", example = "1") @PathVariable
           Long savedArtworkId,
       HttpServletRequest request) {
-    ArchiveWorkResult result = getArchiveWorkDetailService.getArchiveWorkDetail(savedArtworkId);
+    ArchiveWorkResult result =
+        getArchiveWorkDetailService.getArchiveWorkDetail(TEMP_USER_ID, savedArtworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

@@ -18,10 +18,10 @@ public class GetArchiveWorkDetailService {
 
   // TODO: DisplayArtwork와 조인해서 title/artistName/thumbnailUrl 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만
   // 반환.
-  public ArchiveWorkResult getArchiveWorkDetail(Long archiveWorkId) {
+  public ArchiveWorkResult getArchiveWorkDetail(Long userId, Long archiveWorkId) {
     ArchiveWork archiveWork =
         archiveWorkRepository
-            .findById(archiveWorkId)
+            .findByIdAndUserId(archiveWorkId, userId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_WORK_NOT_FOUND));
 
     return new ArchiveWorkResult(

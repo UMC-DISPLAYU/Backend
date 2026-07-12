@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataArchiveWorkJpaRepository extends JpaRepository<ArchiveWork, Long> {
 
+  Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId);
+
   Optional<ArchiveWork> findByUserIdAndDisplayArtworkId(Long userId, Long displayArtworkId);
 
   List<ArchiveWork> findAllByUserIdOrderBySavedAtDescIdDesc(Long userId);
