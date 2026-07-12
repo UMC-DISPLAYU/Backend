@@ -10,7 +10,8 @@ public interface ArchiveWorkRepository {
 
   Optional<ArchiveWork> findByUserIdAndDisplayArtworkId(Long userId, Long displayArtworkId);
 
-  List<ArchiveWork> findAllByUserIdOrderBySavedAtDescIdDesc(Long userId);
+  List<ArchiveWork> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
+      Long userId, Long cursorId, int limit);
 
   ArchiveWork save(ArchiveWork archiveWork);
 

@@ -5,6 +5,7 @@ import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveWorkJpaRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,8 +28,10 @@ public class JpaArchiveWorkRepositoryAdapter implements ArchiveWorkRepository {
   }
 
   @Override
-  public List<ArchiveWork> findAllByUserIdOrderBySavedAtDescIdDesc(Long userId) {
-    return jpaRepository.findAllByUserIdOrderBySavedAtDescIdDesc(userId);
+  public List<ArchiveWork> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
+      Long userId, Long cursorId, int limit) {
+    return jpaRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
+        userId, cursorId, PageRequest.of(0, limit));
   }
 
   @Override

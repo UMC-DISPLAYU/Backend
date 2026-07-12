@@ -5,24 +5,30 @@ import com.example.demo.domain.archive.application.command.SaveArchiveWorkComman
 import com.example.demo.domain.archive.application.command.SaveArchiveWorkService;
 import com.example.demo.domain.archive.application.query.GetArchiveWorkDetailService;
 import com.example.demo.domain.archive.application.query.GetArchivedWorksService;
+import com.example.demo.domain.archive.application.result.ArchiveWorkCursorResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
 import com.example.demo.domain.archive.presentation.docs.ArchiveWorkControllerDocs;
 import com.example.demo.domain.archive.presentation.mapper.ArchivePresentationMapper;
+import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Validated
 public class ArchiveWorkController implements ArchiveWorkControllerDocs {
 
   // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. 로그인 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
@@ -77,8 +83,12 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
 
   @GetMapping("/api/v1/archives/artworks")
   @Override
-  public ApiResponseBody<List<ArchiveWorkResponse>> getArchivedWorks(HttpServletRequest request) {
-    List<ArchiveWorkResult> results = getArchivedWorksService.getArchivedWorks(TEMP_USER_ID);
-    return ApiResponseBody.success(results.stream().map(mapper::toResponse).toList(), request);
+  public ApiResponseBody<ArchiveWorkCursorResponse> getArchivedWorks(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      HttpServletRequest request) {
+    ArchiveWorkCursorResult result =
+        getArchivedWorksService.getArchivedWorks(TEMP_USER_ID, cursorId, size);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 }
