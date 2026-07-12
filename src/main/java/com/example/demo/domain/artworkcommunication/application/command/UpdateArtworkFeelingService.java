@@ -4,8 +4,6 @@ import com.example.demo.domain.artworkcommunication.application.result.UpdatedAr
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,12 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateArtworkFeelingService {
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
-  private final UserExistenceRepository userExistenceRepository;
+  private final ArtworkFeelingValidator artworkFeelingValidator;
 
   public UpdatedArtworkFeelingResult updateFeeling(UpdateArtworkFeelingCommand command) {
-    validateDisplayArtworkExists(command.displayArtworkId());
-    validateUserExists(command.userId());
+    artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
+    artworkFeelingValidator.validateUserExists(command.userId());
+    artworkFeelingValidator.validateContent(command.content());
 
     ArtworkFeeling artworkFeeling =
         artworkFeelingRepository
@@ -30,9 +28,8 @@ public class UpdateArtworkFeelingService {
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
 
-    validateNotDeleted(artworkFeeling);
-    validateArtworkFeelingBelongsToArtwork(artworkFeeling, command.displayArtworkId());
-    validateWriter(artworkFeeling, command.userId());
+    artworkFeelingValidator.validateAccessibleFeeling(
+        artworkFeeling, command.displayArtworkId(), command.userId());
 
     artworkFeeling.updateContent(command.content());
 
@@ -40,36 +37,5 @@ public class UpdateArtworkFeelingService {
 
     return new UpdatedArtworkFeelingResult(
         savedFeeling.getFeelingId(), savedFeeling.getContent(), savedFeeling.getUpdatedAt());
-  }
-
-  private void validateDisplayArtworkExists(Long displayArtworkId) {
-    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-    }
-  }
-
-  private void validateUserExists(Long userId) {
-    if (!userExistenceRepository.existsById(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-    }
-  }
-
-  private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
-    if (artworkFeeling.isDeleted()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
-    }
-  }
-
-  private void validateArtworkFeelingBelongsToArtwork(
-      ArtworkFeeling artworkFeeling, Long displayArtworkId) {
-    if (!artworkFeeling.belongsToArtwork(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
-    }
-  }
-
-  private void validateWriter(ArtworkFeeling artworkFeeling, Long userId) {
-    if (!artworkFeeling.isWrittenBy(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_FORBIDDEN);
-    }
   }
 }

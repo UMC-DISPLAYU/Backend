@@ -7,12 +7,14 @@ import com.example.demo.domain.artworkcommunication.application.command.DeleteAr
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingService;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.application.result.UpdatedArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFeelingApiDocs;
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkFeelingPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,7 +70,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   @Override
   @DeleteMapping("/{feelingId}")
   // 감상평 삭제
-  public ApiResponseBody<Void> deleteFeeling(
+  public ApiResponseBody<DeletedArtworkFeelingResponse> deleteFeeling(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
       @RequestHeader("X-User-Id") Long userId, // 테스트용
@@ -76,8 +78,10 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     DeleteArtworkFeelingCommand command =
         new DeleteArtworkFeelingCommand(artworkId, feelingId, userId);
 
-    deleteArtworkFeelingService.deleteFeeling(command);
+    DeletedArtworkFeelingResult result = deleteArtworkFeelingService.deleteFeeling(command);
 
-    return ApiResponseBody.success(null, httpServletRequest);
+    DeletedArtworkFeelingResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
   }
 }

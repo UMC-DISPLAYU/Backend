@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation.docs;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -187,7 +188,10 @@ public interface ArtworkFeelingApiDocs {
                           {
                             "resultType": "SUCCESS",
                             "success": {
-                              "data": null
+                              "data": {
+                                "feelingId": 1,
+                                "deletedAt": "2026-06-30T22:10:00"
+                              }
                             },
                             "error": null,
                             "meta": {
@@ -246,7 +250,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
-  ApiResponseBody<Void> deleteFeeling(
+  ApiResponseBody<DeletedArtworkFeelingResponse> deleteFeeling(
       @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "삭제할 감상평 ID", example = "1") Long feelingId,
       @Parameter(
