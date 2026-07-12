@@ -105,7 +105,7 @@ public class DisplayController {
                                 "organization": "중앙대학교",
                                 "department": "디자인학부",
                                 "displayType": "GRADUATION",
-                                "displayField": "DESIGN",
+                                "displayFields": ["DESIGN", "VIDEO"],
                                 "period": {
                                   "startDate": "2026-05-28",
                                   "endDate": "2026-06-05",
@@ -124,8 +124,7 @@ public class DisplayController {
                                     "imageType": "MAIN",
                                     "width": 1,
                                     "height": 1,
-                                    "sortOrder": 0,
-                                    "deletedAt": null
+                                    "sortOrder": 0
                                   }
                                 ],
                                 "contentCategories": [],
@@ -182,7 +181,7 @@ public class DisplayController {
                                 "organization": "디스플레이유",
                                 "department": "디자인학과",
                                 "displayType": "GRADUATION",
-                                "displayField": "DESIGN",
+                                "displayFields": ["DESIGN", "VIDEO"],
                                 "period": {
                                   "startDate": "2026-07-01",
                                   "endDate": "2026-07-10",
@@ -201,8 +200,7 @@ public class DisplayController {
                                     "imageType": "MAIN",
                                     "width": 1200,
                                     "height": 800,
-                                    "sortOrder": 0,
-                                    "deletedAt": null
+                                    "sortOrder": 0
                                   },
                                   {
                                     "imageId": 2,
@@ -210,8 +208,7 @@ public class DisplayController {
                                     "imageType": "DETAIL",
                                     "width": 1200,
                                     "height": 800,
-                                    "sortOrder": 1,
-                                    "deletedAt": null
+                                    "sortOrder": 1
                                   }
                                 ],
                                 "contentCategories": [
@@ -252,8 +249,7 @@ public class DisplayController {
                                     "invitationId": 1,
                                     "inviterUserId": 10,
                                     "inviteeUserId": 11,
-                                    "createdAt": "2026-06-20T12:00:00",
-                                    "deletedAt": null
+                                    "createdAt": "2026-06-20T12:00:00"
                                   }
                                 ]
                               }

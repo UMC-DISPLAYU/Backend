@@ -1,11 +1,13 @@
 package com.example.demo.domain.display.domain.aggregate;
 
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
+import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -36,6 +38,11 @@ import lombok.Getter;
 @Entity
 @Table(name = "Display")
 public class Display extends BaseTimeEntity {
+
+  // 이미지 크기 입력 필드가 추가되기 전까지 대표 이미지의 임시 크기값으로 사용한다.
+  private static final int DEFAULT_MAIN_IMAGE_WIDTH = 1;
+  private static final int DEFAULT_MAIN_IMAGE_HEIGHT = 1;
+  private static final int MAIN_IMAGE_SORT_ORDER = 0;
 
   // 식별자와 소유자 정보: 전시 Aggregate의 정체성과 생성/관리 주체를 나타낸다.
   @Id
@@ -86,10 +93,6 @@ public class Display extends BaseTimeEntity {
   @Column(nullable = false)
   private DisplayType displayType;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private DisplayField displayField;
-
   @Embedded private DisplayPeriod period;
 
   // 공개 정책과 발행 상태: 작품/전시 콘텐츠 공개 시점과 초안/발행 상태를 관리한다.
@@ -118,12 +121,64 @@ public class Display extends BaseTimeEntity {
   private final List<DisplayContentCategory> contentCategories = new ArrayList<>();
 
   @OneToMany(mappedBy = "display", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<DisplayFieldSelection> fieldSelections = new ArrayList<>();
+
+  @OneToMany(mappedBy = "display", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<TeamMember> teamMembers = new ArrayList<>();
 
   @OneToMany(mappedBy = "display", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<DisplayInvitation> invitations = new ArrayList<>();
 
   protected Display() {}
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
+    return new Display(
+        null,
+        ownerUserId,
+        title,
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        displayType,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen,
+        DisplayStatus.DRAFT,
+        null,
+        null,
+        List.of(
+            new DisplayImage(
+                null,
+                posterImageUrl,
+                DisplayImageType.MAIN,
+                DEFAULT_MAIN_IMAGE_WIDTH,
+                DEFAULT_MAIN_IMAGE_HEIGHT,
+                MAIN_IMAGE_SORT_ORDER,
+                null)),
+        List.of(),
+        toFieldSelections(displayFields),
+        List.of(),
+        List.of());
+  }
 
   public Display(
       Long id,
@@ -137,7 +192,6 @@ public class Display extends BaseTimeEntity {
       String organization,
       String department,
       DisplayType displayType,
-      DisplayField displayField,
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
       ContentOpenPolicy exhibitionContentOpen,
@@ -146,13 +200,14 @@ public class Display extends BaseTimeEntity {
       LocalDateTime invitationDisabledAt,
       List<DisplayImage> images,
       List<DisplayContentCategory> contentCategories,
+      List<DisplayFieldSelection> fieldSelections,
       List<TeamMember> teamMembers,
       List<DisplayInvitation> invitations) {
     this.id = id;
     this.ownerUserId = Objects.requireNonNull(ownerUserId, "ownerUserId must not be null.");
     changeBasicInfo(title, subtitle, content, qnaAccount, note, organization, department);
     changeLocation(location);
-    changeClassification(displayType, displayField);
+    changeClassification(displayType);
     changePeriod(period);
     changeOpenPolicy(artworkContentOpen, exhibitionContentOpen);
     this.status = Objects.requireNonNullElse(status, DisplayStatus.DRAFT);
@@ -160,6 +215,7 @@ public class Display extends BaseTimeEntity {
     this.invitationDisabledAt = invitationDisabledAt;
     addAll(this::addImage, images);
     addAll(this::addContentCategory, contentCategories);
+    addAll(this::addFieldSelection, fieldSelections);
     addAll(this::addTeamMember, teamMembers);
     addAll(this::addInvitation, invitations);
   }
@@ -172,6 +228,11 @@ public class Display extends BaseTimeEntity {
   // 소개 콘텐츠 카테고리 목록을 읽기 전용으로 반환한다.
   public List<DisplayContentCategory> getContentCategories() {
     return Collections.unmodifiableList(contentCategories);
+  }
+
+  // 전시에 선택된 전체 분야 목록을 읽기 전용으로 반환한다.
+  public List<DisplayFieldSelection> getFieldSelections() {
+    return Collections.unmodifiableList(fieldSelections);
   }
 
   // 전시 팀원 목록을 읽기 전용으로 반환한다.
@@ -207,10 +268,9 @@ public class Display extends BaseTimeEntity {
     this.location = Objects.requireNonNull(location, "location must not be null.");
   }
 
-  // 전시 유형과 분야를 변경한다.
-  public void changeClassification(DisplayType displayType, DisplayField displayField) {
+  // 전시 유형을 변경한다.
+  public void changeClassification(DisplayType displayType) {
     this.displayType = Objects.requireNonNull(displayType, "displayType must not be null.");
-    this.displayField = Objects.requireNonNull(displayField, "displayField must not be null.");
   }
 
   // 전시 기간과 운영 시간을 변경한다.
@@ -273,6 +333,14 @@ public class Display extends BaseTimeEntity {
     contentCategories.removeIf(category -> category.getId().equals(categoryId));
   }
 
+  // 전시 분야를 추가한다.
+  public void addFieldSelection(DisplayFieldSelection fieldSelection) {
+    DisplayFieldSelection selection =
+        Objects.requireNonNull(fieldSelection, "fieldSelection must not be null.");
+    selection.assignDisplay(this);
+    fieldSelections.add(selection);
+  }
+
   // 전시 팀원을 추가한다.
   public void addTeamMember(TeamMember teamMember) {
     TeamMember member = Objects.requireNonNull(teamMember, "teamMember must not be null.");
@@ -307,6 +375,18 @@ public class Display extends BaseTimeEntity {
     if (source != null) {
       source.forEach(target);
     }
+  }
+
+  private static List<DisplayFieldSelection> toFieldSelections(List<DisplayField> displayFields) {
+    if (displayFields == null || displayFields.isEmpty()) {
+      throw new IllegalArgumentException("displayFields must not be empty.");
+    }
+
+    List<DisplayFieldSelection> selections = new ArrayList<>();
+    for (int index = 0; index < displayFields.size(); index++) {
+      selections.add(new DisplayFieldSelection(null, displayFields.get(index), index));
+    }
+    return selections;
   }
 
   private static String requireNonBlank(String value, String fieldName) {

@@ -7,6 +7,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+
 @Repository
 @RequiredArgsConstructor
 public class AgreementPersistenceAdapter implements AgreementRepository {
@@ -19,7 +20,7 @@ public class AgreementPersistenceAdapter implements AgreementRepository {
     }
 
     @Override
-    public List<Agreement> findAllById(List<Long> ids) {
+    public List<Agreement> findAllById(List<Long> ids) {   // 추가
         return agreementJpaRepository.findAllById(ids);
     }
 

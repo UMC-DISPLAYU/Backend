@@ -6,6 +6,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public record CreateDisplayCommand(
     Long ownerUserId,
@@ -22,7 +23,7 @@ public record CreateDisplayCommand(
     String organization,
     String department,
     DisplayType displayType,
-    DisplayField displayField,
+    List<DisplayField> displayFields,
     LocalDate startDate,
     LocalDate endDate,
     LocalTime startTime,
