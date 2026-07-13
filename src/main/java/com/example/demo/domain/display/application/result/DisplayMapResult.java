@@ -1,0 +1,34 @@
+package com.example.demo.domain.display.application.result;
+
+import com.example.demo.domain.display.application.query.DisplayMapQueryResult;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagination) {
+
+  public record MarkerResult(
+      Long displayId,
+      String title,
+      LocalDate startDate,
+      LocalDate endDate,
+      String locationName,
+      String posterImageUrl,
+      BigDecimal latitude,
+      BigDecimal longitude) {
+
+    public static MarkerResult from(DisplayMapQueryResult queryResult) {
+      return new MarkerResult(
+          queryResult.displayId(),
+          queryResult.title(),
+          queryResult.startDate(),
+          queryResult.endDate(),
+          queryResult.locationName(),
+          queryResult.posterImageUrl(),
+          queryResult.latitude(),
+          queryResult.longitude());
+    }
+  }
+
+  public record PaginationResult(Long nextCursor, int size, boolean hasNext) {}
+}

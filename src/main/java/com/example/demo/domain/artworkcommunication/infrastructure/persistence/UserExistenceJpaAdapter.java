@@ -1,0 +1,17 @@
+package com.example.demo.domain.artworkcommunication.infrastructure.persistence;
+
+import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class UserExistenceJpaAdapter implements UserExistenceRepository {
+
+  private final UserExistenceJpaRepository repository;
+
+  @Override
+  public boolean existsById(Long userId) {
+    return repository.existsById(userId);
+  }
+}

@@ -37,6 +37,7 @@ public class CreateDisplayService {
             command.department(),
             command.displayType(),
             command.displayFields(),
+            command.region(),
             new DisplayPeriod(
                 command.startDate(), command.endDate(), command.startTime(), command.endTime()),
             command.artworkContentOpen(),
