@@ -50,35 +50,5 @@ public class UserController implements UserControllerDocs {
     }
 
 
-    @PostMapping("/me/verification/email/send")
-    public ApiResponseBody<Void> sendSchoolEmailVerification(
-            @Valid @RequestBody SchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest) {
 
-        sendSchoolEmailVerificationService.execute(
-                new SendSchoolEmailVerificationCommand(
-                        request.schoolEmail(),
-                        request.univName()
-                )
-        );
-
-        return ApiResponseBody.success(
-                null,
-                httpRequest);
-    }
-    @PostMapping("/me/verification/email/resend")
-    public ApiResponseBody<Void> resendSchoolEmailVerification(
-            @RequestBody ResendSchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest
-    ) {
-
-        resendSchoolEmailVerificationService.execute(
-                request.schoolEmail()
-        );
-
-        return ApiResponseBody.success(
-                null,
-                httpRequest
-        );
-    }
 }

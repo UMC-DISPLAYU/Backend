@@ -34,6 +34,7 @@ public class SendSchoolEmailVerificationService {
         SchoolEmailVerification verification =
                 SchoolEmailVerification.create(
                         command.schoolEmail(),
+                        command.univName(),
                         verificationCode
                 );
 

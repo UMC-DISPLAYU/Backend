@@ -24,6 +24,9 @@ public class SchoolEmailVerification extends BaseTimeEntity {
     @Column(name = "schoolEmail", nullable = false)
     private String schoolEmail;
 
+    @Column(name = "univName", nullable = false)
+    private String univName;
+
     @Column(name = "verificationCode", nullable = false)
     private String verificationCode;
 
@@ -33,10 +36,12 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
     private SchoolEmailVerification(
             String schoolEmail,
+            String univName,
             String verificationCode,
             LocalDateTime expiresAt) {
 
         this.schoolEmail = schoolEmail;
+        this.univName = univName;
         this.verificationCode = verificationCode;
         this.expiresAt = expiresAt;
     }
@@ -44,10 +49,12 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
     public static SchoolEmailVerification create(
             String schoolEmail,
+            String univName,
             String verificationCode) {
 
         return new SchoolEmailVerification(
                 schoolEmail,
+                univName,
                 verificationCode,
                 LocalDateTime.now().plusMinutes(5));
     }

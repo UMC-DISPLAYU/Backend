@@ -32,17 +32,5 @@ public interface UserControllerDocs {
 
 
 
-    @Operation(
-            summary = "학교 이메일 인증번호 발송",
-            description =
-                    """
-                    작가 인증을 위해 학교 이메일로 인증번호를 발송합니다.
 
-                    - 학교 이메일 형식을 검증합니다.
-                    - 입력한 학교 이메일로 인증번호를 발송합니다.
-                    - 인증 완료 처리는 인증번호 확인 API에서 진행합니다.
-                    """)
-    ApiResponseBody<Void> sendSchoolEmailVerification(
-            SchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest);
 }
