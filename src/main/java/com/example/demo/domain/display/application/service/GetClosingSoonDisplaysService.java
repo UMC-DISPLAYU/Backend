@@ -8,6 +8,7 @@ import com.example.demo.domain.display.application.result.ClosingSoonDisplayResu
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult.ExhibitionResult;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult.PaginationResult;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -17,15 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetClosingSoonDisplaysService implements GetClosingSoonDisplaysUseCase {
 
   private final ClosingSoonDisplayQueryRepository queryRepository;
+  private final Clock clock;
 
-  public GetClosingSoonDisplaysService(ClosingSoonDisplayQueryRepository queryRepository) {
+  public GetClosingSoonDisplaysService(
+      ClosingSoonDisplayQueryRepository queryRepository, Clock clock) {
     this.queryRepository = queryRepository;
+    this.clock = clock;
   }
 
   @Override
   @Transactional(readOnly = true)
   public ClosingSoonDisplayResult getClosingSoonDisplays(ClosingSoonDisplayQuery query) {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     List<ClosingSoonDisplayQueryResult> queryResults =
         queryRepository.findClosingSoonDisplays(query, today, query.size() + 1);
     boolean hasNext = queryResults.size() > query.size();

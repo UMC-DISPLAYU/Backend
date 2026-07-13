@@ -6,7 +6,10 @@ import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +17,15 @@ class GetClosingSoonDisplaysServiceTest {
 
   @Test
   void getClosingSoonDisplaysUsesSizePlusOneAndReturnsNextCursor() {
-    LocalDate today = LocalDate.now();
+    Clock clock = Clock.fixed(Instant.parse("2026-07-13T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+    LocalDate today = LocalDate.now(clock);
     FakeClosingSoonDisplayQueryRepository queryRepository =
         new FakeClosingSoonDisplayQueryRepository(
             List.of(
                 queryResult(1L, "오늘 종료 전시", today),
                 queryResult(2L, "3일 남은 전시", today.plusDays(3))));
-    GetClosingSoonDisplaysService service = new GetClosingSoonDisplaysService(queryRepository);
+    GetClosingSoonDisplaysService service =
+        new GetClosingSoonDisplaysService(queryRepository, clock);
 
     ClosingSoonDisplayResult result =
         service.getClosingSoonDisplays(new ClosingSoonDisplayQuery(null, 1));
