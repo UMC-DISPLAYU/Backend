@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -40,8 +41,8 @@ public record PersonalArtworkRequest(
       @NotNull ArtworkImageType imageType,
       @PositiveOrZero int sortOrder,
       String caption,
-      @NotNull @PositiveOrZero int width,
-      @NotNull @PositiveOrZero int height) {
+      @Positive int width,
+      @Positive int height) {
 
     private PersonalArtworkImageCommand toCommand() {
       return new PersonalArtworkImageCommand(
