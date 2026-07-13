@@ -30,6 +30,18 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
@@ -158,6 +170,23 @@ public class DisplayController {
   }
 
   @PostMapping("/api/v1/display/like")
+  @Operation(summary = LIKE_SUMMARY, description = LIKE_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = LIKE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = LIKE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_SUCCESS_EXAMPLE_NAME, value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> likeDisplay(
       @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
     DisplayLikeResult result = displayLikeCommandService.like(displayLikeRequest.toCommand());
@@ -165,6 +194,25 @@ public class DisplayController {
   }
 
   @PatchMapping("/api/v1/display/like")
+  @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = LIKE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = LIKE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = LIKE_CANCEL_SUCCESS_EXAMPLE_NAME,
+                      value = LIKE_CANCEL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
       @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
     DisplayLikeResult result = displayLikeCommandService.cancel(displayLikeRequest.toCommand());

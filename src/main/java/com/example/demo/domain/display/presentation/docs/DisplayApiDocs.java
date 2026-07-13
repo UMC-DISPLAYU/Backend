@@ -13,6 +13,17 @@ public final class DisplayApiDocs {
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
   public static final String CREATE_SUCCESS_EXAMPLE_NAME = "Display create success";
 
+  public static final String LIKE_SUMMARY = "전시 좋아요";
+  public static final String LIKE_DESCRIPTION = "전시에 좋아요를 추가합니다. 인증 구현 전까지 userId를 요청 본문으로 전달합니다.";
+  public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
+  public static final String LIKE_CANCEL_DESCRIPTION =
+      "전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
+  public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
+  public static final String LIKE_REQUEST_EXAMPLE_NAME = "Display like request";
+  public static final String LIKE_SUCCESS_DESCRIPTION = "전시 좋아요 처리 성공";
+  public static final String LIKE_SUCCESS_EXAMPLE_NAME = "Display like success";
+  public static final String LIKE_CANCEL_SUCCESS_EXAMPLE_NAME = "Display like cancel success";
+
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
   public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
@@ -127,6 +138,50 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String LIKE_REQUEST_EXAMPLE =
+      """
+      {
+        "displayId": 12,
+        "userId": 1
+      }
+      """;
+
+  public static final String LIKE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "likeCount": 143
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-01T23:00:00",
+          "path": "/api/v1/display/like"
+        }
+      }
+      """;
+
+  public static final String LIKE_CANCEL_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "likeCount": 142
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-01T23:00:00",
+          "path": "/api/v1/display/like"
         }
       }
       """;
