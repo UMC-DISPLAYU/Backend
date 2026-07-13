@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.domain.repository;
 
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import java.util.Optional;
 

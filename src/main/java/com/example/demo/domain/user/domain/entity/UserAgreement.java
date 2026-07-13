@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.domain.entity;
 
+import com.example.demo.domain.user.domain.aggregate.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

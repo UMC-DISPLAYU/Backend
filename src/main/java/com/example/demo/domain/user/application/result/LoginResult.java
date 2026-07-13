@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.application.result;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 
 public record LoginResult(
     User user,

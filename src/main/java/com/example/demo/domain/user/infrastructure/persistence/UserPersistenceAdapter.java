@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.infrastructure.persistence;
 
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import java.util.Optional;

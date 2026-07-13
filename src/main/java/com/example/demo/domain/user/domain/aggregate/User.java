@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.domain.entity;
+package com.example.demo.domain.user.domain.aggregate;
 
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.global.entity.BaseTimeEntity;

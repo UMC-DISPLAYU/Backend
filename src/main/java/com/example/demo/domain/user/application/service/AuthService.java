@@ -3,7 +3,7 @@ package com.example.demo.domain.user.application.service;
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.entity.RefreshToken;
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.AuthErrorCode;

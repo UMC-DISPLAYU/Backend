@@ -6,6 +6,7 @@ import com.example.demo.domain.user.application.command.SignupCommand;
 import com.example.demo.domain.user.application.mapper.UserAgreementMapper;
 import com.example.demo.domain.user.application.mapper.UserMapper;
 import com.example.demo.domain.user.application.result.SignupResult;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.*;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;

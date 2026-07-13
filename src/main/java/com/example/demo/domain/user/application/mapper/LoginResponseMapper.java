@@ -2,7 +2,7 @@ package com.example.demo.domain.user.application.mapper;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.presentation.response.LoginResponse;
 import org.springframework.stereotype.Component;
 

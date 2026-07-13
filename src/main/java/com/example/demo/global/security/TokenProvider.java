@@ -1,7 +1,7 @@
 package com.example.demo.global.security;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.global.error.BusinessException;
@@ -53,19 +53,29 @@ public class TokenProvider {
     }
   }
 
-  public boolean validateAccessToken(String token) {
+    public void validateAccessTokenOrThrow(String token) {
 
-    try {
+        try {
 
-      Claims claims = jwtFactory.parse(token);
+            Claims claims = jwtFactory.parse(token);
 
-      return "ACCESS".equals(claims.get("type", String.class));
+            if (!"ACCESS".equals(claims.get("type", String.class))) {
+                throw new BusinessException(AuthErrorCode.INVALID_ACCESS_TOKEN);
+            }
 
-    } catch (Exception e) {
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
 
-      return false;
+            throw new BusinessException(AuthErrorCode.EXPIRED_ACCESS_TOKEN);
+
+        } catch (BusinessException e) {
+
+            throw e;
+
+        } catch (Exception e) {
+
+            throw new BusinessException(AuthErrorCode.INVALID_ACCESS_TOKEN);
+        }
     }
-  }
 
   public boolean validateRefreshToken(String token) {
 
