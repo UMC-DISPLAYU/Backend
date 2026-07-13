@@ -30,10 +30,7 @@ public record PersonalArtworkResult(
         personalArtwork.getSize(),
         personalArtwork.getPoint(),
         personalArtwork.getCreatedAt(),
-        personalArtwork.getImages().stream()
-            .filter(image -> !image.isDeleted())
-            .map(ImageResult::from)
-            .toList());
+        personalArtwork.getImages().stream().map(ImageResult::from).toList());
   }
 
   public record ImageResult(

@@ -2,9 +2,11 @@ package com.example.demo.domain.personalartwork.application.query;
 
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
+import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,23 @@ public class PersonalArtworkQueryService {
 
   @Transactional(readOnly = true)
   public PersonalArtworkResult getPersonalArtworkDetail(Long personalArtworkId) {
+    return PersonalArtworkResult.from(getPersonalArtwork(personalArtworkId));
+  }
+
+  @Transactional(readOnly = true)
+  public PersonalArtworkResult getOwnedPersonalArtworkDetail(
+      Long personalArtworkId, Long requesterUserId) {
+    PersonalArtwork personalArtwork = getPersonalArtwork(personalArtworkId);
+    if (!personalArtwork.isOwnedBy(requesterUserId)) {
+      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
+    }
+    return PersonalArtworkResult.from(personalArtwork);
+  }
+
+  private PersonalArtwork getPersonalArtwork(Long personalArtworkId) {
     return personalArtworkRepository
         .findById(personalArtworkId)
         .filter(artwork -> !artwork.isDeleted())
-        .map(PersonalArtworkResult::from)
         .orElseThrow(
             () -> new BusinessException(PersonalArtworkErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
   }

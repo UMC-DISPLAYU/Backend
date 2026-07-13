@@ -73,12 +73,12 @@ public class PersonalArtworkController {
   }
 
   @GetMapping("/api/v1/personal-artworks/{personalArtworkId}")
-  @Operation(summary = "개인 작품 단건 상세 조회", description = "수정 화면 진입 등 전체 필드가 필요할 때 개인 작품 상세를 조회합니다.")
+  @Operation(summary = "개인 작품 단건 상세 조회", description = "수정 화면 진입 시 본인 소유 개인 작품의 전체 필드를 조회합니다.")
   public ApiResponseBody<PersonalArtworkResponse> getPersonalArtworkDetail(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       HttpServletRequest request) {
     PersonalArtworkResult result =
-        personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
+        personalArtworkQueryService.getOwnedPersonalArtworkDetail(personalArtworkId, TEMP_USER_ID);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

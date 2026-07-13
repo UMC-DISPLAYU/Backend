@@ -25,7 +25,6 @@ CREATE TABLE `PersonalArtworkImage` (
     `height` INT NOT NULL,
     `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `deletedAt` DATETIME NULL,
     `personalArtworkId` BIGINT NOT NULL,
     CONSTRAINT `PK_PERSONALARTWORKIMAGE` PRIMARY KEY (`personalArtworkImageId`)
 );
@@ -35,3 +34,5 @@ ALTER TABLE `PersonalArtwork`
 
 ALTER TABLE `PersonalArtworkImage`
     ADD CONSTRAINT `FK_PERSONALARTWORKIMAGE_PERSONALARTWORK` FOREIGN KEY (`personalArtworkId`) REFERENCES `PersonalArtwork` (`personalArtworkId`);
+
+CREATE INDEX `IDX_PERSONALARTWORK_USER_CREATEDAT` ON `PersonalArtwork` (`userId`, `createdAt`);

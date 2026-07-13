@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +62,7 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
   private String point;
 
   @OneToMany(mappedBy = "personalArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("sortOrder ASC")
   private final List<PersonalArtworkImage> images = new ArrayList<>();
 
   protected PersonalArtwork() {}

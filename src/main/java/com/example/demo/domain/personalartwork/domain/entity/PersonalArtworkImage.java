@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -53,8 +52,6 @@ public class PersonalArtworkImage extends BaseTimeEntity {
   @Column(nullable = false)
   private int height;
 
-  private LocalDateTime deletedAt;
-
   protected PersonalArtworkImage() {}
 
   public PersonalArtworkImage(
@@ -79,14 +76,6 @@ public class PersonalArtworkImage extends BaseTimeEntity {
   public void assignPersonalArtwork(PersonalArtwork personalArtwork) {
     this.personalArtwork =
         Objects.requireNonNull(personalArtwork, "personalArtwork must not be null.");
-  }
-
-  public void delete() {
-    this.deletedAt = LocalDateTime.now();
-  }
-
-  public boolean isDeleted() {
-    return deletedAt != null;
   }
 
   private static String requireNonBlank(String value, String fieldName) {

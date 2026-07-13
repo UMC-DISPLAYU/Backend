@@ -23,11 +23,7 @@ public record PersonalArtworkSummaryResult(
 
   private static String findThumbnailUrl(PersonalArtwork personalArtwork) {
     return personalArtwork.getImages().stream()
-        .filter(image -> !image.isDeleted())
-        .sorted(
-            Comparator.comparing(PersonalArtworkImage::isThumbnail)
-                .reversed()
-                .thenComparing(PersonalArtworkImage::getSortOrder))
+        .sorted(Comparator.comparing(PersonalArtworkImage::isThumbnail).reversed())
         .map(PersonalArtworkImage::getImageUrl)
         .findFirst()
         .orElse(null);
