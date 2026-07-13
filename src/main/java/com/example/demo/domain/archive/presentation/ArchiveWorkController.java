@@ -15,9 +15,6 @@ import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -58,7 +55,7 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<ArchiveWorkToggleResponse> saveArchiveWork(
-      @PathVariable @Positive Long artworkId, HttpServletRequest request) {
+      @PathVariable Long artworkId, HttpServletRequest request) {
     ArchiveWorkToggleResult result =
         saveArchiveWorkService.saveArchiveWork(new SaveArchiveWorkCommand(TEMP_USER_ID, artworkId));
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -67,7 +64,7 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   @DeleteMapping("/api/v1/archives/artworks/{artworkId}")
   @Override
   public ApiResponseBody<ArchiveWorkToggleResponse> deleteArchiveWork(
-      @PathVariable @Positive Long artworkId, HttpServletRequest request) {
+      @PathVariable Long artworkId, HttpServletRequest request) {
     ArchiveWorkToggleResult result =
         deleteArchiveWorkService.deleteArchiveWork(TEMP_USER_ID, artworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -76,7 +73,7 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   @GetMapping("/api/v1/archives/artworks/{savedArtworkId}")
   @Override
   public ApiResponseBody<ArchiveWorkResponse> getArchiveWorkDetail(
-      @PathVariable @Positive Long savedArtworkId, HttpServletRequest request) {
+      @PathVariable Long savedArtworkId, HttpServletRequest request) {
     ArchiveWorkResult result =
         getArchiveWorkDetailService.getArchiveWorkDetail(TEMP_USER_ID, savedArtworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -85,8 +82,8 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   @GetMapping("/api/v1/archives/artworks")
   @Override
   public ApiResponseBody<ArchiveWorkCursorResponse> getArchivedWorks(
-      @RequestParam(required = false) @Positive Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest request) {
     ArchiveWorkCursorResult result =
         getArchivedWorksService.getArchivedWorks(TEMP_USER_ID, cursorId, size);
