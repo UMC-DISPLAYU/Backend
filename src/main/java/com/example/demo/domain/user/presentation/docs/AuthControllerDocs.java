@@ -17,11 +17,10 @@ import jakarta.servlet.http.HttpServletRequest;
 @Tag(name = "인증 API")
 public interface AuthControllerDocs {
 
-
-    @Operation(
-            summary = "회원가입 API",
-            description =
-                    """
+  @Operation(
+      summary = "회원가입 API",
+      description =
+          """
                     ## 회원가입
 
                     OAuth 인증이 완료된 사용자가 닉네임과 약관 동의를 입력하여 회원가입합니다.
@@ -33,22 +32,21 @@ public interface AuthControllerDocs {
                     - nickname : 사용할 닉네임
                     - agreements : 약관 동의 목록
                     """)
-    @Parameter(
-            name = "Authorization",
-            description = "Bearer signupToken",
-            required = true,
-            example = "Bearer eyJhbGciOi..."
-    )
-    @RequestBody(
-            required = true,
-            content =
-            @Content(
-                    mediaType = "application/json",
-                    examples =
-                    @ExampleObject(
-                            name = "회원가입 요청",
-                            value =
-                                    """
+  @Parameter(
+      name = "Authorization",
+      description = "Bearer signupToken",
+      required = true,
+      example = "Bearer eyJhbGciOi...")
+  @RequestBody(
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "회원가입 요청",
+                      value =
+                          """
                                     {
                                       "nickname": "User1",
                                       "agreements": [
@@ -67,28 +65,24 @@ public interface AuthControllerDocs {
                                       ]
                                     }
                                     """)))
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "회원가입 성공",
-                    content =
-                    @Content(
-                            mediaType = "application/json",
-                            schema =
-                            @Schema(
-                                    implementation = ApiResponseBody.class
-                            ))),
-
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "유효하지 않은 회원가입 토큰",
-                    content =
-                    @Content(
-                            mediaType = "application/json",
-                            examples =
-                            @ExampleObject(
-                                    value =
-                                            """
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "회원가입 성공",
+        content =
+            @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponseBody.class))),
+    @ApiResponse(
+        responseCode = "401",
+        description = "유효하지 않은 회원가입 토큰",
+        content =
+            @Content(
+                mediaType = "application/json",
+                examples =
+                    @ExampleObject(
+                        value =
+                            """
                                             {
                                               "resultType": "FAIL",
                                               "error": {
@@ -97,10 +91,7 @@ public interface AuthControllerDocs {
                                               }
                                             }
                                             """)))
-    })
-    ApiResponseBody<SignupResponse.Signup> signup(
-            SignupRequest request,
-            String authorization,
-            HttpServletRequest httpRequest
-    );
+  })
+  ApiResponseBody<SignupResponse.Signup> signup(
+      SignupRequest request, String authorization, HttpServletRequest httpRequest);
 }

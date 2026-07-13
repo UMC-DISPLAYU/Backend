@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.domain.entity;
 
-import com.example.demo.global.entity.BaseTimeEntity;
 import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

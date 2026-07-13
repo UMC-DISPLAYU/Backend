@@ -5,7 +5,6 @@ import com.example.demo.domain.user.domain.entity.Agreement;
 import com.example.demo.domain.user.domain.entity.User;
 import com.example.demo.domain.user.domain.entity.UserAgreement;
 import java.time.LocalDateTime;
-
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 

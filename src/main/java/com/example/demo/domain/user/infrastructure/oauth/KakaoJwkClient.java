@@ -10,26 +10,21 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class KakaoJwkClient {
 
-    private static final String KAKAO_JWK_URL =
-            "https://kauth.kakao.com/.well-known/jwks.json";
+  private static final String KAKAO_JWK_URL = "https://kauth.kakao.com/.well-known/jwks.json";
 
-    private final RestTemplate restTemplate;
+  private final RestTemplate restTemplate;
 
-    public KakaoJwkKey getKey(String kid) {
+  public KakaoJwkKey getKey(String kid) {
 
-        KakaoJwkResponse response = restTemplate.getForObject(
-                KAKAO_JWK_URL,
-                KakaoJwkResponse.class
-        );
+    KakaoJwkResponse response = restTemplate.getForObject(KAKAO_JWK_URL, KakaoJwkResponse.class);
 
-        if (response == null || response.getKeys() == null) {
-            throw new IllegalStateException("Failed to load Kakao JWK.");
-        }
-
-        return response.getKeys()
-                .stream()
-                .filter(key -> key.getKid().equals(kid))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No matching JWK found."));
+    if (response == null || response.getKeys() == null) {
+      throw new IllegalStateException("Failed to load Kakao JWK.");
     }
+
+    return response.getKeys().stream()
+        .filter(key -> key.getKid().equals(kid))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No matching JWK found."));
+  }
 }

@@ -9,44 +9,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class LoginResponseMapper {
 
+  public LoginResponse.Login toLoginResponse(LoginResult result) {
 
-    public LoginResponse.Login toLoginResponse(
-            LoginResult result
-    ) {
+    User user = result.user();
 
-        User user = result.user();
+    return new LoginResponse.Login(
+        false,
+        result.accessToken(),
+        result.refreshToken(),
+        new LoginResponse.UserInfo(
+            user.getId(),
+            user.getProvider(),
+            user.getProviderId(),
+            user.getName(),
+            user.getNickname(),
+            user.getSocialEmail(),
+            user.getSchoolEmail(),
+            user.isVerified()));
+  }
 
-        return new LoginResponse.Login(
-                false,
-                result.accessToken(),
-                result.refreshToken(),
-                new LoginResponse.UserInfo(
-                        user.getId(),
-                        user.getProvider(),
-                        user.getProviderId(),
-                        user.getName(),
-                        user.getNickname(),
-                        user.getSocialEmail(),
-                        user.getSchoolEmail(),
-                        user.isVerified()
-                )
-        );
-    }
+  public LoginResponse.Signup toSignupResponse(LoginResult result) {
 
+    SocialUserInfo socialUserInfo = result.socialUserInfo();
 
-    public LoginResponse.Signup toSignupResponse(
-            LoginResult result
-    ) {
-
-        SocialUserInfo socialUserInfo =
-                result.socialUserInfo();
-
-        return new LoginResponse.Signup(
-                true,
-                result.signupToken(),
-                socialUserInfo.provider(),
-                socialUserInfo.name(),
-                socialUserInfo.socialEmail()
-        );
-    }
+    return new LoginResponse.Signup(
+        true,
+        result.signupToken(),
+        socialUserInfo.provider(),
+        socialUserInfo.name(),
+        socialUserInfo.socialEmail());
+  }
 }

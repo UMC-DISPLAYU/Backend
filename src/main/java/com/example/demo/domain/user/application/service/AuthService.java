@@ -14,50 +14,32 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final KakaoOAuthVerifier kakaoOAuthVerifier;
-    private final UserRepository userRepository;
-    private final TokenProvider tokenProvider;
+  private final KakaoOAuthVerifier kakaoOAuthVerifier;
+  private final UserRepository userRepository;
+  private final TokenProvider tokenProvider;
 
+  public LoginResult login(SocialLoginRequest request) {
 
-    public LoginResult login(SocialLoginRequest request) {
+    SocialUserInfo socialUserInfo = kakaoOAuthVerifier.verify(request.idToken());
 
-        SocialUserInfo socialUserInfo =
-                kakaoOAuthVerifier.verify(request.idToken());
+    User user =
+        userRepository
+            .findByProviderAndProviderId(socialUserInfo.provider(), socialUserInfo.providerId())
+            .orElse(null);
 
+    // 기존 회원
+    if (user != null) {
 
-        User user =
-                userRepository
-                        .findByProviderAndProviderId(
-                                socialUserInfo.provider(),
-                                socialUserInfo.providerId()
-                        )
-                        .orElse(null);
+      String accessToken = tokenProvider.createAccessToken(user);
 
+      String refreshToken = tokenProvider.createRefreshToken(user);
 
-        // 기존 회원
-        if (user != null) {
-
-            String accessToken =
-                    tokenProvider.createAccessToken(user);
-
-            String refreshToken =
-                    tokenProvider.createRefreshToken(user);
-
-            return LoginResult.login(
-                    user,
-                    accessToken,
-                    refreshToken
-            );
-        }
-
-
-        // 신규 회원
-        String signupToken =
-                tokenProvider.createSignupToken(socialUserInfo);
-
-        return LoginResult.signup(
-                signupToken,
-                socialUserInfo
-        );
+      return LoginResult.login(user, accessToken, refreshToken);
     }
+
+    // 신규 회원
+    String signupToken = tokenProvider.createSignupToken(socialUserInfo);
+
+    return LoginResult.signup(signupToken, socialUserInfo);
+  }
 }
