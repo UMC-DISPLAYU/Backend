@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartwork.presentation.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record PersonalArtworkResponse(
@@ -12,7 +13,7 @@ public record PersonalArtworkResponse(
     String materialMedia,
     String size,
     String point,
-    int sortOrder,
+    LocalDateTime createdAt,
     List<ImageResponse> images) {
 
   public record ImageResponse(

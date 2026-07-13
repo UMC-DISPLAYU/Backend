@@ -8,9 +8,7 @@ public interface PersonalArtworkRepository {
 
   Optional<PersonalArtwork> findById(Long personalArtworkId);
 
-  List<PersonalArtwork> findAllByOwnerUserIdOrderBySortOrderAsc(Long userId);
-
-  int countByOwnerUserId(Long userId);
+  List<PersonalArtwork> findAllByOwnerUserIdOrderByCreatedAtAsc(Long userId);
 
   PersonalArtwork save(PersonalArtwork personalArtwork);
 }

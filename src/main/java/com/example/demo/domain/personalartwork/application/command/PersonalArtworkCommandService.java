@@ -25,7 +25,6 @@ public class PersonalArtworkCommandService {
   public Long createPersonalArtwork(Long ownerUserId, PersonalArtworkContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    int nextSortOrder = personalArtworkRepository.countByOwnerUserId(ownerUserId);
     PersonalArtwork personalArtwork =
         PersonalArtwork.create(
             new UserId(ownerUserId),
@@ -36,7 +35,6 @@ public class PersonalArtworkCommandService {
             command.materialMedia(),
             command.size(),
             command.point(),
-            nextSortOrder,
             toImages(command.images()));
 
     PersonalArtwork savedPersonalArtwork = personalArtworkRepository.save(personalArtwork);

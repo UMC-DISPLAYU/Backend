@@ -29,7 +29,7 @@ public class PersonalArtworkQueryService {
 
   @Transactional(readOnly = true)
   public List<PersonalArtworkResult> getPersonalArtworksByUser(Long userId) {
-    return personalArtworkRepository.findAllByOwnerUserIdOrderBySortOrderAsc(userId).stream()
+    return personalArtworkRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(userId).stream()
         .map(PersonalArtworkResult::from)
         .toList();
   }

@@ -18,7 +18,7 @@ public class PersonalArtworkPresentationMapper {
         result.materialMedia(),
         result.size(),
         result.point(),
-        result.sortOrder(),
+        result.createdAt(),
         result.images().stream().map(this::toResponse).toList());
   }
 

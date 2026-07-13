@@ -60,9 +60,6 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
   @Column(columnDefinition = "TEXT")
   private String point;
 
-  @Column(nullable = false)
-  private int sortOrder;
-
   @OneToMany(mappedBy = "personalArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<PersonalArtworkImage> images = new ArrayList<>();
 
@@ -77,19 +74,10 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
       String materialMedia,
       String size,
       String point,
-      int sortOrder,
       List<PersonalArtworkImage> images) {
     PersonalArtwork personalArtwork =
         new PersonalArtwork(
-            ownerUserId,
-            artworkName,
-            content,
-            type,
-            productionYear,
-            materialMedia,
-            size,
-            point,
-            sortOrder);
+            ownerUserId, artworkName, content, type, productionYear, materialMedia, size, point);
     personalArtwork.replaceImages(images);
     return personalArtwork;
   }
@@ -102,11 +90,9 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
       int productionYear,
       String materialMedia,
       String size,
-      String point,
-      int sortOrder) {
+      String point) {
     this.ownerUserId = Objects.requireNonNull(ownerUserId, "ownerUserId must not be null.");
     changeContent(artworkName, content, type, productionYear, materialMedia, size, point);
-    this.sortOrder = sortOrder;
   }
 
   // 이미지 목록을 외부에서 직접 수정하지 못하도록 읽기 전용으로 반환한다.

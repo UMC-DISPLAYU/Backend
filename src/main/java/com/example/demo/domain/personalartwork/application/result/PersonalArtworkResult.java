@@ -2,6 +2,7 @@ package com.example.demo.domain.personalartwork.application.result;
 
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record PersonalArtworkResult(
@@ -14,7 +15,7 @@ public record PersonalArtworkResult(
     String materialMedia,
     String size,
     String point,
-    int sortOrder,
+    LocalDateTime createdAt,
     List<ImageResult> images) {
 
   public static PersonalArtworkResult from(PersonalArtwork personalArtwork) {
@@ -28,7 +29,7 @@ public record PersonalArtworkResult(
         personalArtwork.getMaterialMedia(),
         personalArtwork.getSize(),
         personalArtwork.getPoint(),
-        personalArtwork.getSortOrder(),
+        personalArtwork.getCreatedAt(),
         personalArtwork.getImages().stream()
             .filter(image -> !image.isDeleted())
             .map(ImageResult::from)

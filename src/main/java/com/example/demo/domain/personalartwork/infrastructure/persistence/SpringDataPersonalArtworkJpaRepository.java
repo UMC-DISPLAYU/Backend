@@ -15,16 +15,7 @@ public interface SpringDataPersonalArtworkJpaRepository
       FROM PersonalArtwork artwork
       WHERE artwork.ownerUserId.value = :userId
         AND artwork.deletedAt IS NULL
-      ORDER BY artwork.sortOrder ASC, artwork.id ASC
+      ORDER BY artwork.createdAt ASC, artwork.id ASC
       """)
-  List<PersonalArtwork> findAllByOwnerUserIdOrderBySortOrderAsc(@Param("userId") Long userId);
-
-  @Query(
-      """
-      SELECT COUNT(artwork)
-      FROM PersonalArtwork artwork
-      WHERE artwork.ownerUserId.value = :userId
-        AND artwork.deletedAt IS NULL
-      """)
-  int countByOwnerUserId(@Param("userId") Long userId);
+  List<PersonalArtwork> findAllByOwnerUserIdOrderByCreatedAtAsc(@Param("userId") Long userId);
 }

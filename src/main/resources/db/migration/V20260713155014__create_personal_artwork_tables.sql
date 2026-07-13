@@ -7,7 +7,6 @@ CREATE TABLE `PersonalArtwork` (
     `materialMedia` VARCHAR(255) NOT NULL,
     `size` VARCHAR(255) NULL,
     `point` TEXT NULL,
-    `sortOrder` INT NOT NULL,
     `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `deletedAt` DATETIME NULL,

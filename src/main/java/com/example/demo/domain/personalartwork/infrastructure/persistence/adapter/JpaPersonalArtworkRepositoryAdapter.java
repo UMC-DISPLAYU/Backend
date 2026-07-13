@@ -22,13 +22,8 @@ public class JpaPersonalArtworkRepositoryAdapter implements PersonalArtworkRepos
   }
 
   @Override
-  public List<PersonalArtwork> findAllByOwnerUserIdOrderBySortOrderAsc(Long userId) {
-    return jpaRepository.findAllByOwnerUserIdOrderBySortOrderAsc(userId);
-  }
-
-  @Override
-  public int countByOwnerUserId(Long userId) {
-    return jpaRepository.countByOwnerUserId(userId);
+  public List<PersonalArtwork> findAllByOwnerUserIdOrderByCreatedAtAsc(Long userId) {
+    return jpaRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(userId);
   }
 
   @Override
