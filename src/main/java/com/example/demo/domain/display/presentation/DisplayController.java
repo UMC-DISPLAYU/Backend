@@ -54,9 +54,18 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.S
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
@@ -73,6 +82,7 @@ import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
@@ -107,6 +117,7 @@ public class DisplayController {
 
   private final CreateDisplayService createDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
+  private final UpdateDisplayService updateDisplayService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
@@ -118,6 +129,7 @@ public class DisplayController {
   public DisplayController(
       CreateDisplayService createDisplayService,
       DisplayLikeCommandService displayLikeCommandService,
+      UpdateDisplayService updateDisplayService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
@@ -127,6 +139,7 @@ public class DisplayController {
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
+    this.updateDisplayService = updateDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
@@ -166,6 +179,35 @@ public class DisplayController {
             .createDisplay(mapper.toCommand(createDisplayRequest, TEMP_OWNER_USER_ID))
             .displayId();
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display")
+  @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = UPDATE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = UPDATE_REQUEST_EXAMPLE_NAME,
+                      value = UPDATE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = UPDATE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = UPDATE_SUCCESS_EXAMPLE_NAME,
+                      value = UPDATE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> updateDisplay(
+      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest, HttpServletRequest request) {
+    DisplayDetailResult result =
+        updateDisplayService.updateDisplay(mapper.toCommand(updateDisplayRequest));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

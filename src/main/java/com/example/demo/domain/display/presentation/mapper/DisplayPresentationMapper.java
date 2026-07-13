@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
+import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
@@ -13,6 +14,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
@@ -49,6 +51,29 @@ public class DisplayPresentationMapper {
         request.closeTime(),
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION);
+  }
+
+  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request) {
+    return new UpdateDisplayCommand(
+        request.userId(),
+        request.displayId(),
+        request.title(),
+        request.posterImageUrl(),
+        request.type() == null ? null : toDisplayType(request.type()),
+        request.fields() == null
+            ? null
+            : request.fields().stream().map(this::toDisplayField).toList(),
+        request.schoolOrOrganization(),
+        request.departmentOrClub(),
+        request.hostOrganizationName(),
+        request.subtitle(),
+        request.description(),
+        request.startDate(),
+        request.endDate(),
+        request.openTime(),
+        request.closeTime(),
+        request.placeName(),
+        request.precautions());
   }
 
   public DuPickResponse toResponse(DuPickResult result) {
@@ -254,7 +279,32 @@ public class DisplayPresentationMapper {
     };
   }
 
+  private DisplayType toDisplayType(UpdateDisplayRequest.Type type) {
+    return switch (type) {
+      case GRADUATION -> DisplayType.GRADUATION;
+      case TASK -> DisplayType.ASSIGNMENTS;
+      case CLUB -> DisplayType.SMALL_GROUP;
+      case JOINT -> DisplayType.INTER_GROUP;
+      case ETC -> DisplayType.OTHERS;
+    };
+  }
+
   private DisplayField toDisplayField(CreateDisplayRequest.Field field) {
+    return switch (field) {
+      case PAINTING -> DisplayField.PAINTING;
+      case DESIGN -> DisplayField.DESIGN;
+      case PHOTOGRAPHY -> DisplayField.PHOTOGRAPHY;
+      case ARCHITECTURE -> DisplayField.ARCHITECTURE;
+      case MEDIA -> DisplayField.VIDEO;
+      case CRAFT -> DisplayField.CRAFTS;
+      case SCULPTURE -> DisplayField.SCULPTURE;
+      case FASHION -> DisplayField.FASHION;
+      case COMPLEX -> DisplayField.INTERDISCIPLINARY;
+      case ETC -> DisplayField.OTHERS;
+    };
+  }
+
+  private DisplayField toDisplayField(UpdateDisplayRequest.Field field) {
     return switch (field) {
       case PAINTING -> DisplayField.PAINTING;
       case DESIGN -> DisplayField.DESIGN;
