@@ -11,21 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ResendSchoolEmailVerificationService {
 
-    private final SchoolEmailVerificationRepository verificationRepository;
-    private final SendSchoolEmailVerificationService sendService;
+  private final SchoolEmailVerificationRepository verificationRepository;
+  private final SendSchoolEmailVerificationService sendService;
 
-    @Transactional
-    public void execute(String schoolEmail) {
+  @Transactional
+  public void execute(String schoolEmail) {
 
-        SchoolEmailVerification verification =
-                verificationRepository.findBySchoolEmail(schoolEmail)
-                        .orElseThrow();
+    SchoolEmailVerification verification =
+        verificationRepository.findBySchoolEmail(schoolEmail).orElseThrow();
 
-        sendService.execute(
-                new SendSchoolEmailVerificationCommand(
-                        schoolEmail,
-                        verification.getUnivName()
-                )
-        );
-    }
+    sendService.execute(
+        new SendSchoolEmailVerificationCommand(schoolEmail, verification.getUnivName()));
+  }
 }

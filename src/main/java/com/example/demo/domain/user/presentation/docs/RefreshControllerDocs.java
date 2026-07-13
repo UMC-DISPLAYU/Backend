@@ -10,23 +10,21 @@ import jakarta.servlet.http.HttpServletRequest;
 @Tag(name = "User", description = "사용자 인증 API")
 public interface RefreshControllerDocs {
 
-    @Operation(
-            summary = "Access Token 재발급",
-            description =
-                    """
+  @Operation(
+      summary = "Access Token 재발급",
+      description =
+          """
                     Refresh Token을 이용하여 새로운 Access Token을 발급합니다.
-          
+
                     처리 방식:
                     - Refresh Token JWT를 검증합니다.
                     - Refresh Token 만료 여부를 확인합니다.
                     - 서버에 저장된 Refresh Token과 일치하는지 확인합니다.
                     - 탈퇴 회원 여부를 확인합니다.
                     - 새로운 Access Token을 발급합니다.
-          
+
                     Authorization Header는 필요하지 않으며,
                     Request Body의 Refresh Token을 사용합니다.
                     """)
-    ApiResponseBody<RefreshResponse> refresh(
-            RefreshRequest request,
-            HttpServletRequest httpRequest);
+  ApiResponseBody<RefreshResponse> refresh(RefreshRequest request, HttpServletRequest httpRequest);
 }

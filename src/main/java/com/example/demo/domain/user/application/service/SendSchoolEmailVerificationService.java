@@ -6,7 +6,6 @@ import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRep
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
-import java.time.LocalDateTime;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,54 +15,38 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SendSchoolEmailVerificationService {
 
-    private final SchoolEmailVerificationRepository verificationRepository;
-    private final SchoolEmailSenderAdapter emailSenderAdapter;
+  private final SchoolEmailVerificationRepository verificationRepository;
+  private final SchoolEmailSenderAdapter emailSenderAdapter;
 
-    @Transactional
-    public void execute(
-            SendSchoolEmailVerificationCommand command) {
+  @Transactional
+  public void execute(SendSchoolEmailVerificationCommand command) {
 
-        validateEmail(command.schoolEmail());
+    validateEmail(command.schoolEmail());
 
-        verificationRepository.deleteBySchoolEmail(
-                command.schoolEmail()
-        );
+    verificationRepository.deleteBySchoolEmail(command.schoolEmail());
 
-        String verificationCode = createVerificationCode();
+    String verificationCode = createVerificationCode();
 
-        SchoolEmailVerification verification =
-                SchoolEmailVerification.create(
-                        command.schoolEmail(),
-                        command.univName(),
-                        verificationCode
-                );
+    SchoolEmailVerification verification =
+        SchoolEmailVerification.create(command.schoolEmail(), command.univName(), verificationCode);
 
-        verificationRepository.save(verification);
+    verificationRepository.save(verification);
 
-        emailSenderAdapter.send(
-                command.schoolEmail(),
-                verificationCode
-        );
+    emailSenderAdapter.send(command.schoolEmail(), verificationCode);
+  }
+
+  private void validateEmail(String email) {
+
+    if (email == null
+        || email.isBlank()
+        || !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.ac\\.kr$")) {
+
+      throw new UserException(UserErrorCode.INVALID_EMAIL);
     }
+  }
 
+  private String createVerificationCode() {
 
-    private void validateEmail(String email) {
-
-        if (email == null
-                || email.isBlank()
-                || !email.matches(
-                "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.ac\\.kr$")) {
-
-            throw new UserException(
-                    UserErrorCode.INVALID_EMAIL);
-        }
-    }
-
-
-    private String createVerificationCode() {
-
-        return String.valueOf(
-                new Random().nextInt(900000)
-                        + 100000);
-    }
+    return String.valueOf(new Random().nextInt(900000) + 100000);
+  }
 }

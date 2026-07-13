@@ -16,6 +16,5 @@ public interface UserRepository {
 
   boolean existsBySchoolEmail(String schoolEmail);
 
-
-    User save(User user);
+  User save(User user);
 }

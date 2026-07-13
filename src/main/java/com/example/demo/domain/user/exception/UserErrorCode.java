@@ -23,31 +23,27 @@ public enum UserErrorCode implements BaseErrorCode {
 
   MISSING_NICKNAME(HttpStatus.BAD_REQUEST, "MISSING_NICKNAME", "닉네임을 입력해주세요."),
 
-    UNSUPPORTED_UNIVERSITY(HttpStatus.BAD_REQUEST, "UNSUPPORTED_UNIVERSITY", "지원하지 않는 대학교입니다."),
+  UNSUPPORTED_UNIVERSITY(HttpStatus.BAD_REQUEST, "UNSUPPORTED_UNIVERSITY", "지원하지 않는 대학교입니다."),
 
-    INVALID_EMAIL(HttpStatus.BAD_REQUEST, "INVALID_EMAIL", "유효하지 않은 학교 이메일입니다."),
+  INVALID_EMAIL(HttpStatus.BAD_REQUEST, "INVALID_EMAIL", "유효하지 않은 학교 이메일입니다."),
 
-    ALREADY_VERIFIED_USER(
-            HttpStatus.BAD_REQUEST, "ALREADY_VERIFIED_USER", "이미 작가 인증이 완료된 사용자입니다."),
+  ALREADY_VERIFIED_USER(HttpStatus.BAD_REQUEST, "ALREADY_VERIFIED_USER", "이미 작가 인증이 완료된 사용자입니다."),
 
-    EMAIL_SEND_FAILED(
-            HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "인증 이메일 발송에 실패했습니다."),
+  EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "인증 이메일 발송에 실패했습니다."),
 
-    TOO_MANY_REQUESTS(
-            HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_REQUESTS", "인증번호 요청 횟수를 초과했습니다."),
+  TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_REQUESTS", "인증번호 요청 횟수를 초과했습니다."),
 
-    DUPLICATE_SCHOOL_EMAIL(
-            HttpStatus.CONFLICT, "DUPLICATE_SCHOOL_EMAIL", "이미 다른 계정에서 작가 인증에 사용된 학교 이메일입니다."),
+  DUPLICATE_SCHOOL_EMAIL(
+      HttpStatus.CONFLICT, "DUPLICATE_SCHOOL_EMAIL", "이미 다른 계정에서 작가 인증에 사용된 학교 이메일입니다."),
 
-    VERIFICATION_CODE_MISMATCH(
-            HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_MISMATCH", "인증번호가 일치하지 않습니다."),
+  VERIFICATION_CODE_MISMATCH(
+      HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_MISMATCH", "인증번호가 일치하지 않습니다."),
 
-    VERIFICATION_CODE_EXPIRED(
-            HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다."),
+  VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다."),
 
-    TOO_MANY_CATEGORIES(HttpStatus.BAD_REQUEST, "TOO_MANY_CATEGORIES", "활동 분야는 최대 2개까지 선택할 수 있습니다."),
+  TOO_MANY_CATEGORIES(HttpStatus.BAD_REQUEST, "TOO_MANY_CATEGORIES", "활동 분야는 최대 2개까지 선택할 수 있습니다."),
 
-    ARTIST_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "ARTIST_NAME_REQUIRED", "대표 작가 프로필명을 입력해주세요.");
+  ARTIST_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "ARTIST_NAME_REQUIRED", "대표 작가 프로필명을 입력해주세요.");
 
   private final HttpStatus status;
   private final String code;

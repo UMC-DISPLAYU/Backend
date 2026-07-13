@@ -51,10 +51,8 @@ public class User extends BaseTimeEntity {
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
 
-    public void verifyAuthor(String schoolEmail) {
-        this.isVerified = true;
-        this.schoolEmail = schoolEmail;
-    }
+  public void verifyAuthor(String schoolEmail) {
+    this.isVerified = true;
+    this.schoolEmail = schoolEmail;
+  }
 }
-
-

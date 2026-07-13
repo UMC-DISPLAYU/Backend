@@ -25,7 +25,7 @@ public class UserPersistenceAdapter implements UserRepository {
 
   @Override
   public boolean existsBySchoolEmail(String schoolEmail) {
-        return userJpaRepository.existsBySchoolEmail(schoolEmail);
+    return userJpaRepository.existsBySchoolEmail(schoolEmail);
   }
 
   @Override

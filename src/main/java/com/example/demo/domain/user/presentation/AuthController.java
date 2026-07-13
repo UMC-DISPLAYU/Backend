@@ -30,157 +30,83 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController
-        implements AuthControllerDocs,
+    implements AuthControllerDocs,
         LoginControllerDocs,
         RefreshControllerDocs,
         LogoutControllerDocs {
 
+  private final UserService userService;
+  private final AuthService authService;
 
-    private final UserService userService;
-    private final AuthService authService;
+  private final SignupResponseMapper signupResponseMapper;
+  private final LoginResponseMapper loginResponseMapper;
 
-    private final SignupResponseMapper signupResponseMapper;
-    private final LoginResponseMapper loginResponseMapper;
+  private final TokenProvider tokenProvider;
 
-    private final TokenProvider tokenProvider;
+  @Override
+  @PostMapping("/signup")
+  public ApiResponseBody<SignupResponse.Signup> signup(
+      @Valid @RequestBody SignupRequest request,
+      @RequestHeader("Authorization") String authorization,
+      HttpServletRequest httpRequest) {
 
+    String signupToken = authorization.substring(7);
 
+    SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
-    @Override
-    @PostMapping("/signup")
-    public ApiResponseBody<SignupResponse.Signup> signup(
-            @Valid @RequestBody SignupRequest request,
-            @RequestHeader("Authorization") String authorization,
-            HttpServletRequest httpRequest) {
+    List<AgreementCommand> agreements =
+        request.agreements().stream()
+            .map(agreement -> new AgreementCommand(agreement.agreeId(), agreement.isAgreed()))
+            .toList();
 
+    SignupCommand command = new SignupCommand(Nickname.of(request.nickname()), agreements);
 
+    SignupResult result = userService.signup(command, socialUserInfo);
 
+    SignupResponse.Signup response =
+        signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
 
+    return ApiResponseBody.success(response, httpRequest);
+  }
 
-        String signupToken =
-                authorization.substring(7);
+  @Override
+  @PostMapping("/login")
+  public ApiResponseBody<?> login(
+      @Valid @RequestBody SocialLoginRequest request, HttpServletRequest httpRequest) {
 
+    LoginResult result = authService.login(request);
 
+    Object response =
+        result.user() != null
+            ? loginResponseMapper.toLoginResponse(result)
+            : loginResponseMapper.toSignupResponse(result);
 
-        SocialUserInfo socialUserInfo =
-                tokenProvider.parseSignupToken(
-                        signupToken);
+    return ApiResponseBody.success(response, httpRequest);
+  }
 
+  @Override
+  @PostMapping("/refresh")
+  public ApiResponseBody<RefreshResponse> refresh(
+      @Valid @RequestBody RefreshRequest request, HttpServletRequest httpRequest) {
 
+    String accessToken = authService.refresh(request.refreshToken());
 
-        List<AgreementCommand> agreements =
-                request.agreements()
-                        .stream()
-                        .map(
-                                agreement ->
-                                        new AgreementCommand(
-                                                agreement.agreeId(),
-                                                agreement.isAgreed()))
-                        .toList();
+    return ApiResponseBody.success(new RefreshResponse(accessToken), httpRequest);
+  }
 
+  @Override
+  @PostMapping("/logout")
+  public ApiResponseBody<Void> logout(
+      @Valid @RequestBody LogoutRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
 
+    authService.logout(user.userId(), request.refreshToken());
 
-        SignupCommand command =
-                new SignupCommand(
-                        Nickname.of(
-                                request.nickname()),
-                        agreements);
-
-
-
-        SignupResult result =
-                userService.signup(
-                        command,
-                        socialUserInfo);
-
-
-
-        SignupResponse.Signup response =
-                signupResponseMapper.toResponse(
-                        result.user(),
-                        result.accessToken(),
-                        result.refreshToken());
-
-
-
-        return ApiResponseBody.success(
-                response,
-                httpRequest);
-    }
-
-
-
-
-    @Override
-    @PostMapping("/login")
-    public ApiResponseBody<?> login(
-            @Valid @RequestBody SocialLoginRequest request,
-            HttpServletRequest httpRequest) {
-
-
-        LoginResult result =
-                authService.login(
-                        request);
-
-
-
-        Object response =
-                result.user() != null
-                        ? loginResponseMapper.toLoginResponse(result)
-                        : loginResponseMapper.toSignupResponse(result);
-
-
-
-        return ApiResponseBody.success(
-                response,
-                httpRequest);
-    }
-
-
-
-
-    @Override
-    @PostMapping("/refresh")
-    public ApiResponseBody<RefreshResponse> refresh(
-            @Valid @RequestBody RefreshRequest request,
-            HttpServletRequest httpRequest) {
-
-
-        String accessToken =
-                authService.refresh(
-                        request.refreshToken());
-
-
-
-        return ApiResponseBody.success(
-                new RefreshResponse(accessToken),
-                httpRequest);
-    }
-
-
-
-
-    @Override
-    @PostMapping("/logout")
-    public ApiResponseBody<Void> logout(
-            @Valid @RequestBody LogoutRequest request,
-            @AuthenticationPrincipal AuthUser user,
-            HttpServletRequest httpRequest) {
-
-
-        authService.logout(
-                user.userId(),
-                request.refreshToken());
-
-
-
-        return ApiResponseBody.success(
-                null,
-                httpRequest);
-    }
+    return ApiResponseBody.success(null, httpRequest);
+  }
 }

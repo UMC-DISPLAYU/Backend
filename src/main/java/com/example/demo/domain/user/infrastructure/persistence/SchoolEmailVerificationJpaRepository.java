@@ -5,9 +5,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SchoolEmailVerificationJpaRepository
-        extends JpaRepository<SchoolEmailVerification, Long> {
+    extends JpaRepository<SchoolEmailVerification, Long> {
 
-    Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail);
+  Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail);
 
-    void deleteBySchoolEmail(String schoolEmail);
+  void deleteBySchoolEmail(String schoolEmail);
 }

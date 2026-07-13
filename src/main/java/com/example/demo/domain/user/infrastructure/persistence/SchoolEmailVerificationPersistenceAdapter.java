@@ -9,24 +9,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class SchoolEmailVerificationPersistenceAdapter
-        implements SchoolEmailVerificationRepository {
+    implements SchoolEmailVerificationRepository {
 
-    private final SchoolEmailVerificationJpaRepository jpaRepository;
+  private final SchoolEmailVerificationJpaRepository jpaRepository;
 
-    @Override
-    public SchoolEmailVerification save(
-            SchoolEmailVerification verification) {
-        return jpaRepository.save(verification);
-    }
+  @Override
+  public SchoolEmailVerification save(SchoolEmailVerification verification) {
+    return jpaRepository.save(verification);
+  }
 
-    @Override
-    public Optional<SchoolEmailVerification> findBySchoolEmail(
-            String schoolEmail) {
-        return jpaRepository.findBySchoolEmail(schoolEmail);
-    }
+  @Override
+  public Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail) {
+    return jpaRepository.findBySchoolEmail(schoolEmail);
+  }
 
-    @Override
-    public void deleteBySchoolEmail(String schoolEmail) {
-        jpaRepository.deleteBySchoolEmail(schoolEmail);
-    }
+  @Override
+  public void deleteBySchoolEmail(String schoolEmail) {
+    jpaRepository.deleteBySchoolEmail(schoolEmail);
+  }
 }

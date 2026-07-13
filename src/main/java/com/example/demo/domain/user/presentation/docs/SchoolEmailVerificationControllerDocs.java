@@ -12,10 +12,10 @@ import java.io.IOException;
 @Tag(name = "School Email Verification", description = "학교 이메일 인증 API")
 public interface SchoolEmailVerificationControllerDocs {
 
-    @Operation(
-            summary = "학교 이메일 인증번호 발송",
-            description =
-                    """
+  @Operation(
+      summary = "학교 이메일 인증번호 발송",
+      description =
+          """
                     작가 인증이 필요한 기능을 사용하기 위해 학교 이메일 인증번호를 발송합니다.
 
                     - 학교 이메일 형식을 검증합니다.
@@ -24,17 +24,14 @@ public interface SchoolEmailVerificationControllerDocs {
 
                     인증번호 확인 완료 후 작가 인증이 완료됩니다.
                     """)
-    @SecurityRequirement(name = "Authorization")
-    ApiResponseBody<Void> send(
-            SchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest
-    ) throws IOException;
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<Void> send(SchoolEmailVerificationRequest request, HttpServletRequest httpRequest)
+      throws IOException;
 
-
-    @Operation(
-            summary = "학교 이메일 인증번호 재발송",
-            description =
-                    """
+  @Operation(
+      summary = "학교 이메일 인증번호 재발송",
+      description =
+          """
                     인증번호가 만료되었거나 이메일을 받지 못한 경우 인증번호를 재발송합니다.
 
                     - 기존 발급된 인증번호는 무효화됩니다.
@@ -43,9 +40,7 @@ public interface SchoolEmailVerificationControllerDocs {
 
                     인증번호 확인 완료 후 작가 인증이 완료됩니다.
                     """)
-    @SecurityRequirement(name = "Authorization")
-    ApiResponseBody<Void> resend(
-            ResendSchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest
-    );
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<Void> resend(
+      ResendSchoolEmailVerificationRequest request, HttpServletRequest httpRequest);
 }

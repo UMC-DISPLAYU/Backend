@@ -17,46 +17,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users/me/verification/email")
-public class SchoolEmailVerificationController
-        implements SchoolEmailVerificationControllerDocs {
+public class SchoolEmailVerificationController implements SchoolEmailVerificationControllerDocs {
 
-    private final SendSchoolEmailVerificationService sendService;
-    private final ResendSchoolEmailVerificationService resendService;
+  private final SendSchoolEmailVerificationService sendService;
+  private final ResendSchoolEmailVerificationService resendService;
 
+  @Override
+  @PostMapping("/send")
+  public ApiResponseBody<Void> send(
+      @RequestBody SchoolEmailVerificationRequest request, HttpServletRequest httpRequest) {
 
-    @Override
-    @PostMapping("/send")
-    public ApiResponseBody<Void> send(
-            @RequestBody SchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest) {
+    sendService.execute(
+        new SendSchoolEmailVerificationCommand(request.schoolEmail(), request.univName()));
 
-        sendService.execute(
-                new SendSchoolEmailVerificationCommand(
-                        request.schoolEmail(),
-                        request.univName()
-                )
-        );
+    return ApiResponseBody.success(null, httpRequest);
+  }
 
-        return ApiResponseBody.success(
-                null,
-                httpRequest
-        );
-    }
+  @Override
+  @PostMapping("/resend")
+  public ApiResponseBody<Void> resend(
+      @RequestBody ResendSchoolEmailVerificationRequest request, HttpServletRequest httpRequest) {
 
+    resendService.execute(request.schoolEmail());
 
-    @Override
-    @PostMapping("/resend")
-    public ApiResponseBody<Void> resend(
-            @RequestBody ResendSchoolEmailVerificationRequest request,
-            HttpServletRequest httpRequest) {
-
-        resendService.execute(
-                request.schoolEmail()
-        );
-
-        return ApiResponseBody.success(
-                null,
-                httpRequest
-        );
-    }
+    return ApiResponseBody.success(null, httpRequest);
+  }
 }
