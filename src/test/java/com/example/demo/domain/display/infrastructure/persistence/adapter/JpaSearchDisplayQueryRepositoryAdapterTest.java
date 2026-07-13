@@ -59,6 +59,28 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             List.of(DisplayField.PAINTING),
             today.minusDays(1),
             today.plusDays(2));
+    Display differentKeyword =
+        publishedDisplay(
+            "회화 졸업전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(2));
+    Display differentType =
+        publishedDisplay(
+            "디자인 동아리 전시",
+            DisplayType.SMALL_GROUP,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(2));
+    Display differentRegion =
+        publishedDisplay(
+            "디자인 경기 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(2),
+            DisplayRegion.GYEONGGI_INCHEON);
     Display upcoming =
         publishedDisplay(
             "디자인 예정 전시",
@@ -73,7 +95,16 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             List.of(DisplayField.DESIGN),
             today.minusDays(1),
             today.plusDays(5));
-    jpaRepository.saveAllAndFlush(List.of(first, second, differentField, upcoming, draft));
+    jpaRepository.saveAllAndFlush(
+        List.of(
+            first,
+            second,
+            differentField,
+            differentKeyword,
+            differentType,
+            differentRegion,
+            upcoming,
+            draft));
 
     List<SearchDisplayQueryResult> results =
         queryRepository.searchDisplays(
@@ -90,7 +121,8 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
-        .containsExactly("디자인 졸업전시", "시각 디자인 전시");
+        .containsExactly("디자인 졸업전시", "시각 디자인 전시")
+        .doesNotContain("디자인 회화 전시", "회화 졸업전시", "디자인 동아리 전시", "디자인 경기 전시", "디자인 예정 전시", "디자인 초안");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
   }
@@ -143,8 +175,19 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
       List<DisplayField> displayFields,
       LocalDate startDate,
       LocalDate endDate) {
+    return publishedDisplay(
+        title, displayType, displayFields, startDate, endDate, DisplayRegion.SEOUL);
+  }
+
+  private static Display publishedDisplay(
+      String title,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      LocalDate startDate,
+      LocalDate endDate,
+      DisplayRegion region) {
     Display display = draftDisplay(title, displayType, displayFields, startDate, endDate);
-    display.changeRegion(DisplayRegion.SEOUL);
+    display.changeRegion(region);
     display.publish();
     return display;
   }
