@@ -15,9 +15,6 @@ import com.example.demo.domain.archive.presentation.response.ArchiveDisplayRespo
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -58,7 +55,7 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<ArchiveDisplayToggleResponse> saveArchiveDisplay(
-      @PathVariable @Positive Long exhibitionId, HttpServletRequest request) {
+      @PathVariable Long exhibitionId, HttpServletRequest request) {
     ArchiveDisplayToggleResult result =
         saveArchiveDisplayService.saveArchiveDisplay(
             new SaveArchiveDisplayCommand(TEMP_USER_ID, exhibitionId));
@@ -68,7 +65,7 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
   @DeleteMapping("/api/v1/archives/exhibitions/{exhibitionId}")
   @Override
   public ApiResponseBody<ArchiveDisplayToggleResponse> deleteArchiveDisplay(
-      @PathVariable @Positive Long exhibitionId, HttpServletRequest request) {
+      @PathVariable Long exhibitionId, HttpServletRequest request) {
     ArchiveDisplayToggleResult result =
         deleteArchiveDisplayService.deleteArchiveDisplay(TEMP_USER_ID, exhibitionId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -77,7 +74,7 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
   @GetMapping("/api/v1/archives/exhibitions/{savedExhibitionId}")
   @Override
   public ApiResponseBody<ArchiveDisplayResponse> getArchiveDisplayDetail(
-      @PathVariable @Positive Long savedExhibitionId, HttpServletRequest request) {
+      @PathVariable Long savedExhibitionId, HttpServletRequest request) {
     ArchiveDisplayResult result =
         getArchiveDisplayDetailService.getArchiveDisplayDetail(savedExhibitionId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -86,8 +83,8 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
   @GetMapping("/api/v1/archives/exhibitions")
   @Override
   public ApiResponseBody<ArchiveDisplayCursorResponse> getArchivedDisplays(
-      @RequestParam(required = false) @Positive Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest request) {
     ArchiveDisplayCursorResult result =
         getArchivedDisplaysService.getArchivedDisplays(TEMP_USER_ID, cursorId, size);
