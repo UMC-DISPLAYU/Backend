@@ -3,6 +3,7 @@ package com.example.demo.domain.display.presentation.mapper;
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
@@ -14,6 +15,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
@@ -88,6 +90,10 @@ public class DisplayPresentationMapper {
             result.pagination().nextCursor(),
             result.pagination().size(),
             result.pagination().hasNext()));
+  }
+
+  public DisplayLikeResponse toResponse(DisplayLikeResult result) {
+    return new DisplayLikeResponse(result.displayId(), result.likeCount());
   }
 
   public DisplayDetailResponse toResponse(DisplayDetailResult result) {
