@@ -3,9 +3,11 @@ package com.example.demo.domain.personalartwork.presentation;
 import com.example.demo.domain.personalartwork.application.command.PersonalArtworkCommandService;
 import com.example.demo.domain.personalartwork.application.query.PersonalArtworkQueryService;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.presentation.mapper.PersonalArtworkPresentationMapper;
 import com.example.demo.domain.personalartwork.presentation.request.PersonalArtworkRequest;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkResponse;
+import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkSummaryResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -61,13 +63,23 @@ public class PersonalArtworkController {
   @GetMapping("/api/v1/personal-artworks")
   @Operation(
       summary = "개인 작품 목록 조회",
-      description = "특정 유저(작가 프로필)의 개인 작품 목록을 조회합니다. 본인/타인 조회 공용입니다.")
-  public ApiResponseBody<List<PersonalArtworkResponse>> getPersonalArtworks(
+      description = "특정 유저(작가 프로필)의 개인 작품 목록을 가볍게 조회합니다 (작품탭 카드용). 본인/타인 조회 공용입니다.")
+  public ApiResponseBody<List<PersonalArtworkSummaryResponse>> getPersonalArtworks(
       @Parameter(description = "조회할 작가 프로필의 유저 ID", example = "1") @RequestParam Long userId,
       HttpServletRequest request) {
-    List<PersonalArtworkResult> results =
+    List<PersonalArtworkSummaryResult> results =
         personalArtworkQueryService.getPersonalArtworksByUser(userId);
     return ApiResponseBody.success(results.stream().map(mapper::toResponse).toList(), request);
+  }
+
+  @GetMapping("/api/v1/personal-artworks/{personalArtworkId}")
+  @Operation(summary = "개인 작품 단건 상세 조회", description = "수정 화면 진입 등 전체 필드가 필요할 때 개인 작품 상세를 조회합니다.")
+  public ApiResponseBody<PersonalArtworkResponse> getPersonalArtworkDetail(
+      @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      HttpServletRequest request) {
+    PersonalArtworkResult result =
+        personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PatchMapping("/api/v1/personal-artworks/{personalArtworkId}")

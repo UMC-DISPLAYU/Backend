@@ -1,11 +1,22 @@
 package com.example.demo.domain.personalartwork.presentation.mapper;
 
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkResponse;
+import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkSummaryResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PersonalArtworkPresentationMapper {
+
+  public PersonalArtworkSummaryResponse toResponse(PersonalArtworkSummaryResult result) {
+    return new PersonalArtworkSummaryResponse(
+        result.personalArtworkId(),
+        result.artworkName(),
+        result.thumbnailUrl(),
+        result.type(),
+        result.createdAt());
+  }
 
   public PersonalArtworkResponse toResponse(PersonalArtworkResult result) {
     return new PersonalArtworkResponse(

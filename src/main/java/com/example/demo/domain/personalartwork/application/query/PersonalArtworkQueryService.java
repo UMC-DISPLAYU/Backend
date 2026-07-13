@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartwork.application.query;
 
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
 import com.example.demo.global.error.BusinessException;
@@ -28,9 +29,9 @@ public class PersonalArtworkQueryService {
   }
 
   @Transactional(readOnly = true)
-  public List<PersonalArtworkResult> getPersonalArtworksByUser(Long userId) {
+  public List<PersonalArtworkSummaryResult> getPersonalArtworksByUser(Long userId) {
     return personalArtworkRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(userId).stream()
-        .map(PersonalArtworkResult::from)
+        .map(PersonalArtworkSummaryResult::from)
         .toList();
   }
 }
