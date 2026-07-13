@@ -21,9 +21,9 @@ public interface SpringDataArchiveWorkJpaRepository extends JpaRepository<Archiv
       WHERE w.userId = :userId
         AND (
           :cursorId IS NULL
-          OR w.savedAt < (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId)
+          OR w.savedAt < (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId AND c.userId = :userId)
           OR (
-            w.savedAt = (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId)
+            w.savedAt = (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId AND c.userId = :userId)
             AND w.id < :cursorId
           )
         )
