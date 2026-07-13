@@ -1,0 +1,29 @@
+package com.example.demo.domain.display.application.service;
+
+import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult.ExhibitionResult;
+import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
+import java.time.LocalDate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class GetRandomGraduationDisplaysService implements GetRandomGraduationDisplaysUseCase {
+
+  private final GraduationDisplayQueryRepository queryRepository;
+
+  public GetRandomGraduationDisplaysService(GraduationDisplayQueryRepository queryRepository) {
+    this.queryRepository = queryRepository;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public GraduationDisplayResult getRandomGraduationDisplays(int size) {
+    LocalDate today = LocalDate.now();
+    return new GraduationDisplayResult(
+        queryRepository.findRandomGraduationDisplays(size).stream()
+            .map(queryResult -> ExhibitionResult.from(queryResult, today))
+            .toList());
+  }
+}

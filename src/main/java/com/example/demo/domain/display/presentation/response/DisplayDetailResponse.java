@@ -18,7 +18,8 @@ public record DisplayDetailResponse(
     String organization,
     String department,
     String displayType,
-    String displayField,
+    List<String> displayFields,
+    String region,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -36,13 +37,7 @@ public record DisplayDetailResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}
 
   public record ImageResponse(
-      Long imageId,
-      String imageUrl,
-      String imageType,
-      int width,
-      int height,
-      int sortOrder,
-      LocalDateTime deletedAt) {}
+      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {}
 
   public record ContentCategoryResponse(
       Long categoryId,
@@ -58,9 +53,5 @@ public record DisplayDetailResponse(
       Long teamMemberId, Long userId, String displayNickname, String role, boolean accepted) {}
 
   public record InvitationResponse(
-      Long invitationId,
-      Long inviterUserId,
-      Long inviteeUserId,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {}
+      Long invitationId, Long inviterUserId, Long inviteeUserId, LocalDateTime createdAt) {}
 }

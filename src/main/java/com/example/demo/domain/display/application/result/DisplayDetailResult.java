@@ -3,6 +3,7 @@ package com.example.demo.domain.display.application.result;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
+import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
@@ -24,7 +25,8 @@ public record DisplayDetailResult(
     String organization,
     String department,
     String displayType,
-    String displayField,
+    List<String> displayFields,
+    String region,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -49,17 +51,24 @@ public record DisplayDetailResult(
         display.getOrganization(),
         display.getDepartment(),
         display.getDisplayType().name(),
-        display.getDisplayField().name(),
+        display.getFieldSelections().stream().map(FieldResult::from).toList(),
+        display.getRegion().name(),
         PeriodResult.from(display),
         display.getArtworkContentOpen().name(),
         display.getExhibitionContentOpen().name(),
         display.getStatus().name(),
         display.getInvitationToken(),
         display.getInvitationDisabledAt(),
-        display.getImages().stream().map(ImageResult::from).toList(),
+        display.getImages().stream()
+            .filter(image -> !image.isDeleted())
+            .map(ImageResult::from)
+            .toList(),
         display.getContentCategories().stream().map(ContentCategoryResult::from).toList(),
         display.getTeamMembers().stream().map(TeamMemberResult::from).toList(),
-        display.getInvitations().stream().map(InvitationResult::from).toList());
+        display.getInvitations().stream()
+            .filter(invitation -> !invitation.isDeleted())
+            .map(InvitationResult::from)
+            .toList());
   }
 
   public record LocationResult(String placeName, BigDecimal latitude, BigDecimal longitude) {
@@ -84,14 +93,15 @@ public record DisplayDetailResult(
     }
   }
 
+  private static class FieldResult {
+
+    private static String from(DisplayFieldSelection fieldSelection) {
+      return fieldSelection.getField().name();
+    }
+  }
+
   public record ImageResult(
-      Long imageId,
-      String imageUrl,
-      String imageType,
-      int width,
-      int height,
-      int sortOrder,
-      LocalDateTime deletedAt) {
+      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {
 
     private static ImageResult from(DisplayImage image) {
       return new ImageResult(
@@ -100,8 +110,7 @@ public record DisplayDetailResult(
           image.getImageType().name(),
           image.getWidth(),
           image.getHeight(),
-          image.getSortOrder(),
-          image.getDeletedAt());
+          image.getSortOrder());
     }
   }
 
@@ -149,19 +158,14 @@ public record DisplayDetailResult(
   }
 
   public record InvitationResult(
-      Long invitationId,
-      Long inviterUserId,
-      Long inviteeUserId,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {
+      Long invitationId, Long inviterUserId, Long inviteeUserId, LocalDateTime createdAt) {
 
     private static InvitationResult from(DisplayInvitation invitation) {
       return new InvitationResult(
           invitation.getId(),
           invitation.getInviterUserId().value(),
           invitation.getInviteeUserId().value(),
-          invitation.getCreatedAt(),
-          invitation.getDeletedAt());
+          invitation.getCreatedAt());
     }
   }
 }
