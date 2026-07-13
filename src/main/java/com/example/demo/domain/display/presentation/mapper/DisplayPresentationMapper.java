@@ -18,7 +18,6 @@ import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
-import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,8 +31,8 @@ public class DisplayPresentationMapper {
         request.subtitle(),
         request.description(),
         request.locationName(),
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
+        request.latitude(),
+        request.longitude(),
         request.roadAddress(),
         "",
         request.precautions(),

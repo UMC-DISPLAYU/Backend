@@ -32,6 +32,8 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.title").value("FORM 2026"))
         .andExpect(jsonPath("$.success.data.region").value("SEOUL"))
+        .andExpect(jsonPath("$.success.data.location.latitude").value(37.0063))
+        .andExpect(jsonPath("$.success.data.location.longitude").value(127.2267))
         .andExpect(jsonPath("$.error").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
   }
@@ -67,6 +69,8 @@ class DisplayControllerCreateTest {
           "openTime": "10:00",
           "closeTime": "18:00",
           "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+          "latitude": 37.0063,
+          "longitude": 127.2267,
           "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
           "precautions": "전시장 내 음료 반입 금지"
         }

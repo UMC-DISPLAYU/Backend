@@ -67,6 +67,8 @@ public final class DisplayApiDocs {
         "openTime": "10:00",
         "closeTime": "18:00",
         "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+        "latitude": 37.0063,
+        "longitude": 127.2267,
         "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
         "precautions": "전시장 내 음료 반입 금지"
       }
@@ -85,8 +87,8 @@ public final class DisplayApiDocs {
             "content": "디자인학부 학생들의...",
             "location": {
               "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
-              "latitude": 0,
-              "longitude": 0
+              "latitude": 37.0063,
+              "longitude": 127.2267
             },
             "qnaAccount": "",
             "note": "전시장 내 음료 반입 금지",
