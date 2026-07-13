@@ -19,6 +19,7 @@ public record DisplayDetailResponse(
     String department,
     String displayType,
     List<String> displayFields,
+    String region,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,
