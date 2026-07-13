@@ -143,7 +143,7 @@ public class DisplayController {
       @Valid @RequestBody CreateDisplayRequest createDisplayRequest, HttpServletRequest request) {
     Long displayId =
         createDisplayService
-            .createDisplay(createDisplayRequest.toCommand(TEMP_OWNER_USER_ID))
+            .createDisplay(mapper.toCommand(createDisplayRequest, TEMP_OWNER_USER_ID))
             .displayId();
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
