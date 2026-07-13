@@ -2,6 +2,7 @@ package com.example.demo.domain.user.presentation.docs;
 
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,5 +22,7 @@ public interface LogoutControllerDocs {
                     """)
     ApiResponseBody<Void> logout(
             LogoutRequest request,
-            HttpServletRequest httpRequest);
+            AuthUser user,
+            HttpServletRequest httpRequest
+    );
 }

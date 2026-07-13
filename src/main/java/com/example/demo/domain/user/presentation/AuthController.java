@@ -10,7 +10,6 @@ import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.domain.vo.Nickname;
-import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
@@ -21,18 +20,16 @@ import com.example.demo.domain.user.presentation.request.SignupRequest;
 import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
-import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +40,7 @@ public class AuthController
         RefreshControllerDocs,
         LogoutControllerDocs {
 
+
     private final UserService userService;
     private final AuthService authService;
 
@@ -51,10 +49,8 @@ public class AuthController
 
     private final TokenProvider tokenProvider;
 
-    /**
-     * 회원가입
-     * signupToken 필요
-     */
+
+
     @Override
     @PostMapping("/signup")
     public ApiResponseBody<SignupResponse.Signup> signup(
@@ -62,13 +58,24 @@ public class AuthController
             @RequestHeader("Authorization") String authorization,
             HttpServletRequest httpRequest) {
 
-        String signupToken = extractBearerToken(authorization);
+
+
+
+
+        String signupToken =
+                authorization.substring(7);
+
+
 
         SocialUserInfo socialUserInfo =
-                tokenProvider.parseSignupToken(signupToken);
+                tokenProvider.parseSignupToken(
+                        signupToken);
+
+
 
         List<AgreementCommand> agreements =
-                request.agreements().stream()
+                request.agreements()
+                        .stream()
                         .map(
                                 agreement ->
                                         new AgreementCommand(
@@ -76,13 +83,22 @@ public class AuthController
                                                 agreement.isAgreed()))
                         .toList();
 
+
+
         SignupCommand command =
                 new SignupCommand(
-                        Nickname.of(request.nickname()),
+                        Nickname.of(
+                                request.nickname()),
                         agreements);
 
+
+
         SignupResult result =
-                userService.signup(command, socialUserInfo);
+                userService.signup(
+                        command,
+                        socialUserInfo);
+
+
 
         SignupResponse.Signup response =
                 signupResponseMapper.toResponse(
@@ -90,82 +106,81 @@ public class AuthController
                         result.accessToken(),
                         result.refreshToken());
 
-        return ApiResponseBody.success(response, httpRequest);
+
+
+        return ApiResponseBody.success(
+                response,
+                httpRequest);
     }
 
 
-    /**
-     * 소셜 로그인
-     * 인증 필요 없음
-     */
+
+
     @Override
     @PostMapping("/login")
     public ApiResponseBody<?> login(
             @Valid @RequestBody SocialLoginRequest request,
             HttpServletRequest httpRequest) {
 
+
         LoginResult result =
-                authService.login(request);
+                authService.login(
+                        request);
 
-        Object response;
 
-        if (result.user() != null) {
-            response =
-                    loginResponseMapper.toLoginResponse(result);
-        } else {
-            response =
-                    loginResponseMapper.toSignupResponse(result);
-        }
 
-        return ApiResponseBody.success(response, httpRequest);
+        Object response =
+                result.user() != null
+                        ? loginResponseMapper.toLoginResponse(result)
+                        : loginResponseMapper.toSignupResponse(result);
+
+
+
+        return ApiResponseBody.success(
+                response,
+                httpRequest);
     }
 
 
-    /**
-     * AccessToken 재발급
-     * 인증 필요 없음
-     */
+
+
     @Override
     @PostMapping("/refresh")
     public ApiResponseBody<RefreshResponse> refresh(
             @Valid @RequestBody RefreshRequest request,
             HttpServletRequest httpRequest) {
 
+
         String accessToken =
-                authService.refresh(request.refreshToken());
+                authService.refresh(
+                        request.refreshToken());
 
-        RefreshResponse response =
-                new RefreshResponse(accessToken);
 
-        return ApiResponseBody.success(response, httpRequest);
+
+        return ApiResponseBody.success(
+                new RefreshResponse(accessToken),
+                httpRequest);
     }
 
 
-    /**
-     * 로그아웃
-     * AccessToken 인증 필요
-     */
+
+
     @Override
     @PostMapping("/logout")
     public ApiResponseBody<Void> logout(
             @Valid @RequestBody LogoutRequest request,
+            @AuthenticationPrincipal AuthUser user,
             HttpServletRequest httpRequest) {
 
-        authService.logout(request, httpRequest);
 
-        return ApiResponseBody.success(null, httpRequest);
-    }
+        authService.logout(
+                user.userId(),
+                request.refreshToken());
 
 
-    private String extractBearerToken(String authorization) {
 
-        if (authorization == null
-                || !authorization.startsWith("Bearer ")) {
-
-            throw new BusinessException(
-                    AuthErrorCode.INVALID_SIGNUP_TOKEN);
-        }
-
-        return authorization.substring(7);
+        return ApiResponseBody.success(
+                null,
+                httpRequest);
     }
 }

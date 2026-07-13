@@ -1,94 +1,68 @@
 package com.example.demo.domain.user.application.service;
 
-
-
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
+import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
+import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
-
-import com.univcert.api.UnivCert;
+import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
+import java.time.LocalDateTime;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class SendSchoolEmailVerificationService {
 
+    private final SchoolEmailVerificationRepository verificationRepository;
+    private final SchoolEmailSenderAdapter emailSenderAdapter;
 
-    @Value("${univCert.key}")
-    private String key;
-
-
+    @Transactional
     public void execute(
-            SendSchoolEmailVerificationCommand command
-    ) throws IOException {
-
+            SendSchoolEmailVerificationCommand command) {
 
         validateEmail(command.schoolEmail());
 
-
-        // 학교명 검증
-        Map<String, Object> check =
-                UnivCert.check(
-                        command.univName()
-                );
-
-
-        boolean universityExists =
-                (boolean) check.get("success");
-
-
-        if (!universityExists) {
-
-            throw new UserException(
-                    UserErrorCode.UNSUPPORTED_UNIVERSITY
-            );
-        }
-
-
-        // 기존 인증 요청 제거
-        UnivCert.clear(
-                key,
+        verificationRepository.deleteBySchoolEmail(
                 command.schoolEmail()
         );
 
+        String verificationCode = createVerificationCode();
 
-        // 인증번호 발송
-        Map<String, Object> result =
-                UnivCert.certify(
-                        key,
+        SchoolEmailVerification verification =
+                SchoolEmailVerification.create(
                         command.schoolEmail(),
-                        command.univName(),
-                        true
+                        verificationCode
                 );
 
+        verificationRepository.save(verification);
 
-        boolean success =
-                (boolean) result.get("success");
-
-
-        if (!success) {
-
-            throw new UserException(
-                    UserErrorCode.EMAIL_SEND_FAILED
-            );
-        }
+        emailSenderAdapter.send(
+                command.schoolEmail(),
+                verificationCode
+        );
     }
 
 
     private void validateEmail(String email) {
 
-        if(email == null ||
-                email.isBlank() ||
-                !email.contains("@")) {
+        if (email == null
+                || email.isBlank()
+                || !email.matches(
+                "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.ac\\.kr$")) {
 
             throw new UserException(
-                    UserErrorCode.INVALID_EMAIL
-            );
+                    UserErrorCode.INVALID_EMAIL);
         }
+    }
+
+
+    private String createVerificationCode() {
+
+        return String.valueOf(
+                new Random().nextInt(900000)
+                        + 100000);
     }
 }
