@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,7 +55,7 @@ public interface LoungeCommentControllerDocs {
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
-      @Parameter(description = "한 번에 불러올 댓글 개수") @RequestParam(defaultValue = "10") int size,
+      @Parameter(description = "한 번에 불러올 댓글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       HttpServletRequest request);
 
   @Operation(summary = "라운지 답글 목록 조회", description = "댓글의 답글 목록을 커서 방식으로 조회합니다.")
@@ -61,6 +63,6 @@ public interface LoungeCommentControllerDocs {
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
-      @Parameter(description = "한 번에 불러올 답글 개수") @RequestParam(defaultValue = "10") int size,
+      @Parameter(description = "한 번에 불러올 답글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       HttpServletRequest request);
 }

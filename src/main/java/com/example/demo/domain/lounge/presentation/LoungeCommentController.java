@@ -12,7 +12,10 @@ import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorRes
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Validated
 public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   private static final Long TEMP_USER_ID = 1L;
@@ -113,7 +117,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
@@ -126,7 +130,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
