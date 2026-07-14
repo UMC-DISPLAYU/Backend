@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: cd-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -143,8 +143,35 @@ jobs:
                -p \"\$APP_PORT:8080\" \
                \"\$IMAGE_URI\"
 
-             # Clean unused old image layers
-             docker image prune -f >/dev/null
+             # Verify the new container starts and stays healthy/running
+             success_count=0
+             max_attempts=12
+             for attempt in \$(seq 1 \"\$max_attempts\"); do
+               status=\$(docker inspect -f '{{.State.Status}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
+               health=\$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
 
-             # Show final container status
-             docker ps --filter \"name=\$CONTAINER_NAME\""
+               echo \"Container check \$attempt/\$max_attempts: status=\$status health=\$health\"
+
+               if [ \"\$status\" = \"running\" ] && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
+                 success_count=\$((success_count + 1))
+                 if [ \"\$success_count\" -ge 2 ]; then
+                   docker image prune -f >/dev/null
+                   docker ps --filter \"name=\$CONTAINER_NAME\"
+                   exit 0
+                 fi
+               else
+                 success_count=0
+               fi
+
+               if [ \"\$status\" = \"exited\" ] || [ \"\$status\" = \"dead\" ] || [ \"\$status\" = \"missing\" ]; then
+                 echo \"Container failed during startup. Recent logs:\"
+                 docker logs --tail 120 \"\$CONTAINER_NAME\" || true
+                 exit 1
+               fi
+
+               sleep 5
+             done
+
+             echo \"Container did not become stable before timeout. Recent logs:\"
+             docker logs --tail 120 \"\$CONTAINER_NAME\" || true
+             exit 1"
