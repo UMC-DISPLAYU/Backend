@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation.docs;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
@@ -16,9 +17,94 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Artwork Feeling", description = "작품 감상평 API")
 public interface ArtworkFeelingApiDocs {
+
+  @Operation(
+      summary = "작품 감상평 목록 및 답변 조회",
+      description = "작품 방명록 감상 탭에서 감상평 목록과 답변을 조회합니다. 비회원도 조회할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 감상평 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "feelings": [
+                                  {
+                                    "feelingId": 1,
+                                    "content": "정말 감동적인 작품이에요.",
+                                    "createdAt": "2026-06-30T22:10:00",
+                                    "user": {
+                                      "userId": 1,
+                                      "nickname": "User1"
+                                    },
+                                    "replies": [
+                                      {
+                                        "userId": 1,
+                                        "nickname": "고상준",
+                                        "content": "감사합니다.",
+                                        "createdAt": "2026-06-30T22:10:00",
+                                        "isCreator": true
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "nextCursorId": 3,
+                                "size": 3,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "작품 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling list artwork not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "ARTWORK_NOT_FOUND",
+                              "message": "작품을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<ArtworkFeelingListResponse> getFeelings(
+      @Parameter(description = "감상평을 조회할 작품 ID", example = "1") Long artworkId,
+      @Parameter(description = "마지막으로 조회한 감상평 ID. 첫 요청이면 전달하지 않음", example = "10")
+          @RequestParam(required = false)
+          @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 작성", description = "작품 상세/방명록 화면에서 사용자가 감상평을 작성합니다.")
   @ApiResponse(
@@ -82,7 +168,7 @@ public interface ArtworkFeelingApiDocs {
               in = ParameterIn.HEADER,
               example = "1")
           Long userId,
-      CreateArtworkFeelingRequest request,
+      @Valid CreateArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest);
 
   @Operation(
@@ -155,7 +241,7 @@ public interface ArtworkFeelingApiDocs {
               in = ParameterIn.HEADER,
               example = "1")
           Long userId,
-      CreateArtworkFeelingReplyRequest request,
+      @Valid CreateArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 수정", description = "사용자가 본인이 작성한 작품 감상평 내용을 수정합니다.")
@@ -245,7 +331,7 @@ public interface ArtworkFeelingApiDocs {
               in = ParameterIn.HEADER,
               example = "1")
           Long userId,
-      UpdateArtworkFeelingRequest request,
+      @Valid UpdateArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 삭제", description = "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다.")

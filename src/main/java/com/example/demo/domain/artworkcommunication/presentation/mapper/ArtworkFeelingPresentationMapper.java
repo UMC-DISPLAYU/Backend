@@ -3,6 +3,8 @@ package com.example.demo.domain.artworkcommunication.presentation.mapper;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
+import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsQuery;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
@@ -10,6 +12,10 @@ import com.example.demo.domain.artworkcommunication.application.result.UpdatedAr
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingItemResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingReplyItemResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingUserResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
@@ -22,6 +28,10 @@ public class ArtworkFeelingPresentationMapper {
   public ArtworkFeelingCommand toCommand(
       Long artworkId, Long userId, CreateArtworkFeelingRequest request) {
     return new ArtworkFeelingCommand(artworkId, userId, request.content());
+  }
+
+  public GetArtworkFeelingsQuery toQuery(Long artworkId, Long cursorId) {
+    return new GetArtworkFeelingsQuery(artworkId, cursorId);
   }
 
   public UpdateArtworkFeelingCommand toCommand(
@@ -58,6 +68,34 @@ public class ArtworkFeelingPresentationMapper {
         result.feelingId(),
         result.userId(),
         result.nickname(),
+        result.isCreator());
+  }
+
+  public ArtworkFeelingListResponse toResponse(ArtworkFeelingListResult result) {
+    return new ArtworkFeelingListResponse(
+        result.feelings().stream().map(this::toFeelingItemResponse).toList(),
+        result.nextCursorId(),
+        result.size(),
+        result.hasNext());
+  }
+
+  private ArtworkFeelingItemResponse toFeelingItemResponse(
+      ArtworkFeelingListResult.ArtworkFeelingItemResult result) {
+    return new ArtworkFeelingItemResponse(
+        result.feelingId(),
+        result.content(),
+        result.createdAt(),
+        new ArtworkFeelingUserResponse(result.user().userId(), result.user().nickname()),
+        result.replies().stream().map(this::toReplyItemResponse).toList());
+  }
+
+  private ArtworkFeelingReplyItemResponse toReplyItemResponse(
+      ArtworkFeelingListResult.ArtworkFeelingReplyItemResult result) {
+    return new ArtworkFeelingReplyItemResponse(
+        result.userId(),
+        result.nickname(),
+        result.content(),
+        result.createdAt(),
         result.isCreator());
   }
 }

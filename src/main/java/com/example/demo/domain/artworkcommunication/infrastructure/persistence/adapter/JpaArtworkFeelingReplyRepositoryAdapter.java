@@ -3,6 +3,8 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingReplyJpaRepository;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +16,20 @@ public class JpaArtworkFeelingReplyRepositoryAdapter implements ArtworkFeelingRe
   @Override
   public ArtworkFeelingReply save(ArtworkFeelingReply artworkFeelingReply) {
     return artworkFeelingReplyJpaRepository.save(artworkFeelingReply);
+  }
+
+  @Override
+  public Optional<ArtworkFeelingReply> findActiveByFeelingId(Long feelingId) {
+    return artworkFeelingReplyJpaRepository
+        .findFirstByFeelingIdAndDeletedAtIsNullOrderByCreatedAtAsc(feelingId);
+  }
+
+  @Override
+  public List<ArtworkFeelingReply> findActiveByFeelingIds(List<Long> feelingIds) {
+    if (feelingIds.isEmpty()) {
+      return List.of();
+    }
+    return artworkFeelingReplyJpaRepository.findByFeelingIdInAndDeletedAtIsNullOrderByCreatedAtAsc(
+        feelingIds);
   }
 }
