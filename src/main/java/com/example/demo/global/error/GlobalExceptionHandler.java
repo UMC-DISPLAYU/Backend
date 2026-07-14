@@ -3,6 +3,7 @@ package com.example.demo.global.error;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.response.ApiResponseBody.ErrorBody;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,22 @@ public class GlobalExceptionHandler {
     List<FieldErrorDetail> details =
         exception.getBindingResult().getFieldErrors().stream()
             .map(error -> new FieldErrorDetail(error.getField(), error.getDefaultMessage()))
+            .toList();
+
+    BaseErrorCode errorCode = GlobalErrorCode.INVALID_INPUT_VALUE;
+    ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), details);
+    return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ApiResponseBody<Void>> handleConstraintViolationException(
+      ConstraintViolationException exception, HttpServletRequest request) {
+    List<FieldErrorDetail> details =
+        exception.getConstraintViolations().stream()
+            .map(
+                violation ->
+                    new FieldErrorDetail(
+                        violation.getPropertyPath().toString(), violation.getMessage()))
             .toList();
 
     BaseErrorCode errorCode = GlobalErrorCode.INVALID_INPUT_VALUE;
