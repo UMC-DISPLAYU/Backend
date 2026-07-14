@@ -8,4 +8,7 @@ public interface CreatorExistenceJpaRepository
 
   Optional<CreatorReferenceJpaEntity> findByDisplayArtworkIdAndUserId(
       Long displayArtworkId, Long userId);
+
+  Optional<CreatorReferenceJpaEntity>
+      findFirstByDisplayArtworkIdAndIsContactTrueOrderByCreatorIdAsc(Long displayArtworkId);
 }

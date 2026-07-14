@@ -28,4 +28,11 @@ public class CreatorExistenceJpaAdapter implements CreatorExistenceRepository {
         .filter(creator -> Boolean.TRUE.equals(creator.getIsContact()))
         .map(creator -> new ContactCreator(creator.getCreatorId(), creator.getCreatorName()));
   }
+
+  @Override
+  public Optional<ContactCreator> findContactCreatorByDisplayArtworkId(Long displayArtworkId) {
+    return repository
+        .findFirstByDisplayArtworkIdAndIsContactTrueOrderByCreatorIdAsc(displayArtworkId)
+        .map(creator -> new ContactCreator(creator.getCreatorId(), creator.getCreatorName()));
+  }
 }

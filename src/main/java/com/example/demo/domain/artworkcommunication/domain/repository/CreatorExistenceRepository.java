@@ -8,5 +8,7 @@ public interface CreatorExistenceRepository {
   Optional<ContactCreator> findContactCreatorByDisplayArtworkIdAndUserId(
       Long displayArtworkId, Long userId);
 
+  Optional<ContactCreator> findContactCreatorByDisplayArtworkId(Long displayArtworkId);
+
   record ContactCreator(Long creatorId, String creatorName) {}
 }

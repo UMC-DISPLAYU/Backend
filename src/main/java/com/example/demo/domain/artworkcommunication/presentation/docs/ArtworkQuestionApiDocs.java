@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation.docs;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
@@ -16,9 +17,87 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @Tag(name = "Artwork Question", description = "작품 Q&A 질문 API")
 public interface ArtworkQuestionApiDocs {
+
+  @Operation(summary = "작품 Q&A 질문 목록 조회", description = "작품 방명록 Q&A 탭에서 공개 질문 목록과 작가 답변을 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 Q&A 질문 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork question list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "questions": [
+                                  {
+                                    "questionId": 1,
+                                    "content": "이 작품에서 사용한 재료가 궁금해요.",
+                                    "isPublic": true,
+                                    "answerStatus": "ANSWERED",
+                                    "createdAt": "2026-06-30T22:10:00",
+                                    "user": {
+                                      "userId": 1,
+                                      "nickname": "User1"
+                                    },
+                                    "reply": {
+                                      "creatorName": "고상준",
+                                      "isCreator": true,
+                                      "content": "캔버스에 유화를 사용했어요.",
+                                      "createdAt": "2026-06-30T22:10:00"
+                                    }
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 3,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/questions"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "작품 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "ARTWORK_NOT_FOUND",
+                              "message": "작품을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/questions"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
+      @Parameter(description = "질문 목록을 조회할 작품 ID", example = "1") Long artworkId,
+      @Parameter(description = "마지막으로 조회한 질문 ID. 첫 요청이면 전달하지 않음", example = "3") @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 Q&A 질문 등록", description = "작품 상세/방명록 화면에서 사용자가 공개 또는 비공개 질문을 등록합니다.")
   @ApiResponse(
