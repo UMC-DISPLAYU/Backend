@@ -5,6 +5,7 @@ import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
+import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
@@ -20,11 +21,15 @@ public class CreateDisplayArtworkService {
 
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
+  private final ArtistVerificationRepository artistVerificationRepository;
 
   public CreateDisplayArtworkService(
-      DisplayRepository displayRepository, DisplayArtworkRepository displayArtworkRepository) {
+      DisplayRepository displayRepository,
+      DisplayArtworkRepository displayArtworkRepository,
+      ArtistVerificationRepository artistVerificationRepository) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
+    this.artistVerificationRepository = artistVerificationRepository;
   }
 
   @Transactional
@@ -67,6 +72,9 @@ public class CreateDisplayArtworkService {
                         && teamMember.getUserId().value().equals(requesterUserId));
     if (!isAcceptedTeamMember) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_DISPLAY_TEAM_MEMBER);
+    }
+    if (!artistVerificationRepository.isVerifiedArtist(requesterUserId)) {
+      throw new BusinessException(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
     }
   }
 

@@ -30,4 +30,14 @@ public class JpaCreatorRepositoryAdapter implements CreatorRepository {
   public Creator save(Creator creator) {
     return jpaRepository.save(creator);
   }
+
+  @Override
+  public List<Creator> saveAll(List<Creator> creators) {
+    return jpaRepository.saveAll(creators);
+  }
+
+  @Override
+  public void deleteAllByDisplayArtworkId(Long displayArtworkId) {
+    jpaRepository.deleteAllByDisplayArtworkId(displayArtworkId);
+  }
 }

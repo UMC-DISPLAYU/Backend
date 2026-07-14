@@ -1,10 +1,12 @@
 package com.example.demo.domain.displayartwork.presentation;
 
+import com.example.demo.domain.displayartwork.application.command.AuthorSetupService;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommandService;
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
+import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -13,8 +15,10 @@ import com.example.demo.domain.displayartwork.application.result.ReorderDisplayA
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtworkPresentationMapper;
+import com.example.demo.domain.displayartwork.presentation.request.AuthorSetupRequest;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
+import com.example.demo.domain.displayartwork.presentation.response.AuthorSetupResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -53,6 +57,7 @@ public class DisplayArtworkController {
   private final DisplayArtworkQueryService displayArtworkQueryService;
   private final DisplayArtworkLikeCommandService displayArtworkLikeCommandService;
   private final ReorderDisplayArtworksService reorderDisplayArtworksService;
+  private final AuthorSetupService authorSetupService;
   private final DisplayArtworkPresentationMapper mapper;
 
   public DisplayArtworkController(
@@ -60,11 +65,13 @@ public class DisplayArtworkController {
       DisplayArtworkQueryService displayArtworkQueryService,
       DisplayArtworkLikeCommandService displayArtworkLikeCommandService,
       ReorderDisplayArtworksService reorderDisplayArtworksService,
+      AuthorSetupService authorSetupService,
       DisplayArtworkPresentationMapper mapper) {
     this.createDisplayArtworkService = createDisplayArtworkService;
     this.displayArtworkQueryService = displayArtworkQueryService;
     this.displayArtworkLikeCommandService = displayArtworkLikeCommandService;
     this.reorderDisplayArtworksService = reorderDisplayArtworksService;
+    this.authorSetupService = authorSetupService;
     this.mapper = mapper;
   }
 
@@ -94,6 +101,18 @@ public class DisplayArtworkController {
         createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
     DisplayArtworkResult result =
         displayArtworkQueryService.getDisplayArtworkDetail(displayArtworkId);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @PostMapping("/api/v1/artworks/{artworkId}/author-setup")
+  @Operation(
+      summary = "전시 출품작 작가 정보 설정",
+      description = "전시작 등록 2단계 - 대표 작가명, 공동 작업자, 내부 Q&A 담당자를 설정합니다.")
+  public ApiResponseBody<AuthorSetupResponse> setupAuthors(
+      @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      @Valid @RequestBody AuthorSetupRequest request,
+      HttpServletRequest httpRequest) {
+    AuthorSetupResult result = authorSetupService.setup(TEMP_USER_ID, request.toCommand(artworkId));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

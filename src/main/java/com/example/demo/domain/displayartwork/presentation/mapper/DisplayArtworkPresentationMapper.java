@@ -1,10 +1,12 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
+import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
+import com.example.demo.domain.displayartwork.presentation.response.AuthorSetupResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -21,6 +23,11 @@ public class DisplayArtworkPresentationMapper {
 
   public ReorderDisplayArtworksResponse toResponse(ReorderDisplayArtworksResult result) {
     return new ReorderDisplayArtworksResponse(result.displayId(), result.updatedCount());
+  }
+
+  public AuthorSetupResponse toResponse(AuthorSetupResult result) {
+    return new AuthorSetupResponse(
+        result.artworkId(), result.artistName(), result.coAuthorCount(), result.qaHandlerUserId());
   }
 
   public DisplayArtworkPreviewResponse toResponse(DisplayArtworkPreviewResult result) {

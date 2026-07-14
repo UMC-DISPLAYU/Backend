@@ -11,4 +11,8 @@ public interface CreatorRepository {
   Optional<Creator> findLeaderByDisplayArtworkId(Long displayArtworkId);
 
   Creator save(Creator creator);
+
+  List<Creator> saveAll(List<Creator> creators);
+
+  void deleteAllByDisplayArtworkId(Long displayArtworkId);
 }
