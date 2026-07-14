@@ -13,6 +13,25 @@ public final class DisplayApiDocs {
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
   public static final String CREATE_SUCCESS_EXAMPLE_NAME = "Display create success";
 
+  public static final String UPDATE_SUMMARY = "전시 수정";
+  public static final String UPDATE_DESCRIPTION =
+      "팀장 권한을 가진 사용자가 전시 정보를 수정합니다. userId와 displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다.";
+  public static final String UPDATE_REQUEST_DESCRIPTION = "전시 수정 요청";
+  public static final String UPDATE_REQUEST_EXAMPLE_NAME = "Display update request";
+  public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
+  public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
+
+  public static final String LIKE_SUMMARY = "전시 좋아요";
+  public static final String LIKE_DESCRIPTION = "전시에 좋아요를 추가합니다. 인증 구현 전까지 userId를 요청 본문으로 전달합니다.";
+  public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
+  public static final String LIKE_CANCEL_DESCRIPTION =
+      "전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
+  public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
+  public static final String LIKE_REQUEST_EXAMPLE_NAME = "Display like request";
+  public static final String LIKE_SUCCESS_DESCRIPTION = "전시 좋아요 처리 성공";
+  public static final String LIKE_SUCCESS_EXAMPLE_NAME = "Display like success";
+  public static final String LIKE_CANCEL_SUCCESS_EXAMPLE_NAME = "Display like cancel success";
+
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
   public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
@@ -67,6 +86,8 @@ public final class DisplayApiDocs {
         "openTime": "10:00",
         "closeTime": "18:00",
         "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+        "latitude": 37.0063,
+        "longitude": 127.2267,
         "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
         "precautions": "전시장 내 음료 반입 금지"
       }
@@ -85,8 +106,8 @@ public final class DisplayApiDocs {
             "content": "디자인학부 학생들의...",
             "location": {
               "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
-              "latitude": 0,
-              "longitude": 0
+              "latitude": 37.0063,
+              "longitude": 127.2267
             },
             "qnaAccount": "",
             "note": "전시장 내 음료 반입 금지",
@@ -125,6 +146,121 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String UPDATE_REQUEST_EXAMPLE =
+      """
+      {
+        "userId": 1,
+        "displayId": 12,
+        "title": "FORM 2026 (수정본)",
+        "posterImageUrl": "https://cdn...",
+        "type": "GRADUATION",
+        "fields": ["DESIGN", "MEDIA"],
+        "schoolOrOrganization": "중앙대학교",
+        "departmentOrClub": "디자인학부 시각디자인",
+        "hostOrganizationName": null,
+        "subtitle": "변경된 전시 부제목입니다.",
+        "description": "변경된 전시 소개글입니다.",
+        "startDate": "2026-05-29",
+        "endDate": "2026-06-06",
+        "openTime": "09:00",
+        "closeTime": "19:00",
+        "placeName": "중앙대학교 301관 갤러리 3층 전시장",
+        "precautions": "물품 보관소를 운영하지 않습니다."
+      }
+      """;
+
+  public static final String UPDATE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "ownerUserId": 1,
+            "title": "FORM 2026 (수정본)",
+            "subtitle": "변경된 전시 부제목입니다.",
+            "content": "변경된 전시 소개글입니다.",
+            "location": {
+              "placeName": "중앙대학교 301관 갤러리 3층 전시장",
+              "latitude": 37.0063,
+              "longitude": 127.2267
+            },
+            "qnaAccount": "",
+            "note": "물품 보관소를 운영하지 않습니다.",
+            "organization": "중앙대학교",
+            "department": "디자인학부 시각디자인",
+            "displayType": "GRADUATION",
+            "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
+            "period": {
+              "startDate": "2026-05-29",
+              "endDate": "2026-06-06",
+              "startTime": "09:00:00",
+              "endTime": "19:00:00"
+            },
+            "artworkContentOpen": "IMMEDIATELY",
+            "exhibitionContentOpen": "ON_EXHIBITION",
+            "status": "DRAFT",
+            "invitationToken": null,
+            "invitationDisabledAt": null,
+            "images": [],
+            "contentCategories": [],
+            "teamMembers": [],
+            "invitations": []
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-14T02:00:00",
+          "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String LIKE_REQUEST_EXAMPLE =
+      """
+      {
+        "displayId": 12,
+        "userId": 1
+      }
+      """;
+
+  public static final String LIKE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "likeCount": 143
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-01T23:00:00",
+          "path": "/api/v1/display/like"
+        }
+      }
+      """;
+
+  public static final String LIKE_CANCEL_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "likeCount": 142
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-01T23:00:00",
+          "path": "/api/v1/display/like"
         }
       }
       """;

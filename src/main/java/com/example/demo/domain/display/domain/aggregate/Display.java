@@ -11,6 +11,7 @@ import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
@@ -394,6 +395,51 @@ public class Display extends BaseTimeEntity {
     fieldSelections.add(selection);
   }
 
+  public void changeDisplayFields(List<DisplayField> displayFields) {
+    List<DisplayFieldSelection> targetSelections = toFieldSelections(displayFields);
+    fieldSelections.removeIf(
+        selection ->
+            targetSelections.stream()
+                .noneMatch(targetSelection -> targetSelection.getField() == selection.getField()));
+
+    for (DisplayFieldSelection targetSelection : targetSelections) {
+      DisplayFieldSelection existingSelection =
+          fieldSelections.stream()
+              .filter(selection -> selection.getField() == targetSelection.getField())
+              .findFirst()
+              .orElse(null);
+      if (existingSelection == null) {
+        addFieldSelection(targetSelection);
+      } else {
+        existingSelection.changeSortOrder(targetSelection.getSortOrder());
+      }
+    }
+  }
+
+  public void changePosterImageUrl(String posterImageUrl) {
+    DisplayImage mainImage =
+        images.stream()
+            .filter(image -> image.getImageType() == DisplayImageType.MAIN)
+            .filter(image -> !image.isDeleted())
+            .findFirst()
+            .orElse(null);
+
+    if (mainImage == null) {
+      addImage(
+          new DisplayImage(
+              null,
+              posterImageUrl,
+              DisplayImageType.MAIN,
+              DEFAULT_MAIN_IMAGE_WIDTH,
+              DEFAULT_MAIN_IMAGE_HEIGHT,
+              MAIN_IMAGE_SORT_ORDER,
+              null));
+      return;
+    }
+
+    mainImage.changeImageUrl(posterImageUrl);
+  }
+
   // 전시 팀원을 추가한다.
   public void addTeamMember(TeamMember teamMember) {
     TeamMember member = Objects.requireNonNull(teamMember, "teamMember must not be null.");
@@ -422,6 +468,14 @@ public class Display extends BaseTimeEntity {
   // 현재 전시가 발행 상태인지 확인한다.
   public boolean isPublished() {
     return status == DisplayStatus.PUBLISHED;
+  }
+
+  public boolean isTeamLeader(Long userId) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember ->
+                teamMember.getUserId().value().equals(userId)
+                    && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
   }
 
   private static <T> void addAll(java.util.function.Consumer<T> target, List<T> source) {
