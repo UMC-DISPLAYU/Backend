@@ -17,6 +17,18 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+
+
+app:
+  kakao:
+    client:
+      id: ${KAKAO_CLIENT_ID:test-client-id}
+
+jwt:
+  secret: ${JWT_SECRET:test-secret-key}
+
+
+
 springdoc:
   api-docs:
     enabled: true
@@ -24,3 +36,4 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
+
