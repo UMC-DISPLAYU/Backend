@@ -30,6 +30,18 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
@@ -42,10 +54,21 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.S
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.TAG_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
+import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
@@ -54,12 +77,15 @@ import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.ClosingSoonDisplayRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
@@ -76,6 +102,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -89,6 +116,8 @@ public class DisplayController {
   private static final Long TEMP_OWNER_USER_ID = 1L;
 
   private final CreateDisplayService createDisplayService;
+  private final DisplayLikeCommandService displayLikeCommandService;
+  private final UpdateDisplayService updateDisplayService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
@@ -99,6 +128,8 @@ public class DisplayController {
 
   public DisplayController(
       CreateDisplayService createDisplayService,
+      DisplayLikeCommandService displayLikeCommandService,
+      UpdateDisplayService updateDisplayService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
@@ -107,6 +138,8 @@ public class DisplayController {
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
+    this.displayLikeCommandService = displayLikeCommandService;
+    this.updateDisplayService = updateDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
@@ -146,6 +179,85 @@ public class DisplayController {
             .createDisplay(mapper.toCommand(createDisplayRequest, TEMP_OWNER_USER_ID))
             .displayId();
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display")
+  @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = UPDATE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = UPDATE_REQUEST_EXAMPLE_NAME,
+                      value = UPDATE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = UPDATE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = UPDATE_SUCCESS_EXAMPLE_NAME,
+                      value = UPDATE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> updateDisplay(
+      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest, HttpServletRequest request) {
+    DisplayDetailResult result =
+        updateDisplayService.updateDisplay(mapper.toCommand(updateDisplayRequest));
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PostMapping("/api/v1/display/like")
+  @Operation(summary = LIKE_SUMMARY, description = LIKE_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = LIKE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = LIKE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_SUCCESS_EXAMPLE_NAME, value = LIKE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayLikeResponse> likeDisplay(
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
+    DisplayLikeResult result = displayLikeCommandService.like(displayLikeRequest.toCommand());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/like")
+  @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = LIKE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = LIKE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = LIKE_CANCEL_SUCCESS_EXAMPLE_NAME,
+                      value = LIKE_CANCEL_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
+    DisplayLikeResult result = displayLikeCommandService.cancel(displayLikeRequest.toCommand());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
