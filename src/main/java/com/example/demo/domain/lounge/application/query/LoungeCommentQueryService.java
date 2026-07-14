@@ -90,7 +90,10 @@ public class LoungeCommentQueryService {
             ? loungeCommentRepository.countActiveRepliesByParentCommentIds(commentIds)
             : Map.of();
     Set<Long> likedCommentIds =
-        loungeCommentLikeRepository.findLikedLoungeCommentIds(commentIds, new UserId(viewerUserId));
+        viewerUserId == null
+            ? Set.of()
+            : loungeCommentLikeRepository.findLikedLoungeCommentIds(
+                commentIds, new UserId(viewerUserId));
     Map<Long, LoungeWriter> writers =
         loungeWriterRepository.findByUserIds(
             comments.stream()
