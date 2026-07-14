@@ -35,7 +35,8 @@ public class SecurityConfig {
                         "/api/v1/health", // 추가
                         "/api/v1/users/nickname/check", // 추가
                         "/swagger-ui/**",
-                        "/v3/api-docs/**")
+                        "/v3/api-docs/**",
+                        "/api/v1/display/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
