@@ -49,6 +49,10 @@ public class DisplayFieldSelection {
     this.display = Objects.requireNonNull(display, "display must not be null.");
   }
 
+  public void changeSortOrder(int sortOrder) {
+    this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
+  }
+
   private static int requireNonNegative(int value, String fieldName) {
     if (value < 0) {
       throw new IllegalArgumentException(fieldName + " must not be negative.");
