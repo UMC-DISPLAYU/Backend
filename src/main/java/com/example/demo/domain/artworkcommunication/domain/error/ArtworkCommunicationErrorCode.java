@@ -12,7 +12,8 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   INVALID_QUESTION_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_QUESTION_CONTENT", "질문 내용을 입력해주세요."),
   ARTWORK_FEELING_FORBIDDEN(HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
   ARTWORK_QUESTION_FORBIDDEN(
-      HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다.");
+      HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다."),
+  QNA_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "QNA_CONTACT_FORBIDDEN", "QnA 담당 작업자만 답변할 수 있습니다.");
 
   private final HttpStatus status;
   private final String code;

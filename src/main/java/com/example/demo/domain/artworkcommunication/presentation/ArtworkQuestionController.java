@@ -1,31 +1,20 @@
 package com.example.demo.domain.artworkcommunication.presentation;
 
-import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
-import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionService;
-import com.example.demo.domain.artworkcommunication.application.command.DeleteArtworkQuestionCommand;
-import com.example.demo.domain.artworkcommunication.application.command.DeleteArtworkQuestionService;
-import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
-import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionService;
+import com.example.demo.domain.artworkcommunication.application.command.*;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkQuestionApiDocs;
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkQuestionPresentationMapper;
+import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   private final CreateArtworkQuestionService createArtworkQuestionService;
+  private final CreateArtworkQuestionReplyService createArtworkQuestionReplyService;
   private final UpdateArtworkQuestionService updateArtworkQuestionService;
   private final DeleteArtworkQuestionService deleteArtworkQuestionService;
   private final ArtworkQuestionPresentationMapper mapper;
@@ -50,6 +40,25 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
     ArtworkQuestionResult result = createArtworkQuestionService.createQuestion(command);
 
     ArtworkQuestionResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{questionId}/reply")
+  // 질문 답변 등록
+  public ApiResponseBody<ArtworkQuestionReplyResponse> createQuestionReply(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody CreateArtworkQuestionReplyRequest request,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionReplyCommand command = mapper.toCommand(artworkId, questionId, userId, request);
+
+    ArtworkQuestionReplyResult result =
+        createArtworkQuestionReplyService.createQuestionReply(command);
+
+    ArtworkQuestionReplyResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

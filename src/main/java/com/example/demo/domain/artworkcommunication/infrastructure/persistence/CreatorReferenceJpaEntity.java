@@ -24,5 +24,8 @@ public class CreatorReferenceJpaEntity {
   @Column(name = "displayArtworkId")
   private Long displayArtworkId;
 
+  @Column(name = "isContact")
+  private Boolean isContact;
+
   protected CreatorReferenceJpaEntity() {}
 }

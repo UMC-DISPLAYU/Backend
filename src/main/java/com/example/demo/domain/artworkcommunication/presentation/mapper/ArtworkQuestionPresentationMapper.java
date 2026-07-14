@@ -1,11 +1,15 @@
 package com.example.demo.domain.artworkcommunication.presentation.mapper;
 
+import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
+import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
@@ -25,6 +29,11 @@ public class ArtworkQuestionPresentationMapper {
         artworkId, questionId, userId, request.content(), request.isPublic());
   }
 
+  public ArtworkQuestionReplyCommand toCommand(
+      Long artworkId, Long questionId, Long userId, CreateArtworkQuestionReplyRequest request) {
+    return new ArtworkQuestionReplyCommand(artworkId, questionId, userId, request.content());
+  }
+
   public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
     return new ArtworkQuestionResponse(
         result.artQueId(),
@@ -40,5 +49,17 @@ public class ArtworkQuestionPresentationMapper {
 
   public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
     return new DeletedArtworkQuestionResponse(result.artQueId(), result.deletedAt());
+  }
+
+  public ArtworkQuestionReplyResponse toResponse(ArtworkQuestionReplyResult result) {
+    return new ArtworkQuestionReplyResponse(
+        result.queReplyId(),
+        result.content(),
+        result.createdAt(),
+        result.updatedAt(),
+        result.deletedAt(),
+        result.artQueId(),
+        result.creatorId(),
+        result.creatorName());
   }
 }
