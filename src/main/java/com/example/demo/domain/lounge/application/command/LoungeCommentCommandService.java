@@ -5,6 +5,7 @@ import com.example.demo.domain.lounge.application.result.LoungeCommentListResult
 import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
@@ -54,7 +55,7 @@ public class LoungeCommentCommandService {
     LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
 
     if (!parentComment.isRootComment()) {
-      throw new BusinessException(GlobalErrorCode.INVALID_REQUEST);
+      throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }
 
     LoungeComment reply =
@@ -114,7 +115,7 @@ public class LoungeCommentCommandService {
         .findById(loungePostId)
         .filter(post -> !post.isDeleted())
         .filter(LoungePost::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private LoungeComment getActiveComment(Long loungeCommentId) {
@@ -122,7 +123,7 @@ public class LoungeCommentCommandService {
         .findById(loungeCommentId)
         .filter(comment -> !comment.isDeleted())
         .filter(LoungeComment::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 
   private void validateAuthor(LoungeComment comment, UserId requesterUserId) {

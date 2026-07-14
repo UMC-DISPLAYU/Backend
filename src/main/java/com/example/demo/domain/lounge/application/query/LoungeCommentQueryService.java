@@ -6,6 +6,7 @@ import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult
 import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
@@ -13,7 +14,6 @@ import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
 import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +63,7 @@ public class LoungeCommentQueryService {
       Long parentCommentId, Long cursorId, int size, Long viewerUserId) {
     LoungeComment parentComment = getActiveComment(parentCommentId);
     if (!parentComment.isRootComment()) {
-      throw new BusinessException(GlobalErrorCode.INVALID_REQUEST);
+      throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }
 
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
@@ -126,7 +126,7 @@ public class LoungeCommentQueryService {
         .findById(loungePostId)
         .filter(post -> !post.isDeleted())
         .filter(LoungePost::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private LoungeComment getActiveComment(Long loungeCommentId) {
@@ -134,6 +134,6 @@ public class LoungeCommentQueryService {
         .findById(loungeCommentId)
         .filter(comment -> !comment.isDeleted())
         .filter(LoungeComment::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 }

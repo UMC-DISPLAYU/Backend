@@ -5,6 +5,7 @@ import com.example.demo.domain.lounge.application.result.LoungePostDetailResult;
 import com.example.demo.domain.lounge.application.result.LoungePostListResult;
 import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
@@ -14,7 +15,6 @@ import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +101,7 @@ public class LoungePostQueryService {
             .findById(loungePostId)
             .filter(post -> !post.isDeleted())
             .filter(LoungePost::isActive)
-            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+            .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
 
     boolean hasViewer = viewerUserId != null;
     List<Long> loungePostIds = List.of(loungePost.getId());
