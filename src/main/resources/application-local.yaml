@@ -40,11 +40,11 @@ app:
       id: ${GOOGLE_CLIENT_ID}
       secret: ${GOOGLE_CLIENT_SECRET}
 
-jwt:
+jjwt:
   secret: ${JWT_SECRET}
-  access-expiration: 3600000
-  refresh-expiration: 1209600000
-  signup-expiration: 600000
+  access-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  signup-expiration: ${JWT_SIGNUP_EXPIRATION:600000}
 
 
 springdoc:
