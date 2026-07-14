@@ -9,9 +9,12 @@ import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
+import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +25,17 @@ public class LoungeCommentCommandService {
   private final LoungePostRepository loungePostRepository;
   private final LoungeCommentRepository loungeCommentRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
+  private final LoungeWriterRepository loungeWriterRepository;
 
   public LoungeCommentCommandService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
-      LoungeCommentLikeRepository loungeCommentLikeRepository) {
+      LoungeCommentLikeRepository loungeCommentLikeRepository,
+      LoungeWriterRepository loungeWriterRepository) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
+    this.loungeWriterRepository = loungeWriterRepository;
   }
 
   @Transactional
@@ -44,7 +50,7 @@ public class LoungeCommentCommandService {
 
     LoungeComment savedComment = loungeCommentRepository.save(comment);
     return LoungeCommentListResult.from(
-        savedComment, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
+        savedComment, getWriterView(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional
@@ -64,7 +70,7 @@ public class LoungeCommentCommandService {
 
     LoungeComment savedReply = loungeCommentRepository.save(reply);
     return LoungeCommentListResult.from(
-        savedReply, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
+        savedReply, getWriterView(authorUserId), 0, 0, false, authorUserId);
   }
 
   @Transactional
@@ -130,5 +136,14 @@ public class LoungeCommentCommandService {
     if (!comment.getAuthorUserId().equals(requesterUserId)) {
       throw new BusinessException(GlobalErrorCode.FORBIDDEN);
     }
+  }
+
+  private WriterView getWriterView(Long userId) {
+    LoungeWriter writer =
+        loungeWriterRepository
+            .findByUserIds(List.of(userId))
+            .getOrDefault(userId, LoungeWriter.unknown(userId));
+
+    return new WriterView(writer.userId(), writer.nickname(), writer.profileImageUrl());
   }
 }
