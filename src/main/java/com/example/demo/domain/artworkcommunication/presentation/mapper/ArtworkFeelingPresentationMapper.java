@@ -1,12 +1,16 @@
 package com.example.demo.domain.artworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
+import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.application.result.UpdatedArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
@@ -25,6 +29,11 @@ public class ArtworkFeelingPresentationMapper {
     return new UpdateArtworkFeelingCommand(artworkId, feelingId, userId, request.content());
   }
 
+  public ArtworkFeelingReplyCommand toCommand(
+      Long artworkId, Long feelingId, Long userId, CreateArtworkFeelingReplyRequest request) {
+    return new ArtworkFeelingReplyCommand(artworkId, feelingId, userId, request.content());
+  }
+
   public ArtworkFeelingResponse toResponse(ArtworkFeelingResult result) {
     return new ArtworkFeelingResponse(
         result.feelingId(), result.userId(), result.content(), result.createdAt());
@@ -37,5 +46,18 @@ public class ArtworkFeelingPresentationMapper {
 
   public DeletedArtworkFeelingResponse toResponse(DeletedArtworkFeelingResult result) {
     return new DeletedArtworkFeelingResponse(result.feelingId(), result.deletedAt());
+  }
+
+  public ArtworkFeelingReplyResponse toResponse(ArtworkFeelingReplyResult result) {
+    return new ArtworkFeelingReplyResponse(
+        result.feelingReplyId(),
+        result.createdAt(),
+        result.updatedAt(),
+        result.deletedAt(),
+        result.content(),
+        result.feelingId(),
+        result.userId(),
+        result.nickname(),
+        result.isCreator());
   }
 }

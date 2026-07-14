@@ -8,15 +8,21 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "`User`")
-public class UserReferenceJpaEntity {
+@Table(name = "Creator")
+public class CreatorReferenceJpaEntity {
 
   @Id
+  @Column(name = "creatorId")
+  private Long creatorId;
+
+  @Column(name = "creatorName")
+  private String creatorName;
+
   @Column(name = "userId")
   private Long userId;
 
-  @Column(name = "nickname")
-  private String nickname;
+  @Column(name = "displayArtworkId")
+  private Long displayArtworkId;
 
-  protected UserReferenceJpaEntity() {}
+  protected CreatorReferenceJpaEntity() {}
 }

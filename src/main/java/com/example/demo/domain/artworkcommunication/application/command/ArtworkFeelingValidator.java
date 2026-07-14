@@ -40,6 +40,11 @@ public class ArtworkFeelingValidator {
     validateWriter(artworkFeeling, userId);
   }
 
+  public void validateReplyTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
+    validateNotDeleted(artworkFeeling);
+    validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
+  }
+
   private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
     if (artworkFeeling.isDeleted()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);

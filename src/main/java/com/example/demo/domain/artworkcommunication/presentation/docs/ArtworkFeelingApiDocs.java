@@ -1,7 +1,9 @@
 package com.example.demo.domain.artworkcommunication.presentation.docs;
 
+import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
@@ -81,6 +83,79 @@ public interface ArtworkFeelingApiDocs {
               example = "1")
           Long userId,
       CreateArtworkFeelingRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "작품 감상평 답변 등록",
+      description = "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 감상평 답변 등록 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling reply create success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "feelingReplyId": 8,
+                                "content": "좋은 감상인 것 같아요",
+                                "createdAt": "2026-06-30T23:20:00",
+                                "updatedAt": "2026-06-30T23:20:00",
+                                "deletedAt": null,
+                                "feelingId": 15,
+                                "userId": 4,
+                                "nickname": "고상준",
+                                "isCreator": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T23:20:00",
+                              "path": "/api/v1/artworks/3/feelings/15/reply"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "작품, 사용자 또는 감상평 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling reply not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "FEELING_NOT_FOUND",
+                              "message": "감상평을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings/1/reply"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<ArtworkFeelingReplyResponse> createFeelingReply(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
+      @Parameter(description = "답변을 작성할 감상평 ID", example = "1") Long feelingId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
+      CreateArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 수정", description = "사용자가 본인이 작성한 작품 감상평 내용을 수정합니다.")
