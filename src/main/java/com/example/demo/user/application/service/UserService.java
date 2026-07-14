@@ -14,117 +14,77 @@ import com.example.demo.user.domain.repository.UserAgreementRepository;
 import com.example.demo.user.domain.repository.UserRepository;
 import com.example.demo.user.exception.UserErrorCode;
 import com.example.demo.user.exception.UserException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
 
-    private final UserMapper userMapper;
-    private final UserAgreementMapper userAgreementMapper;
+  private final UserMapper userMapper;
+  private final UserAgreementMapper userAgreementMapper;
 
-    private final UserRepository userRepository;
-    private final AgreementRepository agreementRepository;
-    private final UserAgreementRepository userAgreementRepository;
+  private final UserRepository userRepository;
+  private final AgreementRepository agreementRepository;
+  private final UserAgreementRepository userAgreementRepository;
 
+  public SignupResult signup(SignupCommand command, SocialUserInfo socialUserInfo) {
 
-    public SignupResult signup(
-            SignupCommand command,
-            SocialUserInfo socialUserInfo
-    ) {
+    validateNickname(command.nickname());
 
-        validateNickname(command.nickname());
+    validateRequiredAgreements(command.agreements());
 
-        validateRequiredAgreements(command.agreements());
+    User user = userMapper.toUser(command, socialUserInfo);
 
-        User user = userMapper.toUser(
-                command,
-                socialUserInfo
-        );
+    User savedUser = userRepository.save(user);
 
-        User savedUser = userRepository.save(user);
+    saveUserAgreements(savedUser, command.agreements());
 
-        saveUserAgreements(
-                savedUser,
-                command.agreements()
-        );
+    return new SignupResult(savedUser, null, null);
+  }
 
+  private void validateNickname(String nickname) {
 
-        return new SignupResult(
-                savedUser,
-                null,
-                null
-        );
+    if (userRepository.existsByNickname(nickname)) {
+      throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
     }
+  }
 
+  private void validateRequiredAgreements(List<AgreementCommand> agreements) {
 
-    private void validateNickname(String nickname) {
+    List<Agreement> requiredAgreements = agreementRepository.findRequiredAgreements();
 
-        if (userRepository.existsByNickname(nickname)) {
-            throw new UserException(
-                    UserErrorCode.DUPLICATE_NICKNAME
-            );
-        }
+    boolean isAllAccepted =
+        requiredAgreements.stream()
+            .allMatch(
+                required ->
+                    agreements.stream()
+                        .anyMatch(
+                            request ->
+                                request.agreeId().equals(required.getId()) && request.isAgreed()));
+
+    if (!isAllAccepted) {
+      throw new UserException(UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
     }
+  }
 
+  private void saveUserAgreements(User user, List<AgreementCommand> agreements) {
 
-    private void validateRequiredAgreements(
-            List<AgreementCommand> agreements
-    ) {
+    List<UserAgreement> userAgreements;
+    userAgreements =
+        agreements.stream()
+            .map(
+                command -> {
+                  Agreement agreement =
+                      agreementRepository.findById(command.agreeId()).orElseThrow();
 
-        List<Agreement> requiredAgreements =
-                agreementRepository.findRequiredAgreements();
-
-
-        boolean isAllAccepted =
-                requiredAgreements.stream()
-                        .allMatch(required ->
-                                agreements.stream()
-                                        .anyMatch(request ->
-                                                request.agreeId()
-                                                        .equals(required.getId())
-                                                        && request.isAgreed()
-                                        )
-                        );
-
-
-        if (!isAllAccepted) {
-            throw new UserException(
-                    UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED
-            );
-        }
-    }
-
-
-    private void saveUserAgreements(
-            User user,
-            List<AgreementCommand> agreements
-    ) {
-
-        List<UserAgreement> userAgreements;
-        userAgreements = agreements.stream()
-                .map(command -> {
-
-                    Agreement agreement =
-                            agreementRepository.findById(
-                                            command.agreeId()
-                                    )
-                                    .orElseThrow();
-
-                    return userAgreementMapper.toUserAgreement(
-                            user,
-                            agreement,
-                            command
-                    );
+                  return userAgreementMapper.toUserAgreement(user, agreement, command);
                 })
-                .toList();
+            .toList();
 
-
-        userAgreementRepository.saveAll(userAgreements);
-    }
+    userAgreementRepository.saveAll(userAgreements);
+  }
 }

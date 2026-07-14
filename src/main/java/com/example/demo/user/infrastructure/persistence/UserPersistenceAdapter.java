@@ -9,15 +9,15 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class UserPersistenceAdapter implements UserRepository {
 
-    private final UserJpaRepository userJpaRepository;
+  private final UserJpaRepository userJpaRepository;
 
-    @Override
-    public User save(User user) {
-        return userJpaRepository.save(user);
-    }
+  @Override
+  public User save(User user) {
+    return userJpaRepository.save(user);
+  }
 
-    @Override
-    public boolean existsByNickname(String nickname) {
-        return userJpaRepository.existsByNickname(nickname);
-    }
+  @Override
+  public boolean existsByNickname(String nickname) {
+    return userJpaRepository.existsByNickname(nickname);
+  }
 }
