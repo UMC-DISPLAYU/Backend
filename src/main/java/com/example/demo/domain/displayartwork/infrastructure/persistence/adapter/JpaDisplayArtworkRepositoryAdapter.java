@@ -2,8 +2,12 @@ package com.example.demo.domain.displayartwork.infrastructure.persistence.adapte
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.domain.displayartwork.infrastructure.persistence.SpringDataDisplayArtworkJpaRepository;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,6 +27,14 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   @Override
   public int countByDisplayId(Long displayId) {
     return jpaRepository.countByDisplayId(displayId);
+  }
+
+  @Override
+  public List<DisplayArtwork> findPreview(
+      PreviewFilterType type, ArtworkType field, String school, int page, int size) {
+    boolean requireGraduation = type == PreviewFilterType.GRADUATION;
+    return jpaRepository.findPreview(
+        requireGraduation, field, school, PageRequest.of(page, size + 1));
   }
 
   @Override
