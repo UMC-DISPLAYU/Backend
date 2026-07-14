@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.infrastructure.persistence;
 
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import java.util.Optional;
@@ -21,6 +21,11 @@ public class UserPersistenceAdapter implements UserRepository {
   @Override
   public boolean existsByNickname(String nickname) {
     return userJpaRepository.existsByNickname(nickname);
+  }
+
+  @Override
+  public boolean existsBySchoolEmail(String schoolEmail) {
+    return userJpaRepository.existsBySchoolEmail(schoolEmail);
   }
 
   @Override

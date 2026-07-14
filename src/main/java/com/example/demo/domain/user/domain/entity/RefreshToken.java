@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.domain.entity;
 
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

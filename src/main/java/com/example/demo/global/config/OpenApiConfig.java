@@ -59,6 +59,7 @@ public class OpenApiConfig {
 
     return List.of(
         new Tag().name("Health").description("서버 상태 확인 API"),
+        new Tag().name("User").description("사용자 인증 API"),
         new Tag().name("Display").description("전시 API"),
         new Tag().name("Lounge Post").description("라운지 게시글 API"),
         new Tag().name("Lounge Comment").description("라운지 댓글 API"));

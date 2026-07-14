@@ -1,5 +1,7 @@
 package com.example.demo.domain.user.presentation;
 
+import com.example.demo.domain.user.application.service.ResendSchoolEmailVerificationService;
+import com.example.demo.domain.user.application.service.SendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController implements UserControllerDocs {
 
   private final UserService userService;
+  private final SendSchoolEmailVerificationService sendSchoolEmailVerificationService;
+  private final ResendSchoolEmailVerificationService resendSchoolEmailVerificationService;
 
   @Override
   @GetMapping("/nickname/check")
@@ -26,7 +30,6 @@ public class UserController implements UserControllerDocs {
       @RequestParam(value = "nickname", required = false) String nickname,
       HttpServletRequest httpRequest) {
 
-    // nickname 파라미터 자체가 없거나 빈 값이면 형식 오류가 아니라 누락
     if (nickname == null || nickname.isBlank()) {
       throw new UserException(UserErrorCode.MISSING_NICKNAME);
     }

@@ -19,6 +19,18 @@ spring:
 
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 app:
   kakao:
     client:
@@ -28,11 +40,11 @@ app:
       id: ${GOOGLE_CLIENT_ID}
       secret: ${GOOGLE_CLIENT_SECRET}
 
-jwt:
+jjwt:
   secret: ${JWT_SECRET}
-  access-expiration: 3600000
-  refresh-expiration: 1209600000
-  signup-expiration: 600000
+  access-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  signup-expiration: ${JWT_SIGNUP_EXPIRATION:600000}
 
 
 springdoc:

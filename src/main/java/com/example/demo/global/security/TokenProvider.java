@@ -1,11 +1,12 @@
 package com.example.demo.global.security;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.global.error.BusinessException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -53,46 +54,60 @@ public class TokenProvider {
     }
   }
 
-  public boolean validateAccessToken(String token) {
+  public void validateAccessTokenOrThrow(String token) {
+
+    validateToken(
+        token, "ACCESS", AuthErrorCode.INVALID_ACCESS_TOKEN, AuthErrorCode.EXPIRED_ACCESS_TOKEN);
+  }
+
+  public void validateRefreshTokenOrThrow(String token) {
+
+    validateToken(
+        token, "REFRESH", AuthErrorCode.INVALID_REFRESH_TOKEN, AuthErrorCode.EXPIRED_REFRESH_TOKEN);
+  }
+
+  private void validateToken(
+      String token, String type, AuthErrorCode invalidError, AuthErrorCode expiredError) {
 
     try {
 
       Claims claims = jwtFactory.parse(token);
 
-      return "ACCESS".equals(claims.get("type", String.class));
+      validateTokenType(claims, type);
+
+    } catch (ExpiredJwtException e) {
+
+      throw new BusinessException(expiredError);
+
+    } catch (BusinessException e) {
+
+      throw e;
 
     } catch (Exception e) {
 
-      return false;
+      throw new BusinessException(invalidError);
     }
   }
 
-  public boolean validateRefreshToken(String token) {
+  private void validateTokenType(Claims claims, String expectedType) {
 
-    try {
+    if (!expectedType.equals(claims.get("type", String.class))) {
 
-      Claims claims = jwtFactory.parse(token);
-
-      return "REFRESH".equals(claims.get("type", String.class));
-
-    } catch (Exception e) {
-
-      return false;
+      throw new BusinessException(AuthErrorCode.INVALID_ACCESS_TOKEN);
     }
   }
 
   public Long getUserId(String token) {
 
-    Claims claims = jwtFactory.parse(token);
+    try {
 
-    return Long.parseLong(claims.getSubject());
-  }
+      Claims claims = jwtFactory.parse(token);
 
-  private void validateTokenType(Claims claims, String type) {
+      return Long.parseLong(claims.getSubject());
 
-    if (!type.equals(claims.get("type", String.class))) {
+    } catch (Exception e) {
 
-      throw new IllegalArgumentException("Invalid token type");
+      throw new BusinessException(AuthErrorCode.INVALID_ACCESS_TOKEN);
     }
   }
 }

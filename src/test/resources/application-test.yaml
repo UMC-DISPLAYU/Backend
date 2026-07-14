@@ -3,7 +3,7 @@ spring:
     name: demo-test
 
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:displayu_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -18,10 +18,39 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@test.com
+    password: test-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+
 app:
   kakao:
     client:
-      id: test-client-id
+      id: test-kakao-client-id
+
+  google:
+    client:
+      id: test-google-client-id
+      secret: test-google-client-secret
+
 
 jwt:
-  secret: test-secret-key
+  secret: test-secret-test-secret-test-secret-test-secret
+  access-expiration: 3600000
+  refresh-expiration: 1209600000
+  signup-expiration: 600000
