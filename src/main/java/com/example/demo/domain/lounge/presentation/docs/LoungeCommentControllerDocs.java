@@ -33,7 +33,7 @@ public interface LoungeCommentControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 수정", description = "작성자가 라운지 댓글 또는 답글을 수정합니다.")
-  ApiResponseBody<Void> updateComment(
+  ApiResponseBody<LoungeCommentListResponse> updateComment(
       @PathVariable Long loungeCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request);

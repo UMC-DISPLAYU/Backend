@@ -74,7 +74,7 @@ public class LoungeCommentCommandService {
   }
 
   @Transactional
-  public void updateComment(
+  public LoungeCommentListResult updateComment(
       Long loungeCommentId, Long requesterUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
@@ -82,6 +82,9 @@ public class LoungeCommentCommandService {
     validateAuthor(comment, new UserId(requesterUserId));
 
     comment.changeContent(command.content());
+
+    return LoungeCommentListResult.from(
+        comment, getWriterView(requesterUserId), 0, 0, false, requesterUserId);
   }
 
   @Transactional

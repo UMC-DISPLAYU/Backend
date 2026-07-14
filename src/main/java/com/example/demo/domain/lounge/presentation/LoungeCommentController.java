@@ -75,14 +75,15 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
   @Override
-  public ApiResponseBody<Void> updateComment(
+  public ApiResponseBody<LoungeCommentListResponse> updateComment(
       @PathVariable Long loungeCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
-    loungeCommentCommandService.updateComment(
-        loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
-
-    return ApiResponseBody.success(null, request);
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungeCommentCommandService.updateComment(
+                loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        request);
   }
 
   @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")
