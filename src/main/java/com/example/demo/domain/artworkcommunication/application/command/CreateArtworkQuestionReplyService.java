@@ -33,6 +33,7 @@ public class CreateArtworkQuestionReplyService {
 
     ArtworkQuestion artworkQuestion = findQuestionOrThrow(command.questionId());
     validateQuestionTarget(artworkQuestion, command.displayArtworkId());
+    validateNotAnswered(artworkQuestion);
 
     ContactCreator contactCreator =
         creatorExistenceRepository
@@ -85,6 +86,12 @@ public class CreateArtworkQuestionReplyService {
   private void validateQuestionTarget(ArtworkQuestion artworkQuestion, Long displayArtworkId) {
     if (artworkQuestion.isDeleted() || !artworkQuestion.belongsToArtwork(displayArtworkId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
+    }
+  }
+
+  private void validateNotAnswered(ArtworkQuestion artworkQuestion) {
+    if (artworkQuestion.isAnswered()) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_ALREADY_ANSWERED);
     }
   }
 }

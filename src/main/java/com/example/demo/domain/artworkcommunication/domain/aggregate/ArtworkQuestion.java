@@ -70,6 +70,10 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
     this.answerStatus = AnswerStatus.ANSWERED;
   }
 
+  public boolean isAnswered() {
+    return AnswerStatus.ANSWERED.equals(this.answerStatus);
+  }
+
   public boolean isWrittenBy(Long userId) {
     return this.userId.equals(userId);
   }

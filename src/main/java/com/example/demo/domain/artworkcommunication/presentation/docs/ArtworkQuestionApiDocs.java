@@ -149,6 +149,31 @@ public interface ArtworkQuestionApiDocs {
                           }
                           """)))
   @ApiResponse(
+      responseCode = "400",
+      description = "이미 답변 완료된 질문",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Question already answered",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "QUESTION_ALREADY_ANSWERED",
+                              "message": "이미 답변 완료된 질문입니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T23:20:00",
+                              "path": "/api/v1/artworks/3/questions/15/reply"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
       responseCode = "403",
       description = "QnA 담당 작업자 아님",
       content =
