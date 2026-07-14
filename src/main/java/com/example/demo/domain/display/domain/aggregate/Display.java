@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
+import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -95,6 +96,10 @@ public class Display extends BaseTimeEntity {
 
   @Embedded private DisplayPeriod period;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private DisplayRegion region;
+
   // 공개 정책과 발행 상태: 작품/전시 콘텐츠 공개 시점과 초안/발행 상태를 관리한다.
   @Enumerated(EnumType.STRING)
   @Column(name = "artWorkContentOpen", nullable = false)
@@ -147,10 +152,10 @@ public class Display extends BaseTimeEntity {
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
       ContentOpenPolicy exhibitionContentOpen) {
-    return new Display(
-        null,
+    return create(
         ownerUserId,
         title,
+        posterImageUrl,
         subtitle,
         content,
         location,
@@ -159,25 +164,62 @@ public class Display extends BaseTimeEntity {
         organization,
         department,
         displayType,
+        displayFields,
+        DisplayRegion.OTHERS,
         period,
         artworkContentOpen,
-        exhibitionContentOpen,
-        DisplayStatus.DRAFT,
-        null,
-        null,
-        List.of(
-            new DisplayImage(
-                null,
-                posterImageUrl,
-                DisplayImageType.MAIN,
-                DEFAULT_MAIN_IMAGE_WIDTH,
-                DEFAULT_MAIN_IMAGE_HEIGHT,
-                MAIN_IMAGE_SORT_ORDER,
-                null)),
-        List.of(),
-        toFieldSelections(displayFields),
-        List.of(),
-        List.of());
+        exhibitionContentOpen);
+  }
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayRegion region,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
+    return new Display(
+            null,
+            ownerUserId,
+            title,
+            subtitle,
+            content,
+            location,
+            qnaAccount,
+            note,
+            organization,
+            department,
+            displayType,
+            period,
+            artworkContentOpen,
+            exhibitionContentOpen,
+            DisplayStatus.DRAFT,
+            null,
+            null,
+            List.of(
+                new DisplayImage(
+                    null,
+                    posterImageUrl,
+                    DisplayImageType.MAIN,
+                    DEFAULT_MAIN_IMAGE_WIDTH,
+                    DEFAULT_MAIN_IMAGE_HEIGHT,
+                    MAIN_IMAGE_SORT_ORDER,
+                    null)),
+            List.of(),
+            toFieldSelections(displayFields),
+            List.of(),
+            List.of())
+        .withRegion(region);
   }
 
   public Display(
@@ -209,6 +251,7 @@ public class Display extends BaseTimeEntity {
     changeLocation(location);
     changeClassification(displayType);
     changePeriod(period);
+    changeRegion(DisplayRegion.OTHERS);
     changeOpenPolicy(artworkContentOpen, exhibitionContentOpen);
     this.status = Objects.requireNonNullElse(status, DisplayStatus.DRAFT);
     this.invitationToken = invitationToken;
@@ -276,6 +319,16 @@ public class Display extends BaseTimeEntity {
   // 전시 기간과 운영 시간을 변경한다.
   public void changePeriod(DisplayPeriod period) {
     this.period = Objects.requireNonNull(period, "period must not be null.");
+  }
+
+  // 전시 지역을 변경한다.
+  public void changeRegion(DisplayRegion region) {
+    this.region = Objects.requireNonNull(region, "region must not be null.");
+  }
+
+  private Display withRegion(DisplayRegion region) {
+    changeRegion(region);
+    return this;
   }
 
   // 작품 콘텐츠와 전시 콘텐츠의 공개 시점 정책을 변경한다.
