@@ -17,3 +17,40 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@test.com
+    password: test-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+
+app:
+  kakao:
+    client:
+      id: test-kakao-client-id
+
+  google:
+    client:
+      id: test-google-client-id
+      secret: test-google-client-secret
+
+
+jwt:
+  secret: test-secret-test-secret-test-secret-test-secret
+  access-expiration: 3600000
+  refresh-expiration: 1209600000
+  signup-expiration: 600000
