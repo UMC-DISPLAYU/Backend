@@ -23,6 +23,8 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
   NOT_VERIFIED_ARTIST(HttpStatus.FORBIDDEN, "NOT_VERIFIED_ARTIST", "작가 인증을 완료한 팀원만 이용할 수 있습니다."),
   INVALID_CO_AUTHOR(
       HttpStatus.BAD_REQUEST, "INVALID_CO_AUTHOR", "공동 작업자는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
+  INVALID_ARTIST_USER_ID(
+      HttpStatus.BAD_REQUEST, "INVALID_ARTIST_USER_ID", "대표 작가는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
   INVALID_QA_HANDLER(
       HttpStatus.BAD_REQUEST,
       "INVALID_QA_HANDLER",

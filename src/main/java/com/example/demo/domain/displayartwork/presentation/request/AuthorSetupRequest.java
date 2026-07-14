@@ -8,12 +8,18 @@ import java.util.List;
 
 public record AuthorSetupRequest(
     @NotBlank String artistName,
+    Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
     @NotNull Long qaHandlerUserId) {
 
   public AuthorSetupCommand toCommand(Long artworkId) {
     return new AuthorSetupCommand(
-        artworkId, artistName, coAuthors.userIds(), coAuthors.rawNames(), qaHandlerUserId);
+        artworkId,
+        artistName,
+        artistUserId,
+        coAuthors.userIds(),
+        coAuthors.rawNames(),
+        qaHandlerUserId);
   }
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {

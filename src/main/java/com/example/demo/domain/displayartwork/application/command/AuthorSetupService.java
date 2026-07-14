@@ -50,15 +50,23 @@ public class AuthorSetupService {
 
     validateRequester(display, requesterUserId);
 
+    Long artistUserId = command.artistUserId();
+    if (artistUserId != null) {
+      requireVerifiedTeamMember(
+          display, artistUserId, DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID);
+    }
+
     List<Long> coAuthorUserIds = command.coAuthorUserIds();
-    if (coAuthorUserIds.contains(requesterUserId)
+    if (coAuthorUserIds.contains(artistUserId)
         || new HashSet<>(coAuthorUserIds).size() != coAuthorUserIds.size()) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_CO_AUTHOR);
     }
     Map<Long, String> coAuthorNames = resolveCoAuthorNames(display, coAuthorUserIds);
 
     Set<Long> qaHandlerCandidates = new HashSet<>(coAuthorUserIds);
-    qaHandlerCandidates.add(requesterUserId);
+    if (artistUserId != null) {
+      qaHandlerCandidates.add(artistUserId);
+    }
     if (!qaHandlerCandidates.contains(command.qaHandlerUserId())) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
     }
@@ -70,9 +78,9 @@ public class AuthorSetupService {
         new Creator(
             null,
             command.artistName(),
-            command.qaHandlerUserId().equals(requesterUserId),
+            command.qaHandlerUserId().equals(artistUserId),
             true,
-            requesterUserId,
+            artistUserId,
             command.artworkId()));
     for (Long coAuthorUserId : coAuthorUserIds) {
       creators.add(
@@ -109,18 +117,26 @@ public class AuthorSetupService {
     }
   }
 
+  private TeamMember requireVerifiedTeamMember(
+      Display display, Long userId, DisplayArtworkErrorCode errorCode) {
+    TeamMember member =
+        display.getTeamMembers().stream()
+            .filter(TeamMember::isAccepted)
+            .filter(teamMember -> teamMember.getUserId().value().equals(userId))
+            .findFirst()
+            .orElseThrow(() -> new BusinessException(errorCode));
+    if (!artistVerificationRepository.isVerifiedArtist(userId)) {
+      throw new BusinessException(errorCode);
+    }
+    return member;
+  }
+
   private Map<Long, String> resolveCoAuthorNames(Display display, List<Long> coAuthorUserIds) {
     Map<Long, String> names = new LinkedHashMap<>();
     for (Long coAuthorUserId : coAuthorUserIds) {
       TeamMember member =
-          display.getTeamMembers().stream()
-              .filter(TeamMember::isAccepted)
-              .filter(teamMember -> teamMember.getUserId().value().equals(coAuthorUserId))
-              .findFirst()
-              .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.INVALID_CO_AUTHOR));
-      if (!artistVerificationRepository.isVerifiedArtist(coAuthorUserId)) {
-        throw new BusinessException(DisplayArtworkErrorCode.INVALID_CO_AUTHOR);
-      }
+          requireVerifiedTeamMember(
+              display, coAuthorUserId, DisplayArtworkErrorCode.INVALID_CO_AUTHOR);
       names.put(coAuthorUserId, member.getDisplayNickname());
     }
     return names;
