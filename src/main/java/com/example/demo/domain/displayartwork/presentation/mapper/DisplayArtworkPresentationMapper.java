@@ -4,10 +4,12 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkD
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
+import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
+import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +17,10 @@ public class DisplayArtworkPresentationMapper {
 
   public DisplayArtworkLikeResponse toResponse(DisplayArtworkLikeResult result) {
     return new DisplayArtworkLikeResponse(result.artworkId(), result.isLiked(), result.likeCount());
+  }
+
+  public ReorderDisplayArtworksResponse toResponse(ReorderDisplayArtworksResult result) {
+    return new ReorderDisplayArtworksResponse(result.displayId(), result.updatedCount());
   }
 
   public DisplayArtworkPreviewResponse toResponse(DisplayArtworkPreviewResult result) {

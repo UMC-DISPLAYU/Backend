@@ -3,19 +3,23 @@ package com.example.demo.domain.displayartwork.presentation;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommandService;
+import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
+import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtworkPresentationMapper;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
+import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
+import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -47,16 +52,19 @@ public class DisplayArtworkController {
   private final CreateDisplayArtworkService createDisplayArtworkService;
   private final DisplayArtworkQueryService displayArtworkQueryService;
   private final DisplayArtworkLikeCommandService displayArtworkLikeCommandService;
+  private final ReorderDisplayArtworksService reorderDisplayArtworksService;
   private final DisplayArtworkPresentationMapper mapper;
 
   public DisplayArtworkController(
       CreateDisplayArtworkService createDisplayArtworkService,
       DisplayArtworkQueryService displayArtworkQueryService,
       DisplayArtworkLikeCommandService displayArtworkLikeCommandService,
+      ReorderDisplayArtworksService reorderDisplayArtworksService,
       DisplayArtworkPresentationMapper mapper) {
     this.createDisplayArtworkService = createDisplayArtworkService;
     this.displayArtworkQueryService = displayArtworkQueryService;
     this.displayArtworkLikeCommandService = displayArtworkLikeCommandService;
+    this.reorderDisplayArtworksService = reorderDisplayArtworksService;
     this.mapper = mapper;
   }
 
@@ -86,6 +94,15 @@ public class DisplayArtworkController {
         createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
     DisplayArtworkResult result =
         displayArtworkQueryService.getDisplayArtworkDetail(displayArtworkId);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @PutMapping("/api/v1/artworks/order")
+  @Operation(summary = "전시 출품작 노출 순서 편집", description = "전시 대표자가 드래그 앤 드롭으로 변경한 작품 노출 순서를 저장합니다.")
+  public ApiResponseBody<ReorderDisplayArtworksResponse> reorderDisplayArtworks(
+      @Valid @RequestBody ReorderDisplayArtworksRequest request, HttpServletRequest httpRequest) {
+    ReorderDisplayArtworksResult result =
+        reorderDisplayArtworksService.reorder(TEMP_USER_ID, request.toCommand());
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

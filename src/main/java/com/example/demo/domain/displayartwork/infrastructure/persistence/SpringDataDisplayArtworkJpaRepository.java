@@ -23,6 +23,15 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       """
       SELECT artwork
       FROM DisplayArtwork artwork
+      WHERE artwork.display.id = :displayId
+        AND artwork.deletedAt IS NULL
+      """)
+  List<DisplayArtwork> findAllByDisplayId(@Param("displayId") Long displayId);
+
+  @Query(
+      """
+      SELECT artwork
+      FROM DisplayArtwork artwork
       JOIN FETCH artwork.display display
       WHERE artwork.deletedAt IS NULL
         AND display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
