@@ -89,6 +89,16 @@ jobs:
           RUNTIME_DB_NAME: ${{ secrets.DB_NAME }}
           RUNTIME_DB_USERNAME: ${{ secrets.DB_USERNAME }}
           RUNTIME_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RUNTIME_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          RUNTIME_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+
+          RUNTIME_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          RUNTIME_GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          RUNTIME_KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
+          RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
+          RUNTIME_JWT_SIGNUP_EXPIRATION: ${{ secrets.JWT_SIGNUP_EXPIRATION }}
         run: |
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
@@ -97,6 +107,15 @@ jobs:
             printf 'DB_NAME=%s\n' "$RUNTIME_DB_NAME"
             printf 'DB_USERNAME=%s\n' "$RUNTIME_DB_USERNAME"
             printf 'DB_PASSWORD=%s\n' "$RUNTIME_DB_PASSWORD"
+            printf 'MAIL_USERNAME=%s\n' "$RUNTIME_MAIL_USERNAME"
+            printf 'MAIL_PASSWORD=%s\n' "$RUNTIME_MAIL_PASSWORD"
+            printf 'GOOGLE_CLIENT_ID=%s\n' "$RUNTIME_GOOGLE_CLIENT_ID"
+            printf 'GOOGLE_CLIENT_SECRET=%s\n' "$RUNTIME_GOOGLE_CLIENT_SECRET"
+            printf 'KAKAO_CLIENT_ID=%s\n' "$RUNTIME_KAKAO_CLIENT_ID"
+            printf 'JWT_SECRET=%s\n' "$RUNTIME_JWT_SECRET"
+            printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"
+            printf 'JWT_REFRESH_EXPIRATION=%s\n' "$RUNTIME_JWT_REFRESH_EXPIRATION"
+            printf 'JWT_SIGNUP_EXPIRATION=%s\n' "$RUNTIME_JWT_SIGNUP_EXPIRATION"
           } > .env.deploy
 
       - name: Copy runtime env file to EC2
