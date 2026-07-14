@@ -57,9 +57,10 @@ public class DisplayArtworkQueryService {
     String artistName = leader.map(Creator::getCreatorName).orElse(null);
     Long artistUserId = leader.map(Creator::getUserId).orElse(null);
 
-    long likeCount = displayArtworkLikeRepository.countByDisplayArtworkId(displayArtworkId);
+    long likeCount =
+        displayArtworkLikeRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId);
     boolean isLiked =
-        displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserId(
+        displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
             displayArtworkId, requesterUserId);
     boolean isSaved =
         archiveWorkRepository

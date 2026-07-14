@@ -1,13 +1,19 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayArtworkPresentationMapper {
+
+  public DisplayArtworkLikeResponse toResponse(DisplayArtworkLikeResult result) {
+    return new DisplayArtworkLikeResponse(result.artworkId(), result.isLiked(), result.likeCount());
+  }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {
     return new DisplayArtworkDetailResponse(
