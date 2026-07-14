@@ -7,6 +7,7 @@ import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult.ExhibitionResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult.PaginationResult;
 import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -16,15 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class SearchDisplaysService implements SearchDisplaysUseCase {
 
   private final SearchDisplayQueryRepository queryRepository;
+  private final Clock clock;
 
-  public SearchDisplaysService(SearchDisplayQueryRepository queryRepository) {
+  public SearchDisplaysService(SearchDisplayQueryRepository queryRepository, Clock clock) {
     this.queryRepository = queryRepository;
+    this.clock = clock;
   }
 
   @Override
   @Transactional(readOnly = true)
   public SearchDisplayResult searchDisplays(SearchDisplayQuery query) {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     List<SearchDisplayQueryResult> queryResults =
         queryRepository.searchDisplays(query, today, query.size() + 1);
     boolean hasNext = queryResults.size() > query.size();
