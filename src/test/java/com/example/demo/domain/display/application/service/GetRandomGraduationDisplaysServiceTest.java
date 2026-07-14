@@ -5,7 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +16,13 @@ class GetRandomGraduationDisplaysServiceTest {
 
   @Test
   void getRandomGraduationDisplaysRequestsGivenSizeAndCalculatesDayLeft() {
-    LocalDate today = LocalDate.now();
+    Clock clock = Clock.fixed(Instant.parse("2026-07-13T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+    LocalDate today = LocalDate.now(clock);
     FakeGraduationDisplayQueryRepository queryRepository =
         new FakeGraduationDisplayQueryRepository(
             List.of(queryResult(1L, "졸업 전시", today.plusDays(4))));
     GetRandomGraduationDisplaysService service =
-        new GetRandomGraduationDisplaysService(queryRepository);
+        new GetRandomGraduationDisplaysService(queryRepository, clock);
 
     GraduationDisplayResult result = service.getRandomGraduationDisplays(5);
 

@@ -15,6 +15,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -36,9 +37,11 @@ class DisplayControllerSearchTest {
 
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;
 
+  @Autowired private Clock clock;
+
   @Test
   void searchDisplaysReturnsCommonSuccessResponse() throws Exception {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     jpaRepository.saveAndFlush(publishedDisplay("디자인 졸업전시", today.minusDays(1), today.plusDays(5)));
     jpaRepository.saveAndFlush(
         publishedDisplay("시각 디자인 전시", today.minusDays(2), today.plusDays(3)));
