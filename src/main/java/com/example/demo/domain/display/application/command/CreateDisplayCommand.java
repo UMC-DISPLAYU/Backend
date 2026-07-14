@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public record CreateDisplayCommand(
     String department,
     DisplayType displayType,
     List<DisplayField> displayFields,
+    DisplayRegion region,
     LocalDate startDate,
     LocalDate endDate,
     LocalTime startTime,
