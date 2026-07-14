@@ -7,3 +7,11 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+app:
+  kakao:
+    client:
+      id: test-kakao-client-id
+  google:
+    client:
+      id: test-google-client-id

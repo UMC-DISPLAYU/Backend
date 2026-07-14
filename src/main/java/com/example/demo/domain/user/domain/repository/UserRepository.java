@@ -12,5 +12,7 @@ public interface UserRepository {
 
   Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
+  Optional<User> findById(Long userId);
+
   User save(User user);
 }

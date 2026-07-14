@@ -18,12 +18,14 @@ public class TokenProvider {
 
   public String createAccessToken(User user) {
 
-    return jwtFactory.create(user.getId().toString(), jwtProperties.getAccessExpiration());
+    return jwtFactory.create(
+        user.getId().toString(), jwtProperties.getAccessExpiration(), "ACCESS");
   }
 
   public String createRefreshToken(User user) {
 
-    return jwtFactory.create(user.getId().toString(), jwtProperties.getRefreshExpiration());
+    return jwtFactory.create(
+        user.getId().toString(), jwtProperties.getRefreshExpiration(), "REFRESH");
   }
 
   public String createSignupToken(SocialUserInfo socialUserInfo) {
@@ -37,6 +39,8 @@ public class TokenProvider {
 
       Claims claims = jwtFactory.parse(signupToken);
 
+      validateTokenType(claims, "SIGNUP");
+
       return new SocialUserInfo(
           Provider.valueOf(claims.get("provider", String.class)),
           claims.get("providerId", String.class),
@@ -46,6 +50,49 @@ public class TokenProvider {
     } catch (Exception e) {
 
       throw new BusinessException(AuthErrorCode.INVALID_SIGNUP_TOKEN);
+    }
+  }
+
+  public boolean validateAccessToken(String token) {
+
+    try {
+
+      Claims claims = jwtFactory.parse(token);
+
+      return "ACCESS".equals(claims.get("type", String.class));
+
+    } catch (Exception e) {
+
+      return false;
+    }
+  }
+
+  public boolean validateRefreshToken(String token) {
+
+    try {
+
+      Claims claims = jwtFactory.parse(token);
+
+      return "REFRESH".equals(claims.get("type", String.class));
+
+    } catch (Exception e) {
+
+      return false;
+    }
+  }
+
+  public Long getUserId(String token) {
+
+    Claims claims = jwtFactory.parse(token);
+
+    return Long.parseLong(claims.getSubject());
+  }
+
+  private void validateTokenType(Claims claims, String type) {
+
+    if (!type.equals(claims.get("type", String.class))) {
+
+      throw new IllegalArgumentException("Invalid token type");
     }
   }
 }

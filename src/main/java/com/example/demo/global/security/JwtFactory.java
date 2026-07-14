@@ -16,12 +16,13 @@ public class JwtFactory {
 
   private final JwtProperties jwtProperties;
 
-  public String create(String subject, long expiration) {
+  public String create(String subject, long expiration, String tokenType) {
 
     Date now = new Date();
 
     return Jwts.builder()
         .setSubject(subject)
+        .claim("type", tokenType)
         .setIssuedAt(now)
         .setExpiration(new Date(now.getTime() + expiration))
         .signWith(getSecretKey(), SignatureAlgorithm.HS256)
@@ -33,6 +34,7 @@ public class JwtFactory {
     Date now = new Date();
 
     return Jwts.builder()
+        .claim("type", "SIGNUP")
         .claim("provider", socialUserInfo.provider().name())
         .claim("providerId", socialUserInfo.providerId())
         .claim("name", socialUserInfo.name())

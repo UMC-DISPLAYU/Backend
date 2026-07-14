@@ -32,4 +32,9 @@ public class UserPersistenceAdapter implements UserRepository {
   public Optional<User> findByProviderAndProviderId(Provider provider, String providerId) {
     return userJpaRepository.findByProviderAndProviderId(provider, providerId);
   }
+
+  @Override
+  public Optional<User> findById(Long userId) {
+    return userJpaRepository.findById(userId);
+  }
 }

@@ -9,10 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
-@Tag(name = "로그인 API")
 public interface LoginControllerDocs {
 
   @Operation(
@@ -70,10 +68,10 @@ public interface LoginControllerDocs {
                                                     "id": 1,
                                                     "provider": "Kakao",
                                                     "providerId": "123456789",
-                                                    "name": "홍길동",
-                                                    "nickname": "displayU",
-                                                    "socialEmail": "user@gmail.com",
-                                                    "schoolEmail": "sangjun@cau.ac.kr",
+                                                    "name": "마야",
+                                                    "nickname": "maya",
+                                                    "socialEmail": "maya@gmail.com",
+                                                    "schoolEmail": "maya@duksung.ac.kr",
                                                     "isVerified": false
                                                   }
                                                 },
@@ -102,8 +100,8 @@ public interface LoginControllerDocs {
                                                   "isNewUser": true,
                                                   "signupToken": "eyJhbGciOi...",
                                                   "provider": "Kakao",
-                                                  "name": "홍길동",
-                                                  "socialEmail": "user@gmail.com"
+                                                  "name": "마야",
+                                                  "socialEmail": "maya@gmail.com"
                                                 },
                                                 "error": null,
                                                 "meta": {

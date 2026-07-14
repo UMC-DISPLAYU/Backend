@@ -13,7 +13,7 @@ public class UserMapper {
         .provider(socialUserInfo.provider())
         .providerId(socialUserInfo.providerId())
         .name(socialUserInfo.name())
-        .nickname(command.nickname())
+        .nickname(command.nickname().value())
         .socialEmail(socialUserInfo.socialEmail())
         .build();
   }

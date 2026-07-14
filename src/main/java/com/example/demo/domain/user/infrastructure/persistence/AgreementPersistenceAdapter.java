@@ -14,13 +14,13 @@ public class AgreementPersistenceAdapter implements AgreementRepository {
   private final AgreementJpaRepository agreementJpaRepository;
 
   @Override
-  public List<Agreement> findRequiredAgreements() {
-    return agreementJpaRepository.findByIsRequiredTrue();
+  public Optional<Agreement> findById(Long id) {
+    return agreementJpaRepository.findById(id);
   }
 
   @Override
-  public Optional<Agreement> findById(Long id) {
-    return agreementJpaRepository.findById(id);
+  public List<Agreement> findAllById(List<Long> ids) { // 추가
+    return agreementJpaRepository.findAllById(ids);
   }
 
   @Override
