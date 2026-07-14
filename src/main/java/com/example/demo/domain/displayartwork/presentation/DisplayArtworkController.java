@@ -2,16 +2,21 @@ package com.example.demo.domain.displayartwork.presentation;
 
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtworkPresentationMapper;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -46,6 +51,16 @@ public class DisplayArtworkController {
         createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
     DisplayArtworkResult result =
         displayArtworkQueryService.getDisplayArtworkDetail(displayArtworkId);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @GetMapping("/api/v1/artworks/{artworkId}")
+  @Operation(summary = "전시 출품작 상세 조회", description = "작품 소개 탭에 필요한 상세 정보를 조회합니다. 비회원도 조회 가능합니다.")
+  public ApiResponseBody<DisplayArtworkDetailResponse> getDisplayArtworkFullDetail(
+      @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      HttpServletRequest httpRequest) {
+    DisplayArtworkDetailResult result =
+        displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, TEMP_USER_ID);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 }
