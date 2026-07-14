@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.application.command;
 
+import com.example.demo.domain.user.domain.vo.Nickname;
 import java.util.List;
 
-public record SignupCommand(String nickname, List<AgreementCommand> agreements) {}
+public record SignupCommand(Nickname nickname, List<AgreementCommand> agreements) {}

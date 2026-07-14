@@ -16,6 +16,9 @@ java {
 
 repositories {
   mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
@@ -31,6 +34,11 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
     implementation 'org.mapstruct:mapstruct:1.6.3'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+
+
 
     compileOnly 'org.projectlombok:lombok'
 
@@ -51,6 +59,8 @@ dependencies {
 
     testRuntimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 
     testAnnotationProcessor 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'

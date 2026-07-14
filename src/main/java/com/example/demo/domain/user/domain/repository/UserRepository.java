@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.domain.repository;
 
-import com.example.demo.domain.user.domain.entity.User;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import java.util.Optional;
 
@@ -11,6 +11,10 @@ public interface UserRepository {
   boolean existsByProviderAndProviderId(Provider provider, String providerId);
 
   Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
+
+  Optional<User> findById(Long userId);
+
+  boolean existsBySchoolEmail(String schoolEmail);
 
   User save(User user);
 }

@@ -16,6 +16,37 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+app:
+  kakao:
+    client:
+      id: ${KAKAO_CLIENT_ID}
+  google:
+    client:
+      id: ${GOOGLE_CLIENT_ID}
+      secret: ${GOOGLE_CLIENT_SECRET}
+
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: 3600000
+  refresh-expiration: 1209600000
+  signup-expiration: 600000
+
 
 springdoc:
   api-docs:
@@ -24,3 +55,4 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
+

@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.domain.entity;
+package com.example.demo.domain.user.domain.aggregate;
 
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.global.entity.BaseTimeEntity;
@@ -50,4 +50,9 @@ public class User extends BaseTimeEntity {
 
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
+
+  public void verifyAuthor(String schoolEmail) {
+    this.isVerified = true;
+    this.schoolEmail = schoolEmail;
+  }
 }
