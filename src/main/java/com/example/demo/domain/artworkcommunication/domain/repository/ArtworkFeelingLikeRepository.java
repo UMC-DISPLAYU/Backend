@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface ArtworkFeelingLikeRepository {
 
-  ArtworkFeelingLike save(ArtworkFeelingLike artworkFeelingLike);
+  void toggle(Long feelingId, Long userId);
 
   Optional<ArtworkFeelingLike> findByFeelingIdAndUserId(Long feelingId, Long userId);
 

@@ -27,13 +27,14 @@ public class ArtworkFeelingLikeService {
     ArtworkFeeling artworkFeeling = findFeelingOrThrow(command.feelingId());
     artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
 
-    ArtworkFeelingLike feelingLike =
+    artworkFeelingLikeRepository.toggle(command.feelingId(), command.userId());
+
+    ArtworkFeelingLike savedFeelingLike =
         artworkFeelingLikeRepository
             .findByFeelingIdAndUserId(command.feelingId(), command.userId())
-            .orElseGet(() -> ArtworkFeelingLike.create(command.feelingId(), command.userId()));
-
-    boolean liked = toggle(feelingLike);
-    ArtworkFeelingLike savedFeelingLike = artworkFeelingLikeRepository.save(feelingLike);
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
+    boolean liked = !savedFeelingLike.isDeleted();
     int likeCount =
         Math.toIntExact(artworkFeelingLikeRepository.countActiveByFeelingId(command.feelingId()));
 
@@ -49,19 +50,5 @@ public class ArtworkFeelingLikeService {
     return artworkFeelingRepository
         .findById(feelingId)
         .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-  }
-
-  private boolean toggle(ArtworkFeelingLike feelingLike) {
-    if (feelingLike.isDeleted()) {
-      feelingLike.restore();
-      return true;
-    }
-
-    if (feelingLike.getFeelingLikeId() == null) {
-      return true;
-    }
-
-    feelingLike.delete();
-    return false;
   }
 }

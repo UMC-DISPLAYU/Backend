@@ -209,6 +209,60 @@ public interface ArtworkFeelingApiDocs {
                           }
                           """)))
   @ApiResponse(
+      responseCode = "400",
+      description = "답변 내용 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(
+                    name = "Blank feeling reply content",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": {
+                            "code": "INVALID_INPUT_VALUE",
+                            "message": "입력값이 올바르지 않습니다.",
+                            "details": [
+                              {
+                                "field": "content",
+                                "message": "답변 내용은 필수입니다."
+                              }
+                            ]
+                          },
+                          "meta": {
+                            "timestamp": "2026-06-30T23:20:00",
+                            "path": "/api/v1/artworks/3/feelings/15/reply"
+                          }
+                        }
+                        """),
+                @ExampleObject(
+                    name = "Too long feeling reply content",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": {
+                            "code": "INVALID_INPUT_VALUE",
+                            "message": "입력값이 올바르지 않습니다.",
+                            "details": [
+                              {
+                                "field": "content",
+                                "message": "감상평 답변은 300자 이하로 작성해주세요."
+                              }
+                            ]
+                          },
+                          "meta": {
+                            "timestamp": "2026-06-30T23:20:00",
+                            "path": "/api/v1/artworks/3/feelings/15/reply"
+                          }
+                        }
+                        """)
+              }))
+  @ApiResponse(
       responseCode = "404",
       description = "작품, 사용자 또는 감상평 없음",
       content =

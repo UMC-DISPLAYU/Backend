@@ -25,15 +25,19 @@ public class ArtworkQuestionReply extends SoftDeleteBaseEntity {
   @Column(name = "artQueId", nullable = false)
   private Long artQueId;
 
+  @Column(name = "creatorId")
+  private Long creatorId;
+
   protected ArtworkQuestionReply() {}
 
-  private ArtworkQuestionReply(Long queReplyId, String content, Long artQueId) {
+  private ArtworkQuestionReply(Long queReplyId, String content, Long artQueId, Long creatorId) {
     this.queReplyId = queReplyId;
     this.content = content;
     this.artQueId = artQueId;
+    this.creatorId = creatorId;
   }
 
-  public static ArtworkQuestionReply create(Long artQueId, String content) {
-    return new ArtworkQuestionReply(null, content, artQueId);
+  public static ArtworkQuestionReply create(Long artQueId, String content, Long creatorId) {
+    return new ArtworkQuestionReply(null, content, artQueId, creatorId);
   }
 }

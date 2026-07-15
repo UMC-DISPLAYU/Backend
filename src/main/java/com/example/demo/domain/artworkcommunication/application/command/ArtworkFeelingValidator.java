@@ -31,6 +31,9 @@ public class ArtworkFeelingValidator {
     if (content == null || content.isBlank()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
     }
+    if (content.length() > 300) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
+    }
   }
 
   public void validateAccessibleFeeling(

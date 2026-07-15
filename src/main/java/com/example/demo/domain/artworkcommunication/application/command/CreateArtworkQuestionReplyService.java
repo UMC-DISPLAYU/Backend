@@ -5,13 +5,11 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,20 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CreateArtworkQuestionReplyService {
 
-  private final ArtworkQuestionRepository artworkQuestionRepository;
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
-  private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkQuestionValidator artworkQuestionValidator;
 
   public ArtworkQuestionReplyResult createQuestionReply(ArtworkQuestionReplyCommand command) {
-    validateDisplayArtworkExists(command.displayArtworkId());
-    validateUserExists(command.userId());
-    validateContent(command.content());
+    artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
+    artworkQuestionValidator.validateUserExists(command.userId());
+    artworkQuestionValidator.validateContent(command.content());
 
-    ArtworkQuestion artworkQuestion = findQuestionOrThrow(command.questionId());
-    validateQuestionTarget(artworkQuestion, command.displayArtworkId());
-    validateNotAnswered(artworkQuestion);
+    ArtworkQuestion artworkQuestion =
+        artworkQuestionValidator.findQuestionOrThrow(command.questionId());
+    artworkQuestionValidator.validateQuestionTarget(artworkQuestion, command.displayArtworkId());
+    artworkQuestionValidator.validateNotAnswered(artworkQuestion);
 
     ContactCreator contactCreator =
         creatorExistenceRepository
@@ -42,9 +39,7 @@ public class CreateArtworkQuestionReplyService {
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.QNA_CONTACT_FORBIDDEN));
 
-    ArtworkQuestionReply savedQuestionReply =
-        artworkQuestionReplyRepository.save(
-            ArtworkQuestionReply.create(command.questionId(), command.content()));
+    ArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(command, contactCreator);
 
     artworkQuestion.markAnswered();
 
@@ -59,38 +54,13 @@ public class CreateArtworkQuestionReplyService {
         contactCreator.creatorName());
   }
 
-  private ArtworkQuestion findQuestionOrThrow(Long questionId) {
-    return artworkQuestionRepository
-        .findById(questionId)
-        .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
-  }
-
-  private void validateDisplayArtworkExists(Long displayArtworkId) {
-    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-    }
-  }
-
-  private void validateUserExists(Long userId) {
-    if (!userExistenceRepository.existsById(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-    }
-  }
-
-  private void validateContent(String content) {
-    if (content == null || content.isBlank()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_QUESTION_CONTENT);
-    }
-  }
-
-  private void validateQuestionTarget(ArtworkQuestion artworkQuestion, Long displayArtworkId) {
-    if (artworkQuestion.isDeleted() || !artworkQuestion.belongsToArtwork(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
-    }
-  }
-
-  private void validateNotAnswered(ArtworkQuestion artworkQuestion) {
-    if (artworkQuestion.isAnswered()) {
+  private ArtworkQuestionReply saveQuestionReplyOrThrow(
+      ArtworkQuestionReplyCommand command, ContactCreator contactCreator) {
+    try {
+      return artworkQuestionReplyRepository.save(
+          ArtworkQuestionReply.create(
+              command.questionId(), command.content(), contactCreator.creatorId()));
+    } catch (DataIntegrityViolationException exception) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_ALREADY_ANSWERED);
     }
   }

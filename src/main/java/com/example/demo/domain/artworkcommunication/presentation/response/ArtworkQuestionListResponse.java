@@ -18,5 +18,9 @@ public record ArtworkQuestionListResponse(
   public record ArtworkQuestionUserResponse(Long userId, String nickname) {}
 
   public record ArtworkQuestionReplyItemResponse(
-      String creatorName, Boolean isCreator, String content, LocalDateTime createdAt) {}
+      Long creatorId,
+      String creatorName,
+      Boolean isCreator,
+      String content,
+      LocalDateTime createdAt) {}
 }

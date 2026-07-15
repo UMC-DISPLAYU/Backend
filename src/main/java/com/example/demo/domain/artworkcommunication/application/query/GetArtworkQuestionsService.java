@@ -15,6 +15,8 @@ import com.example.demo.domain.artworkcommunication.domain.repository.UserExiste
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class GetArtworkQuestionsService {
 
     Map<Long, List<ArtworkQuestionReply>> repliesByQuestionId =
         findRepliesByQuestionId(pageQuestions);
+    Map<Long, String> creatorNameById = findCreatorNamesById(repliesByQuestionId);
 
     List<ArtworkQuestionItemResult> questions =
         pageQuestions.stream()
@@ -56,7 +59,8 @@ public class GetArtworkQuestionsService {
                     toQuestionItem(
                         query.displayArtworkId(),
                         question,
-                        repliesByQuestionId.getOrDefault(question.getArtQueId(), List.of())))
+                        repliesByQuestionId.getOrDefault(question.getArtQueId(), List.of()),
+                        creatorNameById))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).questionId() : null;
@@ -77,7 +81,10 @@ public class GetArtworkQuestionsService {
   }
 
   private ArtworkQuestionItemResult toQuestionItem(
-      Long displayArtworkId, ArtworkQuestion question, List<ArtworkQuestionReply> replies) {
+      Long displayArtworkId,
+      ArtworkQuestion question,
+      List<ArtworkQuestionReply> replies,
+      Map<Long, String> creatorNameById) {
     ArtworkQuestionUserResult user =
         new ArtworkQuestionUserResult(
             question.getUserId(), findUserNicknameOrThrow(question.getUserId()));
@@ -85,7 +92,7 @@ public class GetArtworkQuestionsService {
     ArtworkQuestionReplyItemResult reply =
         replies.stream()
             .findFirst()
-            .map(firstReply -> toReplyItem(displayArtworkId, firstReply))
+            .map(firstReply -> toReplyItem(displayArtworkId, firstReply, creatorNameById))
             .orElse(null);
 
     return new ArtworkQuestionItemResult(
@@ -99,11 +106,30 @@ public class GetArtworkQuestionsService {
   }
 
   private ArtworkQuestionReplyItemResult toReplyItem(
-      Long displayArtworkId, ArtworkQuestionReply reply) {
-    String creatorName = findContactCreatorNameOrNull(displayArtworkId);
+      Long displayArtworkId, ArtworkQuestionReply reply, Map<Long, String> creatorNameById) {
+    String creatorName = creatorNameById.get(reply.getCreatorId());
+    if (creatorName == null) {
+      creatorName = findContactCreatorNameOrNull(displayArtworkId);
+    }
 
     return new ArtworkQuestionReplyItemResult(
-        creatorName, creatorName != null, reply.getContent(), reply.getCreatedAt());
+        reply.getCreatorId(),
+        creatorName,
+        creatorName != null,
+        reply.getContent(),
+        reply.getCreatedAt());
+  }
+
+  private Map<Long, String> findCreatorNamesById(
+      Map<Long, List<ArtworkQuestionReply>> repliesByQuestionId) {
+    Set<Long> creatorIds =
+        repliesByQuestionId.values().stream()
+            .flatMap(List::stream)
+            .map(ArtworkQuestionReply::getCreatorId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+    return creatorExistenceRepository.findCreatorNamesByIds(creatorIds);
   }
 
   private String findContactCreatorNameOrNull(Long displayArtworkId) {

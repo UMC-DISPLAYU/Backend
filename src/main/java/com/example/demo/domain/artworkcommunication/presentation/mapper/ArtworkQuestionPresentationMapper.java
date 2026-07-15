@@ -98,6 +98,10 @@ public class ArtworkQuestionPresentationMapper {
     }
 
     return new ArtworkQuestionListResponse.ArtworkQuestionReplyItemResponse(
-        result.creatorName(), result.isCreator(), result.content(), result.createdAt());
+        result.creatorId(),
+        result.creatorName(),
+        result.isCreator(),
+        result.content(),
+        result.createdAt());
   }
 }

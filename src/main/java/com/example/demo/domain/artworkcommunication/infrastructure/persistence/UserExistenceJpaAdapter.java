@@ -1,7 +1,10 @@
 package com.example.demo.domain.artworkcommunication.infrastructure.persistence;
 
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +22,17 @@ public class UserExistenceJpaAdapter implements UserExistenceRepository {
   @Override
   public Optional<String> findNicknameById(Long userId) {
     return repository.findNicknameById(userId);
+  }
+
+  @Override
+  public Map<Long, String> findNicknamesByIds(Set<Long> userIds) {
+    if (userIds.isEmpty()) {
+      return Map.of();
+    }
+
+    return repository.findByUserIdIn(userIds).stream()
+        .collect(
+            Collectors.toMap(
+                UserReferenceJpaEntity::getUserId, UserReferenceJpaEntity::getNickname));
   }
 }

@@ -14,8 +14,8 @@ public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLik
   private final ArtworkFeelingLikeJpaRepository artworkFeelingLikeJpaRepository;
 
   @Override
-  public ArtworkFeelingLike save(ArtworkFeelingLike artworkFeelingLike) {
-    return artworkFeelingLikeJpaRepository.save(artworkFeelingLike);
+  public void toggle(Long feelingId, Long userId) {
+    artworkFeelingLikeJpaRepository.toggle(feelingId, userId);
   }
 
   @Override
