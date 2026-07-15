@@ -26,16 +26,19 @@ public class LoungeCommentQueryService {
 
   private final LoungePostRepository loungePostRepository;
   private final LoungeCommentRepository loungeCommentRepository;
+  private final LoungeCommentQueryRepository loungeCommentQueryRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
   private final LoungeWriterRepository loungeWriterRepository;
 
   public LoungeCommentQueryService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
+      LoungeCommentQueryRepository loungeCommentQueryRepository,
       LoungeCommentLikeRepository loungeCommentLikeRepository,
       LoungeWriterRepository loungeWriterRepository) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
+    this.loungeCommentQueryRepository = loungeCommentQueryRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
     this.loungeWriterRepository = loungeWriterRepository;
   }
@@ -45,10 +48,11 @@ public class LoungeCommentQueryService {
       Long loungePostId, Long cursorId, int size, Long viewerUserId) {
     LoungePost loungePost = getActivePost(loungePostId);
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungeComment> fetched =
-        loungeCommentRepository.findActiveRootByCursor(loungePost.getId(), cursorId, pageSize + 1);
+    List<LoungeCommentQueryResult> fetched =
+        loungeCommentQueryRepository.findActiveRootByCursor(
+            loungePost.getId(), cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
-    List<LoungeComment> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
+    List<LoungeCommentQueryResult> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (comments.isEmpty()) {
       return new LoungeCommentCursorResult(List.of(), null, pageSize, false);
     }
@@ -67,11 +71,11 @@ public class LoungeCommentQueryService {
     }
 
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungeComment> fetched =
-        loungeCommentRepository.findActiveRepliesByCursor(
+    List<LoungeCommentQueryResult> fetched =
+        loungeCommentQueryRepository.findActiveRepliesByCursor(
             parentComment.getId(), cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
-    List<LoungeComment> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
+    List<LoungeCommentQueryResult> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (replies.isEmpty()) {
       return new LoungeReplyCursorResult(List.of(), null, pageSize, false);
     }
@@ -82,8 +86,9 @@ public class LoungeCommentQueryService {
   }
 
   private List<LoungeCommentListResult> toResults(
-      List<LoungeComment> comments, Long viewerUserId, boolean includeReplyCount) {
-    List<Long> commentIds = comments.stream().map(LoungeComment::getId).toList();
+      List<LoungeCommentQueryResult> comments, Long viewerUserId, boolean includeReplyCount) {
+    List<Long> commentIds =
+        comments.stream().map(LoungeCommentQueryResult::loungeCommentId).toList();
     Map<Long, Long> likeCounts = loungeCommentLikeRepository.countByLoungeCommentIds(commentIds);
     Map<Long, Long> replyCounts =
         includeReplyCount
@@ -96,10 +101,7 @@ public class LoungeCommentQueryService {
                 commentIds, new UserId(viewerUserId));
     Map<Long, LoungeWriter> writers =
         loungeWriterRepository.findByUserIds(
-            comments.stream()
-                .map(comment -> comment.getAuthorUserId().value())
-                .distinct()
-                .toList());
+            comments.stream().map(LoungeCommentQueryResult::authorUserId).distinct().toList());
 
     return comments.stream()
         .map(
@@ -108,11 +110,10 @@ public class LoungeCommentQueryService {
                     comment,
                     toWriterView(
                         writers.getOrDefault(
-                            comment.getAuthorUserId().value(),
-                            LoungeWriter.unknown(comment.getAuthorUserId().value()))),
-                    likeCounts.getOrDefault(comment.getId(), 0L),
-                    replyCounts.getOrDefault(comment.getId(), 0L),
-                    likedCommentIds.contains(comment.getId()),
+                            comment.authorUserId(), LoungeWriter.unknown(comment.authorUserId()))),
+                    likeCounts.getOrDefault(comment.loungeCommentId(), 0L),
+                    replyCounts.getOrDefault(comment.loungeCommentId(), 0L),
+                    likedCommentIds.contains(comment.loungeCommentId()),
                     viewerUserId))
         .toList();
   }

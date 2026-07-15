@@ -19,5 +19,4 @@ public interface LoungeCommentRepository {
   Map<Long, Long> countActiveRepliesByParentCommentIds(List<Long> parentCommentIds);
 
   LoungeComment save(LoungeComment loungeComment);
-
 }

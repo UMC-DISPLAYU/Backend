@@ -1,0 +1,65 @@
+package com.example.demo.domain.lounge.infrastructure.persistence;
+
+import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult;
+import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
+import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface SpringDataLoungeCommentQueryJpaRepository
+    extends JpaRepository<LoungeComment, Long> {
+
+  @Query(
+      """
+      SELECT new com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult(
+        comment.id,
+        comment.loungePostId,
+        comment.parentCommentId,
+        comment.authorUserId.value,
+        comment.content,
+        comment.status,
+        comment.createdAt,
+        comment.updatedAt
+      )
+      FROM LoungeComment comment
+      WHERE comment.loungePostId = :loungePostId
+        AND comment.parentCommentId IS NULL
+        AND comment.status = :status
+        AND comment.deletedAt IS NULL
+        AND (:cursorId IS NULL OR comment.id > :cursorId)
+      ORDER BY comment.id ASC
+      """)
+  List<LoungeCommentQueryResult> findActiveRootByCursor(
+      @Param("loungePostId") Long loungePostId,
+      @Param("status") LoungeCommentStatus status,
+      @Param("cursorId") Long cursorId,
+      Pageable pageable);
+
+  @Query(
+      """
+      SELECT new com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult(
+        comment.id,
+        comment.loungePostId,
+        comment.parentCommentId,
+        comment.authorUserId.value,
+        comment.content,
+        comment.status,
+        comment.createdAt,
+        comment.updatedAt
+      )
+      FROM LoungeComment comment
+      WHERE comment.parentCommentId = :parentCommentId
+        AND comment.status = :status
+        AND comment.deletedAt IS NULL
+        AND (:cursorId IS NULL OR comment.id > :cursorId)
+      ORDER BY comment.id ASC
+      """)
+  List<LoungeCommentQueryResult> findActiveRepliesByCursor(
+      @Param("parentCommentId") Long parentCommentId,
+      @Param("status") LoungeCommentStatus status,
+      @Param("cursorId") Long cursorId,
+      Pageable pageable);
+}
