@@ -4,22 +4,14 @@ import com.example.demo.domain.artworkcommunication.application.command.ArtworkF
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsQuery;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyResult;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
-import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
-import com.example.demo.domain.artworkcommunication.application.result.UpdatedArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingItemResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingReplyItemResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingUserResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -97,5 +89,14 @@ public class ArtworkFeelingPresentationMapper {
         result.content(),
         result.createdAt(),
         result.isCreator());
+  }
+
+  public ArtworkFeelingLikeResponse toResponse(ArtworkFeelingLikeResult result) {
+    return new ArtworkFeelingLikeResponse(
+        result.feelingId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
   }
 }

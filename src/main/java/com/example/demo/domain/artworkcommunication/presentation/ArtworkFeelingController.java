@@ -2,21 +2,13 @@ package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.*;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsService;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyResult;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
-import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
-import com.example.demo.domain.artworkcommunication.application.result.UpdatedArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFeelingApiDocs;
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkFeelingPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -34,6 +26,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   private final DeleteArtworkFeelingService deleteArtworkFeelingService;
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
   private final GetArtworkFeelingsService getArtworkFeelingsService;
+  private final ArtworkFeelingLikeService artworkFeelingLikeService;
   private final ArtworkFeelingPresentationMapper mapper;
 
   @Override
@@ -118,6 +111,23 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     DeletedArtworkFeelingResult result = deleteArtworkFeelingService.deleteFeeling(command);
 
     DeletedArtworkFeelingResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{feelingId}/like")
+  // 감상평 좋아요 등록 및 취소
+  public ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingLikeCommand command = new ArtworkFeelingLikeCommand(artworkId, feelingId, userId);
+
+    ArtworkFeelingLikeResult result = artworkFeelingLikeService.artworkFeelingLike(command);
+
+    ArtworkFeelingLikeResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

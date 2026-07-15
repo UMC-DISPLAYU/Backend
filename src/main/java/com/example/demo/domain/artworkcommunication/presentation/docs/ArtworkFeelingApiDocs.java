@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation.docs;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
@@ -414,6 +415,72 @@ public interface ArtworkFeelingApiDocs {
   ApiResponseBody<DeletedArtworkFeelingResponse> deleteFeeling(
       @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "삭제할 감상평 ID", example = "1") Long feelingId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 좋아요 토글", description = "감상평 좋아요를 등록하거나 취소합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "감상평 좋아요 토글 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling like success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "feelingId": 7,
+                                "liked": true,
+                                "likeCount": 13,
+                                "createdAt": "2026-06-30T23:20:00",
+                                "deletedAt": null
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T23:40:00",
+                              "path": "/api/v1/artworks/3/feelings/7/like"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "작품, 사용자 또는 감상평 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling like not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "FEELING_NOT_FOUND",
+                              "message": "감상평을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T23:40:00",
+                              "path": "/api/v1/artworks/3/feelings/7/like"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "좋아요를 토글할 감상평 ID", example = "7") Long feelingId,
       @Parameter(
               name = "X-User-Id",
               description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
