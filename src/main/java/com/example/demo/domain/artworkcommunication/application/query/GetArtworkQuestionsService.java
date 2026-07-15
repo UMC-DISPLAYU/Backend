@@ -50,6 +50,7 @@ public class GetArtworkQuestionsService {
 
     Map<Long, List<ArtworkQuestionReply>> repliesByQuestionId =
         findRepliesByQuestionId(pageQuestions);
+    Map<Long, String> nicknameByUserId = findQuestionUserNicknames(pageQuestions);
     Map<Long, String> creatorNameById = findCreatorNamesById(repliesByQuestionId);
 
     List<ArtworkQuestionItemResult> questions =
@@ -60,6 +61,7 @@ public class GetArtworkQuestionsService {
                         query.displayArtworkId(),
                         question,
                         repliesByQuestionId.getOrDefault(question.getArtQueId(), List.of()),
+                        nicknameByUserId,
                         creatorNameById))
             .toList();
 
@@ -84,10 +86,11 @@ public class GetArtworkQuestionsService {
       Long displayArtworkId,
       ArtworkQuestion question,
       List<ArtworkQuestionReply> replies,
+      Map<Long, String> nicknameByUserId,
       Map<Long, String> creatorNameById) {
     ArtworkQuestionUserResult user =
         new ArtworkQuestionUserResult(
-            question.getUserId(), findUserNicknameOrThrow(question.getUserId()));
+            question.getUserId(), getNicknameOrThrow(nicknameByUserId, question.getUserId()));
 
     ArtworkQuestionReplyItemResult reply =
         replies.stream()
@@ -107,17 +110,14 @@ public class GetArtworkQuestionsService {
 
   private ArtworkQuestionReplyItemResult toReplyItem(
       Long displayArtworkId, ArtworkQuestionReply reply, Map<Long, String> creatorNameById) {
-    String creatorName = creatorNameById.get(reply.getCreatorId());
+    Long creatorId = reply.getCreatorId();
+    String creatorName = creatorId == null ? null : creatorNameById.get(creatorId);
     if (creatorName == null) {
       creatorName = findContactCreatorNameOrNull(displayArtworkId);
     }
 
     return new ArtworkQuestionReplyItemResult(
-        reply.getCreatorId(),
-        creatorName,
-        creatorName != null,
-        reply.getContent(),
-        reply.getCreatedAt());
+        creatorId, creatorName, creatorName != null, reply.getContent(), reply.getCreatedAt());
   }
 
   private Map<Long, String> findCreatorNamesById(
@@ -132,6 +132,13 @@ public class GetArtworkQuestionsService {
     return creatorExistenceRepository.findCreatorNamesByIds(creatorIds);
   }
 
+  private Map<Long, String> findQuestionUserNicknames(List<ArtworkQuestion> questions) {
+    Set<Long> userIds =
+        questions.stream().map(ArtworkQuestion::getUserId).collect(Collectors.toSet());
+
+    return userExistenceRepository.findNicknamesByIds(userIds);
+  }
+
   private String findContactCreatorNameOrNull(Long displayArtworkId) {
     return creatorExistenceRepository
         .findContactCreatorByDisplayArtworkId(displayArtworkId)
@@ -139,9 +146,12 @@ public class GetArtworkQuestionsService {
         .orElse(null);
   }
 
-  private String findUserNicknameOrThrow(Long userId) {
-    return userExistenceRepository
-        .findNicknameById(userId)
-        .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND));
+  private String getNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {
+    String nickname = nicknameByUserId.get(userId);
+    if (nickname == null) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
+    }
+
+    return nickname;
   }
 }
