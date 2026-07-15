@@ -15,7 +15,10 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.FORBIDDEN, "NOT_DISPLAY_TEAM_MEMBER", "해당 전시의 팀원만 작품을 등록할 수 있습니다."),
   ARTWORK_REGISTRATION_LIMIT_EXCEEDED(
       HttpStatus.BAD_REQUEST, "ARTWORK_REGISTRATION_LIMIT_EXCEEDED", "전시당 등록 가능한 작품 개수를 초과했습니다."),
-  FORBIDDEN_ARTWORK_ACTION(HttpStatus.FORBIDDEN, "FORBIDDEN_ARTWORK_ACTION", "해당 작품에 대한 권한이 없습니다."),
+  FORBIDDEN_ARTWORK_ACTION(
+      HttpStatus.FORBIDDEN,
+      "FORBIDDEN_ARTWORK_ACTION",
+      "해당 작품을 삭제할 권한이 없습니다. (대표자 또는 본인 등록 작품만 삭제 가능)"),
   INVALID_ARTWORK_ORDER_LIST(
       HttpStatus.BAD_REQUEST,
       "INVALID_ARTWORK_ORDER_LIST",

@@ -57,6 +57,7 @@ public class CreateDisplayArtworkService {
             command.size(),
             command.point(),
             nextWorkSortOrder,
+            requesterUserId,
             toImages(command.images()));
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);

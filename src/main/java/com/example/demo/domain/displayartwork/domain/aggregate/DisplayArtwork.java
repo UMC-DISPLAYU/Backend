@@ -66,6 +66,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private int workSortOrder;
 
+  @Column(nullable = false)
+  private Long registeredByUserId;
+
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   private final List<ArtworkImage> images = new ArrayList<>();
@@ -82,6 +85,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       String size,
       String point,
       int workSortOrder,
+      Long registeredByUserId,
       List<ArtworkImage> images) {
     DisplayArtwork displayArtwork =
         new DisplayArtwork(
@@ -93,7 +97,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
             materialMedia,
             size,
             point,
-            workSortOrder);
+            workSortOrder,
+            registeredByUserId);
     displayArtwork.replaceImages(images);
     return displayArtwork;
   }
@@ -107,10 +112,13 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       String materialMedia,
       String size,
       String point,
-      int workSortOrder) {
+      int workSortOrder,
+      Long registeredByUserId) {
     this.display = Objects.requireNonNull(display, "display must not be null.");
     changeContent(artworkName, content, type, productionYear, materialMedia, size, point);
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
+    this.registeredByUserId =
+        Objects.requireNonNull(registeredByUserId, "registeredByUserId must not be null.");
   }
 
   public List<ArtworkImage> getImages() {

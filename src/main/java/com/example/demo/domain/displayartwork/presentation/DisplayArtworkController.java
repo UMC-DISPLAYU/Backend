@@ -2,11 +2,13 @@ package com.example.demo.domain.displayartwork.presentation;
 
 import com.example.demo.domain.displayartwork.application.command.AuthorSetupService;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
+import com.example.demo.domain.displayartwork.application.command.DeleteDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommandService;
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
+import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -19,6 +21,7 @@ import com.example.demo.domain.displayartwork.presentation.request.AuthorSetupRe
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.response.AuthorSetupResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -58,6 +61,7 @@ public class DisplayArtworkController {
   private final DisplayArtworkLikeCommandService displayArtworkLikeCommandService;
   private final ReorderDisplayArtworksService reorderDisplayArtworksService;
   private final AuthorSetupService authorSetupService;
+  private final DeleteDisplayArtworkService deleteDisplayArtworkService;
   private final DisplayArtworkPresentationMapper mapper;
 
   public DisplayArtworkController(
@@ -66,12 +70,14 @@ public class DisplayArtworkController {
       DisplayArtworkLikeCommandService displayArtworkLikeCommandService,
       ReorderDisplayArtworksService reorderDisplayArtworksService,
       AuthorSetupService authorSetupService,
+      DeleteDisplayArtworkService deleteDisplayArtworkService,
       DisplayArtworkPresentationMapper mapper) {
     this.createDisplayArtworkService = createDisplayArtworkService;
     this.displayArtworkQueryService = displayArtworkQueryService;
     this.displayArtworkLikeCommandService = displayArtworkLikeCommandService;
     this.reorderDisplayArtworksService = reorderDisplayArtworksService;
     this.authorSetupService = authorSetupService;
+    this.deleteDisplayArtworkService = deleteDisplayArtworkService;
     this.mapper = mapper;
   }
 
@@ -132,6 +138,17 @@ public class DisplayArtworkController {
       HttpServletRequest httpRequest) {
     DisplayArtworkDetailResult result =
         displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, TEMP_USER_ID);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @DeleteMapping("/api/v1/artworks/{artworkId}")
+  @Operation(
+      summary = "전시 출품작 삭제",
+      description = "전시 대표자는 팀원의 작품도 강제 삭제할 수 있고, 등록자는 본인이 등록한 작품만 삭제할 수 있습니다.")
+  public ApiResponseBody<DeleteDisplayArtworkResponse> deleteDisplayArtwork(
+      @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      HttpServletRequest httpRequest) {
+    DeleteDisplayArtworkResult result = deleteDisplayArtworkService.delete(TEMP_USER_ID, artworkId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

@@ -1,0 +1,5 @@
+ALTER TABLE `DisplayArtwork`
+    ADD COLUMN `registeredByUserId` BIGINT NOT NULL;
+
+ALTER TABLE `DisplayArtwork`
+    ADD CONSTRAINT `FK_DISPLAYARTWORK_REGISTEREDBY` FOREIGN KEY (`registeredByUserId`) REFERENCES `User` (`userId`);
