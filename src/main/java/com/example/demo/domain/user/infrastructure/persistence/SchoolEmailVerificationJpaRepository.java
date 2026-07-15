@@ -7,12 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
 public interface SchoolEmailVerificationJpaRepository
-        extends JpaRepository<SchoolEmailVerification, Long> {
+    extends JpaRepository<SchoolEmailVerification, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<SchoolEmailVerification> findTopBySchoolEmailOrderByCreatedAtDesc(
-            String schoolEmail
-    );
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  Optional<SchoolEmailVerification> findTopBySchoolEmailOrderByCreatedAtDesc(String schoolEmail);
 
-    void deleteBySchoolEmail(String schoolEmail);
+  void deleteBySchoolEmail(String schoolEmail);
 }
