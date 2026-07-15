@@ -1,0 +1,198 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME || 'displayu-backend' }}
+  APP_PORT: ${{ secrets.APP_PORT || '8080' }}
+  EC2_PORT: ${{ secrets.EC2_PORT || '22' }}
+
+jobs:
+  deploy:
+    name: Build, push, and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Apply code format
+        run: ./gradlew spotlessApply --no-daemon
+
+      - name: Build and test
+        run: ./gradlew clean build --no-daemon
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
+          docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
+          docker push "$IMAGE_URI"
+          docker push "$LATEST_URI"
+
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_ENV"
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$EC2_PORT" -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Prepare runtime env file
+        env:
+          RUNTIME_SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE || 'dev' }}
+          RUNTIME_DB_HOST: ${{ secrets.DB_HOST }}
+          RUNTIME_DB_PORT: ${{ secrets.DB_PORT }}
+          RUNTIME_DB_NAME: ${{ secrets.DB_NAME }}
+          RUNTIME_DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          RUNTIME_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RUNTIME_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          RUNTIME_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+
+          RUNTIME_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          RUNTIME_GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          RUNTIME_KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
+          RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
+          RUNTIME_JWT_SIGNUP_EXPIRATION: ${{ secrets.JWT_SIGNUP_EXPIRATION }}
+        run: |
+          {
+            printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
+            printf 'DB_HOST=%s\n' "$RUNTIME_DB_HOST"
+            printf 'DB_PORT=%s\n' "$RUNTIME_DB_PORT"
+            printf 'DB_NAME=%s\n' "$RUNTIME_DB_NAME"
+            printf 'DB_USERNAME=%s\n' "$RUNTIME_DB_USERNAME"
+            printf 'DB_PASSWORD=%s\n' "$RUNTIME_DB_PASSWORD"
+            printf 'MAIL_USERNAME=%s\n' "$RUNTIME_MAIL_USERNAME"
+            printf 'MAIL_PASSWORD=%s\n' "$RUNTIME_MAIL_PASSWORD"
+            printf 'GOOGLE_CLIENT_ID=%s\n' "$RUNTIME_GOOGLE_CLIENT_ID"
+            printf 'GOOGLE_CLIENT_SECRET=%s\n' "$RUNTIME_GOOGLE_CLIENT_SECRET"
+            printf 'KAKAO_CLIENT_ID=%s\n' "$RUNTIME_KAKAO_CLIENT_ID"
+            printf 'JWT_SECRET=%s\n' "$RUNTIME_JWT_SECRET"
+            printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"
+            printf 'JWT_REFRESH_EXPIRATION=%s\n' "$RUNTIME_JWT_REFRESH_EXPIRATION"
+            printf 'JWT_SIGNUP_EXPIRATION=%s\n' "$RUNTIME_JWT_SIGNUP_EXPIRATION"
+          } > .env.deploy
+
+      - name: Copy runtime env file to EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p ~/displayu-backend"
+          scp -i ~/.ssh/deploy_key -P "$EC2_PORT" .env.deploy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/.env"
+          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "chmod 600 ~/displayu-backend/.env"
+
+      - name: Deploy on EC2
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "set -euo pipefail
+
+             # Required deployment values
+             APP_DIR=\"\$HOME/displayu-backend\"
+             ENV_FILE=\"\$APP_DIR/.env\"
+             IMAGE_URI=\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
+             CONTAINER_NAME=\"$CONTAINER_NAME\"
+             APP_PORT=\"$APP_PORT\"
+
+             # Validate EC2 prerequisites
+             test -f \"\$ENV_FILE\"
+             command -v docker >/dev/null 2>&1
+             command -v aws >/dev/null 2>&1
+
+             # Login to ECR from EC2
+             aws ecr get-login-password --region \"$AWS_REGION\" \
+               | docker login --username AWS --password-stdin \"$ECR_REGISTRY\"
+
+             # Pull the image built by this workflow
+             docker pull \"\$IMAGE_URI\"
+
+             # Replace the running container
+             if docker ps -a --format '{{.Names}}' | grep -Fxq \"\$CONTAINER_NAME\"; then
+               docker stop \"\$CONTAINER_NAME\" >/dev/null 2>&1 || true
+               docker rm \"\$CONTAINER_NAME\" >/dev/null 2>&1 || true
+             fi
+
+             # Start the new application container
+             docker run -d \
+               --name \"\$CONTAINER_NAME\" \
+               --restart unless-stopped \
+               --env-file \"\$ENV_FILE\" \
+               -p \"\$APP_PORT:8080\" \
+               \"\$IMAGE_URI\"
+
+             # Verify the new container starts and stays healthy/running
+             success_count=0
+             max_attempts=12
+             for attempt in \$(seq 1 \"\$max_attempts\"); do
+               status=\$(docker inspect -f '{{.State.Status}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
+               health=\$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
+
+               echo \"Container check \$attempt/\$max_attempts: status=\$status health=\$health\"
+
+               if [ \"\$status\" = \"running\" ] && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
+                 success_count=\$((success_count + 1))
+                 if [ \"\$success_count\" -ge 2 ]; then
+                   docker image prune -f >/dev/null
+                   docker ps --filter \"name=\$CONTAINER_NAME\"
+                   exit 0
+                 fi
+               else
+                 success_count=0
+               fi
+
+               if [ \"\$status\" = \"exited\" ] || [ \"\$status\" = \"dead\" ] || [ \"\$status\" = \"missing\" ]; then
+                 echo \"Container failed during startup. Recent logs:\"
+                 docker logs --tail 120 \"\$CONTAINER_NAME\" || true
+                 exit 1
+               fi
+
+               sleep 5
+             done
+
+             echo \"Container did not become stable before timeout. Recent logs:\"
+             docker logs --tail 120 \"\$CONTAINER_NAME\" || true
+             exit 1"

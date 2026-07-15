@@ -77,6 +77,10 @@ public class DisplayImage extends BaseTimeEntity {
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
   }
 
+  public void changeImageUrl(String imageUrl) {
+    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
+  }
+
   public void delete() {
     this.deletedAt = LocalDateTime.now();
   }
