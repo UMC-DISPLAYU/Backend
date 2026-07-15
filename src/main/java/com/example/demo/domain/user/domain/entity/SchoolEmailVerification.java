@@ -13,101 +13,69 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SchoolEmailVerification extends BaseTimeEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "verificationId")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "verificationId")
+  private Long id;
 
+  @Column(name = "schoolEmail", nullable = false)
+  private String schoolEmail;
 
-    @Column(name = "schoolEmail", nullable = false)
-    private String schoolEmail;
+  @Column(name = "univName", nullable = false)
+  private String univName;
 
+  @Column(name = "verificationCode", nullable = false)
+  private String verificationCode;
 
-    @Column(name = "univName", nullable = false)
-    private String univName;
+  @Column(name = "expiresAt", nullable = false)
+  private LocalDateTime expiresAt;
 
+  @Column(name = "sentAt", nullable = false)
+  private LocalDateTime sentAt;
 
-    @Column(name = "verificationCode", nullable = false)
-    private String verificationCode;
+  @Column(name = "verified", nullable = false)
+  private boolean verified;
 
+  private SchoolEmailVerification(
+      String schoolEmail, String univName, String verificationCode, LocalDateTime expiresAt) {
 
-    @Column(name = "expiresAt", nullable = false)
-    private LocalDateTime expiresAt;
+    this.schoolEmail = schoolEmail;
+    this.univName = univName;
+    this.verificationCode = verificationCode;
+    this.expiresAt = expiresAt;
+    this.sentAt = LocalDateTime.now();
+    this.verified = false;
+  }
 
+  public static SchoolEmailVerification create(
+      String schoolEmail, String univName, String verificationCode) {
 
-    @Column(name = "sentAt", nullable = false)
-    private LocalDateTime sentAt;
+    return new SchoolEmailVerification(
+        schoolEmail, univName, verificationCode, LocalDateTime.now().plusMinutes(5));
+  }
 
+  public boolean isExpired() {
 
-    @Column(name = "verified", nullable = false)
-    private boolean verified;
+    return LocalDateTime.now().isAfter(expiresAt);
+  }
 
+  public boolean canResend() {
 
+    return LocalDateTime.now().isAfter(sentAt.plusMinutes(1));
+  }
 
-    private SchoolEmailVerification(
-            String schoolEmail,
-            String univName,
-            String verificationCode,
-            LocalDateTime expiresAt
-    ) {
+  public boolean matchCode(String code) {
 
-        this.schoolEmail = schoolEmail;
-        this.univName = univName;
-        this.verificationCode = verificationCode;
-        this.expiresAt = expiresAt;
-        this.sentAt = LocalDateTime.now();
-        this.verified = false;
-    }
+    return verificationCode.equals(code);
+  }
 
+  public boolean isVerified() {
 
+    return verified;
+  }
 
-    public static SchoolEmailVerification create(
-            String schoolEmail,
-            String univName,
-            String verificationCode
-    ) {
+  public void verify() {
 
-        return new SchoolEmailVerification(
-                schoolEmail,
-                univName,
-                verificationCode,
-                LocalDateTime.now().plusMinutes(5)
-        );
-    }
-
-
-
-    public boolean isExpired() {
-
-        return LocalDateTime.now().isAfter(expiresAt);
-    }
-
-
-
-    public boolean canResend() {
-
-        return LocalDateTime.now()
-                .isAfter(sentAt.plusMinutes(1));
-    }
-
-
-
-    public boolean matchCode(String code) {
-
-        return verificationCode.equals(code);
-    }
-
-
-
-    public boolean isVerified() {
-
-        return verified;
-    }
-
-
-
-    public void verify() {
-
-        this.verified = true;
-    }
+    this.verified = true;
+  }
 }

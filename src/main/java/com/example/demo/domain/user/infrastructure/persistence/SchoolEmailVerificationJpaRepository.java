@@ -7,10 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SchoolEmailVerificationJpaRepository
     extends JpaRepository<SchoolEmailVerification, Long> {
 
-    Optional<SchoolEmailVerification>
-    findTopBySchoolEmailOrderByCreatedAtDesc(
-            String schoolEmail
-    );
+  Optional<SchoolEmailVerification> findTopBySchoolEmailOrderByCreatedAtDesc(String schoolEmail);
 
   void deleteBySchoolEmail(String schoolEmail);
 }

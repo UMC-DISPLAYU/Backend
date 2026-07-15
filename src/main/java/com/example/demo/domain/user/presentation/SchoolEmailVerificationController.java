@@ -48,25 +48,17 @@ public class SchoolEmailVerificationController implements SchoolEmailVerificatio
 
     return ApiResponseBody.success(null, httpRequest);
   }
-    @PostMapping("/confirm")
-    public ApiResponseBody<SchoolEmailVerificationConfirmResponse> confirm(
-            @RequestBody VerifySchoolEmailRequest request,
-            HttpServletRequest httpRequest
-    ) {
 
+  @PostMapping("/confirm")
+  public ApiResponseBody<SchoolEmailVerificationConfirmResponse> confirm(
+      @RequestBody VerifySchoolEmailRequest request, HttpServletRequest httpRequest) {
 
-        SchoolEmailVerification verification =
-                verifyService.execute(
-                        new VerifySchoolEmailVerificationCommand(
-                                request.schoolEmail(),
-                                request.verificationCode()
-                        )
-                );
+    SchoolEmailVerification verification =
+        verifyService.execute(
+            new VerifySchoolEmailVerificationCommand(
+                request.schoolEmail(), request.verificationCode()));
 
-
-        return ApiResponseBody.success(
-                SchoolEmailVerificationConfirmResponse.from(verification),
-                httpRequest
-        );
-    }
+    return ApiResponseBody.success(
+        SchoolEmailVerificationConfirmResponse.from(verification), httpRequest);
+  }
 }

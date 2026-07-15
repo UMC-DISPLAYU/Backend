@@ -14,55 +14,34 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SendSchoolEmailVerificationService {
 
-    private final SchoolEmailVerificationRepository verificationRepository;
-    private final SchoolEmailSenderAdapter emailSenderAdapter;
-    private final SchoolEmailValidator schoolEmailValidator;
+  private final SchoolEmailVerificationRepository verificationRepository;
+  private final SchoolEmailSenderAdapter emailSenderAdapter;
+  private final SchoolEmailValidator schoolEmailValidator;
 
+  @Transactional
+  public void execute(SendSchoolEmailVerificationCommand command) {
 
-    @Transactional
-    public void execute(SendSchoolEmailVerificationCommand command) {
+    // 학교 이메일 + 도메인 검증
+    schoolEmailValidator.validate(command.univName(), command.schoolEmail());
 
-        // 학교 이메일 + 도메인 검증
-        schoolEmailValidator.validate(
-                command.univName(),
-                command.schoolEmail()
-        );
+    // 기존 인증 정보 삭제
+    verificationRepository.deleteBySchoolEmail(command.schoolEmail());
 
+    // 새 인증번호 생성
+    String verificationCode = createVerificationCode();
 
-        // 기존 인증 정보 삭제
-        verificationRepository.deleteBySchoolEmail(
-                command.schoolEmail()
-        );
+    // 새 인증 정보 저장
+    SchoolEmailVerification verification =
+        SchoolEmailVerification.create(command.schoolEmail(), command.univName(), verificationCode);
 
+    verificationRepository.save(verification);
 
-        // 새 인증번호 생성
-        String verificationCode = createVerificationCode();
+    // 이메일 발송
+    emailSenderAdapter.send(command.schoolEmail(), verificationCode);
+  }
 
+  private String createVerificationCode() {
 
-        // 새 인증 정보 저장
-        SchoolEmailVerification verification =
-                SchoolEmailVerification.create(
-                        command.schoolEmail(),
-                        command.univName(),
-                        verificationCode
-                );
-
-
-        verificationRepository.save(verification);
-
-
-        // 이메일 발송
-        emailSenderAdapter.send(
-                command.schoolEmail(),
-                verificationCode
-        );
-    }
-
-
-    private String createVerificationCode() {
-
-        return String.valueOf(
-                new Random().nextInt(900000) + 100000
-        );
-    }
+    return String.valueOf(new Random().nextInt(900000) + 100000);
+  }
 }

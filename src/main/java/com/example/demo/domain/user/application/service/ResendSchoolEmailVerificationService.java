@@ -13,42 +13,28 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ResendSchoolEmailVerificationService {
 
-    private final SchoolEmailVerificationRepository verificationRepository;
-    private final SendSchoolEmailVerificationService sendService;
+  private final SchoolEmailVerificationRepository verificationRepository;
+  private final SendSchoolEmailVerificationService sendService;
 
-    @Transactional
-    public void execute(String schoolEmail) {
+  @Transactional
+  public void execute(String schoolEmail) {
 
-        SchoolEmailVerification verification =
-                verificationRepository.findBySchoolEmail(schoolEmail)
-                        .orElseThrow(() ->
-                                new UserException(
-                                        UserErrorCode.EMAIL_VERIFICATION_NOT_FOUND
-                                )
-                        );
+    SchoolEmailVerification verification =
+        verificationRepository
+            .findBySchoolEmail(schoolEmail)
+            .orElseThrow(() -> new UserException(UserErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
-
-        // 이미 인증 완료된 이메일
-        if (verification.isVerified()) {
-            throw new UserException(
-                    UserErrorCode.ALREADY_VERIFIED_USER
-            );
-        }
-
-
-        // 재전송 쿨타임
-        if (!verification.canResend()) {
-            throw new UserException(
-                    UserErrorCode.EMAIL_SEND_COOLDOWN
-            );
-        }
-
-
-        sendService.execute(
-                new SendSchoolEmailVerificationCommand(
-                        schoolEmail,
-                        verification.getUnivName()
-                )
-        );
+    // 이미 인증 완료된 이메일
+    if (verification.isVerified()) {
+      throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
+
+    // 재전송 쿨타임
+    if (!verification.canResend()) {
+      throw new UserException(UserErrorCode.EMAIL_SEND_COOLDOWN);
+    }
+
+    sendService.execute(
+        new SendSchoolEmailVerificationCommand(schoolEmail, verification.getUnivName()));
+  }
 }
