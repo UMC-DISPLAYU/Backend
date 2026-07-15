@@ -5,9 +5,17 @@ import java.util.Optional;
 
 public interface SchoolEmailVerificationRepository {
 
-  SchoolEmailVerification save(SchoolEmailVerification verification);
+    SchoolEmailVerification save(
+            SchoolEmailVerification verification
+    );
 
-  Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail);
 
-  void deleteBySchoolEmail(String schoolEmail);
+    Optional<SchoolEmailVerification> findBySchoolEmail(
+            String schoolEmail
+    );
+
+
+    void deleteBySchoolEmail(
+            String schoolEmail
+    );
 }

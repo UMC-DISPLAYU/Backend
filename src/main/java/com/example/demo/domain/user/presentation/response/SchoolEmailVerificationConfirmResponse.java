@@ -1,7 +1,18 @@
 package com.example.demo.domain.user.presentation.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 
 public record SchoolEmailVerificationConfirmResponse(
-    @Schema(description = "인증 완료된 학교 이메일", example = "user@university.ac.kr") String schoolEmail,
-    @Schema(description = "작가 인증 완료 여부", example = "true") boolean isVerified) {}
+        String schoolEmail,
+        boolean isVerified
+) {
+
+    public static SchoolEmailVerificationConfirmResponse from(
+            SchoolEmailVerification verification
+    ) {
+        return new SchoolEmailVerificationConfirmResponse(
+                verification.getSchoolEmail(),
+                verification.isVerified()
+        );
+    }
+}

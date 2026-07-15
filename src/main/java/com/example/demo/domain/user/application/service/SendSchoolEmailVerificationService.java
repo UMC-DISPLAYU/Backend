@@ -3,9 +3,8 @@ package com.example.demo.domain.user.application.service;
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
+import com.example.demo.domain.user.validator.SchoolEmailValidator;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,38 +14,55 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SendSchoolEmailVerificationService {
 
-  private final SchoolEmailVerificationRepository verificationRepository;
-  private final SchoolEmailSenderAdapter emailSenderAdapter;
+    private final SchoolEmailVerificationRepository verificationRepository;
+    private final SchoolEmailSenderAdapter emailSenderAdapter;
+    private final SchoolEmailValidator schoolEmailValidator;
 
-  @Transactional
-  public void execute(SendSchoolEmailVerificationCommand command) {
 
-    validateEmail(command.schoolEmail());
+    @Transactional
+    public void execute(SendSchoolEmailVerificationCommand command) {
 
-    verificationRepository.deleteBySchoolEmail(command.schoolEmail());
+        // 학교 이메일 + 도메인 검증
+        schoolEmailValidator.validate(
+                command.univName(),
+                command.schoolEmail()
+        );
 
-    String verificationCode = createVerificationCode();
 
-    SchoolEmailVerification verification =
-        SchoolEmailVerification.create(command.schoolEmail(), command.univName(), verificationCode);
+        // 기존 인증 정보 삭제
+        verificationRepository.deleteBySchoolEmail(
+                command.schoolEmail()
+        );
 
-    verificationRepository.save(verification);
 
-    emailSenderAdapter.send(command.schoolEmail(), verificationCode);
-  }
+        // 새 인증번호 생성
+        String verificationCode = createVerificationCode();
 
-  private void validateEmail(String email) {
 
-    if (email == null
-        || email.isBlank()
-        || !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.ac\\.kr$")) {
+        // 새 인증 정보 저장
+        SchoolEmailVerification verification =
+                SchoolEmailVerification.create(
+                        command.schoolEmail(),
+                        command.univName(),
+                        verificationCode
+                );
 
-      throw new UserException(UserErrorCode.INVALID_EMAIL);
+
+        verificationRepository.save(verification);
+
+
+        // 이메일 발송
+        emailSenderAdapter.send(
+                command.schoolEmail(),
+                verificationCode
+        );
     }
-  }
 
-  private String createVerificationCode() {
 
-    return String.valueOf(new Random().nextInt(900000) + 100000);
-  }
+    private String createVerificationCode() {
+
+        return String.valueOf(
+                new Random().nextInt(900000) + 100000
+        );
+    }
 }
