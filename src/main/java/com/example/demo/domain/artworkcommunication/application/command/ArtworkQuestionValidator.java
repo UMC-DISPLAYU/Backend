@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.application.command;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -16,6 +17,7 @@ public class ArtworkQuestionValidator {
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
+  private final CreatorExistenceRepository creatorExistenceRepository;
 
   public ArtworkQuestion findQuestionOrThrow(Long questionId) {
     return artworkQuestionRepository
@@ -45,6 +47,14 @@ public class ArtworkQuestionValidator {
     }
   }
 
+  public void validateNotArtworkCreator(Long displayArtworkId, Long userId) {
+    if (creatorExistenceRepository
+        .findCreatorNameByDisplayArtworkIdAndUserId(displayArtworkId, userId)
+        .isPresent()) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_QUESTION);
+    }
+  }
+
   public void validateQuestionTarget(ArtworkQuestion artworkQuestion, Long displayArtworkId) {
     if (artworkQuestion.isDeleted() || !artworkQuestion.belongsToArtwork(displayArtworkId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
@@ -54,6 +64,12 @@ public class ArtworkQuestionValidator {
   public void validateNotAnswered(ArtworkQuestion artworkQuestion) {
     if (artworkQuestion.isAnswered()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_ALREADY_ANSWERED);
+    }
+  }
+
+  public void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
+    if (!artworkQuestion.isWrittenBy(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
     }
   }
 }

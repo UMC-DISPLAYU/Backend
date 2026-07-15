@@ -1,5 +1,6 @@
 package com.example.demo.domain.artworkcommunication.application.query;
 
+import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionValidator;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionReplyItemResult;
@@ -34,9 +35,10 @@ public class GetArtworkQuestionsService {
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkQuestionValidator artworkQuestionValidator;
 
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
-    validateDisplayArtworkExists(query.displayArtworkId());
+    artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
 
     List<ArtworkQuestion> fetched =
         artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(
@@ -67,12 +69,6 @@ public class GetArtworkQuestionsService {
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).questionId() : null;
     return new ArtworkQuestionListResult(questions, nextCursorId, PAGE_SIZE, hasNext);
-  }
-
-  private void validateDisplayArtworkExists(Long displayArtworkId) {
-    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-    }
   }
 
   private Map<Long, List<ArtworkQuestionReply>> findRepliesByQuestionId(
