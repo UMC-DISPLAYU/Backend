@@ -5,6 +5,7 @@ import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentQueryJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,11 @@ public class JpaLoungeCommentQueryRepositoryAdapter implements LoungeCommentQuer
   public JpaLoungeCommentQueryRepositoryAdapter(
       SpringDataLoungeCommentQueryJpaRepository jpaRepository) {
     this.jpaRepository = jpaRepository;
+  }
+
+  @Override
+  public Optional<LoungeCommentQueryResult> findActiveById(Long loungeCommentId) {
+    return jpaRepository.findActiveById(loungeCommentId, LoungeCommentStatus.ACTIVE);
   }
 
   @Override

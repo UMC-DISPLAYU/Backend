@@ -49,10 +49,11 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @PathVariable Long loungePostId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
+    Long loungeCommentId =
+        loungeCommentCommandService.createComment(
+            loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentCommandService.createComment(
-                loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
         request);
   }
 
@@ -63,10 +64,11 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @PathVariable Long parentCommentId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
+    Long loungeCommentId =
+        loungeCommentCommandService.createReply(
+            parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentCommandService.createReply(
-                parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
         request);
   }
 
@@ -76,10 +78,10 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @PathVariable Long loungeCommentId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
+    loungeCommentCommandService.updateComment(
+        loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentCommandService.updateComment(
-                loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
         request);
   }
 

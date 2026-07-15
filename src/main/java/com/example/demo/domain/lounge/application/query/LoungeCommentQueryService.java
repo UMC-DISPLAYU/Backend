@@ -44,6 +44,16 @@ public class LoungeCommentQueryService {
   }
 
   @Transactional(readOnly = true)
+  public LoungeCommentListResult getComment(Long loungeCommentId, Long viewerUserId) {
+    LoungeCommentQueryResult comment =
+        loungeCommentQueryRepository
+            .findActiveById(loungeCommentId)
+            .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
+
+    return toResults(List.of(comment), viewerUserId, comment.parentCommentId() == null).getFirst();
+  }
+
+  @Transactional(readOnly = true)
   public LoungeCommentCursorResult getComments(
       Long loungePostId, Long cursorId, int size, Long viewerUserId) {
     LoungePost loungePost = getActivePost(loungePostId);
