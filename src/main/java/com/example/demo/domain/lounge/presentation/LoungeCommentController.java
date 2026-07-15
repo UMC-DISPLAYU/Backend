@@ -11,9 +11,6 @@ import com.example.demo.domain.lounge.presentation.response.LoungeCommentListRes
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,7 +47,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   @Override
   public ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
@@ -64,7 +61,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   @Override
   public ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
@@ -77,7 +74,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   @Override
   public ApiResponseBody<LoungeCommentListResponse> updateComment(
       @PathVariable Long loungeCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
@@ -118,7 +115,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
@@ -131,7 +128,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
