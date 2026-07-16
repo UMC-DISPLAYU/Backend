@@ -6,7 +6,10 @@ import com.example.demo.domain.display.application.query.SearchDisplayQuery;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +17,14 @@ class SearchDisplaysServiceTest {
 
   @Test
   void searchDisplaysUsesSizePlusOneAndReturnsNextCursor() {
-    LocalDate today = LocalDate.now();
+    Clock clock = Clock.fixed(Instant.parse("2026-07-13T00:00:00Z"), ZoneId.of("Asia/Seoul"));
+    LocalDate today = LocalDate.now(clock);
     FakeSearchDisplayQueryRepository queryRepository =
         new FakeSearchDisplayQueryRepository(
             List.of(
                 queryResult(1L, "디자인 졸업전시", today.plusDays(3)),
                 queryResult(2L, "시각 디자인 전시", today.plusDays(5))));
-    SearchDisplaysService service = new SearchDisplaysService(queryRepository);
+    SearchDisplaysService service = new SearchDisplaysService(queryRepository, clock);
 
     SearchDisplayResult result =
         service.searchDisplays(new SearchDisplayQuery("디자인", null, null, null, null, 0L, 1));
