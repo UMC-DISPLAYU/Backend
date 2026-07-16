@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/artists/me/profile")
+@RequestMapping("/api/v1/artists/me/artist-profile")
 @Tag(name = TAG_NAME, description = TAG_DESCRIPTION)
 public class ArtistProfileController {
 
