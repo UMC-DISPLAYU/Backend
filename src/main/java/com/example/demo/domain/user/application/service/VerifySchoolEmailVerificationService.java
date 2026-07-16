@@ -16,7 +16,7 @@ public class VerifySchoolEmailVerificationService {
 
   private final SchoolEmailVerificationRepository verificationRepository;
 
-  @Transactional
+  @Transactional(noRollbackFor = UserException.class)
   public SchoolEmailConfirmVerificationResult execute(
       VerifySchoolEmailVerificationCommand command) {
     SchoolEmailVerification verification =
@@ -27,10 +27,21 @@ public class VerifySchoolEmailVerificationService {
     if (verification.isVerified()) {
       throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
+    if (verification.hasExceededMaxAttempts()) {
+      throw new UserException(UserErrorCode.VERIFICATION_ATTEMPTS_EXCEEDED);
+    }
+
     if (verification.isExpired()) {
       throw new UserException(UserErrorCode.VERIFICATION_CODE_EXPIRED);
     }
     if (!verification.matchCode(command.verificationCode())) {
+      verification.recordFailedAttempt();
+      verificationRepository.save(verification);
+
+      if (verification.hasExceededMaxAttempts()) {
+        throw new UserException(UserErrorCode.VERIFICATION_ATTEMPTS_EXCEEDED);
+      }
+
       throw new UserException(UserErrorCode.VERIFICATION_CODE_MISMATCH);
     }
 

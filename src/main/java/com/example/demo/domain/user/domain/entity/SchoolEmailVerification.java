@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SchoolEmailVerification extends BaseTimeEntity {
 
+  private static final int MAX_FAILED_ATTEMPTS = 5;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "verificationId")
@@ -38,8 +40,11 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   private boolean verified;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="userId",nullable = false)
+  @JoinColumn(name = "userId", nullable = false)
   private User user;
+
+  @Column(name = "failedAttemptCount", nullable = false)
+  private int failedAttemptCount;
 
   private SchoolEmailVerification(
       User user,
@@ -55,6 +60,7 @@ public class SchoolEmailVerification extends BaseTimeEntity {
     this.expiresAt = expiresAt;
     this.sentAt = LocalDateTime.now();
     this.verified = false;
+    this.failedAttemptCount = 0;
   }
 
   public static SchoolEmailVerification create(
@@ -66,7 +72,7 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
   public boolean isExpired() {
 
-    return LocalDateTime.now().isAfter(expiresAt);
+    return !LocalDateTime.now().isBefore(expiresAt);
   }
 
   public boolean canResend() {
@@ -79,6 +85,25 @@ public class SchoolEmailVerification extends BaseTimeEntity {
     return verificationCode.equals(code);
   }
 
+  public void recordFailedAttempt() {
+
+    this.failedAttemptCount++;
+
+    if (hasExceededMaxAttempts()) {
+      invalidate();
+    }
+  }
+
+  public boolean hasExceededMaxAttempts() {
+
+    return failedAttemptCount >= MAX_FAILED_ATTEMPTS;
+  }
+
+  private void invalidate() {
+
+    this.expiresAt = LocalDateTime.now();
+  }
+
   public boolean isVerified() {
 
     return verified;
@@ -87,5 +112,6 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   public void verify() {
 
     this.verified = true;
+    this.failedAttemptCount = 0;
   }
 }
