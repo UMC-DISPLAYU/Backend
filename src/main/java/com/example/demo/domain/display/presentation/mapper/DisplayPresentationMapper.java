@@ -1,11 +1,125 @@
 package com.example.demo.domain.display.presentation.mapper;
 
+import com.example.demo.domain.display.application.command.CreateDisplayCommand;
+import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
+import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.result.DisplayLikeResult;
+import com.example.demo.domain.display.application.result.DisplayMapResult;
+import com.example.demo.domain.display.application.result.DuPickResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.SearchDisplayResult;
+import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
+import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
+import com.example.demo.domain.display.presentation.response.DuPickResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
+import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+
+  public CreateDisplayCommand toCommand(CreateDisplayRequest request, Long ownerUserId) {
+    return new CreateDisplayCommand(
+        ownerUserId,
+        request.title(),
+        request.posterImageUrl(),
+        request.subtitle(),
+        request.description(),
+        request.locationName(),
+        request.latitude(),
+        request.longitude(),
+        request.roadAddress(),
+        "",
+        request.precautions(),
+        organization(request),
+        department(request),
+        toDisplayType(request.type()),
+        request.fields().stream().map(this::toDisplayField).toList(),
+        toDisplayRegion(request.region()),
+        request.startDate(),
+        request.endDate(),
+        request.openTime(),
+        request.closeTime(),
+        ContentOpenPolicy.IMMEDIATELY,
+        ContentOpenPolicy.ON_EXHIBITION);
+  }
+
+  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request) {
+    return new UpdateDisplayCommand(
+        request.userId(),
+        request.displayId(),
+        request.title(),
+        request.posterImageUrl(),
+        request.type() == null ? null : toDisplayType(request.type()),
+        request.fields() == null
+            ? null
+            : request.fields().stream().map(this::toDisplayField).toList(),
+        request.schoolOrOrganization(),
+        request.departmentOrClub(),
+        request.hostOrganizationName(),
+        request.subtitle(),
+        request.description(),
+        request.startDate(),
+        request.endDate(),
+        request.openTime(),
+        request.closeTime(),
+        request.placeName(),
+        request.precautions());
+  }
+
+  public DuPickResponse toResponse(DuPickResult result) {
+    return new DuPickResponse(
+        result.duPicks().stream().map(this::toResponse).toList(),
+        new DuPickResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
+
+  public ClosingSoonDisplayResponse toResponse(ClosingSoonDisplayResult result) {
+    return new ClosingSoonDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList(),
+        new ClosingSoonDisplayResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
+
+  public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
+    return new GraduationDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList());
+  }
+
+  public SearchDisplayResponse toResponse(SearchDisplayResult result) {
+    return new SearchDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList(),
+        new SearchDisplayResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
+
+  public DisplayMapResponse toResponse(DisplayMapResult result) {
+    return new DisplayMapResponse(
+        result.markers().stream().map(this::toResponse).toList(),
+        new DisplayMapResponse.CursorPaginationResponse(
+            result.pagination().nextCursor(),
+            result.pagination().size(),
+            result.pagination().hasNext()));
+  }
+
+  public DisplayLikeResponse toResponse(DisplayLikeResult result) {
+    return new DisplayLikeResponse(result.displayId(), result.likeCount());
+  }
 
   public DisplayDetailResponse toResponse(DisplayDetailResult result) {
     return new DisplayDetailResponse(
@@ -21,6 +135,7 @@ public class DisplayPresentationMapper {
         result.department(),
         result.displayType(),
         result.displayFields(),
+        result.region(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -31,6 +146,60 @@ public class DisplayPresentationMapper {
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
         result.invitations().stream().map(this::toResponse).toList());
+  }
+
+  private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {
+    return new DuPickResponse.DuPickItemResponse(
+        result.duPickId(),
+        result.title(),
+        result.subtitle(),
+        result.bannerImageUrl(),
+        result.createdAt());
+  }
+
+  private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(
+      ClosingSoonDisplayResult.ExhibitionResult result) {
+    return new ClosingSoonDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft());
+  }
+
+  private GraduationDisplayResponse.ExhibitionResponse toResponse(
+      GraduationDisplayResult.ExhibitionResult result) {
+    return new GraduationDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft());
+  }
+
+  private SearchDisplayResponse.ExhibitionResponse toResponse(
+      SearchDisplayResult.ExhibitionResult result) {
+    return new SearchDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft());
+  }
+
+  private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
+    return new DisplayMapResponse.MarkerResponse(
+        result.displayId(),
+        result.title(),
+        result.startDate(),
+        result.endDate(),
+        result.locationName(),
+        result.posterImageUrl(),
+        result.latitude(),
+        result.longitude());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(
@@ -84,5 +253,78 @@ public class DisplayPresentationMapper {
       DisplayDetailResult.InvitationResult result) {
     return new DisplayDetailResponse.InvitationResponse(
         result.invitationId(), result.inviterUserId(), result.inviteeUserId(), result.createdAt());
+  }
+
+  private String organization(CreateDisplayRequest request) {
+    return requiresSchoolInfo(request.type())
+        ? request.schoolOrOrganization()
+        : request.hostOrganizationName();
+  }
+
+  private String department(CreateDisplayRequest request) {
+    return requiresSchoolInfo(request.type()) ? request.departmentOrClub() : "";
+  }
+
+  private boolean requiresSchoolInfo(CreateDisplayRequest.Type type) {
+    return type == CreateDisplayRequest.Type.GRADUATION || type == CreateDisplayRequest.Type.TASK;
+  }
+
+  private DisplayType toDisplayType(CreateDisplayRequest.Type type) {
+    return switch (type) {
+      case GRADUATION -> DisplayType.GRADUATION;
+      case TASK -> DisplayType.ASSIGNMENTS;
+      case CLUB -> DisplayType.SMALL_GROUP;
+      case JOINT -> DisplayType.INTER_GROUP;
+      case ETC -> DisplayType.OTHERS;
+    };
+  }
+
+  private DisplayType toDisplayType(UpdateDisplayRequest.Type type) {
+    return switch (type) {
+      case GRADUATION -> DisplayType.GRADUATION;
+      case TASK -> DisplayType.ASSIGNMENTS;
+      case CLUB -> DisplayType.SMALL_GROUP;
+      case JOINT -> DisplayType.INTER_GROUP;
+      case ETC -> DisplayType.OTHERS;
+    };
+  }
+
+  private DisplayField toDisplayField(CreateDisplayRequest.Field field) {
+    return switch (field) {
+      case PAINTING -> DisplayField.PAINTING;
+      case DESIGN -> DisplayField.DESIGN;
+      case PHOTOGRAPHY -> DisplayField.PHOTOGRAPHY;
+      case ARCHITECTURE -> DisplayField.ARCHITECTURE;
+      case MEDIA -> DisplayField.VIDEO;
+      case CRAFT -> DisplayField.CRAFTS;
+      case SCULPTURE -> DisplayField.SCULPTURE;
+      case FASHION -> DisplayField.FASHION;
+      case COMPLEX -> DisplayField.INTERDISCIPLINARY;
+      case ETC -> DisplayField.OTHERS;
+    };
+  }
+
+  private DisplayField toDisplayField(UpdateDisplayRequest.Field field) {
+    return switch (field) {
+      case PAINTING -> DisplayField.PAINTING;
+      case DESIGN -> DisplayField.DESIGN;
+      case PHOTOGRAPHY -> DisplayField.PHOTOGRAPHY;
+      case ARCHITECTURE -> DisplayField.ARCHITECTURE;
+      case MEDIA -> DisplayField.VIDEO;
+      case CRAFT -> DisplayField.CRAFTS;
+      case SCULPTURE -> DisplayField.SCULPTURE;
+      case FASHION -> DisplayField.FASHION;
+      case COMPLEX -> DisplayField.INTERDISCIPLINARY;
+      case ETC -> DisplayField.OTHERS;
+    };
+  }
+
+  private DisplayRegion toDisplayRegion(CreateDisplayRequest.Region region) {
+    return switch (region) {
+      case ALL -> DisplayRegion.ALL;
+      case SEOUL -> DisplayRegion.SEOUL;
+      case GYEONGGI_INCHEON -> DisplayRegion.GYEONGGI_INCHEON;
+      case OTHERS -> DisplayRegion.OTHERS;
+    };
   }
 }
