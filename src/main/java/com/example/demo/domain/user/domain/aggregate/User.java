@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,11 +57,8 @@ public class User extends BaseTimeEntity {
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
 
-  @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY
-    )
-    private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
   public void verifyAuthor(String schoolEmail, String univName) {
     this.isVerified = true;

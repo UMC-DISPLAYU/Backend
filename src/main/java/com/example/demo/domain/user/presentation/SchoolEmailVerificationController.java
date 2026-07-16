@@ -39,7 +39,8 @@ public class SchoolEmailVerificationController implements SchoolEmailVerificatio
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     sendService.execute(
-        new SendSchoolEmailVerificationCommand(user.userId(), request.schoolEmail(), request.univName()));
+        new SendSchoolEmailVerificationCommand(
+            user.userId(), request.schoolEmail(), request.univName()));
     return ApiResponseBody.success(null, httpRequest);
   }
 

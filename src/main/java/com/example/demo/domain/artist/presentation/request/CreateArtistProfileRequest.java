@@ -13,9 +13,7 @@ public record CreateArtistProfileRequest(
     @Schema(
             description = "활동 분야. 중복 없이 최대 2개까지 입력할 수 있습니다.",
             example = "[\"PAINTING\", \"ILLUSTRATION\"]")
-        @NotEmpty
-        @Size(max = 2)
-        List<ActivityCategory> activityFields) {
+        @NotEmpty @Size(max = 2) List<ActivityCategory> activityFields) {
 
   public CreateArtistProfileCommand toCommand() {
     return CreateArtistProfileCommand.builder()

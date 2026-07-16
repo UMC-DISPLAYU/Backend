@@ -6,15 +6,14 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ActivityCategory {
-
-    PAINTING,
-    DESIGN,
-    PHOTOGRAPHY,
-    ARCHITECTURE,
-    VIDEO,
-    CRAFT,
-    SCULPTURE,
-    FASHION,
-    ILLUSTRATION,
-    ETC
+  PAINTING,
+  DESIGN,
+  PHOTOGRAPHY,
+  ARCHITECTURE,
+  VIDEO,
+  CRAFT,
+  SCULPTURE,
+  FASHION,
+  ILLUSTRATION,
+  ETC
 }

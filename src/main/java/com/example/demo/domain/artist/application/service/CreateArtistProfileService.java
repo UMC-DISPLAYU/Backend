@@ -45,11 +45,13 @@ public class CreateArtistProfileService {
       throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);
     }
 
-    ArtistProfile artistProfile = artistProfileRepository.save(artistProfileMapper.toEntity(user, command));
+    ArtistProfile artistProfile =
+        artistProfileRepository.save(artistProfileMapper.toEntity(user, command));
     command
         .getActivityCategories()
         .forEach(
-            category -> areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
+            category ->
+                areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
 
     return artistProfile;
   }

@@ -55,7 +55,8 @@ public class ArtistProfileController {
               mediaType = "application/json",
               examples =
                   @ExampleObject(
-                      name = CREATE_REQUEST_EXAMPLE_NAME, value = CREATE_REQUEST_EXAMPLE)))
+                      name = CREATE_REQUEST_EXAMPLE_NAME,
+                      value = CREATE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "201",
       description = CREATE_SUCCESS_DESCRIPTION,
@@ -64,13 +65,15 @@ public class ArtistProfileController {
               mediaType = "application/json",
               examples =
                   @ExampleObject(
-                      name = CREATE_SUCCESS_EXAMPLE_NAME, value = CREATE_SUCCESS_EXAMPLE)))
+                      name = CREATE_SUCCESS_EXAMPLE_NAME,
+                      value = CREATE_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   public ApiResponseBody<CreateArtistProfileResponse> create(
       @Valid @RequestBody CreateArtistProfileRequest request,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
-    ArtistProfile artistProfile = createArtistProfileService.execute(user.userId(), request.toCommand());
+    ArtistProfile artistProfile =
+        createArtistProfileService.execute(user.userId(), request.toCommand());
     return ApiResponseBody.success(
         artistProfileMapper.toResponse(artistProfile, request.activityFields()), httpRequest);
   }

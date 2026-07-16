@@ -95,8 +95,7 @@ class SchoolEmailVerificationServiceTest {
   }
 
   private SchoolEmailVerification createVerification() {
-    return SchoolEmailVerification.create(
-        createUser(), SCHOOL_EMAIL, UNIV_NAME, VERIFICATION_CODE);
+    return SchoolEmailVerification.create(createUser(), SCHOOL_EMAIL, UNIV_NAME, VERIFICATION_CODE);
   }
 
   private User createUser() {
