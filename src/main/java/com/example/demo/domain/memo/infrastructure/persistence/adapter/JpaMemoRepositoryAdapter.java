@@ -38,6 +38,7 @@ public class JpaMemoRepositoryAdapter implements MemoRepository {
 
   @Override
   public Memo save(Memo memo) {
-    return jpaRepository.save(memo);
+    // 유니크 제약 위반을 save() 호출 시점에 바로 감지하기 위해 flush 시점을 명시적으로 고정한다.
+    return jpaRepository.saveAndFlush(memo);
   }
 }
