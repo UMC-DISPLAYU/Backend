@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.application.command;
 import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostScrapRepository;
@@ -117,13 +118,13 @@ public class LoungePostCommandService {
     return loungePostRepository
         .findById(loungePostId)
         .filter(loungePost -> !loungePost.isDeleted())
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private LoungePost getActivePost(Long loungePostId) {
     LoungePost loungePost = getPost(loungePostId);
     if (!loungePost.isActive()) {
-      throw new BusinessException(GlobalErrorCode.NOT_FOUND);
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND);
     }
     return loungePost;
   }
