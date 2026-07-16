@@ -76,6 +76,7 @@ public interface ArchiveDisplayControllerDocs {
                                 "archiveDisplayId": 1,
                                 "displayId": 1,
                                 "userId": 1,
+                                "memo": "여기 조명이 인상적이었다.",
                                 "savedAt": "2026-07-13T01:49:28"
                               }
                             },
@@ -105,12 +106,14 @@ public interface ArchiveDisplayControllerDocs {
                                     "archiveDisplayId": 2,
                                     "displayId": 5,
                                     "userId": 1,
+                                    "memo": null,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
                                     "archiveDisplayId": 1,
                                     "displayId": 3,
                                     "userId": 1,
+                                    "memo": "여기 조명이 인상적이었다.",
                                     "savedAt": "2026-07-12T15:10:02"
                                   }
                                 ],

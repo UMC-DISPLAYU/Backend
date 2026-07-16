@@ -19,7 +19,11 @@ public class ArchivePresentationMapper {
 
   public ArchiveDisplayResponse toResponse(ArchiveDisplayResult result) {
     return new ArchiveDisplayResponse(
-        result.archiveDisplayId(), result.displayId(), result.userId(), result.savedAt());
+        result.archiveDisplayId(),
+        result.displayId(),
+        result.userId(),
+        result.memo(),
+        result.savedAt());
   }
 
   public ArchiveDisplayToggleResponse toResponse(ArchiveDisplayToggleResult result) {
@@ -37,7 +41,11 @@ public class ArchivePresentationMapper {
 
   public ArchiveWorkResponse toResponse(ArchiveWorkResult result) {
     return new ArchiveWorkResponse(
-        result.archiveWorkId(), result.displayArtworkId(), result.userId(), result.savedAt());
+        result.archiveWorkId(),
+        result.displayArtworkId(),
+        result.userId(),
+        result.memo(),
+        result.savedAt());
   }
 
   public ArchiveWorkToggleResponse toResponse(ArchiveWorkToggleResult result) {

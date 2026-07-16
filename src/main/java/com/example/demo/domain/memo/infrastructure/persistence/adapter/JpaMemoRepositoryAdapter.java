@@ -3,6 +3,7 @@ package com.example.demo.domain.memo.infrastructure.persistence.adapter;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import com.example.demo.domain.memo.infrastructure.persistence.SpringDataMemoJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +24,16 @@ public class JpaMemoRepositoryAdapter implements MemoRepository {
   @Override
   public Optional<Memo> findByArchiveWorkIdAndDeletedAtIsNull(Long archiveWorkId) {
     return jpaRepository.findByArchiveWorkIdAndDeletedAtIsNull(archiveWorkId);
+  }
+
+  @Override
+  public List<Memo> findByArchiveDisplayIdInAndDeletedAtIsNull(List<Long> archiveDisplayIds) {
+    return jpaRepository.findByArchiveDisplayIdInAndDeletedAtIsNull(archiveDisplayIds);
+  }
+
+  @Override
+  public List<Memo> findByArchiveWorkIdInAndDeletedAtIsNull(List<Long> archiveWorkIds) {
+    return jpaRepository.findByArchiveWorkIdInAndDeletedAtIsNull(archiveWorkIds);
   }
 
   @Override
