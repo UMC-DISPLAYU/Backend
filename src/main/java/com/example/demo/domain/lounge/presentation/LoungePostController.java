@@ -13,9 +13,6 @@ import com.example.demo.domain.lounge.presentation.response.LoungePostLikeRespon
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +48,7 @@ public class LoungePostController implements LoungePostControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<LoungePostDetailResponse> createPost(
-      @Valid @RequestBody LoungePostRequest loungePostRequest, HttpServletRequest request) {
+      @RequestBody LoungePostRequest loungePostRequest, HttpServletRequest request) {
     Long loungePostId =
         loungePostCommandService.createPost(TEMP_USER_ID, loungePostRequest.toCommand());
     LoungePostDetailResult result =
@@ -63,7 +60,7 @@ public class LoungePostController implements LoungePostControllerDocs {
   @Override
   public ApiResponseBody<LoungePostDetailResponse> updatePost(
       @PathVariable Long loungePostId,
-      @Valid @RequestBody LoungePostRequest loungePostRequest,
+      @RequestBody LoungePostRequest loungePostRequest,
       HttpServletRequest request) {
     loungePostCommandService.updatePost(loungePostId, TEMP_USER_ID, loungePostRequest.toCommand());
     return ApiResponseBody.success(
@@ -118,7 +115,7 @@ public class LoungePostController implements LoungePostControllerDocs {
   public ApiResponseBody<LoungePostCursorResponse> getPosts(
       @RequestParam(required = false) LoungePostCategory category,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(loungePostQueryService.getPosts(category, cursorId, size, TEMP_USER_ID)),
