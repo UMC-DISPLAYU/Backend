@@ -20,7 +20,7 @@ public class SchoolEmailVerificationPersistenceAdapter
 
   @Override
   public Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail) {
-    return jpaRepository.findBySchoolEmail(schoolEmail);
+    return jpaRepository.findTopBySchoolEmailOrderByCreatedAtDesc(schoolEmail);
   }
 
   @Override
