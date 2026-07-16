@@ -25,6 +25,11 @@ public class ArtistProfilePersistenceAdapter implements ArtistProfileRepository 
   }
 
   @Override
+  public Optional<ArtistProfile> findByUserId(Long userId) {
+    return artistProfileJpaRepository.findByUserId(userId);
+  }
+
+  @Override
   public boolean existsByArtistName(String artistName) {
     return artistProfileJpaRepository.existsByArtistName(artistName);
   }

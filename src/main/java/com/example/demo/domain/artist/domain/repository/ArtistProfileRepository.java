@@ -10,5 +10,7 @@ public interface ArtistProfileRepository {
 
   Optional<ArtistProfile> findByUser(User user);
 
+  Optional<ArtistProfile> findByUserId(Long userId);
+
   boolean existsByArtistName(String artistName);
 }

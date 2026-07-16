@@ -9,5 +9,7 @@ public interface ArtistProfileJpaRepository extends JpaRepository<ArtistProfile,
 
   Optional<ArtistProfile> findByUser(User user);
 
+  Optional<ArtistProfile> findByUserId(Long userId);
+
   boolean existsByArtistName(String artistName);
 }

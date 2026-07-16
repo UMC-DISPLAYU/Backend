@@ -8,4 +8,8 @@ public class ArtistException extends BusinessException {
   public ArtistException(BaseErrorCode errorCode) {
     super(errorCode);
   }
+
+  public ArtistException(BaseErrorCode errorCode, String message) {
+    super(errorCode, message);
+  }
 }

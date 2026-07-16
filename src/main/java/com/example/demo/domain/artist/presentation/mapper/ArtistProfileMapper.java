@@ -1,9 +1,12 @@
 package com.example.demo.domain.artist.presentation.mapper;
 
 import com.example.demo.domain.artist.application.command.CreateArtistProfileCommand;
+import com.example.demo.domain.artist.application.result.ArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.enums.ActivityCategory;
 import com.example.demo.domain.artist.presentation.response.CreateArtistProfileResponse;
+import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
+import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.domain.aggregate.User;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -24,5 +27,19 @@ public class ArtistProfileMapper {
         profile.getSchoolEmail(),
         profile.getUnivName(),
         activityFields);
+  }
+
+  public MyArtistProfileResponse toMyResponse(ArtistProfileResult result) {
+    return new MyArtistProfileResponse(
+        result.artistName(),
+        "VERIFIED",
+        result.schoolName(),
+        result.portfolioUrl(),
+        result.fields());
+  }
+
+  public UserArtistProfileResponse toUserResponse(ArtistProfileResult result) {
+    return new UserArtistProfileResponse(
+        result.artistName(), result.schoolName(), result.portfolioUrl(), result.fields());
   }
 }
