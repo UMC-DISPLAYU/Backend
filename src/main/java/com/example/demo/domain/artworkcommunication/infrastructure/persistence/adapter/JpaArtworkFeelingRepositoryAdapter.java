@@ -3,8 +3,10 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -21,5 +23,18 @@ public class JpaArtworkFeelingRepositoryAdapter implements ArtworkFeelingReposit
   @Override
   public Optional<ArtworkFeeling> findById(Long feelingId) {
     return artworkFeelingJpaRepository.findById(feelingId);
+  }
+
+  @Override
+  public List<ArtworkFeeling> findActiveByDisplayArtworkId(Long displayArtworkId) {
+    return artworkFeelingJpaRepository.findByDisplayArtworkIdAndDeletedAtIsNullOrderByCreatedAtAsc(
+        displayArtworkId);
+  }
+
+  @Override
+  public List<ArtworkFeeling> findActiveByDisplayArtworkIdWithCursor(
+      Long displayArtworkId, Long cursorId, int limit) {
+    return artworkFeelingJpaRepository.findActiveByDisplayArtworkIdWithCursor(
+        displayArtworkId, cursorId, PageRequest.of(0, limit));
   }
 }

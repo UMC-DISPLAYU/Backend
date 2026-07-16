@@ -2,11 +2,7 @@ package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
-import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
-import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,23 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateArtworkQuestionService {
 
   private final ArtworkQuestionRepository artworkQuestionRepository;
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
-  private final UserExistenceRepository userExistenceRepository;
+  private final ArtworkQuestionValidator artworkQuestionValidator;
 
   public ArtworkQuestionResult updateQuestion(UpdateArtworkQuestionCommand command) {
-    validateDisplayArtworkExists(command.displayArtworkId());
-    validateUserExists(command.userId());
-    validateContent(command.content());
+    artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
+    artworkQuestionValidator.validateUserExists(command.userId());
+    artworkQuestionValidator.validateContent(command.content());
 
     ArtworkQuestion artworkQuestion =
-        artworkQuestionRepository
-            .findById(command.questionId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
+        artworkQuestionValidator.findQuestionOrThrow(command.questionId());
 
-    validateNotDeleted(artworkQuestion);
-    validateArtworkQuestionBelongsToArtwork(artworkQuestion, command.displayArtworkId());
-    validateWriter(artworkQuestion, command.userId());
+    artworkQuestionValidator.validateQuestionTarget(artworkQuestion, command.displayArtworkId());
+    artworkQuestionValidator.validateWriter(artworkQuestion, command.userId());
 
     artworkQuestion.update(command.content(), command.isPublic());
 
@@ -49,42 +40,5 @@ public class UpdateArtworkQuestionService {
         savedQuestion.getDeletedAt(),
         savedQuestion.getDisplayArtworkId(),
         savedQuestion.getUserId());
-  }
-
-  private void validateDisplayArtworkExists(Long displayArtworkId) {
-    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
-    }
-  }
-
-  private void validateUserExists(Long userId) {
-    if (!userExistenceRepository.existsById(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-    }
-  }
-
-  private void validateContent(String content) {
-    if (content == null || content.isBlank()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_QUESTION_CONTENT);
-    }
-  }
-
-  private void validateNotDeleted(ArtworkQuestion artworkQuestion) {
-    if (artworkQuestion.isDeleted()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
-    }
-  }
-
-  private void validateArtworkQuestionBelongsToArtwork(
-      ArtworkQuestion artworkQuestion, Long displayArtworkId) {
-    if (!artworkQuestion.belongsToArtwork(displayArtworkId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);
-    }
-  }
-
-  private void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
-    if (!artworkQuestion.isWrittenBy(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
-    }
   }
 }
