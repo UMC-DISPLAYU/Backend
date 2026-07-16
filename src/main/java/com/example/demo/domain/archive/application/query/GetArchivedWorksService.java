@@ -38,7 +38,8 @@ public class GetArchivedWorksService {
 
     Map<Long, String> memoByArchiveWorkId =
         memoRepository
-            .findByArchiveWorkIdInAndDeletedAtIsNull(works.stream().map(ArchiveWork::getId).toList())
+            .findByArchiveWorkIdInAndDeletedAtIsNull(
+                works.stream().map(ArchiveWork::getId).toList())
             .stream()
             .collect(Collectors.toMap(Memo::getArchiveWorkId, Memo::getContent));
 

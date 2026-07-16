@@ -61,7 +61,8 @@ public class UpsertExhibitionMemoService {
     return toResult(savedMemo);
   }
 
-  private boolean isActiveArchiveDisplayUniqueConstraintViolation(DataIntegrityViolationException e) {
+  private boolean isActiveArchiveDisplayUniqueConstraintViolation(
+      DataIntegrityViolationException e) {
     String message = e.getMostSpecificCause().getMessage();
     return message != null && message.contains("UQ_MEMO_ACTIVE_ARCHIVEDISPLAY");
   }

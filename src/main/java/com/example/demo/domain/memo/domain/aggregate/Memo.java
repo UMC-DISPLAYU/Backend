@@ -41,12 +41,18 @@ public class Memo extends SoftDeleteBaseEntity {
 
   public static Memo createForDisplay(String content, LocalDate visitDate, Long archiveDisplayId) {
     return new Memo(
-        content, visitDate, Objects.requireNonNull(archiveDisplayId, "archiveDisplayId must not be null."), null);
+        content,
+        visitDate,
+        Objects.requireNonNull(archiveDisplayId, "archiveDisplayId must not be null."),
+        null);
   }
 
   public static Memo createForWork(String content, LocalDate visitDate, Long archiveWorkId) {
     return new Memo(
-        content, visitDate, null, Objects.requireNonNull(archiveWorkId, "archiveWorkId must not be null."));
+        content,
+        visitDate,
+        null,
+        Objects.requireNonNull(archiveWorkId, "archiveWorkId must not be null."));
   }
 
   public void changeContent(String content, LocalDate visitDate) {
@@ -58,8 +64,7 @@ public class Memo extends SoftDeleteBaseEntity {
     boolean hasDisplay = archiveDisplayId != null;
     boolean hasWork = archiveWorkId != null;
     if (hasDisplay == hasWork) {
-      throw new IllegalArgumentException(
-          "archiveDisplayId와 archiveWorkId 중 정확히 하나만 값이 있어야 합니다.");
+      throw new IllegalArgumentException("archiveDisplayId와 archiveWorkId 중 정확히 하나만 값이 있어야 합니다.");
     }
   }
 
