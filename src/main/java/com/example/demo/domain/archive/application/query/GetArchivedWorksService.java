@@ -29,16 +29,7 @@ public class GetArchivedWorksService {
     boolean hasNext = fetched.size() > pageSize;
     List<ArchiveWork> works = hasNext ? fetched.subList(0, pageSize) : fetched;
 
-    List<ArchiveWorkResult> results =
-        works.stream()
-            .map(
-                archiveWork ->
-                    new ArchiveWorkResult(
-                        archiveWork.getId(),
-                        archiveWork.getDisplayArtworkId(),
-                        archiveWork.getUserId(),
-                        archiveWork.getSavedAt()))
-            .toList();
+    List<ArchiveWorkResult> results = works.stream().map(ArchiveWorkResult::from).toList();
 
     Long nextCursorId = hasNext ? works.get(works.size() - 1).getId() : null;
     return new ArchiveWorkCursorResult(results, nextCursorId, pageSize, hasNext);
