@@ -1,3 +1,3 @@
 package com.example.demo.domain.user.application.command;
 
-public record VerifySchoolEmailVerificationCommand(String schoolEmail, String verificationCode) {}
+public record VerifySchoolEmailVerificationCommand(Long userId,String schoolEmail, String verificationCode) {}
