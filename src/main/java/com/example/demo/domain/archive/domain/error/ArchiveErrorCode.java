@@ -10,7 +10,8 @@ public enum ArchiveErrorCode implements BaseErrorCode {
   ALREADY_ARCHIVED_WORK(HttpStatus.CONFLICT, "ALREADY_ARCHIVED_WORK", "이미 저장한 작품입니다."),
   ARCHIVE_WORK_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE_WORK_NOT_FOUND", "저장된 작품을 찾을 수 없습니다."),
   ALREADY_ARCHIVED_ARTIST(HttpStatus.CONFLICT, "ALREADY_ARCHIVED_ARTIST", "이미 저장한 작가입니다."),
-  ARCHIVE_ARTIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE_ARTIST_NOT_FOUND", "저장된 작가를 찾을 수 없습니다.");
+  ARCHIVE_ARTIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE_ARTIST_NOT_FOUND", "저장된 작가를 찾을 수 없습니다."),
+  CREATOR_NOT_FOUND(HttpStatus.NOT_FOUND, "CREATOR_NOT_FOUND", "존재하지 않는 작가입니다.");
 
   private final HttpStatus status;
   private final String code;

@@ -4,6 +4,7 @@ import com.example.demo.domain.archive.application.result.ArchiveArtistToggleRes
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveArtistRepository;
+import com.example.demo.domain.archive.domain.repository.CreatorExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,14 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveArtistService {
 
   private final ArchiveArtistRepository archiveArtistRepository;
+  private final CreatorExistenceRepository creatorExistenceRepository;
 
-  public SaveArchiveArtistService(ArchiveArtistRepository archiveArtistRepository) {
+  public SaveArchiveArtistService(
+      ArchiveArtistRepository archiveArtistRepository,
+      CreatorExistenceRepository creatorExistenceRepository) {
     this.archiveArtistRepository = archiveArtistRepository;
+    this.creatorExistenceRepository = creatorExistenceRepository;
   }
 
   @Transactional
   public ArchiveArtistToggleResult saveArchiveArtist(SaveArchiveArtistCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+
+    if (!creatorExistenceRepository.existsById(command.creatorId())) {
+      throw new BusinessException(ArchiveErrorCode.CREATOR_NOT_FOUND);
+    }
 
     boolean alreadyArchived =
         archiveArtistRepository
