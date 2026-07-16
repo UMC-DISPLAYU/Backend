@@ -25,8 +25,7 @@ public class DeleteExhibitionMemoService {
   public void deleteExhibitionMemo(Long userId, Long archiveDisplayId) {
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findById(archiveDisplayId)
-            .filter(display -> display.getUserId().equals(userId))
+            .findByIdAndUserId(archiveDisplayId, userId)
             .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
     Memo memo =

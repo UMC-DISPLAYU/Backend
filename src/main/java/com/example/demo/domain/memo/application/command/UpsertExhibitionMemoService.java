@@ -30,8 +30,7 @@ public class UpsertExhibitionMemoService {
 
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findById(command.archiveDisplayId())
-            .filter(display -> display.getUserId().equals(command.userId()))
+            .findByIdAndUserId(command.archiveDisplayId(), command.userId())
             .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
     Memo memo =
