@@ -7,6 +7,7 @@ import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepositor
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import com.example.demo.global.error.BusinessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GetArchiveDisplayDetailService {
@@ -21,6 +22,7 @@ public class GetArchiveDisplayDetailService {
   }
 
   // TODO: Display와 조인해서 title/posterImageUrl/장소/기간 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만 반환.
+  @Transactional(readOnly = true)
   public ArchiveDisplayResult getArchiveDisplayDetail(Long archiveDisplayId) {
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
