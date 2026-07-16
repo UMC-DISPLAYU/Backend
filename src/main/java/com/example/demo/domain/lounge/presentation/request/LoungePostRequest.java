@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record LoungePostRequest(
-    @NotBlank String title,
-    String postImageUrl,
+    @NotBlank @Size(max = 50) String title,
+    @Size(max = 2048) String postImageUrl,
     @NotBlank @Size(max = 1000) String content,
     @NotNull LoungePostCategory category) {
   public LoungePostContentCommand toCommand() {
