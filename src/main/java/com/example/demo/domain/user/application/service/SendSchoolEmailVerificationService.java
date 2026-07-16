@@ -3,9 +3,11 @@ package com.example.demo.domain.user.application.service;
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
+import com.example.demo.domain.user.exception.UserErrorCode;
+import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
 import com.example.demo.domain.user.validator.SchoolEmailValidator;
-import java.util.Random;
+import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class SendSchoolEmailVerificationService {
+
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private final SchoolEmailVerificationRepository verificationRepository;
   private final SchoolEmailSenderAdapter emailSenderAdapter;
@@ -23,6 +27,15 @@ public class SendSchoolEmailVerificationService {
 
     // 학교 이메일 + 도메인 검증
     schoolEmailValidator.validate(command.univName(), command.schoolEmail());
+
+    verificationRepository
+        .findBySchoolEmail(command.schoolEmail())
+        .ifPresent(
+            verification -> {
+              if (!verification.canResend()) {
+                throw new UserException(UserErrorCode.EMAIL_SEND_COOLDOWN);
+              }
+            });
 
     // 기존 인증 정보 삭제
     verificationRepository.deleteBySchoolEmail(command.schoolEmail());
@@ -42,6 +55,6 @@ public class SendSchoolEmailVerificationService {
 
   private String createVerificationCode() {
 
-    return String.valueOf(new Random().nextInt(900000) + 100000);
+    return String.valueOf(SECURE_RANDOM.nextInt(900000) + 100000);
   }
 }

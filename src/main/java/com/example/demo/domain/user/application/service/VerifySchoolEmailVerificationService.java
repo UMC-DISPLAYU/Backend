@@ -16,7 +16,7 @@ public class VerifySchoolEmailVerificationService {
 
   private final SchoolEmailVerificationRepository verificationRepository;
 
-  @Transactional
+  @Transactional(noRollbackFor = UserException.class)
   public SchoolEmailConfirmVerificationResult execute(
       VerifySchoolEmailVerificationCommand command) {
 
@@ -30,6 +30,10 @@ public class VerifySchoolEmailVerificationService {
       throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
 
+    if (verification.hasExceededMaxAttempts()) {
+      throw new UserException(UserErrorCode.VERIFICATION_ATTEMPTS_EXCEEDED);
+    }
+
     // 인증번호 만료
     if (verification.isExpired()) {
       throw new UserException(UserErrorCode.VERIFICATION_CODE_EXPIRED);
@@ -37,6 +41,13 @@ public class VerifySchoolEmailVerificationService {
 
     // 인증번호 불일치
     if (!verification.matchCode(command.verificationCode())) {
+      verification.recordFailedAttempt();
+      verificationRepository.save(verification);
+
+      if (verification.hasExceededMaxAttempts()) {
+        throw new UserException(UserErrorCode.VERIFICATION_ATTEMPTS_EXCEEDED);
+      }
+
       throw new UserException(UserErrorCode.VERIFICATION_CODE_MISMATCH);
     }
 

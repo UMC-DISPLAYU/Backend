@@ -29,11 +29,6 @@ public class ResendSchoolEmailVerificationService {
       throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
 
-    // 재전송 쿨타임
-    if (!verification.canResend()) {
-      throw new UserException(UserErrorCode.EMAIL_SEND_COOLDOWN);
-    }
-
     sendService.execute(
         new SendSchoolEmailVerificationCommand(schoolEmail, verification.getUnivName()));
   }
