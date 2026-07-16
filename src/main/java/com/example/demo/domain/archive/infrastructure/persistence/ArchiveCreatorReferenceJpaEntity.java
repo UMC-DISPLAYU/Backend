@@ -7,11 +7,11 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Creator")
-public class CreatorReferenceJpaEntity {
+public class ArchiveCreatorReferenceJpaEntity {
 
   @Id
   @Column(name = "creatorId")
   private Long creatorId;
 
-  protected CreatorReferenceJpaEntity() {}
+  protected ArchiveCreatorReferenceJpaEntity() {}
 }

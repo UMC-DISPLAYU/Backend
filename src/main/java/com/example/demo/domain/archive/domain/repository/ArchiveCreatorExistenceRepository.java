@@ -1,5 +1,5 @@
 package com.example.demo.domain.archive.domain.repository;
 
-public interface CreatorExistenceRepository {
+public interface ArchiveCreatorExistenceRepository {
   boolean existsById(Long creatorId);
 }
