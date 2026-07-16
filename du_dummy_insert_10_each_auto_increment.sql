@@ -76,18 +76,6 @@ INSERT INTO `UserAgreement` (`isAgreed`, `agreedAt`, `agreeId`, `userId`) VALUES
 (1, '2026-07-01 15:18:00', 9, 9),
 (0, '2026-07-01 15:19:00', 10, 10);
 
-INSERT INTO `ArchiveArtist` (`userId`) VALUES
-(1),
-(2),
-(3),
-(4),
-(5),
-(6),
-(7),
-(8),
-(9),
-(10);
-
 INSERT INTO `ArchiveDisplay` (`displayId`) VALUES
 (1),
 (2),
@@ -195,6 +183,18 @@ INSERT INTO `Creator` (`creatorName`, `isContact`, `isLeader`, `userId`, `displa
 ('임소민', 0, 0, 8, 8),
 ('한지민', 1, 1, 9, 9),
 ('외부 참여 작가', 0, 0, NULL, 10);
+
+INSERT INTO `ArchiveArtist` (`userId`, `creatorId`) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
 
 INSERT INTO `ArchiveWork` (`displayArtworkId`) VALUES
 (1),

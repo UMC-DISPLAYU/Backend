@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record ArchiveArtistCursorResponse(
-    List<ArchiveArtistResponse> artists,
+    @Schema(description = "저장된 작가 목록") List<ArchiveArtistResponse> artists,
     @Schema(description = "다음 페이지 조회용 커서 (archiveArtistId). 마지막 페이지면 null", example = "1")
         Long nextCursorId,
     @Schema(description = "페이지 크기", example = "10") int size,
