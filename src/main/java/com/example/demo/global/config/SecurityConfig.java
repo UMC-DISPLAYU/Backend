@@ -36,7 +36,8 @@ public class SecurityConfig {
                         "/api/v1/users/nickname/check", // 추가
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/api/v1/display/**")
+                        "/api/v1/display/**",
+                        "/api/v1/artworks/**") // TODO: 인증 붙기 전까지 임시 허용. 실제 인증 붙으면 제거 필요.
                     .permitAll()
                     .anyRequest()
                     .authenticated())
