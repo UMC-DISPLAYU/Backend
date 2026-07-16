@@ -29,16 +29,7 @@ public class GetArchivedArtistsService {
     boolean hasNext = fetched.size() > pageSize;
     List<ArchiveArtist> artists = hasNext ? fetched.subList(0, pageSize) : fetched;
 
-    List<ArchiveArtistResult> results =
-        artists.stream()
-            .map(
-                archiveArtist ->
-                    new ArchiveArtistResult(
-                        archiveArtist.getId(),
-                        archiveArtist.getCreatorId(),
-                        archiveArtist.getUserId(),
-                        archiveArtist.getSavedAt()))
-            .toList();
+    List<ArchiveArtistResult> results = artists.stream().map(ArchiveArtistResult::from).toList();
 
     Long nextCursorId = hasNext ? results.get(results.size() - 1).archiveArtistId() : null;
     return new ArchiveArtistCursorResult(results, nextCursorId, pageSize, hasNext);

@@ -25,10 +25,6 @@ public class GetArchiveArtistDetailService {
             .findByIdAndUserId(archiveArtistId, userId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND));
 
-    return new ArchiveArtistResult(
-        archiveArtist.getId(),
-        archiveArtist.getCreatorId(),
-        archiveArtist.getUserId(),
-        archiveArtist.getSavedAt());
+    return ArchiveArtistResult.from(archiveArtist);
   }
 }
