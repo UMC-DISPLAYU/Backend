@@ -13,7 +13,11 @@ public record DisplayArtworkResponse(
     String size,
     String point,
     int workSortOrder,
-    List<ImageResponse> images) {
+    List<ImageResponse> images,
+    String artistName,
+    Long artistUserId,
+    int coAuthorCount,
+    Long qaHandlerUserId) {
 
   public record ImageResponse(
       Long imageId,

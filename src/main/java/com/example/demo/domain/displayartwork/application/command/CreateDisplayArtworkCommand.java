@@ -12,4 +12,9 @@ public record CreateDisplayArtworkCommand(
     String materialMedia,
     String size,
     String point,
-    List<ArtworkImageCommand> images) {}
+    List<ArtworkImageCommand> images,
+    String artistName,
+    Long artistUserId,
+    List<Long> coAuthorUserIds,
+    List<String> coAuthorRawNames,
+    Long qaHandlerUserId) {}

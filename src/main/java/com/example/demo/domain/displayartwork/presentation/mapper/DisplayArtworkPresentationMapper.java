@@ -1,13 +1,11 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
-import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
-import com.example.demo.domain.displayartwork.presentation.response.AuthorSetupResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
@@ -25,11 +23,6 @@ public class DisplayArtworkPresentationMapper {
 
   public ReorderDisplayArtworksResponse toResponse(ReorderDisplayArtworksResult result) {
     return new ReorderDisplayArtworksResponse(result.displayId(), result.updatedCount());
-  }
-
-  public AuthorSetupResponse toResponse(AuthorSetupResult result) {
-    return new AuthorSetupResponse(
-        result.artworkId(), result.artistName(), result.coAuthorCount(), result.qaHandlerUserId());
   }
 
   public DeleteDisplayArtworkResponse toResponse(DeleteDisplayArtworkResult result) {
@@ -117,7 +110,11 @@ public class DisplayArtworkPresentationMapper {
         result.size(),
         result.point(),
         result.workSortOrder(),
-        result.images().stream().map(this::toResponse).toList());
+        result.images().stream().map(this::toResponse).toList(),
+        result.artistName(),
+        result.artistUserId(),
+        result.coAuthorCount(),
+        result.qaHandlerUserId());
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {

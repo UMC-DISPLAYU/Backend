@@ -1,13 +1,11 @@
 package com.example.demo.domain.displayartwork.presentation;
 
-import com.example.demo.domain.displayartwork.application.command.AuthorSetupService;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DeleteDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommandService;
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
-import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
@@ -17,10 +15,8 @@ import com.example.demo.domain.displayartwork.application.result.ReorderDisplayA
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtworkPresentationMapper;
-import com.example.demo.domain.displayartwork.presentation.request.AuthorSetupRequest;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
-import com.example.demo.domain.displayartwork.presentation.response.AuthorSetupResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
@@ -60,7 +56,6 @@ public class DisplayArtworkController {
   private final DisplayArtworkQueryService displayArtworkQueryService;
   private final DisplayArtworkLikeCommandService displayArtworkLikeCommandService;
   private final ReorderDisplayArtworksService reorderDisplayArtworksService;
-  private final AuthorSetupService authorSetupService;
   private final DeleteDisplayArtworkService deleteDisplayArtworkService;
   private final DisplayArtworkPresentationMapper mapper;
 
@@ -69,14 +64,12 @@ public class DisplayArtworkController {
       DisplayArtworkQueryService displayArtworkQueryService,
       DisplayArtworkLikeCommandService displayArtworkLikeCommandService,
       ReorderDisplayArtworksService reorderDisplayArtworksService,
-      AuthorSetupService authorSetupService,
       DeleteDisplayArtworkService deleteDisplayArtworkService,
       DisplayArtworkPresentationMapper mapper) {
     this.createDisplayArtworkService = createDisplayArtworkService;
     this.displayArtworkQueryService = displayArtworkQueryService;
     this.displayArtworkLikeCommandService = displayArtworkLikeCommandService;
     this.reorderDisplayArtworksService = reorderDisplayArtworksService;
-    this.authorSetupService = authorSetupService;
     this.deleteDisplayArtworkService = deleteDisplayArtworkService;
     this.mapper = mapper;
   }
@@ -100,30 +93,18 @@ public class DisplayArtworkController {
 
   @PostMapping("/api/v1/artworks")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "전시 출품작 등록", description = "전시 팀원이 전시에 작품을 등록합니다.")
+  @Operation(
+      summary = "전시 출품작 등록",
+      description = "전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.")
   public ApiResponseBody<DisplayArtworkResponse> createDisplayArtwork(
       @Valid @RequestBody CreateDisplayArtworkRequest request, HttpServletRequest httpRequest) {
-    Long displayArtworkId =
-        createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
     DisplayArtworkResult result =
-        displayArtworkQueryService.getDisplayArtworkDetail(displayArtworkId);
-    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
-  }
-
-  @PostMapping("/api/v1/artworks/{artworkId}/author-setup")
-  @Operation(
-      summary = "전시 출품작 작가 정보 설정",
-      description = "전시작 등록 2단계 - 대표 작가명, 공동 작업자, 내부 Q&A 담당자를 설정합니다.")
-  public ApiResponseBody<AuthorSetupResponse> setupAuthors(
-      @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
-      @Valid @RequestBody AuthorSetupRequest request,
-      HttpServletRequest httpRequest) {
-    AuthorSetupResult result = authorSetupService.setup(TEMP_USER_ID, request.toCommand(artworkId));
+        createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @PutMapping("/api/v1/artworks/order")
-  @Operation(summary = "전시 출품작 노출 순서 편집", description = "전시 대표자가 드래그 앤 드롭으로 변경한 작품 노출 순서를 저장합니다.")
+  @Operation(summary = "전시 출품작 노출 순서 편집", description = "전시 대표자가 드래그 앤 드롭으로 변경한 작품 순서를 저장합니다.")
   public ApiResponseBody<ReorderDisplayArtworksResponse> reorderDisplayArtworks(
       @Valid @RequestBody ReorderDisplayArtworksRequest request, HttpServletRequest httpRequest) {
     ReorderDisplayArtworksResult result =

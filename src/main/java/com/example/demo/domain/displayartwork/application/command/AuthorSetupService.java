@@ -99,7 +99,11 @@ public class AuthorSetupService {
 
     int coAuthorCount = coAuthorUserIds.size() + command.coAuthorRawNames().size();
     return new AuthorSetupResult(
-        command.artworkId(), command.artistName(), coAuthorCount, command.qaHandlerUserId());
+        command.artworkId(),
+        command.artistName(),
+        artistUserId,
+        coAuthorCount,
+        command.qaHandlerUserId());
   }
 
   private void validateRequester(Display display, Long requesterUserId) {

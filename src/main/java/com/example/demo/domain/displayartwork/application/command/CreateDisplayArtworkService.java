@@ -2,6 +2,8 @@ package com.example.demo.domain.displayartwork.application.command;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
@@ -17,23 +19,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateDisplayArtworkService {
 
   // TODO: PM 확답되면 정확한 값으로 조정 (현재 "30~40선" 범위 중 상한값으로 임시 설정)
-  private static final int MAX_ARTWORKS_PER_DISPLAY = 40;
+  private static final int MAX_ARTWORKS_PER_DISPLAY = 50;
 
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
   private final ArtistVerificationRepository artistVerificationRepository;
+  private final AuthorSetupService authorSetupService;
 
   public CreateDisplayArtworkService(
       DisplayRepository displayRepository,
       DisplayArtworkRepository displayArtworkRepository,
-      ArtistVerificationRepository artistVerificationRepository) {
+      ArtistVerificationRepository artistVerificationRepository,
+      AuthorSetupService authorSetupService) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.artistVerificationRepository = artistVerificationRepository;
+    this.authorSetupService = authorSetupService;
   }
 
   @Transactional
-  public Long createDisplayArtwork(Long requesterUserId, CreateDisplayArtworkCommand command) {
+  public DisplayArtworkResult createDisplayArtwork(
+      Long requesterUserId, CreateDisplayArtworkCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display =
@@ -61,7 +67,19 @@ public class CreateDisplayArtworkService {
             toImages(command.images()));
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
-    return savedDisplayArtwork.getId();
+
+    AuthorSetupResult authorSetupResult =
+        authorSetupService.setup(
+            requesterUserId,
+            new AuthorSetupCommand(
+                savedDisplayArtwork.getId(),
+                command.artistName(),
+                command.artistUserId(),
+                command.coAuthorUserIds(),
+                command.coAuthorRawNames(),
+                command.qaHandlerUserId()));
+
+    return DisplayArtworkResult.of(savedDisplayArtwork, authorSetupResult);
   }
 
   private void validateTeamMember(Display display, Long requesterUserId) {

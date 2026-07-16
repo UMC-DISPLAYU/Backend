@@ -22,7 +22,11 @@ public record CreateDisplayArtworkRequest(
     @NotBlank String materialMedia,
     @NotBlank String size,
     @NotBlank String point,
-    @NotEmpty @Valid List<ImageRequest> images) {
+    @NotEmpty @Valid List<ImageRequest> images,
+    @NotBlank String artistName,
+    Long artistUserId,
+    @Valid @NotNull CoAuthorsRequest coAuthors,
+    @NotNull Long qaHandlerUserId) {
 
   public CreateDisplayArtworkCommand toCommand() {
     return new CreateDisplayArtworkCommand(
@@ -34,7 +38,12 @@ public record CreateDisplayArtworkRequest(
         materialMedia,
         size,
         point,
-        images.stream().map(ImageRequest::toCommand).toList());
+        images.stream().map(ImageRequest::toCommand).toList(),
+        artistName,
+        artistUserId,
+        coAuthors.userIds(),
+        coAuthors.rawNames(),
+        qaHandlerUserId);
   }
 
   public record ImageRequest(
@@ -49,6 +58,17 @@ public record CreateDisplayArtworkRequest(
     private ArtworkImageCommand toCommand() {
       return new ArtworkImageCommand(
           imageUrl, isThumbnail, imageType, sortOrder, caption, width, height);
+    }
+  }
+
+  public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
+
+    public List<Long> userIds() {
+      return userIds == null ? List.of() : userIds;
+    }
+
+    public List<String> rawNames() {
+      return rawNames == null ? List.of() : rawNames;
     }
   }
 }

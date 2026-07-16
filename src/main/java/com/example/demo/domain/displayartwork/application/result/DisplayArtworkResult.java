@@ -15,9 +15,14 @@ public record DisplayArtworkResult(
     String size,
     String point,
     int workSortOrder,
-    List<ImageResult> images) {
+    List<ImageResult> images,
+    String artistName,
+    Long artistUserId,
+    int coAuthorCount,
+    Long qaHandlerUserId) {
 
-  public static DisplayArtworkResult from(DisplayArtwork displayArtwork) {
+  public static DisplayArtworkResult of(
+      DisplayArtwork displayArtwork, AuthorSetupResult authorSetupResult) {
     return new DisplayArtworkResult(
         displayArtwork.getId(),
         displayArtwork.getDisplay().getId(),
@@ -29,7 +34,11 @@ public record DisplayArtworkResult(
         displayArtwork.getSize(),
         displayArtwork.getPoint(),
         displayArtwork.getWorkSortOrder(),
-        displayArtwork.getImages().stream().map(ImageResult::from).toList());
+        displayArtwork.getImages().stream().map(ImageResult::from).toList(),
+        authorSetupResult.artistName(),
+        authorSetupResult.artistUserId(),
+        authorSetupResult.coAuthorCount(),
+        authorSetupResult.qaHandlerUserId());
   }
 
   public record ImageResult(

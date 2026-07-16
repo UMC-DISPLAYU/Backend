@@ -5,7 +5,6 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkD
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult.ArtworkCardResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult.ExhibitionInfoResult;
-import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.entity.Creator;
@@ -40,16 +39,6 @@ public class DisplayArtworkQueryService {
     this.creatorRepository = creatorRepository;
     this.displayArtworkLikeRepository = displayArtworkLikeRepository;
     this.archiveWorkRepository = archiveWorkRepository;
-  }
-
-  @Transactional(readOnly = true)
-  public DisplayArtworkResult getDisplayArtworkDetail(Long displayArtworkId) {
-    return displayArtworkRepository
-        .findById(displayArtworkId)
-        .filter(artwork -> !artwork.isDeleted())
-        .map(DisplayArtworkResult::from)
-        .orElseThrow(
-            () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
   }
 
   @Transactional(readOnly = true)
