@@ -23,8 +23,8 @@ public class JpaArchiveArtistRepositoryAdapter implements ArchiveArtistRepositor
   }
 
   @Override
-  public Optional<ArchiveArtist> findByUserIdAndCreatorId(Long userId, Long creatorId) {
-    return jpaRepository.findByUserIdAndCreatorId(userId, creatorId);
+  public Optional<ArchiveArtist> findByUserIdAndArtistProfileId(Long userId, Long artistProfileId) {
+    return jpaRepository.findByUserIdAndArtistProfileId(userId, artistProfileId);
   }
 
   @Override

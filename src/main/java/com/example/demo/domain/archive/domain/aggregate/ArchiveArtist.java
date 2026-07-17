@@ -25,7 +25,7 @@ public class ArchiveArtist {
   private Long id;
 
   @Column(nullable = false)
-  private Long creatorId;
+  private Long artistProfileId;
 
   @Column(nullable = false)
   private Long userId;
@@ -36,12 +36,13 @@ public class ArchiveArtist {
 
   protected ArchiveArtist() {}
 
-  private ArchiveArtist(Long creatorId, Long userId) {
-    this.creatorId = Objects.requireNonNull(creatorId, "creatorId must not be null.");
+  private ArchiveArtist(Long artistProfileId, Long userId) {
+    this.artistProfileId =
+        Objects.requireNonNull(artistProfileId, "artistProfileId must not be null.");
     this.userId = Objects.requireNonNull(userId, "userId must not be null.");
   }
 
-  public static ArchiveArtist create(Long creatorId, Long userId) {
-    return new ArchiveArtist(creatorId, userId);
+  public static ArchiveArtist create(Long artistProfileId, Long userId) {
+    return new ArchiveArtist(artistProfileId, userId);
   }
 }

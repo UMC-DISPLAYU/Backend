@@ -8,7 +8,7 @@ public interface ArchiveArtistRepository {
 
   Optional<ArchiveArtist> findByIdAndUserId(Long archiveArtistId, Long userId);
 
-  Optional<ArchiveArtist> findByUserIdAndCreatorId(Long userId, Long creatorId);
+  Optional<ArchiveArtist> findByUserIdAndArtistProfileId(Long userId, Long artistProfileId);
 
   List<ArchiveArtist> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
       Long userId, Long cursorId, int limit);

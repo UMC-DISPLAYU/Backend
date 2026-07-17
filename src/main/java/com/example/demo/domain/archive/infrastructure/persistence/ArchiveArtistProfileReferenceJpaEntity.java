@@ -6,12 +6,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Creator")
-public class ArchiveCreatorReferenceJpaEntity {
+@Table(name = "ArtistProfile")
+public class ArchiveArtistProfileReferenceJpaEntity {
 
   @Id
-  @Column(name = "creatorId")
-  private Long creatorId;
+  @Column(name = "artistProfileId")
+  private Long artistProfileId;
 
-  protected ArchiveCreatorReferenceJpaEntity() {}
+  protected ArchiveArtistProfileReferenceJpaEntity() {}
 }

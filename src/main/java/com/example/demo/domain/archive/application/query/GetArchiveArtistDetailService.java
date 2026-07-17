@@ -17,7 +17,8 @@ public class GetArchiveArtistDetailService {
     this.archiveArtistRepository = archiveArtistRepository;
   }
 
-  // TODO: Creator와 조인해서 name/field/profileImageUrl 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만 반환.
+  // TODO: ArtistProfile/AreaOfActivity와 조인해서 name/field/profileImageUrl 등을 포함하도록 보강 필요. 지금은 목록조회와
+  // 동일한 얕은 정보만 반환.
   @Transactional(readOnly = true)
   public ArchiveArtistResult getArchiveArtistDetail(Long userId, Long archiveArtistId) {
     ArchiveArtist archiveArtist =

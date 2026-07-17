@@ -184,7 +184,19 @@ INSERT INTO `Creator` (`creatorName`, `isContact`, `isLeader`, `userId`, `displa
 ('한지민', 1, 1, 9, 9),
 ('외부 참여 작가', 0, 0, NULL, 10);
 
-INSERT INTO `ArchiveArtist` (`userId`, `creatorId`) VALUES
+INSERT INTO `ArtistProfile` (`userId`, `artistName`, `schoolEmail`, `univName`, `portfolioUrl`, `createdAt`, `updatedAt`) VALUES
+(1, '김도윤 작가', 'doyun@univ.ac.kr', '한국대학교', 'https://portfolio.example.com/doyun', '2026-07-01 09:00:00', '2026-07-01 09:00:00'),
+(2, '이서연 작가', 'seoyeon@univ.ac.kr', '한국대학교', NULL, '2026-07-01 09:10:00', '2026-07-01 09:10:00'),
+(3, '박민준 작가', 'minjun@univ.ac.kr', '서울대학교', 'https://portfolio.example.com/minjun', '2026-07-01 09:20:00', '2026-07-01 09:20:00'),
+(4, '최지우 작가', 'jiwoo@univ.ac.kr', '서울대학교', NULL, '2026-07-01 09:30:00', '2026-07-01 09:30:00'),
+(5, '정하늘 작가', 'haneul@univ.ac.kr', '한양대학교', 'https://portfolio.example.com/haneul', '2026-07-01 09:40:00', '2026-07-01 09:40:00'),
+(6, '강유진 작가', 'yujin@univ.ac.kr', '한양대학교', NULL, '2026-07-01 09:50:00', '2026-07-01 09:50:00'),
+(7, '윤태오 작가', 'taeo@univ.ac.kr', '홍익대학교', 'https://portfolio.example.com/taeo', '2026-07-01 10:00:00', '2026-07-01 10:00:00'),
+(8, '임소민 작가', 'somin@univ.ac.kr', '홍익대학교', NULL, '2026-07-01 10:10:00', '2026-07-01 10:10:00'),
+(9, '한지민 작가', 'jimin@univ.ac.kr', '중앙대학교', 'https://portfolio.example.com/jimin', '2026-07-01 10:20:00', '2026-07-01 10:20:00'),
+(10, '오현우 작가', 'hyunwoo@univ.ac.kr', '중앙대학교', NULL, '2026-07-01 10:30:00', '2026-07-01 10:30:00');
+
+INSERT INTO `ArchiveArtist` (`userId`, `artistProfileId`) VALUES
 (1, 1),
 (2, 2),
 (3, 3),

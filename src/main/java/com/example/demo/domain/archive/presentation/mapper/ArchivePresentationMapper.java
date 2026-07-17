@@ -61,12 +61,12 @@ public class ArchivePresentationMapper {
 
   public ArchiveArtistResponse toResponse(ArchiveArtistResult result) {
     return new ArchiveArtistResponse(
-        result.archiveArtistId(), result.creatorId(), result.userId(), result.savedAt());
+        result.archiveArtistId(), result.artistProfileId(), result.userId(), result.savedAt());
   }
 
   public ArchiveArtistToggleResponse toResponse(ArchiveArtistToggleResult result) {
-    // 도메인 용어(creatorId) -> API 응답 용어(artistId) 변환은 여기(Presentation Mapper)에서만 담당
-    return new ArchiveArtistToggleResponse(result.creatorId(), result.isArchived());
+    // 도메인 용어(artistProfileId) -> API 응답 용어(artistId) 변환은 여기(Presentation Mapper)에서만 담당
+    return new ArchiveArtistToggleResponse(result.artistProfileId(), result.isArchived());
   }
 
   public ArchiveArtistCursorResponse toResponse(ArchiveArtistCursorResult result) {

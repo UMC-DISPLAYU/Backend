@@ -18,13 +18,13 @@ public class DeleteArchiveArtistService {
   }
 
   @Transactional
-  public ArchiveArtistToggleResult deleteArchiveArtist(Long userId, Long creatorId) {
+  public ArchiveArtistToggleResult deleteArchiveArtist(Long userId, Long artistProfileId) {
     ArchiveArtist archiveArtist =
         archiveArtistRepository
-            .findByUserIdAndCreatorId(userId, creatorId)
+            .findByUserIdAndArtistProfileId(userId, artistProfileId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND));
 
     archiveArtistRepository.delete(archiveArtist);
-    return new ArchiveArtistToggleResult(creatorId, false);
+    return new ArchiveArtistToggleResult(artistProfileId, false);
   }
 }

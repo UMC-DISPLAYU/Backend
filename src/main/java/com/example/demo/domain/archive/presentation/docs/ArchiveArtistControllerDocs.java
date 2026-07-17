@@ -39,7 +39,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
-      @Parameter(description = "작가(Creator) ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
       HttpServletRequest request);
 
   @Operation(summary = "작가 저장 취소", description = "개인 아카이브에서 작가 저장을 취소합니다.")
@@ -59,7 +59,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> deleteArchiveArtist(
-      @Parameter(description = "작가(Creator) ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
       HttpServletRequest request);
 
   @Operation(summary = "저장된 작가 상세 조회", description = "저장 기록 ID로 저장된 작가 상세를 조회합니다.")
@@ -76,7 +76,7 @@ public interface ArchiveArtistControllerDocs {
                             "success": {
                               "data": {
                                 "archiveArtistId": 1,
-                                "creatorId": 1,
+                                "artistProfileId": 1,
                                 "userId": 1,
                                 "savedAt": "2026-07-13T01:49:28"
                               }
@@ -105,13 +105,13 @@ public interface ArchiveArtistControllerDocs {
                                 "artists": [
                                   {
                                     "archiveArtistId": 2,
-                                    "creatorId": 5,
+                                    "artistProfileId": 5,
                                     "userId": 1,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
                                     "archiveArtistId": 1,
-                                    "creatorId": 3,
+                                    "artistProfileId": 3,
                                     "userId": 1,
                                     "savedAt": "2026-07-12T15:10:02"
                                   }
