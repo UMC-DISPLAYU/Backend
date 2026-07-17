@@ -1,40 +1,38 @@
-package com.example.demo.domain.archive.application.query;
+package com.example.demo.domain.memo.application.command;
 
-import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
-import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.memo.domain.aggregate.Memo;
+import com.example.demo.domain.memo.domain.error.MemoErrorCode;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import com.example.demo.global.error.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class GetArchiveDisplayDetailService {
+public class DeleteExhibitionMemoService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
   private final MemoRepository memoRepository;
 
-  public GetArchiveDisplayDetailService(
+  public DeleteExhibitionMemoService(
       ArchiveDisplayRepository archiveDisplayRepository, MemoRepository memoRepository) {
     this.archiveDisplayRepository = archiveDisplayRepository;
     this.memoRepository = memoRepository;
   }
 
-  // TODO: Display와 조인해서 title/posterImageUrl/장소/기간 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만 반환.
-  @Transactional(readOnly = true)
-  public ArchiveDisplayResult getArchiveDisplayDetail(Long archiveDisplayId) {
+  @Transactional
+  public void deleteExhibitionMemo(Long userId, Long archiveDisplayId) {
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findById(archiveDisplayId)
-            .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
+            .findByIdAndUserId(archiveDisplayId, userId)
+            .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
-    String memo =
+    Memo memo =
         memoRepository
             .findByArchiveDisplayIdAndDeletedAtIsNull(archiveDisplay.getId())
-            .map(m -> m.getContent())
-            .orElse(null);
+            .orElseThrow(() -> new BusinessException(MemoErrorCode.MEMO_NOT_FOUND));
 
-    return ArchiveDisplayResult.from(archiveDisplay, memo);
+    memo.delete();
   }
 }
