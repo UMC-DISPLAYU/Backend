@@ -5,6 +5,7 @@ import com.example.demo.domain.user.presentation.request.SchoolEmailVerification
 import com.example.demo.domain.user.presentation.request.VerifySchoolEmailRequest;
 import com.example.demo.domain.user.presentation.response.SchoolEmailVerificationConfirmResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +29,8 @@ public interface SchoolEmailVerificationControllerDocs {
                               인증번호 확인 완료 후 작가 인증이 완료됩니다.
                               """)
   @SecurityRequirement(name = "Authorization")
-  ApiResponseBody<Void> send(SchoolEmailVerificationRequest request, HttpServletRequest httpRequest)
+  ApiResponseBody<Void> send(
+      SchoolEmailVerificationRequest request, AuthUser user, HttpServletRequest httpRequest)
       throws IOException;
 
   @Operation(
@@ -46,7 +48,7 @@ public interface SchoolEmailVerificationControllerDocs {
                               """)
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<Void> resend(
-      ResendSchoolEmailVerificationRequest request, HttpServletRequest httpRequest);
+      ResendSchoolEmailVerificationRequest request, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "학교 이메일 인증번호 확인",
@@ -63,5 +65,5 @@ public interface SchoolEmailVerificationControllerDocs {
                               """)
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<SchoolEmailVerificationConfirmResponse> confirm(
-      VerifySchoolEmailRequest request, HttpServletRequest httpRequest);
+      VerifySchoolEmailRequest request, AuthUser user, HttpServletRequest httpRequest);
 }
