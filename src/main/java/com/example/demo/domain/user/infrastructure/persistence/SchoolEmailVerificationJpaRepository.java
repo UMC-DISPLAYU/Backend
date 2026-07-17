@@ -10,7 +10,8 @@ public interface SchoolEmailVerificationJpaRepository
     extends JpaRepository<SchoolEmailVerification, Long> {
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  Optional<SchoolEmailVerification> findTopBySchoolEmailOrderByCreatedAtDesc(String schoolEmail);
+  Optional<SchoolEmailVerification> findTopByUser_IdAndSchoolEmailOrderByCreatedAtDesc(
+      Long userId, String schoolEmail);
 
-  void deleteBySchoolEmail(String schoolEmail);
+  void deleteByUser_IdAndSchoolEmail(Long userId, String schoolEmail);
 }

@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.domain.entity;
 
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -38,12 +39,21 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   @Column(name = "verified", nullable = false)
   private boolean verified;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "userId", nullable = false)
+  private User user;
+
   @Column(name = "failedAttemptCount", nullable = false)
   private int failedAttemptCount;
 
   private SchoolEmailVerification(
-      String schoolEmail, String univName, String verificationCode, LocalDateTime expiresAt) {
+      User user,
+      String schoolEmail,
+      String univName,
+      String verificationCode,
+      LocalDateTime expiresAt) {
 
+    this.user = user;
     this.schoolEmail = schoolEmail;
     this.univName = univName;
     this.verificationCode = verificationCode;
@@ -54,10 +64,10 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   }
 
   public static SchoolEmailVerification create(
-      String schoolEmail, String univName, String verificationCode) {
+      User user, String schoolEmail, String univName, String verificationCode) {
 
     return new SchoolEmailVerification(
-        schoolEmail, univName, verificationCode, LocalDateTime.now().plusMinutes(5));
+        user, schoolEmail, univName, verificationCode, LocalDateTime.now().plusMinutes(5));
   }
 
   public boolean isExpired() {
