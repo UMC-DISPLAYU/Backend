@@ -76,7 +76,7 @@ public interface ArchiveArtistControllerDocs {
                             "success": {
                               "data": {
                                 "archiveArtistId": 1,
-                                "artistProfileId": 1,
+                                "artistId": 1,
                                 "userId": 1,
                                 "savedAt": "2026-07-13T01:49:28"
                               }
@@ -105,13 +105,13 @@ public interface ArchiveArtistControllerDocs {
                                 "artists": [
                                   {
                                     "archiveArtistId": 2,
-                                    "artistProfileId": 5,
+                                    "artistId": 5,
                                     "userId": 1,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
                                     "archiveArtistId": 1,
-                                    "artistProfileId": 3,
+                                    "artistId": 3,
                                     "userId": 1,
                                     "savedAt": "2026-07-12T15:10:02"
                                   }

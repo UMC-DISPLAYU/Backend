@@ -60,6 +60,7 @@ public class ArchivePresentationMapper {
   }
 
   public ArchiveArtistResponse toResponse(ArchiveArtistResult result) {
+    // 도메인 용어(artistProfileId) -> API 응답 용어(artistId) 변환은 여기(Presentation Mapper)에서만 담당
     return new ArchiveArtistResponse(
         result.archiveArtistId(), result.artistProfileId(), result.userId(), result.savedAt());
   }
