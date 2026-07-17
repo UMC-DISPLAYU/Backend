@@ -30,6 +30,9 @@ spring:
           starttls:
             enable: true
 
+server:
+  forward-headers-strategy: framework
+
 
 app:
   kakao:
