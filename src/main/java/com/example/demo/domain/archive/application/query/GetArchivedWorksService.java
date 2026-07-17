@@ -37,11 +37,13 @@ public class GetArchivedWorksService {
     List<ArchiveWork> works = hasNext ? fetched.subList(0, pageSize) : fetched;
 
     Map<Long, String> memoByArchiveWorkId =
-        memoRepository
-            .findByArchiveWorkIdInAndDeletedAtIsNull(
-                works.stream().map(ArchiveWork::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(Memo::getArchiveWorkId, Memo::getContent));
+        works.isEmpty()
+            ? Map.of()
+            : memoRepository
+                .findByArchiveWorkIdInAndDeletedAtIsNull(
+                    works.stream().map(ArchiveWork::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(Memo::getArchiveWorkId, Memo::getContent));
 
     List<ArchiveWorkResult> results =
         works.stream()

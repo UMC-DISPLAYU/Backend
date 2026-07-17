@@ -37,11 +37,13 @@ public class GetArchivedDisplaysService {
     List<ArchiveDisplay> displays = hasNext ? fetched.subList(0, pageSize) : fetched;
 
     Map<Long, String> memoByArchiveDisplayId =
-        memoRepository
-            .findByArchiveDisplayIdInAndDeletedAtIsNull(
-                displays.stream().map(ArchiveDisplay::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(Memo::getArchiveDisplayId, Memo::getContent));
+        displays.isEmpty()
+            ? Map.of()
+            : memoRepository
+                .findByArchiveDisplayIdInAndDeletedAtIsNull(
+                    displays.stream().map(ArchiveDisplay::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(Memo::getArchiveDisplayId, Memo::getContent));
 
     List<ArchiveDisplayResult> results =
         displays.stream()
