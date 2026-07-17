@@ -50,6 +50,63 @@ jobs:
       - name: Build and test
         run: ./gradlew clean build --no-daemon
 
+      - name: Verify Flyway migrations in JAR
+        run: jar tf build/libs/*.jar | grep 'db/migration' | sort
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+
+      - name: Check Flyway migration order against production DB
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          MYSQL_PWD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t applied_versions < <(
+            mysql \
+              --host="$DB_HOST" \
+              --port="$DB_PORT" \
+              --user="$DB_USERNAME" \
+              --database="$DB_NAME" \
+              --batch \
+              --skip-column-names \
+              --execute="SELECT version FROM flyway_schema_history WHERE success = 1 AND version IS NOT NULL ORDER BY version"
+          )
+
+          if [ "${#applied_versions[@]}" -eq 0 ]; then
+            echo "No successful Flyway migration history found. Skipping migration order check."
+            exit 0
+          fi
+
+          latest_applied_version="${applied_versions[-1]}"
+          printf '%s\n' "${applied_versions[@]}" | sort > /tmp/applied-flyway-versions.txt
+
+          jar tf build/libs/*.jar \
+            | sed -n 's|.*db/migration/V\([0-9][0-9]*\)__.*\.sql|\1|p' \
+            | sort -u > /tmp/resolved-flyway-versions.txt
+
+          failed=0
+          while IFS= read -r resolved_version; do
+            if [ "$resolved_version" \< "$latest_applied_version" ] \
+              && ! grep -Fxq "$resolved_version" /tmp/applied-flyway-versions.txt; then
+              echo "::error::Resolved Flyway migration $resolved_version is older than latest applied production migration $latest_applied_version, but it is not applied to production DB."
+              failed=1
+            fi
+          done < /tmp/resolved-flyway-versions.txt
+
+          if [ "$failed" -ne 0 ]; then
+            echo "Create a new migration with a version greater than $latest_applied_version instead of adding an older unapplied migration."
+            exit 1
+          fi
+
+          echo "Flyway migration order check passed. Latest applied production migration: $latest_applied_version"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -99,6 +156,10 @@ jobs:
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
           RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
           RUNTIME_JWT_SIGNUP_EXPIRATION: ${{ secrets.JWT_SIGNUP_EXPIRATION }}
+          RUNTIME_AWS_REGION: ${{ secrets.AWS_REGION }}
+          RUNTIME_S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          RUNTIME_CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+          RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS: ${{ secrets.PRESIGNED_URL_EXPIRATION_SECONDS || '3600' }}
         run: |
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
@@ -116,6 +177,10 @@ jobs:
             printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"
             printf 'JWT_REFRESH_EXPIRATION=%s\n' "$RUNTIME_JWT_REFRESH_EXPIRATION"
             printf 'JWT_SIGNUP_EXPIRATION=%s\n' "$RUNTIME_JWT_SIGNUP_EXPIRATION"
+            printf 'AWS_REGION=%s\n' "$RUNTIME_AWS_REGION"
+            printf 'S3_BUCKET=%s\n' "$RUNTIME_S3_BUCKET"
+            printf 'CDN_BASE_URL=%s\n' "$RUNTIME_CDN_BASE_URL"
+            printf 'PRESIGNED_URL_EXPIRATION_SECONDS=%s\n' "$RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS"
           } > .env.deploy
 
       - name: Copy runtime env file to EC2

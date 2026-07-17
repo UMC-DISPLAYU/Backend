@@ -11,8 +11,8 @@ import com.example.demo.domain.lounge.presentation.response.LoungeCommentListRes
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Validated
 public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   private static final Long TEMP_USER_ID = 1L;
@@ -46,12 +47,13 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   @Override
   public ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
+    Long loungeCommentId =
+        loungeCommentCommandService.createComment(
+            loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentCommandService.createComment(
-                loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
         request);
   }
 
@@ -60,25 +62,27 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   @Override
   public ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
+    Long loungeCommentId =
+        loungeCommentCommandService.createReply(
+            parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentCommandService.createReply(
-                parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand())),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
         request);
   }
 
   @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
   @Override
-  public ApiResponseBody<Void> updateComment(
+  public ApiResponseBody<LoungeCommentListResponse> updateComment(
       @PathVariable Long loungeCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @RequestBody LoungeCommentRequest loungeCommentRequest,
       HttpServletRequest request) {
     loungeCommentCommandService.updateComment(
         loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
-
-    return ApiResponseBody.success(null, request);
+    return ApiResponseBody.success(
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
+        request);
   }
 
   @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")

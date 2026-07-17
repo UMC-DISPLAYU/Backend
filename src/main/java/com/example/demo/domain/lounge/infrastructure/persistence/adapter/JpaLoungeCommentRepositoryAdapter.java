@@ -26,12 +26,6 @@ public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepositor
   }
 
   @Override
-  public List<LoungeComment> findActiveByLoungePostId(Long loungePostId) {
-    return jpaRepository.findByLoungePostIdAndStatusAndDeletedAtIsNullOrderByCreatedAtAscIdAsc(
-        loungePostId, LoungeCommentStatus.ACTIVE);
-  }
-
-  @Override
   public List<LoungeComment> findActiveRootByCursor(Long loungePostId, Long cursorId, int limit) {
     return jpaRepository.findActiveRootByCursor(
         loungePostId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
@@ -77,10 +71,5 @@ public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepositor
   @Override
   public LoungeComment save(LoungeComment loungeComment) {
     return jpaRepository.save(loungeComment);
-  }
-
-  @Override
-  public void delete(LoungeComment loungeComment) {
-    jpaRepository.delete(loungeComment);
   }
 }

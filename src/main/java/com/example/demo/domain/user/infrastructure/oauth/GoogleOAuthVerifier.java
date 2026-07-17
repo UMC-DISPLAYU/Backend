@@ -16,11 +16,13 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleOAuthVerifier {
 
   @Value("${app.google.client.id}")
@@ -51,7 +53,10 @@ public class GoogleOAuthVerifier {
           claims.getStringClaim("email"));
 
     } catch (Exception e) {
-
+      log.warn(
+          "Google ID token verification failed. reason={}, exception={}",
+          e.getMessage(),
+          e.getClass().getSimpleName());
       throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
   }

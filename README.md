@@ -169,6 +169,19 @@ docker compose up -d
 
 로컬 환경에서는 `local` profile을 사용합니다.
 
+프로젝트 루트의 `.env.example`을 `.env`로 복사하고 필요한 값을 입력합니다.
+`.env` 파일은 Git에 커밋하지 않습니다.
+
+```bash
+cp .env.example .env
+```
+
+PowerShell에서는 다음 명령을 사용할 수 있습니다.
+
+```powershell
+Copy-Item .env.example .env
+```
+
 ```bash
 ./gradlew bootRun
 ```

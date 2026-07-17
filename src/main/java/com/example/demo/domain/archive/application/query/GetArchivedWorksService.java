@@ -47,12 +47,8 @@ public class GetArchivedWorksService {
         works.stream()
             .map(
                 archiveWork ->
-                    new ArchiveWorkResult(
-                        archiveWork.getId(),
-                        archiveWork.getDisplayArtworkId(),
-                        archiveWork.getUserId(),
-                        memoByArchiveWorkId.get(archiveWork.getId()),
-                        archiveWork.getSavedAt()))
+                    ArchiveWorkResult.from(
+                        archiveWork, memoByArchiveWorkId.get(archiveWork.getId())))
             .toList();
 
     Long nextCursorId = hasNext ? works.get(works.size() - 1).getId() : null;

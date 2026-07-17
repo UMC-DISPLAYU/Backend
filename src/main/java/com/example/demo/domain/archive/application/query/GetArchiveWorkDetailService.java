@@ -36,11 +36,6 @@ public class GetArchiveWorkDetailService {
             .map(m -> m.getContent())
             .orElse(null);
 
-    return new ArchiveWorkResult(
-        archiveWork.getId(),
-        archiveWork.getDisplayArtworkId(),
-        archiveWork.getUserId(),
-        memo,
-        archiveWork.getSavedAt());
+    return ArchiveWorkResult.from(archiveWork, memo);
   }
 }

@@ -7,7 +7,7 @@ public interface SchoolEmailVerificationRepository {
 
   SchoolEmailVerification save(SchoolEmailVerification verification);
 
-  Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail);
+  Optional<SchoolEmailVerification> findByUserIdAndSchoolEmail(Long userId, String schoolEmail);
 
-  void deleteBySchoolEmail(String schoolEmail);
+  void deleteByUserIdAndSchoolEmail(Long userId, String schoolEmail);
 }

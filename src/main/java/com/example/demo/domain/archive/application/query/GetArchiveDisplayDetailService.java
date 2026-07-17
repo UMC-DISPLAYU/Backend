@@ -35,11 +35,6 @@ public class GetArchiveDisplayDetailService {
             .map(m -> m.getContent())
             .orElse(null);
 
-    return new ArchiveDisplayResult(
-        archiveDisplay.getId(),
-        archiveDisplay.getDisplayId(),
-        archiveDisplay.getUserId(),
-        memo,
-        archiveDisplay.getSavedAt());
+    return ArchiveDisplayResult.from(archiveDisplay, memo);
   }
 }

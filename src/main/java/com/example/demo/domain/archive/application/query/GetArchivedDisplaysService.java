@@ -47,12 +47,8 @@ public class GetArchivedDisplaysService {
         displays.stream()
             .map(
                 archiveDisplay ->
-                    new ArchiveDisplayResult(
-                        archiveDisplay.getId(),
-                        archiveDisplay.getDisplayId(),
-                        archiveDisplay.getUserId(),
-                        memoByArchiveDisplayId.get(archiveDisplay.getId()),
-                        archiveDisplay.getSavedAt()))
+                    ArchiveDisplayResult.from(
+                        archiveDisplay, memoByArchiveDisplayId.get(archiveDisplay.getId())))
             .toList();
 
     Long nextCursorId = hasNext ? displays.get(displays.size() - 1).getId() : null;

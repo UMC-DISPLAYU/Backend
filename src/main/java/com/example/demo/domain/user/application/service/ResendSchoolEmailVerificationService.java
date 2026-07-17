@@ -17,11 +17,11 @@ public class ResendSchoolEmailVerificationService {
   private final SendSchoolEmailVerificationService sendService;
 
   @Transactional
-  public void execute(String schoolEmail) {
+  public void execute(Long userId, String schoolEmail) {
 
     SchoolEmailVerification verification =
         verificationRepository
-            .findBySchoolEmail(schoolEmail)
+            .findByUserIdAndSchoolEmail(userId, schoolEmail)
             .orElseThrow(() -> new UserException(UserErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
     // 이미 인증 완료된 이메일
@@ -30,6 +30,6 @@ public class ResendSchoolEmailVerificationService {
     }
 
     sendService.execute(
-        new SendSchoolEmailVerificationCommand(schoolEmail, verification.getUnivName()));
+        new SendSchoolEmailVerificationCommand(userId, schoolEmail, verification.getUnivName()));
   }
 }
