@@ -1,10 +1,9 @@
 package com.example.demo.domain.lounge.application.command;
 
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
-import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
-import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
@@ -32,7 +31,7 @@ public class LoungeCommentCommandService {
   }
 
   @Transactional
-  public LoungeCommentListResult createComment(
+  public Long createComment(
       Long loungePostId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
     LoungePost loungePost = getActivePost(loungePostId);
@@ -42,19 +41,18 @@ public class LoungeCommentCommandService {
             loungePost.getId(), new UserId(authorUserId), command.content());
 
     LoungeComment savedComment = loungeCommentRepository.save(comment);
-    return LoungeCommentListResult.from(
-        savedComment, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
+    return savedComment.getId();
   }
 
   @Transactional
-  public LoungeCommentListResult createReply(
+  public Long createReply(
       Long parentCommentId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
     LoungeComment parentComment = getActiveComment(parentCommentId);
     LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
 
     if (!parentComment.isRootComment()) {
-      throw new BusinessException(GlobalErrorCode.INVALID_REQUEST);
+      throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }
 
     LoungeComment reply =
@@ -62,8 +60,7 @@ public class LoungeCommentCommandService {
             loungePost.getId(), parentComment.getId(), new UserId(authorUserId), command.content());
 
     LoungeComment savedReply = loungeCommentRepository.save(reply);
-    return LoungeCommentListResult.from(
-        savedReply, WriterView.unknown(authorUserId), 0, 0, false, authorUserId);
+    return savedReply.getId();
   }
 
   @Transactional
@@ -114,7 +111,7 @@ public class LoungeCommentCommandService {
         .findById(loungePostId)
         .filter(post -> !post.isDeleted())
         .filter(LoungePost::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private LoungeComment getActiveComment(Long loungeCommentId) {
@@ -122,7 +119,7 @@ public class LoungeCommentCommandService {
         .findById(loungeCommentId)
         .filter(comment -> !comment.isDeleted())
         .filter(LoungeComment::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 
   private void validateAuthor(LoungeComment comment, UserId requesterUserId) {

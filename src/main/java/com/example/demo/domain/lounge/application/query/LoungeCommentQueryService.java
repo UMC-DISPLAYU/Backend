@@ -6,6 +6,7 @@ import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult
 import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
@@ -13,7 +14,6 @@ import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
 import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,18 +26,31 @@ public class LoungeCommentQueryService {
 
   private final LoungePostRepository loungePostRepository;
   private final LoungeCommentRepository loungeCommentRepository;
+  private final LoungeCommentQueryRepository loungeCommentQueryRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
   private final LoungeWriterRepository loungeWriterRepository;
 
   public LoungeCommentQueryService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
+      LoungeCommentQueryRepository loungeCommentQueryRepository,
       LoungeCommentLikeRepository loungeCommentLikeRepository,
       LoungeWriterRepository loungeWriterRepository) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
+    this.loungeCommentQueryRepository = loungeCommentQueryRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
     this.loungeWriterRepository = loungeWriterRepository;
+  }
+
+  @Transactional(readOnly = true)
+  public LoungeCommentListResult getComment(Long loungeCommentId, Long viewerUserId) {
+    LoungeCommentQueryResult comment =
+        loungeCommentQueryRepository
+            .findActiveById(loungeCommentId)
+            .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
+
+    return toResults(List.of(comment), viewerUserId, comment.parentCommentId() == null).getFirst();
   }
 
   @Transactional(readOnly = true)
@@ -45,10 +58,11 @@ public class LoungeCommentQueryService {
       Long loungePostId, Long cursorId, int size, Long viewerUserId) {
     LoungePost loungePost = getActivePost(loungePostId);
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungeComment> fetched =
-        loungeCommentRepository.findActiveRootByCursor(loungePost.getId(), cursorId, pageSize + 1);
+    List<LoungeCommentQueryResult> fetched =
+        loungeCommentQueryRepository.findActiveRootByCursor(
+            loungePost.getId(), cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
-    List<LoungeComment> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
+    List<LoungeCommentQueryResult> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (comments.isEmpty()) {
       return new LoungeCommentCursorResult(List.of(), null, pageSize, false);
     }
@@ -63,15 +77,15 @@ public class LoungeCommentQueryService {
       Long parentCommentId, Long cursorId, int size, Long viewerUserId) {
     LoungeComment parentComment = getActiveComment(parentCommentId);
     if (!parentComment.isRootComment()) {
-      throw new BusinessException(GlobalErrorCode.INVALID_REQUEST);
+      throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }
 
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungeComment> fetched =
-        loungeCommentRepository.findActiveRepliesByCursor(
+    List<LoungeCommentQueryResult> fetched =
+        loungeCommentQueryRepository.findActiveRepliesByCursor(
             parentComment.getId(), cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
-    List<LoungeComment> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
+    List<LoungeCommentQueryResult> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (replies.isEmpty()) {
       return new LoungeReplyCursorResult(List.of(), null, pageSize, false);
     }
@@ -82,21 +96,22 @@ public class LoungeCommentQueryService {
   }
 
   private List<LoungeCommentListResult> toResults(
-      List<LoungeComment> comments, Long viewerUserId, boolean includeReplyCount) {
-    List<Long> commentIds = comments.stream().map(LoungeComment::getId).toList();
+      List<LoungeCommentQueryResult> comments, Long viewerUserId, boolean includeReplyCount) {
+    List<Long> commentIds =
+        comments.stream().map(LoungeCommentQueryResult::loungeCommentId).toList();
     Map<Long, Long> likeCounts = loungeCommentLikeRepository.countByLoungeCommentIds(commentIds);
     Map<Long, Long> replyCounts =
         includeReplyCount
             ? loungeCommentRepository.countActiveRepliesByParentCommentIds(commentIds)
             : Map.of();
     Set<Long> likedCommentIds =
-        loungeCommentLikeRepository.findLikedLoungeCommentIds(commentIds, new UserId(viewerUserId));
+        viewerUserId == null
+            ? Set.of()
+            : loungeCommentLikeRepository.findLikedLoungeCommentIds(
+                commentIds, new UserId(viewerUserId));
     Map<Long, LoungeWriter> writers =
         loungeWriterRepository.findByUserIds(
-            comments.stream()
-                .map(comment -> comment.getAuthorUserId().value())
-                .distinct()
-                .toList());
+            comments.stream().map(LoungeCommentQueryResult::authorUserId).distinct().toList());
 
     return comments.stream()
         .map(
@@ -105,11 +120,10 @@ public class LoungeCommentQueryService {
                     comment,
                     toWriterView(
                         writers.getOrDefault(
-                            comment.getAuthorUserId().value(),
-                            LoungeWriter.unknown(comment.getAuthorUserId().value()))),
-                    likeCounts.getOrDefault(comment.getId(), 0L),
-                    replyCounts.getOrDefault(comment.getId(), 0L),
-                    likedCommentIds.contains(comment.getId()),
+                            comment.authorUserId(), LoungeWriter.unknown(comment.authorUserId()))),
+                    likeCounts.getOrDefault(comment.loungeCommentId(), 0L),
+                    replyCounts.getOrDefault(comment.loungeCommentId(), 0L),
+                    likedCommentIds.contains(comment.loungeCommentId()),
                     viewerUserId))
         .toList();
   }
@@ -123,7 +137,7 @@ public class LoungeCommentQueryService {
         .findById(loungePostId)
         .filter(post -> !post.isDeleted())
         .filter(LoungePost::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private LoungeComment getActiveComment(Long loungeCommentId) {
@@ -131,6 +145,6 @@ public class LoungeCommentQueryService {
         .findById(loungeCommentId)
         .filter(comment -> !comment.isDeleted())
         .filter(LoungeComment::isActive)
-        .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 }

@@ -10,9 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataLoungeCommentJpaRepository extends JpaRepository<LoungeComment, Long> {
 
-  List<LoungeComment> findByLoungePostIdAndStatusAndDeletedAtIsNullOrderByCreatedAtAscIdAsc(
-      Long loungePostId, LoungeCommentStatus status);
-
   @Query(
       """
       SELECT comment

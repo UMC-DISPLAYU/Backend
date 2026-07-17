@@ -10,9 +10,16 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "질문을 찾을 수 없습니다."),
   INVALID_FEELING_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_FEELING_CONTENT", "감상평 내용을 입력해주세요."),
   INVALID_QUESTION_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_QUESTION_CONTENT", "질문 내용을 입력해주세요."),
+  CREATOR_CANNOT_WRITE_FEELING(
+      HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_FEELING", "작업자는 본인 작품에 감상평을 작성할 수 없습니다."),
+  CREATOR_CANNOT_WRITE_QUESTION(
+      HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_QUESTION", "작업자는 본인 작품에 질문을 작성할 수 없습니다."),
   ARTWORK_FEELING_FORBIDDEN(HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
   ARTWORK_QUESTION_FORBIDDEN(
-      HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다.");
+      HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다."),
+  QNA_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "QNA_CONTACT_FORBIDDEN", "QnA 담당 작업자만 답변할 수 있습니다."),
+  QUESTION_ALREADY_ANSWERED(
+      HttpStatus.BAD_REQUEST, "QUESTION_ALREADY_ANSWERED", "이미 답변 완료된 질문입니다.");
 
   private final HttpStatus status;
   private final String code;

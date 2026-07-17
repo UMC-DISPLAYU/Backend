@@ -99,6 +99,10 @@ jobs:
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
           RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
           RUNTIME_JWT_SIGNUP_EXPIRATION: ${{ secrets.JWT_SIGNUP_EXPIRATION }}
+          RUNTIME_AWS_REGION: ${{ secrets.AWS_REGION }}
+          RUNTIME_S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          RUNTIME_CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+          RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS: ${{ secrets.PRESIGNED_URL_EXPIRATION_SECONDS || '3600' }}
         run: |
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
@@ -116,6 +120,10 @@ jobs:
             printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"
             printf 'JWT_REFRESH_EXPIRATION=%s\n' "$RUNTIME_JWT_REFRESH_EXPIRATION"
             printf 'JWT_SIGNUP_EXPIRATION=%s\n' "$RUNTIME_JWT_SIGNUP_EXPIRATION"
+            printf 'AWS_REGION=%s\n' "$RUNTIME_AWS_REGION"
+            printf 'S3_BUCKET=%s\n' "$RUNTIME_S3_BUCKET"
+            printf 'CDN_BASE_URL=%s\n' "$RUNTIME_CDN_BASE_URL"
+            printf 'PRESIGNED_URL_EXPIRATION_SECONDS=%s\n' "$RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS"
           } > .env.deploy
 
       - name: Copy runtime env file to EC2
