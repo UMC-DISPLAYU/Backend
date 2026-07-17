@@ -2,11 +2,15 @@ package com.example.demo.domain.user.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.command.VerifySchoolEmailVerificationCommand;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
+import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
@@ -16,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 class SchoolEmailVerificationServiceTest {
 
+  private static final Long USER_ID = 1L;
   private static final String SCHOOL_EMAIL = "student@school.ac.kr";
   private static final String UNIV_NAME = "대학교";
   private static final String VERIFICATION_CODE = "123456";
@@ -27,7 +32,7 @@ class SchoolEmailVerificationServiceTest {
     VerifySchoolEmailVerificationService service =
         new VerifySchoolEmailVerificationService(repository);
     VerifySchoolEmailVerificationCommand command =
-        new VerifySchoolEmailVerificationCommand(SCHOOL_EMAIL, "000000");
+        new VerifySchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, "000000");
 
     for (int attempt = 1; attempt < 5; attempt++) {
       assertThatExceptionOfType(UserException.class)
@@ -60,7 +65,8 @@ class SchoolEmailVerificationServiceTest {
     VerifySchoolEmailVerificationService service =
         new VerifySchoolEmailVerificationService(repository);
 
-    service.execute(new VerifySchoolEmailVerificationCommand(SCHOOL_EMAIL, VERIFICATION_CODE));
+    service.execute(
+        new VerifySchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, VERIFICATION_CODE));
 
     assertThat(verification.isVerified()).isTrue();
     assertThat(verification.getFailedAttemptCount()).isZero();
@@ -69,13 +75,17 @@ class SchoolEmailVerificationServiceTest {
   @Test
   void sendAppliesCooldownWhenVerificationAlreadyExists() {
     FakeVerificationRepository repository = new FakeVerificationRepository(createVerification());
+    UserRepository userRepository = mock(UserRepository.class);
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(createUser()));
     SendSchoolEmailVerificationService service =
         new SendSchoolEmailVerificationService(
-            repository, new FakeEmailSender(), new NoOpSchoolEmailValidator());
+            repository, new FakeEmailSender(), new NoOpSchoolEmailValidator(), userRepository);
 
     assertThatExceptionOfType(UserException.class)
         .isThrownBy(
-            () -> service.execute(new SendSchoolEmailVerificationCommand(SCHOOL_EMAIL, UNIV_NAME)))
+            () ->
+                service.execute(
+                    new SendSchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, UNIV_NAME)))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode()).isEqualTo(UserErrorCode.EMAIL_SEND_COOLDOWN));
@@ -85,7 +95,11 @@ class SchoolEmailVerificationServiceTest {
   }
 
   private SchoolEmailVerification createVerification() {
-    return SchoolEmailVerification.create(SCHOOL_EMAIL, UNIV_NAME, VERIFICATION_CODE);
+    return SchoolEmailVerification.create(createUser(), SCHOOL_EMAIL, UNIV_NAME, VERIFICATION_CODE);
+  }
+
+  private User createUser() {
+    return User.builder().id(USER_ID).build();
   }
 
   private static class FakeVerificationRepository implements SchoolEmailVerificationRepository {
@@ -106,12 +120,13 @@ class SchoolEmailVerificationServiceTest {
     }
 
     @Override
-    public Optional<SchoolEmailVerification> findBySchoolEmail(String schoolEmail) {
+    public Optional<SchoolEmailVerification> findByUserIdAndSchoolEmail(
+        Long userId, String schoolEmail) {
       return Optional.ofNullable(verification);
     }
 
     @Override
-    public void deleteBySchoolEmail(String schoolEmail) {
+    public void deleteByUserIdAndSchoolEmail(Long userId, String schoolEmail) {
       verification = null;
       deleteCount++;
     }
