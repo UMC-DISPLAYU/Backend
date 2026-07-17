@@ -1,9 +1,12 @@
 package com.example.demo.domain.user.domain.aggregate;
 
+import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,14 +48,21 @@ public class User extends BaseTimeEntity {
   @Column(name = "schoolEmail")
   private String schoolEmail;
 
+  @Column(name = "univ_name", nullable = true)
+  private String univName;
+
   @Column(name = "deletedAt")
   private LocalDateTime deletedAt;
 
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
 
-  public void verifyAuthor(String schoolEmail) {
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
+
+  public void verifyAuthor(String schoolEmail, String univName) {
     this.isVerified = true;
     this.schoolEmail = schoolEmail;
+    this.univName = univName;
   }
 }

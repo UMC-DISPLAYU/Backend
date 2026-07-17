@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements BaseErrorCode {
+  USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "DUPLICATE_NICKNAME", "이미 사용 중인 닉네임입니다."),
+
   AGREEMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "AGREEMENT_NOT_FOUND", "존재하지 않는 약관입니다."),
 
   INVALID_NICKNAME_FORMAT(
@@ -33,17 +35,24 @@ public enum UserErrorCode implements BaseErrorCode {
 
   TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_REQUESTS", "인증번호 요청 횟수를 초과했습니다."),
 
+  EMAIL_VERIFICATION_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "EMAIL_VERIFICATION_NOT_FOUND", "발급된 인증번호를 찾을 수 없습니다."),
+
+  EMAIL_SEND_COOLDOWN(
+      HttpStatus.TOO_MANY_REQUESTS, "EMAIL_SEND_COOLDOWN", "인증 이메일은 잠시 후 다시 요청할 수 있습니다."),
+
   DUPLICATE_SCHOOL_EMAIL(
       HttpStatus.CONFLICT, "DUPLICATE_SCHOOL_EMAIL", "이미 다른 계정에서 작가 인증에 사용된 학교 이메일입니다."),
 
   VERIFICATION_CODE_MISMATCH(
       HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_MISMATCH", "인증번호가 일치하지 않습니다."),
 
-  VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다."),
+  VERIFICATION_ATTEMPTS_EXCEEDED(
+      HttpStatus.BAD_REQUEST,
+      "VERIFICATION_ATTEMPTS_EXCEEDED",
+      "인증번호 확인 실패 횟수를 초과했습니다. 인증번호를 다시 요청해 주세요."),
 
-  TOO_MANY_CATEGORIES(HttpStatus.BAD_REQUEST, "TOO_MANY_CATEGORIES", "활동 분야는 최대 2개까지 선택할 수 있습니다."),
-
-  ARTIST_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "ARTIST_NAME_REQUIRED", "대표 작가 프로필명을 입력해주세요.");
+  VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다.");
 
   private final HttpStatus status;
   private final String code;

@@ -8,8 +8,6 @@ import java.util.Optional;
 public interface LoungeCommentRepository {
   Optional<LoungeComment> findById(Long loungeCommentId);
 
-  List<LoungeComment> findActiveByLoungePostId(Long loungePostId);
-
   List<LoungeComment> findActiveRootByCursor(Long loungePostId, Long cursorId, int limit);
 
   List<LoungeComment> findActiveRepliesByCursor(Long parentCommentId, Long cursorId, int limit);
@@ -21,6 +19,4 @@ public interface LoungeCommentRepository {
   Map<Long, Long> countActiveRepliesByParentCommentIds(List<Long> parentCommentIds);
 
   LoungeComment save(LoungeComment loungeComment);
-
-  void delete(LoungeComment loungeComment);
 }
