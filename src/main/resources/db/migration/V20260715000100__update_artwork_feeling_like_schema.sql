@@ -1,9 +1,0 @@
-ALTER TABLE `ArtworkFeelingLike`
-    CHANGE COLUMN `areLikeId` `feelingLikeId` BIGINT NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `ArtworkFeelingLike`
-    ADD COLUMN `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `createdAt`,
-    ADD COLUMN `deletedAt` DATETIME NULL AFTER `updatedAt`;
-
-ALTER TABLE `ArtworkFeelingLike`
-    ADD CONSTRAINT `UK_ARTWORKFEELINGLIKE_FEELING_USER` UNIQUE (`feelingId`, `userId`);
