@@ -39,6 +39,12 @@ app:
     client:
       id: ${GOOGLE_CLIENT_ID}
       secret: ${GOOGLE_CLIENT_SECRET}
+  file:
+    storage:
+      region: ${AWS_REGION:ap-northeast-2}
+      bucket: ${S3_BUCKET}
+      cdn-base-url: ${CDN_BASE_URL}
+      presigned-url-expiration-seconds: ${PRESIGNED_URL_EXPIRATION_SECONDS:3600}
 
 
 jwt:
@@ -55,4 +61,3 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
-
