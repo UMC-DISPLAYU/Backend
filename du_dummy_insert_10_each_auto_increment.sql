@@ -232,7 +232,7 @@ INSERT INTO `Creator` (`creatorName`, `isContact`, `isLeader`, `userId`, `displa
 ('한지민', 1, 1, 9, 9),
 ('외부 참여 작가', 0, 0, NULL, 10);
 
-INSERT INTO `ArchiveArtist` (`userId`, `creatorId`, `savedAt`) VALUES
+INSERT INTO `ArchiveArtist` (`userId`, `artistProfileId`, `savedAt`) VALUES
 (2, 1, '2026-07-01 17:20:00'),
 (3, 2, '2026-07-01 17:21:00'),
 (4, 3, '2026-07-01 17:22:00'),
