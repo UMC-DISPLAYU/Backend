@@ -29,16 +29,7 @@ public class GetArchivedDisplaysService {
     boolean hasNext = fetched.size() > pageSize;
     List<ArchiveDisplay> displays = hasNext ? fetched.subList(0, pageSize) : fetched;
 
-    List<ArchiveDisplayResult> results =
-        displays.stream()
-            .map(
-                archiveDisplay ->
-                    new ArchiveDisplayResult(
-                        archiveDisplay.getId(),
-                        archiveDisplay.getDisplayId(),
-                        archiveDisplay.getUserId(),
-                        archiveDisplay.getSavedAt()))
-            .toList();
+    List<ArchiveDisplayResult> results = displays.stream().map(ArchiveDisplayResult::from).toList();
 
     Long nextCursorId = hasNext ? displays.get(displays.size() - 1).getId() : null;
     return new ArchiveDisplayCursorResult(results, nextCursorId, pageSize, hasNext);

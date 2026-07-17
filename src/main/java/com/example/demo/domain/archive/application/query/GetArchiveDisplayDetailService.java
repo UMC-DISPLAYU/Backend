@@ -23,10 +23,6 @@ public class GetArchiveDisplayDetailService {
             .findById(archiveDisplayId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
-    return new ArchiveDisplayResult(
-        archiveDisplay.getId(),
-        archiveDisplay.getDisplayId(),
-        archiveDisplay.getUserId(),
-        archiveDisplay.getSavedAt());
+    return ArchiveDisplayResult.from(archiveDisplay);
   }
 }

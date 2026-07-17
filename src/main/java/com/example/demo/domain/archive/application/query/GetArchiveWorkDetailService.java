@@ -26,10 +26,6 @@ public class GetArchiveWorkDetailService {
             .findByIdAndUserId(archiveWorkId, userId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_WORK_NOT_FOUND));
 
-    return new ArchiveWorkResult(
-        archiveWork.getId(),
-        archiveWork.getDisplayArtworkId(),
-        archiveWork.getUserId(),
-        archiveWork.getSavedAt());
+    return ArchiveWorkResult.from(archiveWork);
   }
 }
