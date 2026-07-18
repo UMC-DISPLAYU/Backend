@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataArchiveDisplayJpaRepository extends JpaRepository<ArchiveDisplay, Long> {
 
+  Optional<ArchiveDisplay> findByIdAndUserId(Long archiveDisplayId, Long userId);
+
   Optional<ArchiveDisplay> findByUserIdAndDisplayId(Long userId, Long displayId);
 
   @Query(

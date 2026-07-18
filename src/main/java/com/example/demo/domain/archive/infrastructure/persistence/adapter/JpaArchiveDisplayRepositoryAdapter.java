@@ -23,6 +23,11 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
   }
 
   @Override
+  public Optional<ArchiveDisplay> findByIdAndUserId(Long archiveDisplayId, Long userId) {
+    return jpaRepository.findByIdAndUserId(archiveDisplayId, userId);
+  }
+
+  @Override
   public Optional<ArchiveDisplay> findByUserIdAndDisplayId(Long userId, Long displayId) {
     return jpaRepository.findByUserIdAndDisplayId(userId, displayId);
   }
