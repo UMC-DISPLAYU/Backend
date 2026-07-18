@@ -31,11 +31,4 @@ public class JpaPersonalArtworkLikeRepositoryAdapter implements PersonalArtworkL
   public long countByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId) {
     return jpaRepository.countByPersonalArtworkIdAndDeletedAtIsNull(personalArtworkId);
   }
-
-  @Override
-  public boolean existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(
-      Long personalArtworkId, Long userId) {
-    return jpaRepository.existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(
-        personalArtworkId, userId);
-  }
 }

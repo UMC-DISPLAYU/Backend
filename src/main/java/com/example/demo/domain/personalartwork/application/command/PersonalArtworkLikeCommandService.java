@@ -54,6 +54,7 @@ public class PersonalArtworkLikeCommandService {
     PersonalArtworkLike personalArtworkLike =
         personalArtworkLikeRepository
             .findByPersonalArtworkIdAndUserId(command.personalArtworkId(), command.userId())
+            .filter(PersonalArtworkLike::isActive)
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
 
     personalArtworkLike.cancel();

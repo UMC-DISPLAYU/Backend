@@ -11,6 +11,4 @@ public interface SpringDataPersonalArtworkLikeJpaRepository
       Long personalArtworkId, Long userId);
 
   long countByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId);
-
-  boolean existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(Long personalArtworkId, Long userId);
 }

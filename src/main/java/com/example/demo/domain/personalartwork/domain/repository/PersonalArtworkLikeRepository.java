@@ -11,6 +11,4 @@ public interface PersonalArtworkLikeRepository {
   PersonalArtworkLike save(PersonalArtworkLike personalArtworkLike);
 
   long countByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId);
-
-  boolean existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(Long personalArtworkId, Long userId);
 }
