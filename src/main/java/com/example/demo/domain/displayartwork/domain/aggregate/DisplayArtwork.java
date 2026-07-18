@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
@@ -71,6 +72,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
 
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
+  @BatchSize(size = 50)
   private final List<ArtworkImage> images = new ArrayList<>();
 
   protected DisplayArtwork() {}

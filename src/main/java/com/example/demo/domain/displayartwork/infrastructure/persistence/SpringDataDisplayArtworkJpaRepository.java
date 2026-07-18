@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.infrastructure.persistence;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,14 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
         AND artwork.deletedAt IS NULL
       """)
   int countByDisplayId(@Param("displayId") Long displayId);
+
+  @Query(
+      """
+      SELECT MAX(artwork.workSortOrder)
+      FROM DisplayArtwork artwork
+      WHERE artwork.display.id = :displayId
+      """)
+  Optional<Integer> findMaxWorkSortOrderByDisplayId(@Param("displayId") Long displayId);
 
   @Query(
       """

@@ -30,6 +30,11 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   }
 
   @Override
+  public Optional<Integer> findMaxWorkSortOrderByDisplayId(Long displayId) {
+    return jpaRepository.findMaxWorkSortOrderByDisplayId(displayId);
+  }
+
+  @Override
   public List<DisplayArtwork> findAllByDisplayId(Long displayId) {
     return jpaRepository.findAllByDisplayId(displayId);
   }

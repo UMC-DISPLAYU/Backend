@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CreateDisplayArtworkService {
 
-  // TODO: PM 확답되면 정확한 값으로 조정 (현재 "30~40선" 범위 중 상한값으로 임시 설정)
   private static final int MAX_ARTWORKS_PER_DISPLAY = 50;
 
   private final DisplayRepository displayRepository;
@@ -50,7 +49,11 @@ public class CreateDisplayArtworkService {
     validateTeamMember(display, requesterUserId);
     validateArtworkLimit(command.displayId());
 
-    int nextWorkSortOrder = displayArtworkRepository.countByDisplayId(command.displayId());
+    int nextWorkSortOrder =
+        displayArtworkRepository
+            .findMaxWorkSortOrderByDisplayId(command.displayId())
+            .map(max -> max + 1)
+            .orElse(0);
 
     DisplayArtwork displayArtwork =
         DisplayArtwork.create(

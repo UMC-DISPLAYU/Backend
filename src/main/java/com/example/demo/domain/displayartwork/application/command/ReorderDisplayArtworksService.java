@@ -40,7 +40,7 @@ public class ReorderDisplayArtworksService {
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     if (!display.isTeamLeader(requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ACTION);
+      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
     }
 
     List<DisplayArtwork> artworks =
