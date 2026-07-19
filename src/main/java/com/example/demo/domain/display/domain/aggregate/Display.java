@@ -5,6 +5,7 @@ import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
@@ -16,6 +17,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.BaseTimeEntity;
+import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -351,15 +353,41 @@ public class Display extends BaseTimeEntity {
     this.status = DisplayStatus.DRAFT;
   }
 
-  // 팀원 초대 토큰을 변경하고 비활성화 상태를 해제한다.
-  public void changeInvitationToken(String invitationToken) {
+  // 초대 토큰 해시를 새로 발급하고 기존 비활성화 상태를 해제한다.
+  public void issueInvitationToken(String invitationToken) {
     this.invitationToken = requireNonBlank(invitationToken, "invitationToken");
     this.invitationDisabledAt = null;
   }
 
-  // 현재 초대 토큰을 더 이상 사용할 수 없도록 비활성화한다.
-  public void disableInvitation() {
-    this.invitationDisabledAt = LocalDateTime.now();
+  // 초대 링크가 발급된 경우에만 비활성화하며, 이미 비활성화된 링크는 기존 시각을 유지한다.
+  public void disableInvitation(LocalDateTime disabledAt) {
+    ensureInvitationIssued();
+    if (invitationDisabledAt == null) {
+      this.invitationDisabledAt =
+          Objects.requireNonNull(disabledAt, "disabledAt must not be null.");
+    }
+  }
+
+  // 초대 토큰이 존재하고 비활성화되지 않은 상태인지 확인한다.
+  public boolean isInvitationActive() {
+    return invitationToken != null && invitationDisabledAt == null;
+  }
+
+  // 초대 링크로 전시에 접근할 수 있는 상태인지 검증한다.
+  public void validateInvitationAccessible() {
+    if (invitationToken == null) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_NOT_ISSUED);
+    }
+    if (!isInvitationActive()) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_DISABLED);
+    }
+  }
+
+  // 초대 링크가 아직 발급되지 않은 전시는 비활성화할 수 없다.
+  private void ensureInvitationIssued() {
+    if (invitationToken == null) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_NOT_ISSUED);
+    }
   }
 
   // 전시에 이미지를 추가한다.
