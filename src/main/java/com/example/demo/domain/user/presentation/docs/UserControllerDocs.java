@@ -101,7 +101,6 @@ public interface UserControllerDocs {
 
           - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
           - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
-          - `INVALID_NICKNAME_FORMAT`, `DUPLICATE_NICKNAME`, `NICKNAME_CHANGE_NOT_ALLOWED`, `USER_NOT_FOUND`
           """)
   @ApiResponse(
       responseCode = "200",
@@ -191,14 +190,13 @@ public interface UserControllerDocs {
 
   @Operation(
       summary = "닉네임 중복 확인",
-      description =
-          """
-                    회원가입 또는 닉네임 변경 과정에서 닉네임 사용 가능 여부를 확인합니다.
-
-                    - 닉네임이 사용 가능하면 isAvailable=true를 반환합니다.
-                    - 이미 사용 중인 닉네임이면 isAvailable=false를 반환합니다.
-                    - 닉네임 형식이 올바르지 않은 경우 실패 응답을 반환합니다.
-                    """)
+          description =
+                  """
+                  로그인한 사용자의 닉네임을 변경합니다.
+              
+                  - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
+                  - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
+                  """)
   @Parameter(name = "nickname", description = "중복 확인할 닉네임", required = true, example = "maya041225")
   ApiResponseBody<NicknameCheckResponse> checkNickname(
       String nickname, HttpServletRequest httpRequest);
