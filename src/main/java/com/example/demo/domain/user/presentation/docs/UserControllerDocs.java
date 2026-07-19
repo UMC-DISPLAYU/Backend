@@ -1,13 +1,27 @@
 package com.example.demo.domain.user.presentation.docs;
 
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.ALREADY_WITHDRAWN_USER_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHANGE_NICKNAME_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DUPLICATE_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.EXPIRED_ACCESS_TOKEN_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_ACCESS_TOKEN_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTIST_PROFILE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
+import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
+import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -34,6 +48,105 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "조회 성공", value = MY_USER_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyUserResponse> getMe(AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(
+      summary = "회원 탈퇴",
+      description =
+          """
+          로그인한 사용자를 즉시 탈퇴 처리합니다.
+
+          - 이미 탈퇴한 사용자는 `ALREADY_WITHDRAWN_USER`를 반환합니다.
+          - 존재하지 않는 사용자는 `USER_NOT_FOUND`를 반환합니다.
+          """)
+  @ApiResponse(
+      responseCode = "200",
+      description = "회원 탈퇴 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "탈퇴 성공", value = WITHDRAW_USER_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 탈퇴한 사용자",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "이미 탈퇴한 사용자", value = ALREADY_WITHDRAWN_USER_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access Token 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "유효하지 않은 토큰", value = INVALID_ACCESS_TOKEN_EXAMPLE),
+                @ExampleObject(name = "만료된 토큰", value = EXPIRED_ACCESS_TOKEN_EXAMPLE)
+              }))
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<Void> withdraw(AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(
+      summary = "닉네임 변경",
+      description =
+          """
+          로그인한 사용자의 닉네임을 변경합니다.
+
+          - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
+          - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
+          - `INVALID_NICKNAME_FORMAT`, `DUPLICATE_NICKNAME`, `NICKNAME_CHANGE_NOT_ALLOWED`, `USER_NOT_FOUND`
+          """)
+  @ApiResponse(
+      responseCode = "200",
+      description = "닉네임 변경 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "변경 성공", value = CHANGE_NICKNAME_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "닉네임 형식 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "형식 오류", value = INVALID_NICKNAME_FORMAT_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "닉네임 중복 또는 변경 주기 제한",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "닉네임 중복", value = DUPLICATE_NICKNAME_EXAMPLE),
+                @ExampleObject(name = "변경 주기 제한", value = NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = NICKNAME_USER_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access Token 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "유효하지 않은 토큰", value = NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE),
+                @ExampleObject(name = "만료된 토큰", value = NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE)
+              }))
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<ChangeNicknameResponse> changeNickname(
+      AuthUser user, ChangeNicknameRequest request, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 작가 프로필 조회", description = "로그인한 사용자의 작가 프로필을 조회합니다.")
   @ApiResponse(
