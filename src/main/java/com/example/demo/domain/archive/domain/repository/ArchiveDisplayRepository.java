@@ -8,6 +8,8 @@ public interface ArchiveDisplayRepository {
 
   Optional<ArchiveDisplay> findById(Long archiveDisplayId);
 
+  Optional<ArchiveDisplay> findByIdAndUserId(Long archiveDisplayId, Long userId);
+
   Optional<ArchiveDisplay> findByUserIdAndDisplayId(Long userId, Long displayId);
 
   List<ArchiveDisplay> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
