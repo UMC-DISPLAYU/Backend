@@ -64,10 +64,14 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
+import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
+import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
+import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
@@ -85,6 +89,8 @@ import com.example.demo.domain.display.presentation.request.SearchDisplayRequest
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
@@ -117,8 +123,10 @@ public class DisplayController {
 
   private final CreateDisplayService createDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
+  private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
   private final GetDisplayDetailService getDisplayDetailService;
+  private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
   private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
@@ -129,8 +137,10 @@ public class DisplayController {
   public DisplayController(
       CreateDisplayService createDisplayService,
       DisplayLikeCommandService displayLikeCommandService,
+      DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
       GetDisplayDetailService getDisplayDetailService,
+      GetDisplayByInvitationService getDisplayByInvitationService,
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
       GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
@@ -139,8 +149,10 @@ public class DisplayController {
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
+    this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
+    this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
     this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
@@ -258,6 +270,28 @@ public class DisplayController {
   public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
       @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
     DisplayLikeResult result = displayLikeCommandService.cancel(displayLikeRequest.toCommand());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PostMapping("/api/v1/displays/{displayId}/invitation")
+  public ApiResponseBody<DisplayInvitationResponse> issueDisplayInvitation(
+      @PathVariable Long displayId, HttpServletRequest request) {
+    DisplayInvitationResult result = displayInvitationCommandService.issueInvitation(displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/displays/{displayId}/invitation/disable")
+  public ApiResponseBody<DisplayInvitationDisableResponse> disableDisplayInvitation(
+      @PathVariable Long displayId, HttpServletRequest request) {
+    DisplayInvitationDisableResult result =
+        displayInvitationCommandService.disableInvitation(displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @GetMapping("/api/v1/displays/invitation/{token}")
+  public ApiResponseBody<DisplayDetailResponse> getDisplayByInvitation(
+      @PathVariable String token, HttpServletRequest request) {
+    DisplayDetailResult result = getDisplayByInvitationService.getDisplay(token);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
