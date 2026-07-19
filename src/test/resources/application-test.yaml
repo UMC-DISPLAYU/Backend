@@ -39,6 +39,10 @@ springdoc:
 
 
 app:
+  display:
+    invitation:
+      base-url: https://displayu.co.kr/display/invitation
+
   kakao:
     client:
       id: test-kakao-client-id
