@@ -30,6 +30,25 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISPLAY_ID_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISPLAY_ID_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_TOKEN_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_TOKEN_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE_NAME;
@@ -274,23 +293,69 @@ public class DisplayController {
   }
 
   @PostMapping("/api/v1/displays/{displayId}/invitation")
+  @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_ISSUE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_ISSUE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayInvitationResponse> issueDisplayInvitation(
-      @PathVariable Long displayId, HttpServletRequest request) {
+      @Parameter(
+              description = INVITATION_DISPLAY_ID_DESCRIPTION,
+              example = INVITATION_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      HttpServletRequest request) {
     DisplayInvitationResult result = displayInvitationCommandService.issueInvitation(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PatchMapping("/api/v1/displays/{displayId}/invitation/disable")
+  @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_DISABLE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_DISABLE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayInvitationDisableResponse> disableDisplayInvitation(
-      @PathVariable Long displayId, HttpServletRequest request) {
+      @Parameter(
+              description = INVITATION_DISPLAY_ID_DESCRIPTION,
+              example = INVITATION_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      HttpServletRequest request) {
     DisplayInvitationDisableResult result =
         displayInvitationCommandService.disableInvitation(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @GetMapping("/api/v1/displays/invitation/{token}")
+  @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_DETAIL_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_DETAIL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayDetailResponse> getDisplayByInvitation(
-      @PathVariable String token, HttpServletRequest request) {
+      @Parameter(description = INVITATION_TOKEN_DESCRIPTION, example = INVITATION_TOKEN_EXAMPLE)
+          @PathVariable
+          String token,
+      HttpServletRequest request) {
     DisplayDetailResult result = getDisplayByInvitationService.getDisplay(token);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }

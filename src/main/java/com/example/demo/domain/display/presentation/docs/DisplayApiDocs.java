@@ -32,6 +32,32 @@ public final class DisplayApiDocs {
   public static final String LIKE_SUCCESS_EXAMPLE_NAME = "Display like success";
   public static final String LIKE_CANCEL_SUCCESS_EXAMPLE_NAME = "Display like cancel success";
 
+  public static final String INVITATION_ISSUE_SUMMARY = "전시 초대 링크 생성";
+  public static final String INVITATION_ISSUE_DESCRIPTION =
+      "전시 초대 링크를 생성하거나 재발급합니다. 기존 활성 링크가 있으면 새 토큰으로 교체되어 이전 링크는 즉시 사용할 수 없습니다.";
+  public static final String INVITATION_ISSUE_SUCCESS_DESCRIPTION = "전시 초대 링크 생성 성공";
+  public static final String INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME =
+      "Display invitation issue success";
+
+  public static final String INVITATION_DISABLE_SUMMARY = "전시 초대 링크 비활성화";
+  public static final String INVITATION_DISABLE_DESCRIPTION =
+      "전시 초대 링크를 비활성화합니다. 토큰은 삭제하지 않고 비활성화 시각만 기록하며, 이미 비활성화된 링크도 성공 응답을 반환합니다.";
+  public static final String INVITATION_DISABLE_SUCCESS_DESCRIPTION = "전시 초대 링크 비활성화 성공";
+  public static final String INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME =
+      "Display invitation disable success";
+
+  public static final String INVITATION_DETAIL_SUMMARY = "초대 토큰으로 전시 조회";
+  public static final String INVITATION_DETAIL_DESCRIPTION =
+      "초대 URL의 원본 토큰으로 전시 상세 정보를 조회합니다. 유효하지 않거나 비활성화된 초대 링크는 실패 응답을 반환합니다.";
+  public static final String INVITATION_DETAIL_SUCCESS_DESCRIPTION = "초대 토큰 전시 조회 성공";
+  public static final String INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME =
+      "Display invitation detail success";
+  public static final String INVITATION_DISPLAY_ID_DESCRIPTION = "전시 ID";
+  public static final String INVITATION_DISPLAY_ID_EXAMPLE = "12";
+  public static final String INVITATION_TOKEN_DESCRIPTION = "초대 URL에 포함된 원본 토큰";
+  public static final String INVITATION_TOKEN_EXAMPLE =
+      "xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4";
+
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
   public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
@@ -261,6 +287,42 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-01T23:00:00",
           "path": "/api/v1/display/like"
+        }
+      }
+      """;
+
+  public static final String INVITATION_ISSUE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "invitationUrl": "https://displayu.co.kr/display/invitation/xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-17T23:30:00",
+          "path": "/api/v1/displays/12/invitation"
+        }
+      }
+      """;
+
+  public static final String INVITATION_DISABLE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "invitationDisabledAt": "2026-07-17T23:30:00"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-17T23:30:00",
+          "path": "/api/v1/displays/12/invitation/disable"
         }
       }
       """;
@@ -518,6 +580,8 @@ public final class DisplayApiDocs {
         }
       }
       """;
+
+  public static final String INVITATION_DETAIL_SUCCESS_EXAMPLE = DETAIL_SUCCESS_EXAMPLE;
 
   private DisplayApiDocs() {}
 }
