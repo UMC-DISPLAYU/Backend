@@ -2,9 +2,7 @@ package com.example.demo.domain.memo.presentation;
 
 import com.example.demo.domain.memo.application.command.DeleteArtworkMemoService;
 import com.example.demo.domain.memo.application.command.DeleteExhibitionMemoService;
-import com.example.demo.domain.memo.application.command.UpsertArtworkMemoCommand;
 import com.example.demo.domain.memo.application.command.UpsertArtworkMemoService;
-import com.example.demo.domain.memo.application.command.UpsertExhibitionMemoCommand;
 import com.example.demo.domain.memo.application.command.UpsertExhibitionMemoService;
 import com.example.demo.domain.memo.application.result.MemoResult;
 import com.example.demo.domain.memo.presentation.docs.MemoControllerDocs;
@@ -54,8 +52,7 @@ public class MemoController implements MemoControllerDocs {
       HttpServletRequest httpRequest) {
     MemoResult result =
         upsertExhibitionMemoService.upsertExhibitionMemo(
-            new UpsertExhibitionMemoCommand(
-                TEMP_USER_ID, archiveDisplayId, request.content(), request.visitDate()));
+            mapper.toExhibitionMemoCommand(archiveDisplayId, TEMP_USER_ID, request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
@@ -75,8 +72,7 @@ public class MemoController implements MemoControllerDocs {
       HttpServletRequest httpRequest) {
     MemoResult result =
         upsertArtworkMemoService.upsertArtworkMemo(
-            new UpsertArtworkMemoCommand(
-                TEMP_USER_ID, archiveWorkId, request.content(), request.visitDate()));
+            mapper.toArtworkMemoCommand(archiveWorkId, TEMP_USER_ID, request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
