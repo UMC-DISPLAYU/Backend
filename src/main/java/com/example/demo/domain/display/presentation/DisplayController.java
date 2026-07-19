@@ -292,7 +292,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PostMapping("/api/v1/displays/{displayId}/invitation")
+  @PostMapping("/api/v1/display/{displayId}/invitation")
   @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -315,7 +315,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/displays/{displayId}/invitation/disable")
+  @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
   @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -339,7 +339,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/displays/invitation/{token}")
+  @GetMapping("/api/v1/display/invitation/{token}")
   @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",

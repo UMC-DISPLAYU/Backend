@@ -57,7 +57,7 @@ class DisplayInvitationControllerTest {
 
     MvcResult result =
         mockMvc
-            .perform(post("/api/v1/displays/{displayId}/invitation", display.getId()))
+            .perform(post("/api/v1/display/{displayId}/invitation", display.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultType").value("SUCCESS"))
             .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -84,12 +84,12 @@ class DisplayInvitationControllerTest {
     assertThat(firstUrl).isNotEqualTo(secondUrl);
 
     mockMvc
-        .perform(get("/api/v1/displays/invitation/{token}", rawToken(firstUrl)))
+        .perform(get("/api/v1/display/invitation/{token}", rawToken(firstUrl)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
 
     mockMvc
-        .perform(get("/api/v1/displays/invitation/{token}", rawToken(secondUrl)))
+        .perform(get("/api/v1/display/invitation/{token}", rawToken(secondUrl)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
   }
@@ -100,18 +100,18 @@ class DisplayInvitationControllerTest {
     String invitationUrl = invitationUrl(issue(display.getId()));
 
     mockMvc
-        .perform(patch("/api/v1/displays/{displayId}/invitation/disable", display.getId()))
+        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
-        .perform(patch("/api/v1/displays/{displayId}/invitation/disable", display.getId()))
+        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
-        .perform(get("/api/v1/displays/invitation/{token}", rawToken(invitationUrl)))
+        .perform(get("/api/v1/display/invitation/{token}", rawToken(invitationUrl)))
         .andExpect(status().isGone())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_DISABLED"));
   }
@@ -119,7 +119,7 @@ class DisplayInvitationControllerTest {
   @Test
   void getDisplayByInvitationReturnsNotFoundWhenTokenDoesNotExist() throws Exception {
     mockMvc
-        .perform(get("/api/v1/displays/invitation/{token}", "not-existing-token"))
+        .perform(get("/api/v1/display/invitation/{token}", "not-existing-token"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
   }
@@ -129,14 +129,14 @@ class DisplayInvitationControllerTest {
     Display display = displayJpaRepository.saveAndFlush(display());
 
     mockMvc
-        .perform(patch("/api/v1/displays/{displayId}/invitation/disable", display.getId()))
+        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_NOT_ISSUED"));
   }
 
   private MvcResult issue(Long displayId) throws Exception {
     return mockMvc
-        .perform(post("/api/v1/displays/{displayId}/invitation", displayId))
+        .perform(post("/api/v1/display/{displayId}/invitation", displayId))
         .andExpect(status().isOk())
         .andReturn();
   }

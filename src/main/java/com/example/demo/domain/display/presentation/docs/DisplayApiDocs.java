@@ -304,7 +304,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-17T23:30:00",
-          "path": "/api/v1/displays/12/invitation"
+          "path": "/api/v1/display/12/invitation"
         }
       }
       """;
@@ -322,7 +322,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-17T23:30:00",
-          "path": "/api/v1/displays/12/invitation/disable"
+          "path": "/api/v1/display/12/invitation/disable"
         }
       }
       """;
