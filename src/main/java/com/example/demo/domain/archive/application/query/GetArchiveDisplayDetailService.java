@@ -23,10 +23,10 @@ public class GetArchiveDisplayDetailService {
 
   // TODO: Display와 조인해서 title/posterImageUrl/장소/기간 등을 포함하도록 보강 필요. 지금은 목록조회와 동일한 얕은 정보만 반환.
   @Transactional(readOnly = true)
-  public ArchiveDisplayResult getArchiveDisplayDetail(Long archiveDisplayId) {
+  public ArchiveDisplayResult getArchiveDisplayDetail(Long userId, Long archiveDisplayId) {
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findById(archiveDisplayId)
+            .findByIdAndUserId(archiveDisplayId, userId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
 
     String memo =
