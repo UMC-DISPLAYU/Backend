@@ -28,8 +28,6 @@ public class WithdrawUserService {
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
     user.withdraw(LocalDateTime.now(clock));
-    refreshTokenRepository
-        .findByUserId(command.userId())
-        .ifPresent(refreshTokenRepository::delete);
+    refreshTokenRepository.findByUserId(command.userId()).ifPresent(refreshTokenRepository::delete);
   }
 }

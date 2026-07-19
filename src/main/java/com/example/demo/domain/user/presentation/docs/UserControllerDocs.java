@@ -190,10 +190,10 @@ public interface UserControllerDocs {
 
   @Operation(
       summary = "닉네임 중복 확인",
-          description =
-                  """
+      description =
+          """
                   로그인한 사용자의 닉네임을 변경합니다.
-              
+
                   - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
                   - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
                   """)
