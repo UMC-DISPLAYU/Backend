@@ -1,0 +1,3 @@
+ALTER TABLE `Display`
+    ADD CONSTRAINT `UK_DISPLAY_INVITATION_TOKEN`
+        UNIQUE (`invitationToken`);
