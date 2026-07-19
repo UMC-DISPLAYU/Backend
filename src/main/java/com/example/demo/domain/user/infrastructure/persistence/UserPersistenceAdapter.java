@@ -19,6 +19,11 @@ public class UserPersistenceAdapter implements UserRepository {
   }
 
   @Override
+  public void flush() {
+    userJpaRepository.flush();
+  }
+
+  @Override
   public boolean existsByNickname(String nickname) {
     return userJpaRepository.existsByNickname(nickname);
   }
