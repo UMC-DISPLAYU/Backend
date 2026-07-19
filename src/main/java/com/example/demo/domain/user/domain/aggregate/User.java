@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +25,7 @@ import lombok.NoArgsConstructor;
 public class User extends BaseTimeEntity {
 
   private static final long NICKNAME_CHANGE_INTERVAL_DAYS = 30;
+  private static final String WITHDRAWN_NICKNAME_PREFIX = "deleted_";
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,6 +77,7 @@ public class User extends BaseTimeEntity {
     if (deletedAt != null) {
       throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
     }
+    this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID();
     this.deletedAt = withdrawnAt;
   }
 
