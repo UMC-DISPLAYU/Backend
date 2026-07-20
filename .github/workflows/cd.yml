@@ -20,16 +20,22 @@ env:
   CONTAINER_NAME: ${{ secrets.CONTAINER_NAME || 'displayu-backend' }}
   APP_PORT: ${{ secrets.APP_PORT || '8080' }}
   EC2_PORT: ${{ secrets.EC2_PORT || '22' }}
+  MYSQL_IMAGE: ${{ secrets.MYSQL_IMAGE || 'mysql:8.0' }}
+  FLYWAY_IMAGE: ${{ secrets.FLYWAY_IMAGE || 'flyway/flyway:11' }}
+  TEMP_DB_NAME: displayu_migration_precheck
 
 jobs:
-  deploy:
-    name: Build, push, and deploy
+  build:
+    name: Build
     runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.image.outputs.image_uri }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up JDK 21
@@ -53,10 +59,266 @@ jobs:
       - name: Verify Flyway migrations in JAR
         run: jar tf build/libs/*.jar | grep 'db/migration' | sort
 
+      - name: Upload application JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        id: image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
+          docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
+          docker push "$IMAGE_URI"
+          docker push "$LATEST_URI"
+
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+  migration-precheck:
+    name: Migration precheck
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download application JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+          path: build/libs
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
       - name: Install MySQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y default-mysql-client
+
+      - name: Start temporary MySQL
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name migration-precheck-mysql \
+            -e MYSQL_ROOT_PASSWORD=precheck-root-password \
+            -e MYSQL_DATABASE="$TEMP_DB_NAME" \
+            -p 3307:3306 \
+            "$MYSQL_IMAGE"
+
+          for attempt in $(seq 1 60); do
+            if mysqladmin ping \
+              --host=127.0.0.1 \
+              --port=3307 \
+              --user=root \
+              --password=precheck-root-password \
+              --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs migration-precheck-mysql || true
+          exit 1
+
+      - name: Mask production DB values
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          {
+            echo "::add-mask::$DB_HOST"
+            echo "::add-mask::$DB_PORT"
+            echo "::add-mask::$DB_NAME"
+            echo "::add-mask::$DB_USERNAME"
+            echo "::add-mask::$DB_PASSWORD"
+            echo "::add-mask::jdbc:mysql://$DB_HOST:$DB_PORT/$DB_NAME"
+          }
+
+      - name: Protect versioned migration files
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/flyway-protect
+
+          git fetch --no-tags origin dev:refs/remotes/origin/dev || true
+
+          if git rev-parse --verify origin/dev >/dev/null 2>&1; then
+            git ls-tree -r --name-only origin/dev -- 'src/main/resources/db/migration/V*.sql' \
+              | sort > /tmp/flyway-protect/protected-files.txt
+          else
+            : > /tmp/flyway-protect/protected-files.txt
+          fi
+
+          if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+            base_ref="${{ github.event.before }}"
+          elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+            base_ref="HEAD~1"
+          else
+            base_ref=""
+          fi
+
+          if [ -n "$base_ref" ]; then
+            git ls-tree -r --name-only "$base_ref" -- 'src/main/resources/db/migration/V*.sql' \
+              | sort -u >> /tmp/flyway-protect/protected-files.txt
+          fi
+
+          sort -u /tmp/flyway-protect/protected-files.txt -o /tmp/flyway-protect/protected-files.txt
+
+          failed=0
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            if [ ! -f "$file" ]; then
+              echo "::error file=$file::Existing versioned Flyway migration was deleted. Add a new migration instead."
+              failed=1
+              continue
+            fi
+
+            if ! git diff --quiet origin/dev -- "$file" 2>/dev/null; then
+              if git cat-file -e "origin/dev:$file" 2>/dev/null; then
+                echo "::error file=$file::Existing versioned Flyway migration was modified after it existed on dev. Add a new migration instead."
+                failed=1
+              fi
+            fi
+
+            if [ -n "$base_ref" ] && ! git diff --quiet "$base_ref" -- "$file" 2>/dev/null; then
+              if git cat-file -e "$base_ref:$file" 2>/dev/null; then
+                echo "::error file=$file::Existing versioned Flyway migration was modified after it existed on the deployment base. Add a new migration instead."
+                failed=1
+              fi
+            fi
+          done < /tmp/flyway-protect/protected-files.txt
+
+          while IFS= read -r file; do
+            name="$(basename "$file")"
+            if ! [[ "$name" =~ ^V[0-9]+__[A-Za-z0-9_]+\.sql$ ]]; then
+              echo "::error file=$file::Migration filename must match V<digits>__<description>.sql using letters, numbers, and underscores."
+              failed=1
+            fi
+          done < <(find src/main/resources/db/migration -maxdepth 1 -type f -name 'V*.sql' | sort)
+
+          find src/main/resources/db/migration -maxdepth 1 -type f -name 'V*.sql' \
+            | sed -n 's|.*/V\([0-9][0-9]*\)__.*\.sql|\1|p' \
+            | sort > /tmp/flyway-protect/current-versions.txt
+
+          duplicates="$(uniq -d /tmp/flyway-protect/current-versions.txt || true)"
+          if [ -n "$duplicates" ]; then
+            echo "::error::Duplicate Flyway migration version(s): $duplicates"
+            failed=1
+          fi
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Detect risky migration SQL
+        run: |
+          set -euo pipefail
+
+          pattern='DROP[[:space:]]+FOREIGN[[:space:]]+KEY|DROP[[:space:]]+COLUMN|ADD[[:space:]]+COLUMN[^;]*NOT[[:space:]]+NULL|MODIFY[[:space:]]+(COLUMN[[:space:]]+)?|ALTER[[:space:]]+COLUMN|ADD[[:space:]]+UNIQUE|ADD[[:space:]]+(CONSTRAINT[[:space:]]+[^[:space:]]+[[:space:]]+)?FOREIGN[[:space:]]+KEY|(^|[[:space:];])DELETE[[:space:]]+FROM|TRUNCATE'
+          matches="$(grep -REin --include='V*.sql' "$pattern" src/main/resources/db/migration || true)"
+
+          {
+            echo "## Migration risk scan"
+            if [ -n "$matches" ]; then
+              echo
+              echo "Risky DDL/DML was detected. Full production-schema migration precheck is required and is running in this job."
+              echo
+              echo '```text'
+              echo "$matches"
+              echo '```'
+            else
+              echo
+              echo "No configured risky DDL/DML pattern was detected. Full production-schema migration precheck still runs before production migration."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dump production schema and Flyway history
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          MYSQL_PWD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/flyway-precheck
+
+          mysqldump \
+            --host="$DB_HOST" \
+            --port="$DB_PORT" \
+            --user="$DB_USERNAME" \
+            --no-data \
+            --routines \
+            --triggers \
+            --events \
+            --single-transaction \
+            --set-gtid-purged=OFF \
+            --skip-comments \
+            "$DB_NAME" \
+            > /tmp/flyway-precheck/production-schema.sql
+
+          mysqldump \
+            --host="$DB_HOST" \
+            --port="$DB_PORT" \
+            --user="$DB_USERNAME" \
+            --no-create-info \
+            --skip-triggers \
+            --single-transaction \
+            --set-gtid-purged=OFF \
+            --skip-comments \
+            "$DB_NAME" flyway_schema_history \
+            > /tmp/flyway-precheck/flyway-schema-history.sql
+
+          sed -E -i 's/DEFINER=`[^`]+`@`[^`]+`//g' /tmp/flyway-precheck/production-schema.sql
+
+      - name: Restore production schema into temporary MySQL
+        run: |
+          set -euo pipefail
+
+          mysql \
+            --host=127.0.0.1 \
+            --port=3307 \
+            --user=root \
+            --password=precheck-root-password \
+            --execute="DROP DATABASE IF EXISTS \`$TEMP_DB_NAME\`; CREATE DATABASE \`$TEMP_DB_NAME\` CHARACTER SET utf8mb4;"
+
+          mysql --host=127.0.0.1 --port=3307 --user=root --password=precheck-root-password "$TEMP_DB_NAME" \
+            < /tmp/flyway-precheck/production-schema.sql
+
+          mysql --host=127.0.0.1 --port=3307 --user=root --password=precheck-root-password "$TEMP_DB_NAME" \
+            < /tmp/flyway-precheck/flyway-schema-history.sql
 
       - name: Check Flyway migration order against production DB
         env:
@@ -87,8 +349,8 @@ jobs:
           latest_applied_version="${applied_versions[-1]}"
           printf '%s\n' "${applied_versions[@]}" | sort > /tmp/applied-flyway-versions.txt
 
-          jar tf build/libs/*.jar \
-            | sed -n 's|.*db/migration/V\([0-9][0-9]*\)__.*\.sql|\1|p' \
+          find src/main/resources/db/migration -maxdepth 1 -type f -name 'V*.sql' \
+            | sed -n 's|.*V\([0-9][0-9]*\)__.*\.sql|\1|p' \
             | sort -u > /tmp/resolved-flyway-versions.txt
 
           failed=0
@@ -107,30 +369,164 @@ jobs:
 
           echo "Flyway migration order check passed. Latest applied production migration: $latest_applied_version"
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and push Docker image
+      - name: Run Flyway validate and migrate on temporary DB
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          FLYWAY_URL: jdbc:mysql://127.0.0.1:3307/displayu_migration_precheck
+          FLYWAY_USER: root
+          FLYWAY_PASSWORD: precheck-root-password
         run: |
-          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+          set -euo pipefail
 
-          docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
-          docker push "$IMAGE_URI"
-          docker push "$LATEST_URI"
+          docker run --rm --network host \
+            -e FLYWAY_URL \
+            -e FLYWAY_USER \
+            -e FLYWAY_PASSWORD \
+            -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
+            "$FLYWAY_IMAGE" validate
 
-          echo "image_uri=$IMAGE_URI" >> "$GITHUB_ENV"
+          set +e
+          docker run --rm --network host \
+            -e FLYWAY_URL \
+            -e FLYWAY_USER \
+            -e FLYWAY_PASSWORD \
+            -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
+            "$FLYWAY_IMAGE" migrate 2>&1 | tee /tmp/flyway-precheck/flyway-migrate.log
+          flyway_status="${PIPESTATUS[0]}"
+          set -e
 
+          if [ "$flyway_status" -ne 0 ]; then
+            failed_migration="$(grep -Eo 'V[0-9]+__[A-Za-z0-9_]+\.sql' /tmp/flyway-precheck/flyway-migrate.log | tail -1 || true)"
+            {
+              echo "## Migration precheck failed"
+              echo
+              echo "- Failed migration: ${failed_migration:-unknown}"
+              echo
+              echo '```text'
+              tail -80 /tmp/flyway-precheck/flyway-migrate.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$flyway_status"
+          fi
+
+      - name: Verify Spring Boot context and Hibernate schema validation
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          SPRING_FLYWAY_ENABLED: "false"
+          SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+          SERVER_PORT: "0"
+          DB_HOST: 127.0.0.1
+          DB_PORT: "3307"
+          DB_NAME: displayu_migration_precheck
+          DB_USERNAME: root
+          DB_PASSWORD: precheck-root-password
+          MAIL_USERNAME: precheck@example.com
+          MAIL_PASSWORD: precheck
+          GOOGLE_CLIENT_ID: precheck-google-client-id
+          GOOGLE_CLIENT_SECRET: precheck-google-client-secret
+          KAKAO_CLIENT_ID: precheck-kakao-client-id
+          JWT_SECRET: precheck-jwt-secret-precheck-jwt-secret-precheck-jwt-secret
+          AWS_REGION: ap-northeast-2
+          S3_BUCKET: precheck-bucket
+          CDN_BASE_URL: https://cdn.example.com
+          PRESIGNED_URL_EXPIRATION_SECONDS: "3600"
+        run: |
+          set -euo pipefail
+
+          set +e
+          timeout 75s java -jar build/libs/*.jar > /tmp/flyway-precheck/spring-boot.log 2>&1
+          app_status="$?"
+          set -e
+
+          if grep -q 'Started DemoApplication' /tmp/flyway-precheck/spring-boot.log; then
+            echo "Spring Boot context startup and Hibernate ddl-auto=validate passed."
+            exit 0
+          fi
+
+          {
+            echo "## Spring Boot schema validation failed"
+            echo
+            echo '```text'
+            tail -120 /tmp/flyway-precheck/spring-boot.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$app_status"
+
+  production-migrate:
+    name: Production migrate
+    runs-on: ubuntu-latest
+    needs: migration-precheck
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Mask production DB values
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          {
+            echo "::add-mask::$DB_HOST"
+            echo "::add-mask::$DB_PORT"
+            echo "::add-mask::$DB_NAME"
+            echo "::add-mask::$DB_USERNAME"
+            echo "::add-mask::$DB_PASSWORD"
+            echo "::add-mask::jdbc:mysql://$DB_HOST:$DB_PORT/$DB_NAME"
+          }
+
+      - name: Run Flyway migration on production DB
+        env:
+          FLYWAY_URL: jdbc:mysql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+          FLYWAY_USER: ${{ secrets.DB_USERNAME }}
+          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -e FLYWAY_URL \
+            -e FLYWAY_USER \
+            -e FLYWAY_PASSWORD \
+            -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
+            "$FLYWAY_IMAGE" validate
+
+          set +e
+          docker run --rm \
+            -e FLYWAY_URL \
+            -e FLYWAY_USER \
+            -e FLYWAY_PASSWORD \
+            -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
+            "$FLYWAY_IMAGE" migrate 2>&1 | tee /tmp/production-flyway-migrate.log
+          flyway_status="${PIPESTATUS[0]}"
+          set -e
+
+          if [ "$flyway_status" -ne 0 ]; then
+            failed_migration="$(grep -Eo 'V[0-9]+__[A-Za-z0-9_]+\.sql' /tmp/production-flyway-migrate.log | tail -1 || true)"
+            {
+              echo "## Production migration failed"
+              echo
+              echo "- Failed migration: ${failed_migration:-unknown}"
+              echo
+              echo '```text'
+              tail -80 /tmp/production-flyway-migrate.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$flyway_status"
+          fi
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - production-migrate
+
+    steps:
       - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
@@ -163,6 +559,8 @@ jobs:
         run: |
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
+            printf 'SPRING_FLYWAY_ENABLED=false\n'
+            printf 'SPRING_JPA_HIBERNATE_DDL_AUTO=validate\n'
             printf 'DB_HOST=%s\n' "$RUNTIME_DB_HOST"
             printf 'DB_PORT=%s\n' "$RUNTIME_DB_PORT"
             printf 'DB_NAME=%s\n' "$RUNTIME_DB_NAME"
@@ -191,7 +589,7 @@ jobs:
 
       - name: Deploy on EC2
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI: ${{ needs.build.outputs.image-uri }}
         run: |
           ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "set -euo pipefail
@@ -199,9 +597,10 @@ jobs:
              # Required deployment values
              APP_DIR=\"\$HOME/displayu-backend\"
              ENV_FILE=\"\$APP_DIR/.env\"
-             IMAGE_URI=\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\"
+             IMAGE_URI=\"$IMAGE_URI\"
              CONTAINER_NAME=\"$CONTAINER_NAME\"
              APP_PORT=\"$APP_PORT\"
+             ECR_REGISTRY=\"\${IMAGE_URI%%/*}\"
 
              # Validate EC2 prerequisites
              test -f \"\$ENV_FILE\"
@@ -210,7 +609,7 @@ jobs:
 
              # Login to ECR from EC2
              aws ecr get-login-password --region \"$AWS_REGION\" \
-               | docker login --username AWS --password-stdin \"$ECR_REGISTRY\"
+               | docker login --username AWS --password-stdin \"\$ECR_REGISTRY\"
 
              # Pull the image built by this workflow
              docker pull \"\$IMAGE_URI\"
@@ -221,7 +620,7 @@ jobs:
                docker rm \"\$CONTAINER_NAME\" >/dev/null 2>&1 || true
              fi
 
-             # Start the new application container
+             # Start the new application container with Flyway disabled.
              docker run -d \
                --name \"\$CONTAINER_NAME\" \
                --restart unless-stopped \
