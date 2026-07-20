@@ -23,6 +23,7 @@ env:
   MYSQL_IMAGE: ${{ secrets.MYSQL_IMAGE || 'mysql:8.0' }}
   FLYWAY_IMAGE: ${{ secrets.FLYWAY_IMAGE || 'flyway/flyway:11' }}
   TEMP_DB_NAME: displayu_migration_precheck
+  APPLICATION_JAR: build/libs/demo-0.0.1-SNAPSHOT.jar
 
 jobs:
   build:
@@ -57,13 +58,13 @@ jobs:
         run: ./gradlew clean build --no-daemon
 
       - name: Verify Flyway migrations in JAR
-        run: jar tf build/libs/*.jar | grep 'db/migration' | sort
+        run: jar tf "$APPLICATION_JAR" | grep 'db/migration' | sort
 
       - name: Upload application JAR
         uses: actions/upload-artifact@v4
         with:
           name: application-jar
-          path: build/libs/*.jar
+          path: ${{ env.APPLICATION_JAR }}
           if-no-files-found: error
 
       - name: Configure AWS credentials
@@ -433,7 +434,7 @@ jobs:
           set -euo pipefail
 
           set +e
-          timeout 75s java -jar build/libs/*.jar > /tmp/flyway-precheck/spring-boot.log 2>&1
+          timeout 75s java -jar "$APPLICATION_JAR" > /tmp/flyway-precheck/spring-boot.log 2>&1
           app_status="$?"
           set -e
 
