@@ -64,6 +64,127 @@ public final class UserApiDocs {
       }
       """;
 
+  public static final String WITHDRAW_USER_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": { "data": null },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-19T20:00:00",
+          "path": "/api/v1/users/me"
+        }
+      }
+      """;
+
+  public static final String CHANGE_NICKNAME_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "nickname": "User2",
+            "nextNicknameChangeAvailableAt": "2026-08-18T20:00:00"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-19T20:00:00",
+          "path": "/api/v1/users/me/nickname"
+        }
+      }
+      """;
+
+  public static final String ALREADY_WITHDRAWN_USER_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "ALREADY_WITHDRAWN_USER", "message": "이미 탈퇴한 사용자입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me" }
+      }
+      """;
+
+  public static final String USER_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me" }
+      }
+      """;
+
+  public static final String INVALID_ACCESS_TOKEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "INVALID_ACCESS_TOKEN", "message": "유효하지 않은 액세스 토큰입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me" }
+      }
+      """;
+
+  public static final String EXPIRED_ACCESS_TOKEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "EXPIRED_ACCESS_TOKEN", "message": "만료된 액세스 토큰입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me" }
+      }
+      """;
+
+  public static final String NICKNAME_USER_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
+  public static final String NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "INVALID_ACCESS_TOKEN", "message": "유효하지 않은 액세스 토큰입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
+  public static final String NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "EXPIRED_ACCESS_TOKEN", "message": "만료된 액세스 토큰입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
+  public static final String INVALID_NICKNAME_FORMAT_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "INVALID_NICKNAME_FORMAT", "message": "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
+  public static final String DUPLICATE_NICKNAME_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "DUPLICATE_NICKNAME", "message": "이미 사용 중인 닉네임입니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
+  public static final String NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL", "success": null,
+        "error": { "code": "NICKNAME_CHANGE_NOT_ALLOWED", "message": "마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.", "details": null },
+        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
+      }
+      """;
+
   public static final String MY_ARTIST_PROFILE_SUCCESS_EXAMPLE =
       """
       {

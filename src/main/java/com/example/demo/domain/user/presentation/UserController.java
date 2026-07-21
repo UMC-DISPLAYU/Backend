@@ -5,15 +5,20 @@ import com.example.demo.domain.artist.application.service.GetArtistProfileServic
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
+import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.application.result.MyUserResult;
+import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.application.service.GetMyUserService;
 import com.example.demo.domain.user.application.service.ResendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.SendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.UserService;
+import com.example.demo.domain.user.application.service.WithdrawUserService;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.presentation.docs.UserControllerDocs;
 import com.example.demo.domain.user.presentation.mapper.UserPresentationMapper;
+import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
+import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -21,8 +26,11 @@ import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +44,8 @@ public class UserController implements UserControllerDocs {
   private final SendSchoolEmailVerificationService sendSchoolEmailVerificationService;
   private final ResendSchoolEmailVerificationService resendSchoolEmailVerificationService;
   private final GetMyUserService getMyUserService;
+  private final WithdrawUserService withdrawUserService;
+  private final ChangeNicknameService changeNicknameService;
   private final GetArtistProfileService getArtistProfileService;
   private final UserPresentationMapper userPresentationMapper;
   private final ArtistProfileMapper artistProfileMapper;
@@ -45,6 +55,25 @@ public class UserController implements UserControllerDocs {
   public ApiResponseBody<MyUserResponse> getMe(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyUserResult result = getMyUserService.execute(user.userId());
+    return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
+  }
+
+  @Override
+  @DeleteMapping("/me")
+  public ApiResponseBody<Void> withdraw(
+      @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
+    withdrawUserService.execute(userPresentationMapper.toWithdrawCommand(user.userId()));
+    return ApiResponseBody.success(null, httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/me/nickname")
+  public ApiResponseBody<ChangeNicknameResponse> changeNickname(
+      @AuthenticationPrincipal AuthUser user,
+      @RequestBody ChangeNicknameRequest request,
+      HttpServletRequest httpRequest) {
+    ChangeNicknameResult result =
+        changeNicknameService.execute(userPresentationMapper.toCommand(user.userId(), request));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
