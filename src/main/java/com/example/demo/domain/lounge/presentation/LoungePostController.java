@@ -132,8 +132,10 @@ public class LoungePostController implements LoungePostControllerDocs {
       @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostQueryService.getPosts(category, cursorId, size, user.userId())),
+        mapper.toResponse(
+            loungePostQueryService.getPosts(category, cursorId, size, viewerUserId)),
         request);
   }
 
@@ -143,8 +145,9 @@ public class LoungePostController implements LoungePostControllerDocs {
       @PathVariable Long loungePostId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, user.userId())),
+        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, viewerUserId)),
         request);
   }
 }
