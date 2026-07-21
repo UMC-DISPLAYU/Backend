@@ -187,7 +187,7 @@ public interface UserControllerDocs {
   @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
   @ApiResponse(responseCode = "403", description = "작가 인증이 완료되지 않은 사용자")
   @ApiResponse(responseCode = "404", description = "사용자 또는 작가 프로필이 존재하지 않음")
-  @ApiResponse(responseCode = "409", description = "닉네임 중복 또는 변경 주기 제한")
+  @ApiResponse(responseCode = "409", description = "작가명 중복")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
       AuthUser user, UpdateArtistProfileRequest request, HttpServletRequest httpRequest);

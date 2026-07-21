@@ -15,14 +15,10 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.exception.ArtistErrorCode;
 import com.example.demo.domain.artist.exception.ArtistException;
-import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -30,49 +26,62 @@ import org.junit.jupiter.api.Test;
 class UpdateArtistProfileServiceTest {
 
   private static final Long USER_ID = 1L;
-  private static final Clock CLOCK =
-      Clock.fixed(Instant.parse("2026-07-20T05:00:00Z"), ZoneId.of("Asia/Seoul"));
-
   private final UserRepository userRepository = mock(UserRepository.class);
   private final ArtistProfileRepository artistProfileRepository =
       mock(ArtistProfileRepository.class);
   private final AreaOfActivityRepository areaOfActivityRepository =
       mock(AreaOfActivityRepository.class);
-  private final ChangeNicknameService changeNicknameService =
-      new ChangeNicknameService(userRepository, CLOCK);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository, artistProfileRepository, areaOfActivityRepository, changeNicknameService);
+          userRepository, artistProfileRepository, areaOfActivityRepository);
 
   @Test
   void updatesArtistProfileInOneFlow() {
     User user = verifiedUser("oldName");
     ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
-    when(userRepository.existsByNickname("newName")).thenReturn(false);
+    when(artistProfileRepository.existsByArtistName("newName")).thenReturn(false);
 
     UpdateArtistProfileResult result = service.execute(command("newName"));
 
-    assertThat(user.getNickname()).isEqualTo("newName");
+    assertThat(user.getNickname()).isEqualTo("oldName");
+    assertThat(profile.getArtistName()).isEqualTo("newName");
     assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
     assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
     assertThat(profile.getUnivName()).isEqualTo("한양대학교");
+    assertThat(result.artistName()).isEqualTo("newName");
     assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);
   }
 
   @Test
-  void skipsNicknamePolicyWhenNicknameIsUnchanged() {
+  void skipsDuplicateCheckWhenArtistNameIsUnchanged() {
     User user = verifiedUser("sameName");
-    ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
+    ArtistProfile profile =
+        ArtistProfile.create(user, "sameName", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
 
     service.execute(command("sameName"));
 
-    verify(userRepository, never()).existsByNickname("sameName");
+    verify(artistProfileRepository, never()).existsByArtistName("sameName");
     assertThat(user.getNicknameChangeAt()).isNull();
+  }
+
+  @Test
+  void rejectsDuplicateArtistName() {
+    User user = verifiedUser("nickname");
+    ArtistProfile profile =
+        ArtistProfile.create(user, "oldArtist", "artist@du.ac.kr", "기존대학교", null);
+    prepare(user, profile);
+    when(artistProfileRepository.existsByArtistName("newName")).thenReturn(true);
+
+    assertThatExceptionOfType(ArtistException.class)
+        .isThrownBy(() -> service.execute(command("newName")))
+        .satisfies(
+            exception ->
+                assertThat(exception.errorCode()).isEqualTo(ArtistErrorCode.DUPLICATE_ARTIST_NAME));
   }
 
   @Test
@@ -120,11 +129,11 @@ class UpdateArtistProfileServiceTest {
     when(artistProfileRepository.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
   }
 
-  private UpdateArtistProfileCommand command(String nickname) {
+  private UpdateArtistProfileCommand command(String artistName) {
     return new UpdateArtistProfileCommand(
         USER_ID,
         "https://cdn.example.com/profile.jpg",
-        nickname,
+        artistName,
         "작가 소개",
         List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),
         "https://portfolio.example.com",

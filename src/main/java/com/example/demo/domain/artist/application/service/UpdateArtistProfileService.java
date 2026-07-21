@@ -9,10 +9,8 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.exception.ArtistErrorCode;
 import com.example.demo.domain.artist.exception.ArtistException;
-import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
@@ -21,6 +19,7 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +29,11 @@ public class UpdateArtistProfileService {
 
   private static final int INTRODUCTION_MAX_LENGTH = 100;
   private static final int EXTERNAL_LINK_MAX_LENGTH = 255;
+  private static final int ARTIST_NAME_MAX_LENGTH = 50;
 
   private final UserRepository userRepository;
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
-  private final ChangeNicknameService changeNicknameService;
 
   @Transactional
   public UpdateArtistProfileResult execute(UpdateArtistProfileCommand command) {
@@ -52,7 +51,7 @@ public class UpdateArtistProfileService {
             .findByUserId(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.ARTIST_PROFILE_NOT_FOUND));
 
-    Nickname nickname = validateNickname(command.nickname());
+    String artistName = validateArtistName(command.artistName());
     ProfileImageUrl profileImageUrl = ProfileImageUrl.ofNullable(command.profileImageUrl());
     String introduction = normalize(command.introduction());
     String externalLink = normalize(command.externalLink());
@@ -64,7 +63,7 @@ public class UpdateArtistProfileService {
     validateActivityFields(command.fields());
     validateExternalLink(externalLink);
 
-    changeNicknameService.changeNickname(user, nickname);
+    changeArtistName(profile, artistName);
     user.changeProfileImage(profileImageUrl.value());
     user.changeUnivName(univName);
     profile.updateProfile(introduction, externalLink, univName);
@@ -75,18 +74,34 @@ public class UpdateArtistProfileService {
 
     return new UpdateArtistProfileResult(
         user.getProfileImageUrl(),
-        user.getNickname(),
+        profile.getArtistName(),
         introduction,
         List.copyOf(command.fields()),
         externalLink,
         univName);
   }
 
-  private Nickname validateNickname(String nickname) {
-    if (nickname == null || nickname.isBlank()) {
-      throw new UserException(UserErrorCode.MISSING_NICKNAME);
+  private String validateArtistName(String artistName) {
+    String normalized = normalize(artistName);
+    if (normalized == null || normalized.length() > ARTIST_NAME_MAX_LENGTH) {
+      throw new ArtistException(ArtistErrorCode.INVALID_ARTIST_NAME);
     }
-    return Nickname.of(nickname);
+    return normalized;
+  }
+
+  private void changeArtistName(ArtistProfile profile, String artistName) {
+    if (profile.getArtistName().equals(artistName)) {
+      return;
+    }
+    if (artistProfileRepository.existsByArtistName(artistName)) {
+      throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);
+    }
+    try {
+      profile.updateArtistName(artistName);
+      artistProfileRepository.flush();
+    } catch (DataIntegrityViolationException exception) {
+      throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);
+    }
   }
 
   private void validateIntroduction(String introduction) {

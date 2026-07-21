@@ -35,23 +35,30 @@ public class ArtistProfileMapper {
 
   public MyArtistProfileResponse toMyResponse(ArtistProfileResult result) {
     return new MyArtistProfileResponse(
+        result.profileImageUrl(),
         result.artistName(),
+        result.introduction(),
         "VERIFIED",
         result.schoolName(),
-        result.portfolioUrl(),
+        result.externalLink(),
         result.fields());
   }
 
   public UserArtistProfileResponse toUserResponse(ArtistProfileResult result) {
     return new UserArtistProfileResponse(
-        result.artistName(), result.schoolName(), result.portfolioUrl(), result.fields());
+        result.profileImageUrl(),
+        result.artistName(),
+        result.introduction(),
+        result.schoolName(),
+        result.externalLink(),
+        result.fields());
   }
 
   public UpdateArtistProfileCommand toCommand(Long userId, UpdateArtistProfileRequest request) {
     return new UpdateArtistProfileCommand(
         userId,
         request.profileImageUrl(),
-        request.nickname(),
+        request.artistName(),
         request.introduction(),
         request.fields(),
         request.externalLink(),
@@ -61,7 +68,7 @@ public class ArtistProfileMapper {
   public UpdateArtistProfileResponse toResponse(UpdateArtistProfileResult result) {
     return new UpdateArtistProfileResponse(
         result.profileImageUrl(),
-        result.nickname(),
+        result.artistName(),
         result.introduction(),
         result.fields(),
         result.externalLink(),
