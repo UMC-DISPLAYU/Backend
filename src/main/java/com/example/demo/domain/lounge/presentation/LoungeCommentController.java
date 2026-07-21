@@ -129,9 +129,10 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
         mapper.toResponse(
-            loungeCommentQueryService.getComments(loungePostId, cursorId, size, user.userId())),
+            loungeCommentQueryService.getComments(loungePostId, cursorId, size, viewerUserId)),
         request);
   }
 
@@ -143,9 +144,10 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
         mapper.toResponse(
-            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, user.userId())),
+            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, viewerUserId)),
         request);
   }
 }
