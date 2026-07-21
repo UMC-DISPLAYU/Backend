@@ -12,8 +12,10 @@ import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResp
 import com.example.demo.domain.lounge.presentation.response.LoungePostLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 public class LoungePostController implements LoungePostControllerDocs {
-
-  private static final Long TEMP_USER_ID = 1L;
 
   private final LoungePostCommandService loungePostCommandService;
   private final LoungePostQueryService loungePostQueryService;
@@ -48,11 +48,13 @@ public class LoungePostController implements LoungePostControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<LoungePostDetailResponse> createPost(
-      @RequestBody LoungePostRequest loungePostRequest, HttpServletRequest request) {
+      @RequestBody LoungePostRequest loungePostRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     Long loungePostId =
-        loungePostCommandService.createPost(TEMP_USER_ID, loungePostRequest.toCommand());
+        loungePostCommandService.createPost(user.userId(), loungePostRequest.toCommand());
     LoungePostDetailResult result =
-        loungePostQueryService.getPostDetail(loungePostId, TEMP_USER_ID);
+        loungePostQueryService.getPostDetail(loungePostId, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -61,52 +63,64 @@ public class LoungePostController implements LoungePostControllerDocs {
   public ApiResponseBody<LoungePostDetailResponse> updatePost(
       @PathVariable Long loungePostId,
       @RequestBody LoungePostRequest loungePostRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    loungePostCommandService.updatePost(loungePostId, TEMP_USER_ID, loungePostRequest.toCommand());
+    loungePostCommandService.updatePost(loungePostId, user.userId(), loungePostRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, TEMP_USER_ID)),
+        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, user.userId())),
         request);
   }
 
   @DeleteMapping("/api/v1/lounge/posts/{loungePostId}")
   @Override
   public ApiResponseBody<Void> deletePost(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
-    loungePostCommandService.deletePost(loungePostId, TEMP_USER_ID);
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    loungePostCommandService.deletePost(loungePostId, user.userId());
     return ApiResponseBody.success(null, request);
   }
 
   @PostMapping("/api/v1/lounge/posts/{loungePostId}/likes")
   @Override
   public ApiResponseBody<LoungePostLikeResponse> likePost(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostCommandService.likePost(loungePostId, TEMP_USER_ID)), request);
+        mapper.toResponse(loungePostCommandService.likePost(loungePostId, user.userId())), request);
   }
 
   @DeleteMapping("/api/v1/lounge/posts/{loungePostId}/likes")
   @Override
   public ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostCommandService.cancelLikePost(loungePostId, TEMP_USER_ID)),
+        mapper.toResponse(loungePostCommandService.cancelLikePost(loungePostId, user.userId())),
         request);
   }
 
   @PostMapping("/api/v1/lounge/posts/{loungePostId}/scraps")
   @Override
   public ApiResponseBody<LoungePostScrapResponse> scrapPost(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostCommandService.scrapPost(loungePostId, TEMP_USER_ID)), request);
+        mapper.toResponse(loungePostCommandService.scrapPost(loungePostId, user.userId())),
+        request);
   }
 
   @DeleteMapping("/api/v1/lounge/posts/{loungePostId}/scraps")
   @Override
   public ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostCommandService.cancelScrapPost(loungePostId, TEMP_USER_ID)),
+        mapper.toResponse(loungePostCommandService.cancelScrapPost(loungePostId, user.userId())),
         request);
   }
 
@@ -116,18 +130,21 @@ public class LoungePostController implements LoungePostControllerDocs {
       @RequestParam(required = false) LoungePostCategory category,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostQueryService.getPosts(category, cursorId, size, TEMP_USER_ID)),
+        mapper.toResponse(loungePostQueryService.getPosts(category, cursorId, size, user.userId())),
         request);
   }
 
   @GetMapping("/api/v1/lounge/posts/{loungePostId}")
   @Override
   public ApiResponseBody<LoungePostDetailResponse> getPostDetail(
-      @PathVariable Long loungePostId, HttpServletRequest request) {
+      @PathVariable Long loungePostId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, TEMP_USER_ID)),
+        mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, user.userId())),
         request);
   }
 }
