@@ -30,8 +30,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    outputs:
-      image_uri: ${{ steps.image.outputs.image_uri }}
 
     steps:
       - name: Checkout
@@ -92,8 +90,6 @@ jobs:
           docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
           docker push "$IMAGE_URI"
           docker push "$LATEST_URI"
-
-          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
   migration-precheck:
     name: Migration precheck
@@ -688,8 +684,6 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "chmod 600 ~/displayu-backend/.env"
 
       - name: Deploy on EC2
-        env:
-          IMAGE_URI: ${{ needs.build.outputs.image_uri }}
         run: |
           ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "set -euo pipefail
@@ -697,16 +691,37 @@ jobs:
              # Required deployment values
              APP_DIR=\"\$HOME/displayu-backend\"
              ENV_FILE=\"\$APP_DIR/.env\"
-             IMAGE_URI=\"$IMAGE_URI\"
+             ECR_REPOSITORY=\"$ECR_REPOSITORY\"
+             IMAGE_TAG=\"$IMAGE_TAG\"
              CONTAINER_NAME=\"$CONTAINER_NAME\"
              APP_PORT=\"$APP_PORT\"
-             ECR_REGISTRY=\"\${IMAGE_URI%%/*}\"
+             ECR_ACCOUNT_ID=\$(aws sts get-caller-identity --query Account --output text)
+             ECR_REGISTRY=\"\$ECR_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com\"
+             IMAGE_URI=\"\$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG\"
 
              # Validate EC2 prerequisites
-             test -n \"\$IMAGE_URI\"
-             test -f \"\$ENV_FILE\"
-             command -v docker >/dev/null 2>&1
-             command -v aws >/dev/null 2>&1
+             if [ -z \"\$ECR_REPOSITORY\" ]; then
+               echo \"ECR_REPOSITORY is empty.\"
+               exit 1
+             fi
+             if [ -z \"\$IMAGE_TAG\" ]; then
+               echo \"IMAGE_TAG is empty.\"
+               exit 1
+             fi
+             if [ ! -f \"\$ENV_FILE\" ]; then
+               echo \"Runtime env file is missing: \$ENV_FILE\"
+               exit 1
+             fi
+             if ! command -v docker >/dev/null 2>&1; then
+               echo \"docker command is not installed on EC2.\"
+               exit 1
+             fi
+             if ! command -v aws >/dev/null 2>&1; then
+               echo \"aws command is not installed on EC2.\"
+               exit 1
+             fi
+
+             echo \"Deploying image \$IMAGE_URI\"
 
              # Login to ECR from EC2
              aws ecr get-login-password --region \"$AWS_REGION\" \
