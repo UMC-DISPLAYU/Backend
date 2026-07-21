@@ -8,7 +8,6 @@ import com.example.demo.domain.lounge.application.result.LoungePostDetailResult;
 import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostListResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
-import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult;
 import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
@@ -18,7 +17,7 @@ import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResp
 import com.example.demo.domain.lounge.presentation.response.LoungePostLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungeReplyListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeWriterResponse;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +89,8 @@ public class LoungePresentationMapper {
         result.likeCount(),
         result.replyCount(),
         result.isLiked(),
-        result.isMyComment());
+        result.isMyComment(),
+        result.replies().stream().map(this::toReplyResponse).toList());
   }
 
   public LoungeCommentCursorResponse toResponse(LoungeCommentCursorResult result) {
@@ -101,12 +101,18 @@ public class LoungePresentationMapper {
         result.hasNext());
   }
 
-  public LoungeReplyCursorResponse toResponse(LoungeReplyCursorResult result) {
-    return new LoungeReplyCursorResponse(
-        result.replies().stream().map(this::toResponse).toList(),
-        result.nextCursorId(),
-        result.size(),
-        result.hasNext());
+  private LoungeReplyListResponse toReplyResponse(LoungeCommentListResult result) {
+    return new LoungeReplyListResponse(
+        result.loungeCommentId(),
+        result.parentCommentId(),
+        result.content(),
+        result.commentStatus(),
+        toResponse(result.writer()),
+        result.createdAt(),
+        result.updatedAt(),
+        result.likeCount(),
+        result.isLiked(),
+        result.isMyComment());
   }
 
   public LoungeCommentLikeResponse toResponse(LoungeCommentLikeResult result) {

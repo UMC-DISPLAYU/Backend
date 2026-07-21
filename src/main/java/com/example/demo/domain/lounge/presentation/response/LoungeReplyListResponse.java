@@ -1,9 +1,8 @@
 package com.example.demo.domain.lounge.presentation.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-public record LoungeCommentListResponse(
+public record LoungeReplyListResponse(
     Long loungeCommentId,
     Long parentCommentId,
     String content,
@@ -12,7 +11,5 @@ public record LoungeCommentListResponse(
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     long likeCount,
-    long replyCount,
     boolean isLiked,
-    boolean isMyComment,
-    List<LoungeReplyListResponse> replies) {}
+    boolean isMyComment) {}

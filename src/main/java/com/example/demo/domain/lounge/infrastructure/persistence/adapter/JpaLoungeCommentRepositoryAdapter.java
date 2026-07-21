@@ -32,13 +32,6 @@ public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepositor
   }
 
   @Override
-  public List<LoungeComment> findActiveRepliesByCursor(
-      Long parentCommentId, Long cursorId, int limit) {
-    return jpaRepository.findActiveRepliesByCursor(
-        parentCommentId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
-  }
-
-  @Override
   public long countActiveByLoungePostId(Long loungePostId) {
     return jpaRepository.countByLoungePostIdAndStatusAndDeletedAtIsNull(
         loungePostId, LoungeCommentStatus.ACTIVE);
@@ -48,20 +41,6 @@ public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepositor
   public Map<Long, Long> countActiveByLoungePostIds(List<Long> loungePostIds) {
     return jpaRepository
         .countByLoungePostIdsAndStatusAndDeletedAtIsNull(loungePostIds, LoungeCommentStatus.ACTIVE)
-        .stream()
-        .collect(
-            Collectors.toMap(
-                row -> ((Number) row[0]).longValue(), row -> ((Number) row[1]).longValue()));
-  }
-
-  @Override
-  public Map<Long, Long> countActiveRepliesByParentCommentIds(List<Long> parentCommentIds) {
-    if (parentCommentIds.isEmpty()) {
-      return Map.of();
-    }
-    return jpaRepository
-        .countRepliesByParentCommentIdsAndStatusAndDeletedAtIsNull(
-            parentCommentIds, LoungeCommentStatus.ACTIVE)
         .stream()
         .collect(
             Collectors.toMap(

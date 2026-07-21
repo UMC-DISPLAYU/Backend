@@ -1,8 +1,8 @@
 package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult;
-import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record LoungeCommentListResult(
     Long loungeCommentId,
@@ -15,28 +15,8 @@ public record LoungeCommentListResult(
     boolean isLiked,
     boolean isMyComment,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {
-
-  public static LoungeCommentListResult from(
-      LoungeComment comment,
-      WriterView writer,
-      long likeCount,
-      long replyCount,
-      boolean isLiked,
-      Long viewerUserId) {
-    return new LoungeCommentListResult(
-        comment.getId(),
-        comment.getParentCommentId(),
-        comment.getContent(),
-        comment.getStatus().name(),
-        writer,
-        likeCount,
-        replyCount,
-        isLiked,
-        comment.getAuthorUserId().value().equals(viewerUserId),
-        comment.getCreatedAt(),
-        comment.getUpdatedAt());
-  }
+    LocalDateTime updatedAt,
+    List<LoungeCommentListResult> replies) {
 
   public static LoungeCommentListResult from(
       LoungeCommentQueryResult comment,
@@ -44,7 +24,8 @@ public record LoungeCommentListResult(
       long likeCount,
       long replyCount,
       boolean isLiked,
-      Long viewerUserId) {
+      Long viewerUserId,
+      List<LoungeCommentListResult> replies) {
     return new LoungeCommentListResult(
         comment.loungeCommentId(),
         comment.parentCommentId(),
@@ -56,6 +37,7 @@ public record LoungeCommentListResult(
         isLiked,
         comment.authorUserId().equals(viewerUserId),
         comment.createdAt(),
-        comment.updatedAt());
+        comment.updatedAt(),
+        replies);
   }
 }

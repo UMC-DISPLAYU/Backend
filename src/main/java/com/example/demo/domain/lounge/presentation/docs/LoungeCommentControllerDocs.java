@@ -4,7 +4,6 @@ import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,21 +55,12 @@ public interface LoungeCommentControllerDocs {
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 목록 조회", description = "게시글의 댓글 목록을 커서 방식으로 조회합니다.")
+  @Operation(summary = "라운지 댓글 목록 조회", description = "게시글의 댓글 목록을 커서 방식으로 조회하며 각 댓글의 답글을 함께 반환합니다.")
   ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
       @Parameter(description = "한 번에 불러올 댓글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
-      AuthUser user,
-      HttpServletRequest request);
-
-  @Operation(summary = "라운지 답글 목록 조회", description = "댓글의 답글 목록을 커서 방식으로 조회합니다.")
-  ApiResponseBody<LoungeReplyCursorResponse> getReplies(
-      @PathVariable Long parentCommentId,
-      @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
-          Long cursorId,
-      @Parameter(description = "한 번에 불러올 답글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
 }

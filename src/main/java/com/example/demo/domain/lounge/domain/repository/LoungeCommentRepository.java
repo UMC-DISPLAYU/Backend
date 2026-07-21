@@ -10,13 +10,9 @@ public interface LoungeCommentRepository {
 
   List<LoungeComment> findActiveRootByCursor(Long loungePostId, Long cursorId, int limit);
 
-  List<LoungeComment> findActiveRepliesByCursor(Long parentCommentId, Long cursorId, int limit);
-
   long countActiveByLoungePostId(Long loungePostId);
 
   Map<Long, Long> countActiveByLoungePostIds(List<Long> loungePostIds);
-
-  Map<Long, Long> countActiveRepliesByParentCommentIds(List<Long> parentCommentIds);
 
   LoungeComment save(LoungeComment loungeComment);
 }

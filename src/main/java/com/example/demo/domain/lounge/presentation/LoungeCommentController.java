@@ -8,7 +8,6 @@ import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,20 +131,6 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
     return ApiResponseBody.success(
         mapper.toResponse(
             loungeCommentQueryService.getComments(loungePostId, cursorId, size, user.userId())),
-        request);
-  }
-
-  @GetMapping("/api/v1/lounge/comments/{parentCommentId}/replies")
-  @Override
-  public ApiResponseBody<LoungeReplyCursorResponse> getReplies(
-      @PathVariable Long parentCommentId,
-      @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest request) {
-    return ApiResponseBody.success(
-        mapper.toResponse(
-            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, user.userId())),
         request);
   }
 }

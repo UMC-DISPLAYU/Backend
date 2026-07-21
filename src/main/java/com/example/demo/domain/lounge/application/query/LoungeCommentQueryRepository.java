@@ -9,6 +9,5 @@ public interface LoungeCommentQueryRepository {
   List<LoungeCommentQueryResult> findActiveRootByCursor(
       Long loungePostId, Long cursorId, int limit);
 
-  List<LoungeCommentQueryResult> findActiveRepliesByCursor(
-      Long parentCommentId, Long cursorId, int limit);
+  List<LoungeCommentQueryResult> findActiveRepliesByParentCommentIds(List<Long> parentCommentIds);
 }

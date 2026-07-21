@@ -27,22 +27,6 @@ public interface SpringDataLoungeCommentJpaRepository extends JpaRepository<Loun
       @Param("cursorId") Long cursorId,
       Pageable pageable);
 
-  @Query(
-      """
-      SELECT comment
-      FROM LoungeComment comment
-      WHERE comment.parentCommentId = :parentCommentId
-        AND comment.status = :status
-        AND comment.deletedAt IS NULL
-        AND (:cursorId IS NULL OR comment.id > :cursorId)
-      ORDER BY comment.id ASC
-      """)
-  List<LoungeComment> findActiveRepliesByCursor(
-      @Param("parentCommentId") Long parentCommentId,
-      @Param("status") LoungeCommentStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
-
   long countByLoungePostIdAndStatusAndDeletedAtIsNull(
       Long loungePostId, LoungeCommentStatus status);
 
@@ -57,18 +41,5 @@ public interface SpringDataLoungeCommentJpaRepository extends JpaRepository<Loun
       """)
   List<Object[]> countByLoungePostIdsAndStatusAndDeletedAtIsNull(
       @Param("loungePostIds") List<Long> loungePostIds,
-      @Param("status") LoungeCommentStatus status);
-
-  @Query(
-      """
-      SELECT comment.parentCommentId, COUNT(comment)
-      FROM LoungeComment comment
-      WHERE comment.parentCommentId IN :parentCommentIds
-        AND comment.status = :status
-        AND comment.deletedAt IS NULL
-      GROUP BY comment.parentCommentId
-      """)
-  List<Object[]> countRepliesByParentCommentIdsAndStatusAndDeletedAtIsNull(
-      @Param("parentCommentIds") List<Long> parentCommentIds,
       @Param("status") LoungeCommentStatus status);
 }

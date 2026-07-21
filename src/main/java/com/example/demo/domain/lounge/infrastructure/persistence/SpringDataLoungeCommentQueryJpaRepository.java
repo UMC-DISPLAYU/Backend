@@ -72,15 +72,12 @@ public interface SpringDataLoungeCommentQueryJpaRepository
         comment.updatedAt
       )
       FROM LoungeComment comment
-      WHERE comment.parentCommentId = :parentCommentId
+      WHERE comment.parentCommentId IN :parentCommentIds
         AND comment.status = :status
         AND comment.deletedAt IS NULL
-        AND (:cursorId IS NULL OR comment.id > :cursorId)
-      ORDER BY comment.id ASC
+      ORDER BY comment.parentCommentId ASC, comment.id ASC
       """)
-  List<LoungeCommentQueryResult> findActiveRepliesByCursor(
-      @Param("parentCommentId") Long parentCommentId,
-      @Param("status") LoungeCommentStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
+  List<LoungeCommentQueryResult> findActiveRepliesByParentCommentIds(
+      @Param("parentCommentIds") List<Long> parentCommentIds,
+      @Param("status") LoungeCommentStatus status);
 }

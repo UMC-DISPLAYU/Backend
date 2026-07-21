@@ -32,9 +32,9 @@ public class JpaLoungeCommentQueryRepositoryAdapter implements LoungeCommentQuer
   }
 
   @Override
-  public List<LoungeCommentQueryResult> findActiveRepliesByCursor(
-      Long parentCommentId, Long cursorId, int limit) {
-    return jpaRepository.findActiveRepliesByCursor(
-        parentCommentId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
+  public List<LoungeCommentQueryResult> findActiveRepliesByParentCommentIds(
+      List<Long> parentCommentIds) {
+    return jpaRepository.findActiveRepliesByParentCommentIds(
+        parentCommentIds, LoungeCommentStatus.ACTIVE);
   }
 }
