@@ -31,7 +31,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      image-uri: ${{ steps.image.outputs.image_uri }}
+      image_uri: ${{ steps.image.outputs.image_uri }}
 
     steps:
       - name: Checkout
@@ -689,7 +689,7 @@ jobs:
 
       - name: Deploy on EC2
         env:
-          IMAGE_URI: ${{ needs.build.outputs.image-uri }}
+          IMAGE_URI: ${{ needs.build.outputs.image_uri }}
         run: |
           ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "set -euo pipefail
@@ -703,6 +703,7 @@ jobs:
              ECR_REGISTRY=\"\${IMAGE_URI%%/*}\"
 
              # Validate EC2 prerequisites
+             test -n \"\$IMAGE_URI\"
              test -f \"\$ENV_FILE\"
              command -v docker >/dev/null 2>&1
              command -v aws >/dev/null 2>&1
