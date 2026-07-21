@@ -50,12 +50,17 @@ public enum UserErrorCode implements BaseErrorCode {
   VERIFICATION_CODE_MISMATCH(
       HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_MISMATCH", "인증번호가 일치하지 않습니다."),
 
+  ARTIST_VERIFICATION_REQUIRED(
+      HttpStatus.FORBIDDEN, "ARTIST_VERIFICATION_REQUIRED", "작가 인증이 완료된 사용자만 이용할 수 있습니다."),
+
   VERIFICATION_ATTEMPTS_EXCEEDED(
       HttpStatus.BAD_REQUEST,
       "VERIFICATION_ATTEMPTS_EXCEEDED",
       "인증번호 확인 실패 횟수를 초과했습니다. 인증번호를 다시 요청해 주세요."),
 
-  VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다.");
+  VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다."),
+
+  ARTIST_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTIST_PROFILE_NOT_FOUND", "작가 프로필을 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String code;

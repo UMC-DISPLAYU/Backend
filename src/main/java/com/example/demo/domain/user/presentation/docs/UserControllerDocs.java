@@ -18,7 +18,9 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_AR
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
+import com.example.demo.domain.artist.presentation.request.UpdateArtistProfileRequest;
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
+import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
@@ -166,6 +168,17 @@ public interface UserControllerDocs {
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyArtistProfileResponse> getMyArtistProfile(
       AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(summary = "본인 작가 프로필 수정", description = "작가 인증이 완료된 사용자의 작가 프로필을 수정합니다.")
+  @ApiResponse(responseCode = "200", description = "작가 프로필 수정 성공")
+  @ApiResponse(responseCode = "400", description = "요청 필드 검증 실패")
+  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
+  @ApiResponse(responseCode = "403", description = "작가 인증이 완료되지 않은 사용자")
+  @ApiResponse(responseCode = "404", description = "사용자 또는 작가 프로필이 존재하지 않음")
+  @ApiResponse(responseCode = "409", description = "닉네임 중복 또는 변경 주기 제한")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
+      AuthUser user, UpdateArtistProfileRequest request, HttpServletRequest httpRequest);
 
   @Operation(summary = "특정 사용자 작가 프로필 조회", description = "특정 사용자의 작가 프로필을 조회합니다.")
   @ApiResponse(

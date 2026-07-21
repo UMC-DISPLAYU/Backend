@@ -1,9 +1,13 @@
 package com.example.demo.domain.user.presentation;
 
 import com.example.demo.domain.artist.application.result.ArtistProfileResult;
+import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.application.service.GetArtistProfileService;
+import com.example.demo.domain.artist.application.service.UpdateArtistProfileService;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
+import com.example.demo.domain.artist.presentation.request.UpdateArtistProfileRequest;
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
+import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.application.result.MyUserResult;
@@ -47,6 +51,7 @@ public class UserController implements UserControllerDocs {
   private final WithdrawUserService withdrawUserService;
   private final ChangeNicknameService changeNicknameService;
   private final GetArtistProfileService getArtistProfileService;
+  private final UpdateArtistProfileService updateArtistProfileService;
   private final UserPresentationMapper userPresentationMapper;
   private final ArtistProfileMapper artistProfileMapper;
 
@@ -83,6 +88,17 @@ public class UserController implements UserControllerDocs {
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     ArtistProfileResult result = getArtistProfileService.getMine(user.userId());
     return ApiResponseBody.success(artistProfileMapper.toMyResponse(result), httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/me/artist-profile")
+  public ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
+      @AuthenticationPrincipal AuthUser user,
+      @RequestBody UpdateArtistProfileRequest request,
+      HttpServletRequest httpRequest) {
+    UpdateArtistProfileResult result =
+        updateArtistProfileService.execute(artistProfileMapper.toCommand(user.userId(), request));
+    return ApiResponseBody.success(artistProfileMapper.toResponse(result), httpRequest);
   }
 
   @Override

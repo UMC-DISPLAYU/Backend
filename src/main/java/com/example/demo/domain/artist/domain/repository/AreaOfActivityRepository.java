@@ -9,4 +9,6 @@ public interface AreaOfActivityRepository {
   AreaOfActivity save(AreaOfActivity areaOfActivity);
 
   List<AreaOfActivity> findByArtistProfile(ArtistProfile artistProfile);
+
+  void deleteAllByArtistProfile(ArtistProfile artistProfile);
 }

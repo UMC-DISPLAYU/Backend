@@ -96,4 +96,8 @@ public class User extends BaseTimeEntity {
         ? null
         : nicknameChangeAt.plusDays(NICKNAME_CHANGE_INTERVAL_DAYS);
   }
+
+  public void changeUnivName(String univName) {
+    this.univName = univName;
+  }
 }
