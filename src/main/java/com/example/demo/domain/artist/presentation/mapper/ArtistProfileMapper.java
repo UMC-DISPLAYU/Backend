@@ -50,6 +50,7 @@ public class ArtistProfileMapper {
   public UpdateArtistProfileCommand toCommand(Long userId, UpdateArtistProfileRequest request) {
     return new UpdateArtistProfileCommand(
         userId,
+        request.profileImageUrl(),
         request.nickname(),
         request.introduction(),
         request.fields(),
@@ -59,6 +60,7 @@ public class ArtistProfileMapper {
 
   public UpdateArtistProfileResponse toResponse(UpdateArtistProfileResult result) {
     return new UpdateArtistProfileResponse(
+        result.profileImageUrl(),
         result.nickname(),
         result.introduction(),
         result.fields(),

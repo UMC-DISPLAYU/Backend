@@ -23,9 +23,11 @@ import com.example.demo.domain.artist.presentation.response.MyArtistProfileRespo
 import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
+import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
+import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,6 +52,16 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "조회 성공", value = MY_USER_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyUserResponse> getMe(AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(summary = "내 프로필 수정", description = "프로필 이미지와 닉네임을 한 번에 수정합니다.")
+  @ApiResponse(responseCode = "200", description = "내 프로필 수정 성공")
+  @ApiResponse(responseCode = "400", description = "프로필 이미지 URL 또는 닉네임 형식 오류")
+  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
+  @ApiResponse(responseCode = "404", description = "사용자 없음")
+  @ApiResponse(responseCode = "409", description = "닉네임 중복 또는 변경 주기 제한")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<UpdateMyProfileResponse> updateMe(
+      AuthUser user, UpdateMyProfileRequest request, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "회원 탈퇴",

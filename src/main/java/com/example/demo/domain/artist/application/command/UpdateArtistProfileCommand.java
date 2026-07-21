@@ -5,6 +5,7 @@ import java.util.List;
 
 public record UpdateArtistProfileCommand(
     Long userId,
+    String profileImageUrl,
     String nickname,
     String introduction,
     List<ActivityCategory> fields,

@@ -15,6 +15,7 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.exception.ArtistErrorCode;
 import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
@@ -37,9 +38,11 @@ class UpdateArtistProfileServiceTest {
       mock(ArtistProfileRepository.class);
   private final AreaOfActivityRepository areaOfActivityRepository =
       mock(AreaOfActivityRepository.class);
+  private final ChangeNicknameService changeNicknameService =
+      new ChangeNicknameService(userRepository, CLOCK);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository, artistProfileRepository, areaOfActivityRepository, CLOCK);
+          userRepository, artistProfileRepository, areaOfActivityRepository, changeNicknameService);
 
   @Test
   void updatesArtistProfileInOneFlow() {
@@ -51,6 +54,7 @@ class UpdateArtistProfileServiceTest {
     UpdateArtistProfileResult result = service.execute(command("newName"));
 
     assertThat(user.getNickname()).isEqualTo("newName");
+    assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
     assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
@@ -92,6 +96,7 @@ class UpdateArtistProfileServiceTest {
     UpdateArtistProfileCommand command =
         new UpdateArtistProfileCommand(
             USER_ID,
+            null,
             "oldName",
             "작가 소개",
             List.of(ActivityCategory.DESIGN, ActivityCategory.DESIGN),
@@ -118,6 +123,7 @@ class UpdateArtistProfileServiceTest {
   private UpdateArtistProfileCommand command(String nickname) {
     return new UpdateArtistProfileCommand(
         USER_ID,
+        "https://cdn.example.com/profile.jpg",
         nickname,
         "작가 소개",
         List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),

@@ -21,6 +21,11 @@ public enum UserErrorCode implements BaseErrorCode {
       "INVALID_NICKNAME_FORMAT",
       "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
 
+  INVALID_PROFILE_IMAGE_URL(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_PROFILE_IMAGE_URL",
+      "프로필 이미지 URL은 올바른 HTTP 또는 HTTPS URL이어야 합니다."),
+
   REQUIRED_AGREEMENT_NOT_ACCEPTED(
       HttpStatus.BAD_REQUEST, "REQUIRED_AGREEMENT_NOT_ACCEPTED", "필수 약관에 동의해야 회원가입할 수 있습니다."),
 

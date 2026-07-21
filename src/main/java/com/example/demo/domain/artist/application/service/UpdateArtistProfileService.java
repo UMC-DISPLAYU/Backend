@@ -9,19 +9,18 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.exception.ArtistErrorCode;
 import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
+import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateArtistProfileService {
 
   private static final int INTRODUCTION_MAX_LENGTH = 100;
+  private static final int EXTERNAL_LINK_MAX_LENGTH = 255;
 
   private final UserRepository userRepository;
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
-  private final Clock clock;
+  private final ChangeNicknameService changeNicknameService;
 
   @Transactional
   public UpdateArtistProfileResult execute(UpdateArtistProfileCommand command) {
@@ -53,6 +53,7 @@ public class UpdateArtistProfileService {
             .orElseThrow(() -> new UserException(UserErrorCode.ARTIST_PROFILE_NOT_FOUND));
 
     Nickname nickname = validateNickname(command.nickname());
+    ProfileImageUrl profileImageUrl = ProfileImageUrl.ofNullable(command.profileImageUrl());
     String introduction = normalize(command.introduction());
     String externalLink = normalize(command.externalLink());
     String univName = normalize(command.univName());
@@ -63,27 +64,22 @@ public class UpdateArtistProfileService {
     validateActivityFields(command.fields());
     validateExternalLink(externalLink);
 
-    try {
-      if (!user.getNickname().equals(nickname.value())) {
-        if (userRepository.existsByNickname(nickname.value())) {
-          throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
-        }
-        user.changeNickname(nickname, LocalDateTime.now(clock));
-        userRepository.flush();
-      }
-
-      user.changeUnivName(univName);
-      profile.updateProfile(introduction, externalLink, univName);
-      areaOfActivityRepository.deleteAllByArtistProfile(profile);
-      command
-          .fields()
-          .forEach(field -> areaOfActivityRepository.save(AreaOfActivity.create(profile, field)));
-    } catch (DataIntegrityViolationException exception) {
-      throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
-    }
+    changeNicknameService.changeNickname(user, nickname);
+    user.changeProfileImage(profileImageUrl.value());
+    user.changeUnivName(univName);
+    profile.updateProfile(introduction, externalLink, univName);
+    areaOfActivityRepository.deleteAllByArtistProfile(profile);
+    command
+        .fields()
+        .forEach(field -> areaOfActivityRepository.save(AreaOfActivity.create(profile, field)));
 
     return new UpdateArtistProfileResult(
-        nickname.value(), introduction, List.copyOf(command.fields()), externalLink, univName);
+        user.getProfileImageUrl(),
+        user.getNickname(),
+        introduction,
+        List.copyOf(command.fields()),
+        externalLink,
+        univName);
   }
 
   private Nickname validateNickname(String nickname) {
@@ -112,6 +108,9 @@ public class UpdateArtistProfileService {
   private void validateExternalLink(String externalLink) {
     if (externalLink == null) {
       return;
+    }
+    if (externalLink.length() > EXTERNAL_LINK_MAX_LENGTH) {
+      throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
     }
     try {
       URI uri = new URI(externalLink);

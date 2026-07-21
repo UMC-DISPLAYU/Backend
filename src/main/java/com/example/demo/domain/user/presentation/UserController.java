@@ -11,10 +11,12 @@ import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileR
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.application.result.MyUserResult;
+import com.example.demo.domain.user.application.result.UpdateMyProfileResult;
 import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.application.service.GetMyUserService;
 import com.example.demo.domain.user.application.service.ResendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.SendSchoolEmailVerificationService;
+import com.example.demo.domain.user.application.service.UpdateMyProfileService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.application.service.WithdrawUserService;
 import com.example.demo.domain.user.exception.UserErrorCode;
@@ -22,9 +24,11 @@ import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.presentation.docs.UserControllerDocs;
 import com.example.demo.domain.user.presentation.mapper.UserPresentationMapper;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
+import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
+import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,6 +54,7 @@ public class UserController implements UserControllerDocs {
   private final GetMyUserService getMyUserService;
   private final WithdrawUserService withdrawUserService;
   private final ChangeNicknameService changeNicknameService;
+  private final UpdateMyProfileService updateMyProfileService;
   private final GetArtistProfileService getArtistProfileService;
   private final UpdateArtistProfileService updateArtistProfileService;
   private final UserPresentationMapper userPresentationMapper;
@@ -60,6 +65,17 @@ public class UserController implements UserControllerDocs {
   public ApiResponseBody<MyUserResponse> getMe(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyUserResult result = getMyUserService.execute(user.userId());
+    return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/me")
+  public ApiResponseBody<UpdateMyProfileResponse> updateMe(
+      @AuthenticationPrincipal AuthUser user,
+      @RequestBody UpdateMyProfileRequest request,
+      HttpServletRequest httpRequest) {
+    UpdateMyProfileResult result =
+        updateMyProfileService.execute(userPresentationMapper.toCommand(user.userId(), request));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
