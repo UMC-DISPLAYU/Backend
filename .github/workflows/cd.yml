@@ -24,6 +24,7 @@ env:
   FLYWAY_IMAGE: ${{ secrets.FLYWAY_IMAGE || 'flyway/flyway:11' }}
   TEMP_DB_NAME: displayu_migration_precheck
   APPLICATION_JAR: build/libs/demo-0.0.1-SNAPSHOT.jar
+  PRODUCTION_DB_TUNNEL_PORT: "13306"
 
 jobs:
   build:
@@ -121,6 +122,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y default-mysql-client
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$EC2_PORT" -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Start temporary MySQL
         run: |
@@ -276,9 +284,34 @@ jobs:
 
           mkdir -p /tmp/flyway-precheck
 
+          ssh -i ~/.ssh/deploy_key \
+            -p "$EC2_PORT" \
+            -o ExitOnForwardFailure=yes \
+            -N \
+            -L "$PRODUCTION_DB_TUNNEL_PORT:$DB_HOST:$DB_PORT" \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" &
+          tunnel_pid="$!"
+          trap 'kill "$tunnel_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if mysqladmin ping \
+              --host=127.0.0.1 \
+              --port="$PRODUCTION_DB_TUNNEL_PORT" \
+              --user="$DB_USERNAME" \
+              --silent; then
+              tunnel_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "${tunnel_ready:-0}" -ne 1 ]; then
+            echo "::error::Could not connect to production DB through EC2 SSH tunnel."
+            exit 1
+          fi
+
           mysqldump \
-            --host="$DB_HOST" \
-            --port="$DB_PORT" \
+            --host=127.0.0.1 \
+            --port="$PRODUCTION_DB_TUNNEL_PORT" \
             --user="$DB_USERNAME" \
             --no-data \
             --routines \
@@ -291,8 +324,8 @@ jobs:
             > /tmp/flyway-precheck/production-schema.sql
 
           mysqldump \
-            --host="$DB_HOST" \
-            --port="$DB_PORT" \
+            --host=127.0.0.1 \
+            --port="$PRODUCTION_DB_TUNNEL_PORT" \
             --user="$DB_USERNAME" \
             --no-create-info \
             --skip-triggers \
@@ -331,10 +364,35 @@ jobs:
         run: |
           set -euo pipefail
 
+          ssh -i ~/.ssh/deploy_key \
+            -p "$EC2_PORT" \
+            -o ExitOnForwardFailure=yes \
+            -N \
+            -L "$PRODUCTION_DB_TUNNEL_PORT:$DB_HOST:$DB_PORT" \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" &
+          tunnel_pid="$!"
+          trap 'kill "$tunnel_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if mysqladmin ping \
+              --host=127.0.0.1 \
+              --port="$PRODUCTION_DB_TUNNEL_PORT" \
+              --user="$DB_USERNAME" \
+              --silent; then
+              tunnel_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "${tunnel_ready:-0}" -ne 1 ]; then
+            echo "::error::Could not connect to production DB through EC2 SSH tunnel."
+            exit 1
+          fi
+
           mapfile -t applied_versions < <(
             mysql \
-              --host="$DB_HOST" \
-              --port="$DB_PORT" \
+              --host=127.0.0.1 \
+              --port="$PRODUCTION_DB_TUNNEL_PORT" \
               --user="$DB_USERNAME" \
               --database="$DB_NAME" \
               --batch \
@@ -464,6 +522,18 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$EC2_PORT" -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+
       - name: Mask production DB values
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -483,13 +553,42 @@ jobs:
 
       - name: Run Flyway migration on production DB
         env:
-          FLYWAY_URL: jdbc:mysql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          MYSQL_PWD: ${{ secrets.DB_PASSWORD }}
+          FLYWAY_URL: jdbc:mysql://127.0.0.1:${{ env.PRODUCTION_DB_TUNNEL_PORT }}/${{ secrets.DB_NAME }}
           FLYWAY_USER: ${{ secrets.DB_USERNAME }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           set -euo pipefail
 
-          docker run --rm \
+          ssh -i ~/.ssh/deploy_key \
+            -p "$EC2_PORT" \
+            -o ExitOnForwardFailure=yes \
+            -N \
+            -L "$PRODUCTION_DB_TUNNEL_PORT:$DB_HOST:$DB_PORT" \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" &
+          tunnel_pid="$!"
+          trap 'kill "$tunnel_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if mysqladmin ping \
+              --host=127.0.0.1 \
+              --port="$PRODUCTION_DB_TUNNEL_PORT" \
+              --user="$DB_USERNAME" \
+              --silent; then
+              tunnel_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "${tunnel_ready:-0}" -ne 1 ]; then
+            echo "::error::Could not connect to production DB through EC2 SSH tunnel."
+            exit 1
+          fi
+
+          docker run --rm --network host \
             -e FLYWAY_URL \
             -e FLYWAY_USER \
             -e FLYWAY_PASSWORD \
@@ -497,7 +596,7 @@ jobs:
             "$FLYWAY_IMAGE" validate
 
           set +e
-          docker run --rm \
+          docker run --rm --network host \
             -e FLYWAY_URL \
             -e FLYWAY_USER \
             -e FLYWAY_PASSWORD \
