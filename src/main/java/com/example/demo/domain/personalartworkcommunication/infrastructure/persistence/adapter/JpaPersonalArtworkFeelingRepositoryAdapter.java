@@ -2,6 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,10 @@ public class JpaPersonalArtworkFeelingRepositoryAdapter
   @Override
   public PersonalArtworkFeeling save(PersonalArtworkFeeling personalArtoworkFeeling) {
     return personalArtworkFeelingJpaRepository.save(personalArtoworkFeeling);
+  }
+
+  @Override
+  public Optional<PersonalArtworkFeeling> findById(Long personalFeelingId) {
+    return personalArtworkFeelingJpaRepository.findById(personalFeelingId);
   }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -109,5 +110,95 @@ public interface PersonalArtworkFeelingApiDocs {
               example = "1")
           Long userId,
       @Valid CreatePersonalArtworkFeelingRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "개인 작품 감상평 삭제",
+      description = "사용자가 본인이 작성한 개인 작품 감상평을 soft delete 방식으로 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling delete success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalFeelingId": 1,
+                                "deletedAt": "2026-07-22T15:10:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-22T15:10:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "감상평 삭제 권한 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling delete forbidden",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_ARTWORK_FEELING_FORBIDDEN",
+                              "message": "본인이 작성한 감상평만 삭제할 수 있습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-22T15:10:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "개인 작품, 사용자 또는 감상평 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling delete not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_FEELING_NOT_FOUND",
+                              "message": "개인 작품 감상평을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-22T15:10:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<DeletedPersonalArtworkFeelingResponse> deleteFeeling(
+      @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "삭제할 개인 작품 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
       HttpServletRequest httpServletRequest);
 }
