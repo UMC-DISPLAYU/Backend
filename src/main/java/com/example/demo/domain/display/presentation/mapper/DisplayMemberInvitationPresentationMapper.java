@@ -4,9 +4,11 @@ import com.example.demo.domain.display.application.command.AcceptDisplayInvitati
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
+import com.example.demo.domain.display.application.result.DisplayMemberListResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
+import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,5 +40,16 @@ public class DisplayMemberInvitationPresentationMapper {
         result.status(),
         result.createdAt(),
         result.respondedAt());
+  }
+
+  public DisplayMemberListResponse toResponse(DisplayMemberListResult result) {
+    return new DisplayMemberListResponse(
+        result.displayId(), result.members().stream().map(this::toResponse).toList());
+  }
+
+  private DisplayMemberListResponse.TeamMemberResponse toResponse(
+      DisplayMemberListResult.TeamMemberResult result) {
+    return new DisplayMemberListResponse.TeamMemberResponse(
+        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
   }
 }

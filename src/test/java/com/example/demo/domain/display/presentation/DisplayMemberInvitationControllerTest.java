@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -162,6 +163,52 @@ class DisplayMemberInvitationControllerTest {
             teamMemberJpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(
                 display.getId(), invitee.getId()))
         .isFalse();
+  }
+
+  @Test
+  void getMembersReturnsAcceptedDisplayMembersWhenRequesterIsTeamMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User member = userJpaRepository.save(user("member"));
+    User pending = userJpaRepository.save(user("pending"));
+    Display display = displayWithLeader(leader);
+    display.addTeamMember(
+        new TeamMember(
+            null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(pending.getId()),
+            pending.getNickname(),
+            TeamMemberRole.TEAM_MEM,
+            false));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/members", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(member.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.members.length()").value(2))
+        .andExpect(jsonPath("$.success.data.members[0].userId").value(leader.getId()))
+        .andExpect(jsonPath("$.success.data.members[0].role").value("TEAM_LEADER"))
+        .andExpect(jsonPath("$.success.data.members[1].userId").value(member.getId()))
+        .andExpect(jsonPath("$.success.data.members[1].role").value("TEAM_MEM"));
+  }
+
+  @Test
+  void getMembersReturnsForbiddenWhenRequesterIsNotTeamMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User other = userJpaRepository.save(user("other"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/members", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
   private Long invite(Long displayId, Long leaderUserId, Long inviteeUserId) throws Exception {

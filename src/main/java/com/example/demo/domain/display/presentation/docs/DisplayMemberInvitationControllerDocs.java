@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation.docs;
 
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
+import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,4 +28,9 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<DisplayMemberInvitationResponse> reject(
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(summary = "전시 멤버 목록 조회", description = "해당 전시의 수락된 전시 멤버 목록을 조회합니다.")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<DisplayMemberListResponse> getMembers(
+      Long displayId, AuthUser user, HttpServletRequest httpRequest);
 }
