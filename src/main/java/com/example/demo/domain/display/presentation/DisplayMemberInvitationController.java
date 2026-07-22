@@ -19,6 +19,7 @@ import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Tag(name = "DisplayMember")
 public class DisplayMemberInvitationController implements DisplayMemberInvitationControllerDocs {
 
   private final InviteDisplayMemberService inviteDisplayMemberService;
@@ -45,7 +47,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   private final DisplayMemberInvitationPresentationMapper mapper;
 
   @Override
-  @PostMapping("/display/{displayId}/invitations")
+  @PostMapping("/display-invitations/displays/{displayId}")
   @ResponseStatus(HttpStatus.CREATED)
   public ApiResponseBody<DisplayMemberInvitationResponse> invite(
       @PathVariable Long displayId,

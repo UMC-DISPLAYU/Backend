@@ -73,7 +73,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/invitations", display.getId())
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inviteRequest(invitee.getId())))
@@ -94,7 +94,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/invitations", display.getId())
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inviteRequest(invitee.getId())))
@@ -278,7 +278,7 @@ class DisplayMemberInvitationControllerTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/display/{displayId}/invitations", displayId)
+                post("/api/v1/display-invitations/displays/{displayId}", displayId)
                     .header(HttpHeaders.AUTHORIZATION, bearer(leaderUserId))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(inviteRequest(inviteeUserId)))
