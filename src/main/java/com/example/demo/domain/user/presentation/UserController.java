@@ -32,6 +32,7 @@ import com.example.demo.domain.user.presentation.response.UpdateMyProfileRespons
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -110,7 +111,7 @@ public class UserController implements UserControllerDocs {
   @PatchMapping("/me/artist-profile")
   public ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
       @AuthenticationPrincipal AuthUser user,
-      @RequestBody UpdateArtistProfileRequest request,
+      @Valid @RequestBody UpdateArtistProfileRequest request,
       HttpServletRequest httpRequest) {
     UpdateArtistProfileResult result =
         updateArtistProfileService.execute(artistProfileMapper.toCommand(user.userId(), request));

@@ -11,7 +11,7 @@ public interface AreaOfActivityJpaRepository extends JpaRepository<AreaOfActivit
 
   List<AreaOfActivity> findByArtistProfile(ArtistProfile artistProfile);
 
-  @Modifying
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query("delete from AreaOfActivity area where area.artistProfile = :artistProfile")
   void deleteAllByArtistProfile(ArtistProfile artistProfile);
 }

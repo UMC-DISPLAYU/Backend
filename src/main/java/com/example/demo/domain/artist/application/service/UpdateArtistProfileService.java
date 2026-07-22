@@ -14,8 +14,6 @@ import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UpdateArtistProfileService {
 
-  private static final int INTRODUCTION_MAX_LENGTH = 100;
-  private static final int EXTERNAL_LINK_MAX_LENGTH = 255;
   private static final int ARTIST_NAME_MAX_LENGTH = 50;
 
   private final UserRepository userRepository;
@@ -59,9 +55,7 @@ public class UpdateArtistProfileService {
     if (univName == null) {
       univName = profile.getUnivName();
     }
-    validateIntroduction(introduction);
     validateActivityFields(command.fields());
-    validateExternalLink(externalLink);
 
     changeArtistName(profile, artistName);
     user.changeProfileImage(profileImageUrl.value());
@@ -104,12 +98,6 @@ public class UpdateArtistProfileService {
     }
   }
 
-  private void validateIntroduction(String introduction) {
-    if (introduction != null && introduction.length() > INTRODUCTION_MAX_LENGTH) {
-      throw new ArtistException(ArtistErrorCode.INVALID_INTRODUCTION);
-    }
-  }
-
   private void validateActivityFields(List<ActivityCategory> fields) {
     if (fields == null
         || fields.isEmpty()
@@ -117,24 +105,6 @@ public class UpdateArtistProfileService {
         || fields.stream().anyMatch(field -> field == null)
         || new HashSet<>(fields).size() != fields.size()) {
       throw new ArtistException(ArtistErrorCode.INVALID_ACTIVITY_FIELDS);
-    }
-  }
-
-  private void validateExternalLink(String externalLink) {
-    if (externalLink == null) {
-      return;
-    }
-    if (externalLink.length() > EXTERNAL_LINK_MAX_LENGTH) {
-      throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
-    }
-    try {
-      URI uri = new URI(externalLink);
-      if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
-          || uri.getHost() == null) {
-        throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
-      }
-    } catch (URISyntaxException exception) {
-      throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
     }
   }
 
