@@ -95,10 +95,6 @@ public class DisplayInvitation {
     this.display = Objects.requireNonNull(display, "display must not be null.");
   }
 
-  public void reject() {
-    reject(LocalDateTime.now());
-  }
-
   public void accept(LocalDateTime respondedAt) {
     ensurePending();
     this.status = DisplayInvitationStatus.ACCEPTED;
@@ -110,12 +106,6 @@ public class DisplayInvitation {
     this.status = DisplayInvitationStatus.REJECTED;
     this.respondedAt = Objects.requireNonNull(respondedAt, "respondedAt must not be null.");
     this.deletedAt = this.respondedAt;
-  }
-
-  public void restore() {
-    this.status = DisplayInvitationStatus.PENDING;
-    this.respondedAt = null;
-    this.deletedAt = null;
   }
 
   public boolean isDeleted() {
