@@ -10,8 +10,10 @@ import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeRes
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 public class LoungeCommentController implements LoungeCommentControllerDocs {
-
-  private static final Long TEMP_USER_ID = 1L;
 
   private final LoungeCommentCommandService loungeCommentCommandService;
   private final LoungeCommentQueryService loungeCommentQueryService;
@@ -48,12 +48,13 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     Long loungeCommentId =
         loungeCommentCommandService.createComment(
-            loungePostId, TEMP_USER_ID, loungeCommentRequest.toCommand());
+            loungePostId, user.userId(), loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);
   }
 
@@ -63,12 +64,13 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     Long loungeCommentId =
         loungeCommentCommandService.createReply(
-            parentCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
+            parentCommentId, user.userId(), loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);
   }
 
@@ -77,38 +79,45 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
   public ApiResponseBody<LoungeCommentListResponse> updateComment(
       @PathVariable Long loungeCommentId,
       @RequestBody LoungeCommentRequest loungeCommentRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     loungeCommentCommandService.updateComment(
-        loungeCommentId, TEMP_USER_ID, loungeCommentRequest.toCommand());
+        loungeCommentId, user.userId(), loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, TEMP_USER_ID)),
+        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);
   }
 
   @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}")
   @Override
   public ApiResponseBody<Void> deleteComment(
-      @PathVariable Long loungeCommentId, HttpServletRequest request) {
-    loungeCommentCommandService.deleteComment(loungeCommentId, TEMP_USER_ID);
+      @PathVariable Long loungeCommentId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    loungeCommentCommandService.deleteComment(loungeCommentId, user.userId());
     return ApiResponseBody.success(null, request);
   }
 
   @PostMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
   @Override
   public ApiResponseBody<LoungeCommentLikeResponse> likeComment(
-      @PathVariable Long loungeCommentId, HttpServletRequest request) {
+      @PathVariable Long loungeCommentId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentCommandService.likeComment(loungeCommentId, TEMP_USER_ID)),
+        mapper.toResponse(loungeCommentCommandService.likeComment(loungeCommentId, user.userId())),
         request);
   }
 
   @DeleteMapping("/api/v1/lounge/comments/{loungeCommentId}/likes")
   @Override
   public ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
-      @PathVariable Long loungeCommentId, HttpServletRequest request) {
+      @PathVariable Long loungeCommentId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
-            loungeCommentCommandService.cancelLikeComment(loungeCommentId, TEMP_USER_ID)),
+            loungeCommentCommandService.cancelLikeComment(loungeCommentId, user.userId())),
         request);
   }
 
@@ -118,10 +127,12 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @PathVariable Long loungePostId,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
         mapper.toResponse(
-            loungeCommentQueryService.getComments(loungePostId, cursorId, size, TEMP_USER_ID)),
+            loungeCommentQueryService.getComments(loungePostId, cursorId, size, viewerUserId)),
         request);
   }
 
@@ -131,10 +142,12 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       @PathVariable Long parentCommentId,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long viewerUserId = user == null ? null : user.userId();
     return ApiResponseBody.success(
         mapper.toResponse(
-            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, TEMP_USER_ID)),
+            loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, viewerUserId)),
         request);
   }
 }

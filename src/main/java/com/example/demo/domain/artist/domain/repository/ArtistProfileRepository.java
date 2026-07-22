@@ -13,4 +13,6 @@ public interface ArtistProfileRepository {
   Optional<ArtistProfile> findByUserId(Long userId);
 
   boolean existsByArtistName(String artistName);
+
+  void flush();
 }

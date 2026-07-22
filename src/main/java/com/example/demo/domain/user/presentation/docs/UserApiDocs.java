@@ -192,9 +192,11 @@ public final class UserApiDocs {
         "success": {
           "data": {
             "artistName": "김지원",
+            "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
+            "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
             "status": "VERIFIED",
             "schoolName": "중앙대학교 서울캠퍼스",
-            "portfolioUrl": "https://portfolio.example.com",
+            "externalLink": "https://portfolio.maya.com",
             "fields": ["PAINTING", "ILLUSTRATION"]
           }
         },
@@ -214,7 +216,9 @@ public final class UserApiDocs {
           "data": {
             "artistName": "김지원",
             "schoolName": "중앙대학교 서울캠퍼스",
-            "portfolioUrl": "https://portfolio.example.com",
+            "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
+            "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
+            "externalLink": "https://portfolio.maya.com",
             "fields": ["PAINTING", "ILLUSTRATION"]
           }
         },

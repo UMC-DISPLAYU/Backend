@@ -45,6 +45,9 @@ public class User extends BaseTimeEntity {
   @Column(name = "nickname", nullable = false)
   private String nickname;
 
+  @Column(name = "profileImageUrl", length = 2048)
+  private String profileImageUrl;
+
   @Builder.Default
   @Column(name = "isVerified", nullable = false)
   private boolean isVerified = false; // 작가 인증여부
@@ -95,5 +98,13 @@ public class User extends BaseTimeEntity {
     return nicknameChangeAt == null
         ? null
         : nicknameChangeAt.plusDays(NICKNAME_CHANGE_INTERVAL_DAYS);
+  }
+
+  public void changeProfileImage(String profileImageUrl) {
+    this.profileImageUrl = profileImageUrl;
+  }
+
+  public void changeUnivName(String univName) {
+    this.univName = univName;
   }
 }

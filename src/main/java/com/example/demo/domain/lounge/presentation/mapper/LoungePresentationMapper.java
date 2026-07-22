@@ -19,6 +19,7 @@ import com.example.demo.domain.lounge.presentation.response.LoungePostLikeRespon
 import com.example.demo.domain.lounge.presentation.response.LoungePostListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungeReplyListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeWriterResponse;
 import org.springframework.stereotype.Component;
 
@@ -103,10 +104,24 @@ public class LoungePresentationMapper {
 
   public LoungeReplyCursorResponse toResponse(LoungeReplyCursorResult result) {
     return new LoungeReplyCursorResponse(
-        result.replies().stream().map(this::toResponse).toList(),
+        result.replies().stream().map(this::toReplyResponse).toList(),
         result.nextCursorId(),
         result.size(),
         result.hasNext());
+  }
+
+  private LoungeReplyListResponse toReplyResponse(LoungeCommentListResult result) {
+    return new LoungeReplyListResponse(
+        result.loungeCommentId(),
+        result.parentCommentId(),
+        result.content(),
+        result.commentStatus(),
+        toResponse(result.writer()),
+        result.createdAt(),
+        result.updatedAt(),
+        result.likeCount(),
+        result.isLiked(),
+        result.isMyComment());
   }
 
   public LoungeCommentLikeResponse toResponse(LoungeCommentLikeResult result) {
