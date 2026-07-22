@@ -502,8 +502,54 @@ public class Display extends BaseTimeEntity {
     return teamMembers.stream()
         .anyMatch(
             teamMember ->
-                teamMember.getUserId().value().equals(userId)
+                teamMember.isAccepted()
+                    && teamMember.getUserId().value().equals(userId)
                     && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
+  }
+
+  public boolean hasAcceptedTeamMember(Long userId) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember -> teamMember.isAccepted() && teamMember.getUserId().value().equals(userId));
+  }
+
+  public boolean hasPendingInvitation(Long inviteeUserId) {
+    return invitations.stream()
+        .anyMatch(
+            invitation ->
+                invitation.isPending()
+                    && invitation.getInviteeUserId().value().equals(inviteeUserId));
+  }
+
+  public TeamMember inviteeAsTeamMember(DisplayInvitation invitation, String displayNickname) {
+    DisplayInvitation displayInvitation =
+        Objects.requireNonNull(invitation, "invitation must not be null.");
+    if (!Objects.equals(id, displayInvitation.getDisplay().getId())) {
+      throw new IllegalArgumentException("invitation must belong to this display.");
+    }
+    TeamMember teamMember =
+        new TeamMember(
+            null,
+            displayInvitation.getInviteeUserId(),
+            displayNickname,
+            TeamMemberRole.TEAM_MEM,
+            true);
+    addTeamMember(teamMember);
+    return teamMember;
+  }
+
+  public boolean isOwner(Long userId) {
+    return ownerUserId.value().equals(userId);
+  }
+
+  public boolean canInviteMember(Long userId) {
+    return isOwner(userId) || isTeamLeader(userId);
+  }
+
+  public boolean hasTeamMember(Long userId) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember -> teamMember.getUserId().value().equals(userId) && teamMember.isAccepted());
   }
 
   private static <T> void addAll(java.util.function.Consumer<T> target, List<T> source) {

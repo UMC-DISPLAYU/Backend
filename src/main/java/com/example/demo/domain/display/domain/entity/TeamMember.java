@@ -16,12 +16,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "TeamMember")
+@Table(
+    name = "TeamMember",
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "UQ_TEAMMEMBER_DISPLAY_USER",
+            columnNames = {"displayId", "userId"}))
 public class TeamMember {
 
   @Id
