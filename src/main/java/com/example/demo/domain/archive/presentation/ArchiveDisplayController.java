@@ -76,7 +76,7 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
   public ApiResponseBody<ArchiveDisplayResponse> getArchiveDisplayDetail(
       @PathVariable Long savedExhibitionId, HttpServletRequest request) {
     ArchiveDisplayResult result =
-        getArchiveDisplayDetailService.getArchiveDisplayDetail(savedExhibitionId);
+        getArchiveDisplayDetailService.getArchiveDisplayDetail(TEMP_USER_ID, savedExhibitionId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

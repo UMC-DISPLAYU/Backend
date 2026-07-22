@@ -196,17 +196,17 @@ INSERT INTO `DisplayContent` (`imageUrl`, `width`, `height`, `contentsSortOrder`
 ('https://cdn.example.com/display-contents/9.jpg', 1200, 800, 8, '2026-07-01 16:28:00', '2026-07-01 16:28:00', 9),
 ('https://cdn.example.com/display-contents/10.jpg', 1200, 800, 9, '2026-07-01 16:29:00', '2026-07-01 16:29:00', 10);
 
-INSERT INTO `DisplayArtwork` (`artworkName`, `content`, `type`, `productionYear`, `materialMedia`, `size`, `point`, `workSortOrder`, `createdAt`, `updatedAt`, `deletedAt`, `displayId`) VALUES
-('Blue Flow', '파란 흐름을 시각화한 작품입니다.', 'PAINTING', 2026, 'Acrylic on canvas', '100x80cm', '색의 흐름과 층위를 관찰합니다.', 1, '2026-07-01 17:00:00', '2026-07-01 17:00:00', NULL, 1),
-('Urban Heat', '도시의 열감을 건축적으로 표현했습니다.', 'ARCHITECTURE', 2026, 'Model board', '60x60x40cm', '도시 밀도와 열섬 현상을 다룹니다.', 2, '2026-07-01 17:01:00', '2026-07-01 17:01:00', NULL, 2),
-('Light Archive', '빛의 흔적을 기록한 사진 작업입니다.', 'PHOTOGRAPHY', 2026, 'Digital print', '50x70cm', '시간에 따라 변화하는 빛을 보여줍니다.', 3, '2026-07-01 17:02:00', '2026-07-01 17:02:00', NULL, 3),
-('Hand Memory', '손의 움직임을 담은 공예 작업입니다.', 'CRAFTS', 2026, 'Ceramic', '30x30x20cm', '제작 과정의 흔적을 강조합니다.', 4, '2026-07-01 17:03:00', '2026-07-01 17:03:00', NULL, 4),
-('Moving Scene', '움직이는 장면을 영상으로 구성했습니다.', 'VIDEO', 2026, 'Single channel video', '5min', '장면 전환의 리듬을 감상합니다.', 5, '2026-07-01 17:04:00', '2026-07-01 17:04:00', NULL, 5),
-('Language of Form', '형태의 언어를 조형적으로 탐구합니다.', 'SCULPTURE', 2026, 'Mixed media', '90x50x50cm', '형태와 공간의 관계를 봅니다.', 6, '2026-07-01 17:05:00', '2026-07-01 17:05:00', NULL, 6),
-('Structure Wear', '의복의 구조를 실험한 작품입니다.', 'FASHION', 2026, 'Fabric', 'Free size', '신체와 옷의 경계를 다룹니다.', 7, '2026-07-01 17:06:00', '2026-07-01 17:06:00', NULL, 7),
-('Boundary Field', '색면의 경계를 탐색한 회화입니다.', 'PAINTING', 2026, 'Oil on canvas', '120x90cm', '색면 간 긴장감을 관찰합니다.', 8, '2026-07-01 17:07:00', '2026-07-01 17:07:00', NULL, 8),
-('Line Face', '선으로 표정을 구성한 일러스트입니다.', 'ILLUSTRATION', 2026, 'Digital drawing', 'A2', '선의 밀도와 감정을 봅니다.', 9, '2026-07-01 17:08:00', '2026-07-01 17:08:00', NULL, 9),
-('Hybrid Room', '복합 매체로 구성한 설치 작업입니다.', 'OTHERS', 2026, 'Mixed installation', 'Variable', '관람자의 움직임에 따라 경험이 달라집니다.', 10, '2026-07-01 17:09:00', '2026-07-01 17:09:00', NULL, 10);
+INSERT INTO `DisplayArtwork` (`artworkName`, `content`, `type`, `productionYear`, `materialMedia`, `size`, `point`, `workSortOrder`, `createdAt`, `updatedAt`, `deletedAt`, `displayId`, `registeredByUserId`) VALUES
+('Blue Flow', '파란 흐름을 시각화한 작품입니다.', 'PAINTING', 2026, 'Acrylic on canvas', '100x80cm', '색의 흐름과 층위를 관찰합니다.', 1, '2026-07-01 17:00:00', '2026-07-01 17:00:00', NULL, 1, 1),
+('Urban Heat', '도시의 열감을 건축적으로 표현했습니다.', 'ARCHITECTURE', 2026, 'Model board', '60x60x40cm', '도시 밀도와 열섬 현상을 다룹니다.', 2, '2026-07-01 17:01:00', '2026-07-01 17:01:00', NULL, 2, 2),
+('Light Archive', '빛의 흔적을 기록한 사진 작업입니다.', 'PHOTOGRAPHY', 2026, 'Digital print', '50x70cm', '시간에 따라 변화하는 빛을 보여줍니다.', 3, '2026-07-01 17:02:00', '2026-07-01 17:02:00', NULL, 3, 3),
+('Hand Memory', '손의 움직임을 담은 공예 작업입니다.', 'CRAFTS', 2026, 'Ceramic', '30x30x20cm', '제작 과정의 흔적을 강조합니다.', 4, '2026-07-01 17:03:00', '2026-07-01 17:03:00', NULL, 4, 4),
+('Moving Scene', '움직이는 장면을 영상으로 구성했습니다.', 'VIDEO', 2026, 'Single channel video', '5min', '장면 전환의 리듬을 감상합니다.', 5, '2026-07-01 17:04:00', '2026-07-01 17:04:00', NULL, 5, 5),
+('Language of Form', '형태의 언어를 조형적으로 탐구합니다.', 'SCULPTURE', 2026, 'Mixed media', '90x50x50cm', '형태와 공간의 관계를 봅니다.', 6, '2026-07-01 17:05:00', '2026-07-01 17:05:00', NULL, 6, 6),
+('Structure Wear', '의복의 구조를 실험한 작품입니다.', 'FASHION', 2026, 'Fabric', 'Free size', '신체와 옷의 경계를 다룹니다.', 7, '2026-07-01 17:06:00', '2026-07-01 17:06:00', NULL, 7, 7),
+('Boundary Field', '색면의 경계를 탐색한 회화입니다.', 'PAINTING', 2026, 'Oil on canvas', '120x90cm', '색면 간 긴장감을 관찰합니다.', 8, '2026-07-01 17:07:00', '2026-07-01 17:07:00', NULL, 8, 8),
+('Line Face', '선으로 표정을 구성한 일러스트입니다.', 'ILLUSTRATION', 2026, 'Digital drawing', 'A2', '선의 밀도와 감정을 봅니다.', 9, '2026-07-01 17:08:00', '2026-07-01 17:08:00', NULL, 9, 9),
+('Hybrid Room', '복합 매체로 구성한 설치 작업입니다.', 'OTHERS', 2026, 'Mixed installation', 'Variable', '관람자의 움직임에 따라 경험이 달라집니다.', 10, '2026-07-01 17:09:00', '2026-07-01 17:09:00', NULL, 10, 10);
 
 INSERT INTO `ArtworkImage` (`imageUrl`, `isThumbnail`, `imageType`, `sortOrder`, `caption`, `width`, `height`, `createdAt`, `updatedAt`, `deletedAt`, `displayArtworkId`) VALUES
 ('https://cdn.example.com/artworks/1/thumb.jpg', 1, 'ARTWORK', 0, '대표 이미지', 1000, 1000, '2026-07-01 17:10:00', '2026-07-01 17:10:00', NULL, 1),
@@ -232,7 +232,7 @@ INSERT INTO `Creator` (`creatorName`, `isContact`, `isLeader`, `userId`, `displa
 ('한지민', 1, 1, 9, 9),
 ('외부 참여 작가', 0, 0, NULL, 10);
 
-INSERT INTO `ArchiveArtist` (`userId`, `creatorId`, `savedAt`) VALUES
+INSERT INTO `ArchiveArtist` (`userId`, `artistProfileId`, `savedAt`) VALUES
 (2, 1, '2026-07-01 17:20:00'),
 (3, 2, '2026-07-01 17:21:00'),
 (4, 3, '2026-07-01 17:22:00'),
@@ -327,6 +327,18 @@ INSERT INTO `DisplayLike` (`createdAt`, `updatedAt`, `deletedAt`, `displayId`, `
 ('2026-07-01 18:37:00', '2026-07-01 18:37:00', NULL, 8, 3),
 ('2026-07-01 18:38:00', '2026-07-01 18:38:00', NULL, 9, 2),
 ('2026-07-01 18:39:00', '2026-07-01 18:39:00', NULL, 10, 1);
+
+INSERT INTO `DisplayArtworkLike` (`createdAt`, `updatedAt`, `deletedAt`, `displayArtworkId`, `userId`) VALUES
+('2026-07-01 18:40:00', '2026-07-01 18:40:00', NULL, 1, 10),
+('2026-07-01 18:41:00', '2026-07-01 18:41:00', NULL, 2, 9),
+('2026-07-01 18:42:00', '2026-07-01 18:42:00', NULL, 3, 8),
+('2026-07-01 18:43:00', '2026-07-01 18:43:00', NULL, 4, 7),
+('2026-07-01 18:44:00', '2026-07-01 18:44:00', NULL, 5, 6),
+('2026-07-01 18:45:00', '2026-07-01 18:45:00', NULL, 6, 5),
+('2026-07-01 18:46:00', '2026-07-01 18:46:00', NULL, 7, 4),
+('2026-07-01 18:47:00', '2026-07-01 18:47:00', NULL, 8, 3),
+('2026-07-01 18:48:00', '2026-07-01 18:48:00', NULL, 9, 2),
+('2026-07-01 18:49:00', '2026-07-01 18:49:00', NULL, 10, 1);
 
 INSERT INTO `DisplayReview` (`content`, `displayId`, `userId`) VALUES
 ('전시의 흐름이 자연스럽고 작품 설명이 좋았습니다.', 1, 2),
@@ -441,17 +453,29 @@ INSERT INTO `PersonalArtworkImage` (`imageUrl`, `isThumbnail`, `imageType`, `sor
 ('https://cdn.example.com/personal-artworks/9/detail.jpg', 0, 'ARTWORK', 1, '상세 이미지', 1200, 900, '2026-07-01 20:08:00', '2026-07-01 20:08:00', 9),
 ('https://cdn.example.com/personal-artworks/10/detail.jpg', 0, 'ARTWORK', 1, '상세 이미지', 1200, 900, '2026-07-01 20:09:00', '2026-07-01 20:09:00', 10);
 
+INSERT INTO `PersonalArtworkLike` (`createdAt`, `updatedAt`, `deletedAt`, `personalArtworkId`, `userId`) VALUES
+('2026-07-01 20:10:00', '2026-07-01 20:10:00', NULL, 1, 10),
+('2026-07-01 20:11:00', '2026-07-01 20:11:00', NULL, 2, 9),
+('2026-07-01 20:12:00', '2026-07-01 20:12:00', NULL, 3, 8),
+('2026-07-01 20:13:00', '2026-07-01 20:13:00', NULL, 4, 7),
+('2026-07-01 20:14:00', '2026-07-01 20:14:00', NULL, 5, 6),
+('2026-07-01 20:15:00', '2026-07-01 20:15:00', NULL, 6, 5),
+('2026-07-01 20:16:00', '2026-07-01 20:16:00', NULL, 7, 4),
+('2026-07-01 20:17:00', '2026-07-01 20:17:00', NULL, 8, 3),
+('2026-07-01 20:18:00', '2026-07-01 20:18:00', NULL, 9, 2),
+('2026-07-01 20:19:00', '2026-07-01 20:19:00', NULL, 10, 1);
+
 INSERT INTO `Memo` (`content`, `visitDate`, `createdAt`, `updatedAt`, `deletedAt`, `archiveDisplayId`, `archiveWorkId`) VALUES
-('전시 1번 관람 메모입니다.', '2026-07-10', '2026-07-01 20:10:00', '2026-07-01 20:10:00', NULL, 1, 1),
-('전시 2번 관람 메모입니다.', '2026-07-12', '2026-07-01 20:11:00', '2026-07-01 20:11:00', NULL, 2, 2),
-('전시 3번 관람 메모입니다.', '2026-07-15', '2026-07-01 20:12:00', '2026-07-01 20:12:00', NULL, 3, 3),
-('전시 4번 관람 메모입니다.', '2026-07-18', '2026-07-01 20:13:00', '2026-07-01 20:13:00', NULL, 4, 4),
-('전시 5번 관람 메모입니다.', '2026-07-20', '2026-07-01 20:14:00', '2026-07-01 20:14:00', NULL, 5, 5),
-('전시 6번 관람 메모입니다.', '2026-07-21', '2026-07-01 20:15:00', '2026-07-01 20:15:00', NULL, 6, 6),
-('전시 7번 관람 메모입니다.', '2026-07-22', '2026-07-01 20:16:00', '2026-07-01 20:16:00', NULL, 7, 7),
-('전시 8번 관람 메모입니다.', '2026-07-23', '2026-07-01 20:17:00', '2026-07-01 20:17:00', NULL, 8, 8),
-('전시 9번 관람 메모입니다.', '2026-07-24', '2026-07-01 20:18:00', '2026-07-01 20:18:00', NULL, 9, 9),
-('전시 10번 관람 메모입니다.', '2026-07-25', '2026-07-01 20:19:00', '2026-07-01 20:19:00', NULL, 10, 10);
+('전시 1번 관람 메모입니다.', '2026-07-10', '2026-07-01 20:20:00', '2026-07-01 20:20:00', NULL, 1, NULL),
+('전시 2번 관람 메모입니다.', '2026-07-12', '2026-07-01 20:21:00', '2026-07-01 20:21:00', NULL, 2, NULL),
+('전시 3번 관람 메모입니다.', '2026-07-15', '2026-07-01 20:22:00', '2026-07-01 20:22:00', NULL, 3, NULL),
+('전시 4번 관람 메모입니다.', '2026-07-18', '2026-07-01 20:23:00', '2026-07-01 20:23:00', NULL, 4, NULL),
+('전시 5번 관람 메모입니다.', '2026-07-20', '2026-07-01 20:24:00', '2026-07-01 20:24:00', NULL, 5, NULL),
+('작품 1번 감상 메모입니다.', NULL, '2026-07-01 20:25:00', '2026-07-01 20:25:00', NULL, NULL, 1),
+('작품 2번 감상 메모입니다.', NULL, '2026-07-01 20:26:00', '2026-07-01 20:26:00', NULL, NULL, 2),
+('작품 3번 감상 메모입니다.', NULL, '2026-07-01 20:27:00', '2026-07-01 20:27:00', NULL, NULL, 3),
+('작품 4번 감상 메모입니다.', NULL, '2026-07-01 20:28:00', '2026-07-01 20:28:00', NULL, NULL, 4),
+('삭제된 전시 메모 재작성 테스트입니다.', '2026-07-25', '2026-07-01 20:29:00', '2026-07-01 20:29:00', '2026-07-02 10:00:00', 1, NULL);
 
 INSERT INTO `MemoImage` (`imageUrl`, `width`, `height`, `memoId`) VALUES
 ('https://cdn.example.com/memos/1.jpg', 800, 600, 1),
@@ -464,54 +488,3 @@ INSERT INTO `MemoImage` (`imageUrl`, `width`, `height`, `memoId`) VALUES
 ('https://cdn.example.com/memos/8.jpg', 800, 600, 8),
 ('https://cdn.example.com/memos/9.jpg', 800, 600, 9),
 ('https://cdn.example.com/memos/10.jpg', 800, 600, 10);
-
-INSERT INTO `ArtworkFeelingLike` (`createdAt`, `updatedAt`, `deletedAt`, `feelingId`, `userId`)
-SELECT '2026-07-01 17:50:00', '2026-07-01 17:50:00', NULL, 1, 2
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 1 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 2)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 1 AND `userId` = 2)
-UNION ALL
-SELECT '2026-07-01 17:51:00', '2026-07-01 17:51:00', NULL, 1, 3
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 1 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 3)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 1 AND `userId` = 3)
-UNION ALL
-SELECT '2026-07-01 17:52:00', '2026-07-01 17:52:00', NULL, 1, 4
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 1 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 4)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 1 AND `userId` = 4)
-UNION ALL
-SELECT '2026-07-01 17:53:00', '2026-07-01 17:53:00', NULL, 2, 1
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 2 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 1)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 2 AND `userId` = 1)
-UNION ALL
-SELECT '2026-07-01 17:54:00', '2026-07-01 17:54:00', NULL, 2, 3
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 2 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 3)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 2 AND `userId` = 3)
-UNION ALL
-SELECT '2026-07-01 17:55:00', '2026-07-01 17:55:00', NULL, 3, 1
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 3 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 1)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 3 AND `userId` = 1)
-UNION ALL
-SELECT '2026-07-01 17:56:00', '2026-07-01 17:56:00', NULL, 4, 5
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 4 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 5)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 4 AND `userId` = 5)
-UNION ALL
-SELECT '2026-07-01 17:57:00', '2026-07-01 17:57:00', NULL, 5, 6
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 5 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 6)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 5 AND `userId` = 6)
-UNION ALL
-SELECT '2026-07-01 17:58:00', '2026-07-01 17:58:00', NULL, 6, 7
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 6 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 7)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 6 AND `userId` = 7)
-UNION ALL
-SELECT '2026-07-01 17:59:00', '2026-07-01 18:10:00', '2026-07-01 18:10:00', 7, 8
-WHERE EXISTS (SELECT 1 FROM `ArtworkFeeling` WHERE `feelingId` = 7 AND `deletedAt` IS NULL)
-  AND EXISTS (SELECT 1 FROM `User` WHERE `userId` = 8)
-  AND NOT EXISTS (SELECT 1 FROM `ArtworkFeelingLike` WHERE `feelingId` = 7 AND `userId` = 8);
