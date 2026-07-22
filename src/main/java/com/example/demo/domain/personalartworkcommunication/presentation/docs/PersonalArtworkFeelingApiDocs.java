@@ -4,6 +4,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.request
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -16,9 +17,91 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @Tag(name = "Personal Artwork Feeling", description = "개인 작품 감상평 API")
 public interface PersonalArtworkFeelingApiDocs {
+
+  @Operation(
+      summary = "개인 작품 감상평 목록 및 답변 조회",
+      description = "개인 작품에 등록된 감상평과 각 감상평의 답변을 커서 방식으로 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "feelings": [
+                                  {
+                                    "personalFeelingId": 1,
+                                    "content": "색감이 정말 인상적이에요.",
+                                    "createdAt": "2026-07-23T16:00:00",
+                                    "user": {
+                                      "userId": 2,
+                                      "nickname": "관람객"
+                                    },
+                                    "replies": [
+                                      {
+                                        "personalFeelingReplyId": 1,
+                                        "userId": 1,
+                                        "nickname": "작품소유자",
+                                        "content": "감상해 주셔서 감사합니다.",
+                                        "createdAt": "2026-07-23T16:10:00",
+                                        "isCreator": true
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "nextCursorId": 1,
+                                "size": 3,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-23T16:20:00",
+                              "path": "/api/v1/personal-artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "개인 작품 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_NOT_FOUND",
+                              "message": "개인 작품을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-23T16:20:00",
+                              "path": "/api/v1/personal-artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
+      @Parameter(description = "감상평을 조회할 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "다음 페이지 조회를 위한 마지막 감상평 ID", example = "3") @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
 
   @Operation(
       summary = "개인 작품 감상평 답변 등록",

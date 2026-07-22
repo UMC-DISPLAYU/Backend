@@ -1,8 +1,10 @@
 package com.example.demo.domain.personalartworkcommunication.presentation;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.*;
+import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkFeelingsService;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingLikeResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkFeelingApiDocs;
@@ -11,19 +13,15 @@ import com.example.demo.domain.personalartworkcommunication.presentation.request
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +32,23 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   private final DeletePersonalArtworkFeelingService deletePersonalArtworkFeelingService;
   private final PersonalArtworkFeelingReplyService personalArtworkFeelingReplyService;
   private final PersonalArtworkFeelingLikeService personalArtworkFeelingLikeService;
+  private final GetPersonalArtworkFeelingsService getPersonalArtworkFeelingsService;
   private final PersonalArtworkFeelingPresentationMapper mapper;
+
+  @Override
+  @GetMapping
+  // 개인 작품 감상평 목록 및 답변 조회
+  public ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
+      @PathVariable Long personalArtworkId,
+      @RequestParam(required = false) @Positive Long cursorId,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkFeelingListResult result =
+        getPersonalArtworkFeelingsService.getFeelings(mapper.toQuery(personalArtworkId, cursorId));
+
+    PersonalArtworkFeelingListResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
   @Override
   @PostMapping
