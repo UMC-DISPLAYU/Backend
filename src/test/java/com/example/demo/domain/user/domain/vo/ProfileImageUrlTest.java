@@ -15,20 +15,30 @@ class ProfileImageUrlTest {
   }
 
   @Test
-  void acceptsHttpAndHttpsUrls() {
-    assertThat(ProfileImageUrl.ofNullable("https://cdn.example.com/profile.jpg").value())
-        .isEqualTo("https://cdn.example.com/profile.jpg");
-    assertThat(ProfileImageUrl.ofNullable("http://cdn.example.com/profile.jpg").value())
-        .isEqualTo("http://cdn.example.com/profile.jpg");
+  void acceptsUrlStartingWithCdnPrefix() {
+    assertThat(
+            ProfileImageUrl.ofNullable(
+                    "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg")
+                .value())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
   }
 
   @Test
-  void rejectsInvalidUrl() {
+  void rejectsUrlNotStartingWithCdnPrefix() {
     assertThatExceptionOfType(UserException.class)
-        .isThrownBy(() -> ProfileImageUrl.ofNullable("not-a-url"))
+        .isThrownBy(() -> ProfileImageUrl.ofNullable("https://cdn.example.com/profile.jpg"))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode())
                     .isEqualTo(UserErrorCode.INVALID_PROFILE_IMAGE_URL));
+  }
+
+  @Test
+  void trimsValueBeforeValidatingCdnPrefix() {
+    assertThat(
+            ProfileImageUrl.ofNullable(
+                    "  https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg  ")
+                .value())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
   }
 }

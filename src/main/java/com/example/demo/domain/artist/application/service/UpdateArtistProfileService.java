@@ -1,5 +1,7 @@
 package com.example.demo.domain.artist.application.service;
 
+import static com.example.demo.global.util.StringNormalizer.normalize;
+
 import com.example.demo.domain.artist.application.command.UpdateArtistProfileCommand;
 import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
@@ -106,9 +108,5 @@ public class UpdateArtistProfileService {
         || new HashSet<>(fields).size() != fields.size()) {
       throw new ArtistException(ArtistErrorCode.INVALID_ACTIVITY_FIELDS);
     }
-  }
-
-  private String normalize(String value) {
-    return value == null || value.isBlank() ? null : value.trim();
   }
 }

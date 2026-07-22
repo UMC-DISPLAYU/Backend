@@ -46,7 +46,8 @@ class UpdateArtistProfileServiceTest {
 
     assertThat(user.getNickname()).isEqualTo("oldName");
     assertThat(profile.getArtistName()).isEqualTo("newName");
-    assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
+    assertThat(user.getProfileImageUrl())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
     assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
@@ -132,7 +133,7 @@ class UpdateArtistProfileServiceTest {
   private UpdateArtistProfileCommand command(String artistName) {
     return new UpdateArtistProfileCommand(
         USER_ID,
-        "https://cdn.example.com/profile.jpg",
+        "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg",
         artistName,
         "작가 소개",
         List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),

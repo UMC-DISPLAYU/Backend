@@ -40,12 +40,15 @@ class UpdateMyProfileServiceTest {
         service.execute(
             new UpdateMyProfileCommand(
                 USER_ID,
-                ProfileImageUrl.ofNullable("https://cdn.example.com/profile.jpg"),
+                ProfileImageUrl.ofNullable(
+                    "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg"),
                 Nickname.of("newName")));
 
     assertThat(result.nickname()).isEqualTo("newName");
-    assertThat(result.profileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
-    assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
+    assertThat(result.profileImageUrl())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
+    assertThat(user.getProfileImageUrl())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
   }
 
   @Test
