@@ -1,12 +1,13 @@
-package com.example.demo.domain.artist.application.result;
+package com.example.demo.domain.artist.application.command;
 
 import com.example.demo.domain.artist.domain.enums.ActivityCategory;
 import java.util.List;
 
-public record ArtistProfileResult(
+public record UpdateArtistProfileCommand(
+    Long userId,
     String profileImageUrl,
     String artistName,
     String introduction,
-    String schoolName,
+    List<ActivityCategory> fields,
     String externalLink,
-    List<ActivityCategory> fields) {}
+    String univName) {}

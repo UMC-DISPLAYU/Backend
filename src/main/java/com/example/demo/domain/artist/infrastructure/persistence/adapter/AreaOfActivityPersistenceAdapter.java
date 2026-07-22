@@ -23,4 +23,9 @@ public class AreaOfActivityPersistenceAdapter implements AreaOfActivityRepositor
   public List<AreaOfActivity> findByArtistProfile(ArtistProfile artistProfile) {
     return areaOfActivityJpaRepository.findByArtistProfile(artistProfile);
   }
+
+  @Override
+  public void deleteAllByArtistProfile(ArtistProfile artistProfile) {
+    areaOfActivityJpaRepository.deleteAllByArtistProfile(artistProfile);
+  }
 }

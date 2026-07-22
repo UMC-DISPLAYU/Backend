@@ -33,6 +33,7 @@ public class GetMyUserService {
         user.getProvider(),
         user.getName(),
         user.getNickname(),
+        user.getProfileImageUrl(),
         user.isVerified(),
         user.getSocialEmail(),
         user.getSchoolEmail());

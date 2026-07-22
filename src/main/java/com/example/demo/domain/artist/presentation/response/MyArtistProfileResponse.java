@@ -4,8 +4,10 @@ import com.example.demo.domain.artist.domain.enums.ActivityCategory;
 import java.util.List;
 
 public record MyArtistProfileResponse(
+    String profileImageUrl,
     String artistName,
+    String introduction,
     String status,
     String schoolName,
-    String portfolioUrl,
+    String externalLink,
     List<ActivityCategory> fields) {}

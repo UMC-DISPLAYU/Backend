@@ -33,4 +33,9 @@ public class ArtistProfilePersistenceAdapter implements ArtistProfileRepository 
   public boolean existsByArtistName(String artistName) {
     return artistProfileJpaRepository.existsByArtistName(artistName);
   }
+
+  @Override
+  public void flush() {
+    artistProfileJpaRepository.flush();
+  }
 }

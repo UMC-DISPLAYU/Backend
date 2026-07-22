@@ -1,8 +1,12 @@
 package com.example.demo.domain.artist.domain.aggregate;
 
+import com.example.demo.domain.artist.exception.ArtistErrorCode;
+import com.example.demo.domain.artist.exception.ArtistException;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +16,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "ArtistProfile")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArtistProfile extends BaseTimeEntity {
+
+  private static final int INTRODUCTION_MAX_LENGTH = 100;
+  private static final int PORTFOLIO_URL_MAX_LENGTH = 255;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +41,9 @@ public class ArtistProfile extends BaseTimeEntity {
   @Column(name = "portfolioUrl")
   private String portfolioUrl;
 
+  @Column(name = "introduction", length = 100)
+  private String introduction;
+
   private ArtistProfile(
       User user, String artistName, String schoolEmail, String univName, String portfolioUrl) {
     this.user = user;
@@ -54,5 +64,37 @@ public class ArtistProfile extends BaseTimeEntity {
 
   public void updatePortfolioUrl(String portfolioUrl) {
     this.portfolioUrl = portfolioUrl;
+  }
+
+  public void updateProfile(String introduction, String portfolioUrl, String univName) {
+    validateIntroduction(introduction);
+    validatePortfolioUrl(portfolioUrl);
+    this.introduction = introduction;
+    this.portfolioUrl = portfolioUrl;
+    this.univName = univName;
+  }
+
+  private void validateIntroduction(String introduction) {
+    if (introduction != null && introduction.length() > INTRODUCTION_MAX_LENGTH) {
+      throw new ArtistException(ArtistErrorCode.INVALID_INTRODUCTION);
+    }
+  }
+
+  private void validatePortfolioUrl(String portfolioUrl) {
+    if (portfolioUrl == null) {
+      return;
+    }
+    if (portfolioUrl.length() > PORTFOLIO_URL_MAX_LENGTH) {
+      throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
+    }
+    try {
+      URI uri = new URI(portfolioUrl);
+      if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
+          || uri.getHost() == null) {
+        throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
+      }
+    } catch (URISyntaxException exception) {
+      throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
+    }
   }
 }

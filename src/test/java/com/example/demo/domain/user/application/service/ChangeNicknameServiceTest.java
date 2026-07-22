@@ -3,6 +3,8 @@ package com.example.demo.domain.user.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.command.ChangeNicknameCommand;
@@ -86,6 +88,19 @@ class ChangeNicknameServiceTest {
         .satisfies(
             exception ->
                 assertThat(exception.errorCode()).isEqualTo(UserErrorCode.DUPLICATE_NICKNAME));
+  }
+
+  @Test
+  void skipsNicknamePolicyWhenNicknameIsUnchanged() {
+    User user = User.builder().id(USER_ID).nickname(NEW_NICKNAME).build();
+    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+
+    ChangeNicknameResult result = service.execute(command());
+
+    assertThat(result.nickname()).isEqualTo(NEW_NICKNAME);
+    assertThat(result.nextNicknameChangeAvailableAt()).isNull();
+    verify(userRepository, never()).existsByNickname(NEW_NICKNAME);
+    verify(userRepository, never()).flush();
   }
 
   @Test

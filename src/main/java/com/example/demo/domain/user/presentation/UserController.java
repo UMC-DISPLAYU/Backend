@@ -1,16 +1,22 @@
 package com.example.demo.domain.user.presentation;
 
 import com.example.demo.domain.artist.application.result.ArtistProfileResult;
+import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.application.service.GetArtistProfileService;
+import com.example.demo.domain.artist.application.service.UpdateArtistProfileService;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
+import com.example.demo.domain.artist.presentation.request.UpdateArtistProfileRequest;
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
+import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.application.result.MyUserResult;
+import com.example.demo.domain.user.application.result.UpdateMyProfileResult;
 import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.application.service.GetMyUserService;
 import com.example.demo.domain.user.application.service.ResendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.SendSchoolEmailVerificationService;
+import com.example.demo.domain.user.application.service.UpdateMyProfileService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.application.service.WithdrawUserService;
 import com.example.demo.domain.user.exception.UserErrorCode;
@@ -18,12 +24,15 @@ import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.domain.user.presentation.docs.UserControllerDocs;
 import com.example.demo.domain.user.presentation.mapper.UserPresentationMapper;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
+import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
+import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,7 +55,9 @@ public class UserController implements UserControllerDocs {
   private final GetMyUserService getMyUserService;
   private final WithdrawUserService withdrawUserService;
   private final ChangeNicknameService changeNicknameService;
+  private final UpdateMyProfileService updateMyProfileService;
   private final GetArtistProfileService getArtistProfileService;
+  private final UpdateArtistProfileService updateArtistProfileService;
   private final UserPresentationMapper userPresentationMapper;
   private final ArtistProfileMapper artistProfileMapper;
 
@@ -55,6 +66,17 @@ public class UserController implements UserControllerDocs {
   public ApiResponseBody<MyUserResponse> getMe(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyUserResult result = getMyUserService.execute(user.userId());
+    return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/me")
+  public ApiResponseBody<UpdateMyProfileResponse> updateMe(
+      @AuthenticationPrincipal AuthUser user,
+      @RequestBody UpdateMyProfileRequest request,
+      HttpServletRequest httpRequest) {
+    UpdateMyProfileResult result =
+        updateMyProfileService.execute(userPresentationMapper.toCommand(user.userId(), request));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
@@ -83,6 +105,17 @@ public class UserController implements UserControllerDocs {
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     ArtistProfileResult result = getArtistProfileService.getMine(user.userId());
     return ApiResponseBody.success(artistProfileMapper.toMyResponse(result), httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/me/artist-profile")
+  public ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
+      @AuthenticationPrincipal AuthUser user,
+      @Valid @RequestBody UpdateArtistProfileRequest request,
+      HttpServletRequest httpRequest) {
+    UpdateArtistProfileResult result =
+        updateArtistProfileService.execute(artistProfileMapper.toCommand(user.userId(), request));
+    return ApiResponseBody.success(artistProfileMapper.toResponse(result), httpRequest);
   }
 
   @Override

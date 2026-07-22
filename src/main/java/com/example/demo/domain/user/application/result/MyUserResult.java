@@ -7,6 +7,7 @@ public record MyUserResult(
     Provider provider,
     String name,
     String nickname,
+    String profileImageUrl,
     boolean isVerified,
     String socialEmail,
     String schoolEmail) {}
