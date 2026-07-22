@@ -3,11 +3,13 @@ package com.example.demo.domain.personalartworkcommunication.presentation.mapper
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkFeelingCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkFeelingReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import org.springframework.stereotype.Component;
@@ -49,5 +51,14 @@ public class PersonalArtworkFeelingPresentationMapper {
         result.userId(),
         result.nickname(),
         result.isCreator());
+  }
+
+  public PersonalArtworkFeelingLikeResponse toResponse(PersonalArtworkFeelingLikeResult result) {
+    return new PersonalArtworkFeelingLikeResponse(
+        result.personalFeelingId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
   }
 }

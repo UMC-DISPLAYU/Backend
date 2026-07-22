@@ -19,10 +19,10 @@ import jakarta.validation.Valid;
 @Tag(name = "Personal Artwork Question", description = "개인 작품 Q&A API")
 public interface PersonalArtworkQuestionApiDocs {
 
-  @Operation(summary = "개인 작품 질문 답변 등록", description = "개인 작품 소유자가 해당 작품에 등록된 질문에 답변합니다.")
+  @Operation(summary = "개인 작품 Q&A 답변 등록", description = "개인 작품 소유자가 해당 작품에 등록된 질문에 답변합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "개인 작품 질문 답변 등록 성공",
+      description = "개인 작품 Q&A 답변 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -162,10 +162,10 @@ public interface PersonalArtworkQuestionApiDocs {
       @Valid CreatePersonalArtworkQuestionReplyRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "개인 작품 질문 작성", description = "개인 작품 상세 화면에서 사용자가 질문을 작성합니다.")
+  @Operation(summary = "개인 작품 Q&A 작성", description = "개인 작품 상세 화면에서 사용자가 질문을 작성합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "개인 작품 질문 작성 성공",
+      description = "개인 작품 Q&A 작성 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -285,11 +285,11 @@ public interface PersonalArtworkQuestionApiDocs {
       HttpServletRequest httpServletRequest);
 
   @Operation(
-      summary = "개인 작품 질문 삭제",
+      summary = "개인 작품 Q&A 삭제",
       description = "사용자가 본인이 작성한 개인 작품 질문을 soft delete 방식으로 삭제합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "개인 작품 질문 삭제 성공",
+      description = "개인 작품 Q&A 삭제 성공",
       content =
           @Content(
               mediaType = "application/json",

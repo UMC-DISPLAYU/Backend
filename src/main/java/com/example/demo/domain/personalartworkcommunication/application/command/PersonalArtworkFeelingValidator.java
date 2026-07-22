@@ -3,6 +3,7 @@ package com.example.demo.domain.personalartworkcommunication.application.command
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class PersonalArtworkFeelingValidator {
 
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
@@ -56,6 +58,15 @@ public class PersonalArtworkFeelingValidator {
     validateNotDeleted(personalArtworkFeeling);
     validatePersonalArtworkFeelingBelongsToPersonalArtwork(
         personalArtworkFeeling, personalArtworkId);
+  }
+
+  public PersonalArtworkFeeling findFeelingOrThrow(Long personalFeelingId) {
+    return personalArtworkFeelingRepository
+        .findById(personalFeelingId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
   }
 
   private void validateNotDeleted(PersonalArtworkFeeling personalArtworkFeeling) {
