@@ -10,13 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CreatePersonalArtworkQuestionService {
+public class PersonalArtworkQuestionService {
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
 
   public PersonalArtworkQuestionResult createPersonalQuestion(
-      CreatePersonalArtworkQuestionCommand command) {
+      PersonalArtworkQuestionCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
     personalArtworkQuestionValidator.validateNotPersonalArtworkCreator(

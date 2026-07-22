@@ -51,6 +51,13 @@ public class PersonalArtworkFeelingValidator {
     validateWriter(personalArtworkFeeling, userId);
   }
 
+  public void validateReplyTarget(
+      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
+    validateNotDeleted(personalArtworkFeeling);
+    validatePersonalArtworkFeelingBelongsToPersonalArtwork(
+        personalArtworkFeeling, personalArtworkId);
+  }
+
   private void validateNotDeleted(PersonalArtworkFeeling personalArtworkFeeling) {
     if (personalArtworkFeeling.isDeleted()) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND);

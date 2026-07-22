@@ -1,9 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.presentation;
 
-import com.example.demo.domain.personalartworkcommunication.application.command.CreatePersonalArtworkQuestionCommand;
-import com.example.demo.domain.personalartworkcommunication.application.command.CreatePersonalArtworkQuestionService;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionService;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionService;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkQuestionApiDocs;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/personal-artworks/{personalArtworkId}/questions")
 public class PersonalArtworkQuestionController implements PersonalArtworkQuestionApiDocs {
 
-  private final CreatePersonalArtworkQuestionService createPersonalArtworkQuestionService;
+  private final PersonalArtworkQuestionService createPersonalArtworkQuestionService;
   private final DeletePersonalArtworkQuestionService deletePersonalArtworkQuestionService;
   private final PersonalArtworkQuestionPresentationMapper mapper;
 
@@ -34,8 +34,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @RequestHeader("X-User-Id") Long userId, // 테스트용
       @Valid @RequestBody CreatePersonalArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest) {
-    CreatePersonalArtworkQuestionCommand command =
-        mapper.toCommand(personalArtworkId, userId, request);
+    PersonalArtworkQuestionCommand command = mapper.toCommand(personalArtworkId, userId, request);
 
     PersonalArtworkQuestionResult result =
         createPersonalArtworkQuestionService.createPersonalQuestion(command);

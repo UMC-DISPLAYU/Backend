@@ -1,6 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.mapper;
 
-import com.example.demo.domain.personalartworkcommunication.application.command.CreatePersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonalArtworkQuestionPresentationMapper {
 
-  public CreatePersonalArtworkQuestionCommand toCommand(
+  public PersonalArtworkQuestionCommand toCommand(
       Long personalArtworkId, Long userId, CreatePersonalArtworkQuestionRequest request) {
 
     boolean isPublic = request.isPublic() == null || request.isPublic();
 
-    return new CreatePersonalArtworkQuestionCommand(
+    return new PersonalArtworkQuestionCommand(
         personalArtworkId, userId, request.content(), isPublic);
   }
 

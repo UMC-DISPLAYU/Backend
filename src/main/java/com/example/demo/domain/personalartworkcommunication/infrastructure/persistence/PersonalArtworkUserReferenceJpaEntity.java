@@ -13,5 +13,8 @@ public class PersonalArtworkUserReferenceJpaEntity {
   @Column(name = "userId")
   private Long userId;
 
+  @Column(name = "nickname")
+  private String nickname;
+
   protected PersonalArtworkUserReferenceJpaEntity() {}
 }

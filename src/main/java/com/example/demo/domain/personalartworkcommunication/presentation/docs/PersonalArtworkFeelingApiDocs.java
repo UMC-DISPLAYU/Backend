@@ -1,7 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 
+import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,23 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Personal Artwork Feeling", description = "개인 작품 감상평 API")
 public interface PersonalArtworkFeelingApiDocs {
+
+  @Operation(
+      summary = "개인 작품 감상평 답변 등록",
+      description = "개인 작품의 감상평에 답변을 등록합니다. 개인 작품 소유 여부를 isCreator로 반환합니다.")
+  @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
+  @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
+  ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(
+      @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "답변을 등록할 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
+      @Valid CreatePersonalArtworkFeelingReplyRequest request,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "개인 작품 감상평 작성", description = "개인 작품 상세 화면에서 사용자가 감상평을 작성합니다.")
   @ApiResponse(
