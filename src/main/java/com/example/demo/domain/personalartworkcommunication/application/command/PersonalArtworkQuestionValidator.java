@@ -1,0 +1,44 @@
+package com.example.demo.domain.personalartworkcommunication.application.command;
+
+import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.global.error.BusinessException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class PersonalArtworkQuestionValidator {
+
+  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final UserExistenceRepository userExistenceRepository;
+
+  public void validatePersonalArtworkExists(Long personalArtworkId) {
+    if (!personalArtworkExistenceRepository.existsById(personalArtworkId)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
+    }
+  }
+
+  public void validateUserExists(Long userId) {
+    if (!userExistenceRepository.existsById(userId)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.USER_NOT_FOUND);
+    }
+  }
+
+  public void validateContent(String content) {
+    if (content == null || content.isBlank()) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_CONTENT);
+    }
+    if (content.length() > 300) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_CONTENT);
+    }
+  }
+
+  public void validateNotPersonalArtworkCreator(Long personalArtworkId, Long userId) {
+    if (personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_QUESTION);
+    }
+  }
+}

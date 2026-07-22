@@ -41,7 +41,7 @@ public interface PersonalArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal/artworks/1/feelings"
+                              "path": "/api/v1/personal-artworks/1/feelings"
                             }
                           }
                           """)))
@@ -71,7 +71,7 @@ public interface PersonalArtworkFeelingApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal/artworks/1/feelings"
+                              "path": "/api/v1/personal-artworks/1/feelings"
                             }
                           }
                           """)))
@@ -96,7 +96,7 @@ public interface PersonalArtworkFeelingApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal/artworks/1/feelings"
+                              "path": "/api/v1/personal-artworks/1/feelings"
                             }
                           }
                           """)))

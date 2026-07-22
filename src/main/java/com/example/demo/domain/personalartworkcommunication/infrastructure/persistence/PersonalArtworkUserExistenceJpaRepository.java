@@ -2,6 +2,5 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PersonalArtworkUserExistenceJpaRepository extends JpaRepository<PersonalArtworkUserReferenceJpaEntity, Long> {
-
-}
+public interface PersonalArtworkUserExistenceJpaRepository
+    extends JpaRepository<PersonalArtworkUserReferenceJpaEntity, Long> {}

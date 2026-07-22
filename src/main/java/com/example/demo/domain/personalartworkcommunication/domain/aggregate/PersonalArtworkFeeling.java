@@ -19,7 +19,7 @@ public class PersonalArtworkFeeling extends SoftDeleteBaseEntity {
   @Column(name = "userId", nullable = false)
   private Long userId;
 
-  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+  @Column(name = "content", nullable = false, length = 300)
   private String content;
 
   protected PersonalArtworkFeeling() {}
