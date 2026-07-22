@@ -1,7 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 
+import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,149 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Personal Artwork Question", description = "개인 작품 Q&A API")
 public interface PersonalArtworkQuestionApiDocs {
+
+  @Operation(summary = "개인 작품 질문 답변 등록", description = "개인 작품 소유자가 해당 작품에 등록된 질문에 답변합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 질문 답변 등록 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question reply create success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalQuestionReplyId": 1,
+                                "createdAt": "2026-07-23T14:00:00",
+                                "content": "아크릴 물감을 여러 번 겹쳐 칠했습니다.",
+                                "personalQuestionId": 2,
+                                "userId": 1,
+                                "nickname": "작품소유자",
+                                "isCreator": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-23T14:00:00",
+                              "path": "/api/v1/personal-artworks/1/questions/2/reply"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "답변 내용 검증 실패 또는 이미 답변된 질문",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(
+                    name = "Invalid question reply content",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": {
+                            "code": "INVALID_INPUT_VALUE",
+                            "message": "입력값이 올바르지 않습니다.",
+                            "details": [
+                              {
+                                "field": "content",
+                                "message": "답변 내용은 필수입니다."
+                              }
+                            ]
+                          },
+                          "meta": {
+                            "timestamp": "2026-07-23T14:00:00",
+                            "path": "/api/v1/personal-artworks/1/questions/2/reply"
+                          }
+                        }
+                        """),
+                @ExampleObject(
+                    name = "Question already answered",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": {
+                            "code": "PERSONAL_QUESTION_ALREADY_ANSWERED",
+                            "message": "이미 답변 완료된 질문입니다.",
+                            "details": null
+                          },
+                          "meta": {
+                            "timestamp": "2026-07-23T14:00:00",
+                            "path": "/api/v1/personal-artworks/1/questions/2/reply"
+                          }
+                        }
+                        """)
+              }))
+  @ApiResponse(
+      responseCode = "403",
+      description = "질문 답변 권한 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question reply forbidden",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_QUESTION_REPLY_FORBIDDEN",
+                              "message": "개인 작품 소유자만 질문에 답변할 수 있습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-23T14:00:00",
+                              "path": "/api/v1/personal-artworks/1/questions/2/reply"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "개인 작품, 질문 또는 사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_QUESTION_NOT_FOUND",
+                              "message": "개인 작품 질문을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-23T14:00:00",
+                              "path": "/api/v1/personal-artworks/1/questions/2/reply"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<PersonalArtworkQuestionReplyResponse> createQuestionReply(
+      @Parameter(description = "질문이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "답변을 등록할 질문 ID", example = "2") Long personalQuestionId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
+      @Valid CreatePersonalArtworkQuestionReplyRequest request,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "개인 작품 질문 작성", description = "개인 작품 상세 화면에서 사용자가 질문을 작성합니다.")
   @ApiResponse(

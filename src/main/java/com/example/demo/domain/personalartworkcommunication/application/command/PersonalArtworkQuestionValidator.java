@@ -43,6 +43,20 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
+  public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
+    if (!personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
+    }
+  }
+
+  public void validateNotAnswered(PersonalArtworkQuestion personalArtworkQuestion) {
+    if (personalArtworkQuestion.isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
+  }
+
   public void validateAccessiblePersonalQuestion(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId, Long userId) {
     validateNotDeleted(personalArtworkQuestion);
@@ -51,16 +65,25 @@ public class PersonalArtworkQuestionValidator {
     validateWriter(personalArtworkQuestion, userId);
   }
 
+  public void validateReplyTarget(
+      PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
+    validateNotDeleted(personalArtworkQuestion);
+    validatePersonalArtworkQuestionBelongsToPersonalArtwork(
+        personalArtworkQuestion, personalArtworkId);
+  }
+
   private void validateNotDeleted(PersonalArtworkQuestion personalArtworkQuestion) {
     if (personalArtworkQuestion.isDeleted()) {
-      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND);
     }
   }
 
   private void validatePersonalArtworkQuestionBelongsToPersonalArtwork(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
     if (!personalArtworkQuestion.belongsToArtwork(personalArtworkId)) {
-      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND);
     }
   }
 

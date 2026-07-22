@@ -1,15 +1,15 @@
 package com.example.demo.domain.personalartworkcommunication.presentation;
 
-import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
-import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionService;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionService;
+import com.example.demo.domain.personalartworkcommunication.application.command.*;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkQuestionApiDocs;
 import com.example.demo.domain.personalartworkcommunication.presentation.mapper.PersonalArtworkQuestionPresentationMapper;
+import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +24,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
 
   private final PersonalArtworkQuestionService createPersonalArtworkQuestionService;
   private final DeletePersonalArtworkQuestionService deletePersonalArtworkQuestionService;
+  private final PersonalArtworkQuestionReplyService personalArtworkQuestionReplyService;
   private final PersonalArtworkQuestionPresentationMapper mapper;
 
   @Override
@@ -40,6 +41,26 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
         createPersonalArtworkQuestionService.createPersonalQuestion(command);
 
     PersonalArtworkQuestionResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{personalQuestionId}/reply")
+  // 개인 작품 질문 답변 등록
+  public ApiResponseBody<PersonalArtworkQuestionReplyResponse> createQuestionReply(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalQuestionId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @Valid @RequestBody CreatePersonalArtworkQuestionReplyRequest request,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkQuestionReplyCommand command =
+        mapper.toCommand(personalArtworkId, personalQuestionId, userId, request);
+
+    PersonalArtworkQuestionReplyResult result =
+        personalArtworkQuestionReplyService.createQuestionReply(command);
+
+    PersonalArtworkQuestionReplyResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

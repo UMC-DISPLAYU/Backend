@@ -19,6 +19,10 @@ public enum PersonalArtworkCommunicationErrorCode implements BaseErrorCode {
       HttpStatus.NOT_FOUND, "PERSONAL_FEELING_NOT_FOUND", "개인 작품 감상평을 찾을 수 없습니다."),
   PERSONAL_QUESTION_NOT_FOUND(
       HttpStatus.NOT_FOUND, "PERSONAL_QUESTION_NOT_FOUND", "개인 작품 질문을 찾을 수 없습니다."),
+  PERSONAL_QUESTION_ALREADY_ANSWERED(
+      HttpStatus.BAD_REQUEST, "PERSONAL_QUESTION_ALREADY_ANSWERED", "이미 답변 완료된 질문입니다."),
+  PERSONAL_QUESTION_REPLY_FORBIDDEN(
+      HttpStatus.FORBIDDEN, "PERSONAL_QUESTION_REPLY_FORBIDDEN", "개인 작품 소유자만 질문에 답변할 수 있습니다."),
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   ;
 

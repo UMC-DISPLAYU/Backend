@@ -57,7 +57,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   }
 
   @Override
-  @PostMapping("{personalFeelingId}/reply")
+  @PostMapping("/{personalFeelingId}/reply")
   // 개인 작품 감상평 답변 등록
   public ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(
       @PathVariable Long personalArtworkId,
