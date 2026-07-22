@@ -2,18 +2,30 @@ package com.example.demo.domain.personalartworkcommunication.presentation.mapper
 
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
+import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionUserResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PersonalArtworkQuestionPresentationMapper {
+
+  public GetPersonalArtworkQuestionsQuery toQuery(Long personalArtworkId, Long cursorId) {
+    return new GetPersonalArtworkQuestionsQuery(personalArtworkId, cursorId);
+  }
 
   public PersonalArtworkQuestionCommand toCommand(
       Long personalArtworkId, Long userId, CreatePersonalArtworkQuestionRequest request) {
@@ -59,5 +71,41 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.userId(),
         result.nickname(),
         result.isCreator());
+  }
+
+  public PersonalArtworkQuestionListResponse toResponse(PersonalArtworkQuestionListResult result) {
+    return new PersonalArtworkQuestionListResponse(
+        result.questions().stream().map(this::toQuestionItemResponse).toList(),
+        result.nextCursorId(),
+        result.size(),
+        result.hasNext());
+  }
+
+  private PersonalArtworkQuestionItemResponse toQuestionItemResponse(
+      PersonalArtworkQuestionItemResult result) {
+    PersonalArtworkQuestionUserResponse user =
+        new PersonalArtworkQuestionUserResponse(result.user().userId(), result.user().nickname());
+    PersonalArtworkQuestionReplyItemResponse reply =
+        result.reply() == null ? null : toQuestionReplyItemResponse(result.reply());
+
+    return new PersonalArtworkQuestionItemResponse(
+        result.personalQuestionId(),
+        result.content(),
+        result.isPublic(),
+        result.answerStatus(),
+        result.createdAt(),
+        user,
+        reply);
+  }
+
+  private PersonalArtworkQuestionReplyItemResponse toQuestionReplyItemResponse(
+      PersonalArtworkQuestionReplyItemResult result) {
+    return new PersonalArtworkQuestionReplyItemResponse(
+        result.personalQuestionReplyId(),
+        result.userId(),
+        result.nickname(),
+        result.isCreator(),
+        result.content(),
+        result.createdAt());
   }
 }

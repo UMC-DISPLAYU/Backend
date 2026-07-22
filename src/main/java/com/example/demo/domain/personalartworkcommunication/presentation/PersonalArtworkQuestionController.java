@@ -1,7 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.presentation;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.*;
+import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsService;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkQuestionApiDocs;
@@ -9,11 +11,13 @@ import com.example.demo.domain.personalartworkcommunication.presentation.mapper.
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +29,24 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
   private final PersonalArtworkQuestionService createPersonalArtworkQuestionService;
   private final DeletePersonalArtworkQuestionService deletePersonalArtworkQuestionService;
   private final PersonalArtworkQuestionReplyService personalArtworkQuestionReplyService;
+  private final GetPersonalArtworkQuestionsService getPersonalArtworkQuestionsService;
   private final PersonalArtworkQuestionPresentationMapper mapper;
+
+  @Override
+  @GetMapping
+  // 개인 작품 질문 목록 및 답변 조회
+  public ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
+      @PathVariable Long personalArtworkId,
+      @RequestParam(required = false) @Positive Long cursorId,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkQuestionListResult result =
+        getPersonalArtworkQuestionsService.getQuestions(
+            mapper.toQuery(personalArtworkId, cursorId));
+
+    PersonalArtworkQuestionListResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
   @Override
   @PostMapping

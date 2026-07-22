@@ -3,6 +3,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkQuestionReplyJpaRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -17,5 +18,12 @@ public class JpaPersonalArtworkQuestionReplyRepositoryAdapter
   public PersonalArtworkQuestionReply save(
       PersonalArtworkQuestionReply personalArtworkQuestionReply) {
     return repository.save(personalArtworkQuestionReply);
+  }
+
+  @Override
+  public List<PersonalArtworkQuestionReply> findActiveByPersonalQuestionIds(
+      List<Long> personalQuestionIds) {
+    return repository.findByPersonalQuestionIdInAndDeletedAtIsNullOrderByCreatedAtAsc(
+        personalQuestionIds);
   }
 }

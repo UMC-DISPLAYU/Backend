@@ -3,6 +3,7 @@ package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -15,9 +16,89 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @Tag(name = "Personal Artwork Question", description = "개인 작품 Q&A API")
 public interface PersonalArtworkQuestionApiDocs {
+
+  @Operation(summary = "개인 작품 질문 및 답변 목록 조회", description = "개인 작품에 등록된 질문과 답변을 커서 방식으로 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 질문 및 답변 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "questions": [
+                                  {
+                                    "personalQuestionId": 1,
+                                    "content": "색을 몇 번 겹쳐 칠했나요?",
+                                    "isPublic": true,
+                                    "answerStatus": "ANSWERED",
+                                    "createdAt": "2026-07-23T17:00:00",
+                                    "user": {
+                                      "userId": 2,
+                                      "nickname": "관람객"
+                                    },
+                                    "reply": {
+                                      "personalQuestionReplyId": 1,
+                                      "userId": 1,
+                                      "nickname": "작품소유자",
+                                      "isCreator": true,
+                                      "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
+                                      "createdAt": "2026-07-23T17:10:00"
+                                    }
+                                  }
+                                ],
+                                "nextCursorId": 3,
+                                "size": 3,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-23T17:20:00",
+                              "path": "/api/v1/personal-artworks/1/questions"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "개인 작품 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_NOT_FOUND",
+                              "message": "개인 작품을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-23T17:20:00",
+                              "path": "/api/v1/personal-artworks/1/questions"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
+      @Parameter(description = "질문을 조회할 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID", example = "3") @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "개인 작품 Q&A 답변 등록", description = "개인 작품 소유자가 해당 작품에 등록된 질문에 답변합니다.")
   @ApiResponse(

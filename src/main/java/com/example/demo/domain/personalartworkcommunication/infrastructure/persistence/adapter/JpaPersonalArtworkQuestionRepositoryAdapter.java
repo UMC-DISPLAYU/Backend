@@ -2,8 +2,10 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -21,5 +23,12 @@ public class JpaPersonalArtworkQuestionRepositoryAdapter
   @Override
   public Optional<PersonalArtworkQuestion> findById(Long personalQuestionId) {
     return personalArtworkQuestionJpaRepository.findById(personalQuestionId);
+  }
+
+  @Override
+  public List<PersonalArtworkQuestion> findActiveByPersonalArtworkIdWithCursor(
+      Long personalArtworkId, Long cursorId, int limit) {
+    return personalArtworkQuestionJpaRepository.findActiveByPersonalArtworkIdWithCursor(
+        personalArtworkId, cursorId, PageRequest.of(0, limit));
   }
 }
