@@ -4,6 +4,7 @@ import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitat
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
+import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,4 +38,11 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<DisplayMemberListResponse> getMembers(
       Long displayId, AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(
+      summary = "내 전시 멤버 초대 목록 조회",
+      description = "현재 로그인 사용자가 받은 처리 대기 중인 전시 멤버 초대 목록을 조회합니다.")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
+      AuthUser user, HttpServletRequest httpRequest);
 }

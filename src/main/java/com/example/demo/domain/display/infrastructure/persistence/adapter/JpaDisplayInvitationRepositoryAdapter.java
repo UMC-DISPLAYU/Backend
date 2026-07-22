@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.repository.DisplayInvitationRepository;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayInvitationJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -31,6 +32,12 @@ public class JpaDisplayInvitationRepositoryAdapter implements DisplayInvitationR
   public boolean existsPendingByDisplayIdAndInviteeUserId(Long displayId, Long inviteeUserId) {
     return jpaRepository.existsByDisplayIdAndInviteeUserIdValueAndStatusAndDeletedAtIsNull(
         displayId, inviteeUserId, DisplayInvitationStatus.PENDING);
+  }
+
+  @Override
+  public List<DisplayInvitation> findPendingByInviteeUserId(Long inviteeUserId) {
+    return jpaRepository.findByInviteeUserIdValueAndStatusAndDeletedAtIsNullOrderByIdDesc(
+        inviteeUserId, DisplayInvitationStatus.PENDING);
   }
 
   @Override

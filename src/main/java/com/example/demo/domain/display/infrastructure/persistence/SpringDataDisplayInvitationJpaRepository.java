@@ -3,6 +3,7 @@ package com.example.demo.domain.display.infrastructure.persistence;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import jakarta.persistence.LockModeType;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -18,4 +19,7 @@ public interface SpringDataDisplayInvitationJpaRepository
 
   boolean existsByDisplayIdAndInviteeUserIdValueAndStatusAndDeletedAtIsNull(
       Long displayId, Long inviteeUserId, DisplayInvitationStatus status);
+
+  List<DisplayInvitation> findByInviteeUserIdValueAndStatusAndDeletedAtIsNullOrderByIdDesc(
+      Long inviteeUserId, DisplayInvitationStatus status);
 }

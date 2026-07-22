@@ -222,6 +222,58 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
+  @Test
+  void getMyInvitationsReturnsPendingInvitationsReceivedByRequester() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    User otherInvitee = userJpaRepository.save(user("otherInvitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    invite(display.getId(), leader.getId(), otherInvitee.getId());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display-invitations/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.invitations.length()").value(1))
+        .andExpect(jsonPath("$.success.data.invitations[0].invitationId").value(invitationId))
+        .andExpect(jsonPath("$.success.data.invitations[0].displayId").value(display.getId()))
+        .andExpect(
+            jsonPath("$.success.data.invitations[0].thumbnailUrl")
+                .value("https://cdn.displayu.com/posters/main.png"))
+        .andExpect(jsonPath("$.success.data.invitations[0].startDate").value("2026-05-28"))
+        .andExpect(jsonPath("$.success.data.invitations[0].endDate").value("2026-06-05"))
+        .andExpect(jsonPath("$.success.data.invitations[0].location").value("SEOUL"))
+        .andExpect(jsonPath("$.success.data.invitations[0].leaderName").value("leader"))
+        .andExpect(jsonPath("$.success.data.invitations[0].title").value("FORM 2026"))
+        .andExpect(jsonPath("$.success.data.invitations[0].placeName").value("전시장"));
+  }
+
+  @Test
+  void getMyInvitationsDoesNotReturnAcceptedInvitation() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display-invitations/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.invitations.length()").value(0));
+  }
+
   private Long invite(Long displayId, Long leaderUserId, Long inviteeUserId) throws Exception {
     MvcResult result =
         mockMvc

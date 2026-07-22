@@ -5,11 +5,13 @@ import com.example.demo.domain.display.application.command.InviteDisplayMemberCo
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayMemberListResult;
+import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
+import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,9 +52,28 @@ public class DisplayMemberInvitationPresentationMapper {
         result.displayId(), result.members().stream().map(this::toResponse).toList());
   }
 
+  public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
+    return new MyDisplayInvitationListResponse(
+        result.invitations().stream().map(this::toResponse).toList());
+  }
+
   private DisplayMemberListResponse.TeamMemberResponse toResponse(
       DisplayMemberListResult.TeamMemberResult result) {
     return new DisplayMemberListResponse.TeamMemberResponse(
         result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
+  }
+
+  private MyDisplayInvitationListResponse.InvitationResponse toResponse(
+      MyDisplayInvitationListResult.InvitationResult result) {
+    return new MyDisplayInvitationListResponse.InvitationResponse(
+        result.invitationId(),
+        result.displayId(),
+        result.thumbnailUrl(),
+        result.startDate(),
+        result.endDate(),
+        result.location(),
+        result.leaderName(),
+        result.title(),
+        result.placeName());
   }
 }
