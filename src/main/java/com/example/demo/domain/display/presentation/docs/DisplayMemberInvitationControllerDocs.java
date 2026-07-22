@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.docs;
 
+import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
@@ -22,7 +23,10 @@ public interface DisplayMemberInvitationControllerDocs {
   @Operation(summary = "전시 멤버 초대 수락", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 수락합니다.")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
-      Long invitationId, AuthUser user, HttpServletRequest httpRequest);
+      Long invitationId,
+      AcceptDisplayInvitationRequest request,
+      AuthUser user,
+      HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 멤버 초대 거절", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 거절합니다.")
   @SecurityRequirement(name = "Authorization")

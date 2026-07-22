@@ -9,10 +9,6 @@ import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayInvitationRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
-import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -27,19 +23,16 @@ public class AcceptDisplayInvitationService {
   private final DisplayInvitationRepository invitationRepository;
   private final TeamMemberRepository teamMemberRepository;
   private final DisplayRepository displayRepository;
-  private final UserRepository userRepository;
   private final Clock clock;
 
   public AcceptDisplayInvitationService(
       DisplayInvitationRepository invitationRepository,
       TeamMemberRepository teamMemberRepository,
       DisplayRepository displayRepository,
-      UserRepository userRepository,
       Clock clock) {
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.displayRepository = displayRepository;
-    this.userRepository = userRepository;
     this.clock = clock;
   }
 
@@ -56,14 +49,9 @@ public class AcceptDisplayInvitationService {
       throw new BusinessException(DisplayErrorCode.ALREADY_DISPLAY_MEMBER);
     }
 
-    User invitee =
-        userRepository
-            .findById(inviteeUserId)
-            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
     invitation.accept(LocalDateTime.now(clock));
     Display display = invitation.getDisplay();
-    TeamMember teamMember = display.inviteeAsTeamMember(invitation, invitee.getNickname());
+    TeamMember teamMember = display.inviteeAsTeamMember(invitation, command.displayNickname());
 
     try {
       teamMemberRepository.save(teamMember);

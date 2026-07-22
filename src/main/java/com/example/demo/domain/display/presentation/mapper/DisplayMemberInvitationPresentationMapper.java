@@ -6,6 +6,7 @@ import com.example.demo.domain.display.application.command.RejectDisplayInvitati
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayMemberListResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
+import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
@@ -23,8 +24,10 @@ public class DisplayMemberInvitationPresentationMapper {
         request.role() == null ? TeamMemberRole.TEAM_MEM : request.role());
   }
 
-  public AcceptDisplayInvitationCommand toAcceptCommand(Long requesterUserId, Long invitationId) {
-    return new AcceptDisplayInvitationCommand(requesterUserId, invitationId);
+  public AcceptDisplayInvitationCommand toAcceptCommand(
+      Long requesterUserId, Long invitationId, AcceptDisplayInvitationRequest request) {
+    return new AcceptDisplayInvitationCommand(
+        requesterUserId, invitationId, request.displayNickname());
   }
 
   public RejectDisplayInvitationCommand toRejectCommand(Long requesterUserId, Long invitationId) {
