@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -136,5 +137,95 @@ public interface PersonalArtworkQuestionApiDocs {
               example = "1")
           Long userId,
       @Valid CreatePersonalArtworkQuestionRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "개인 작품 질문 삭제",
+      description = "사용자가 본인이 작성한 개인 작품 질문을 soft delete 방식으로 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 질문 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question delete success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalQuestionId": 15,
+                                "deletedAt": "2026-07-22T20:00:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-22T20:00:00",
+                              "path": "/api/v1/personal-artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "질문 삭제 권한 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question forbidden",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_ARTWORK_QUESTION_FORBIDDEN",
+                              "message": "질문에 대한 권한이 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-22T20:00:00",
+                              "path": "/api/v1/personal-artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "개인 작품, 사용자 또는 질문 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question not found",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_QUESTION_NOT_FOUND",
+                              "message": "개인 작품 질문을 찾을 수 없습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-22T20:00:00",
+                              "path": "/api/v1/personal-artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  ApiResponseBody<DeletedPersonalArtworkQuestionResponse> deleteQuestion(
+      @Parameter(description = "질문이 속한 개인 작품 ID", example = "3") Long personalArtworkId,
+      @Parameter(description = "삭제할 질문 ID", example = "15") Long personalQuestionId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "27")
+          Long userId,
       HttpServletRequest httpServletRequest);
 }

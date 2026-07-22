@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
@@ -39,6 +40,34 @@ public class PersonalArtworkQuestionValidator {
     if (personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_QUESTION);
+    }
+  }
+
+  public void validateAccessiblePersonalQuestion(
+      PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId, Long userId) {
+    validateNotDeleted(personalArtworkQuestion);
+    validatePersonalArtworkQuestionBelongsToPersonalArtwork(
+        personalArtworkQuestion, personalArtworkId);
+    validateWriter(personalArtworkQuestion, userId);
+  }
+
+  private void validateNotDeleted(PersonalArtworkQuestion personalArtworkQuestion) {
+    if (personalArtworkQuestion.isDeleted()) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
+    }
+  }
+
+  private void validatePersonalArtworkQuestionBelongsToPersonalArtwork(
+      PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
+    if (!personalArtworkQuestion.belongsToArtwork(personalArtworkId)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
+    }
+  }
+
+  private void validateWriter(PersonalArtworkQuestion personalArtworkQuestion, Long userId) {
+    if (!personalArtworkQuestion.isWrittenBy(userId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
     }
   }
 }

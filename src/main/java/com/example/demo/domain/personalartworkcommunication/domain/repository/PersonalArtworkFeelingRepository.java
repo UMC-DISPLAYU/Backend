@@ -6,5 +6,5 @@ import java.util.Optional;
 public interface PersonalArtworkFeelingRepository {
   PersonalArtworkFeeling save(PersonalArtworkFeeling personalArtworkFeeling);
 
-  Optional<PersonalArtworkFeeling> findById(Long id);
+  Optional<PersonalArtworkFeeling> findById(Long feelingId);
 }

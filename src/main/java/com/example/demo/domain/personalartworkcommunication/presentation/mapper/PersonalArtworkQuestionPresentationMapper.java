@@ -1,8 +1,10 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.CreatePersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
 
@@ -26,5 +28,11 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.answerStatus(),
         result.createdAt(),
         result.userId());
+  }
+
+  public DeletedPersonalArtworkQuestionResponse toResponse(
+      DeletedPersonalArtworkQuestionResult result) {
+    return new DeletedPersonalArtworkQuestionResponse(
+        result.personalQuestionId(), result.deletedAt());
   }
 }
