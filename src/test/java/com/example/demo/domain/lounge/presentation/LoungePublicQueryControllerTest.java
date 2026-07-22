@@ -1,0 +1,96 @@
+package com.example.demo.domain.lounge.presentation;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.entity.LoungeComment;
+import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
+import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
+import com.example.demo.domain.lounge.domain.vo.UserId;
+import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
+import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
+class LoungePublicQueryControllerTest {
+
+  @Autowired private MockMvc mockMvc;
+
+  @Autowired private SpringDataLoungePostJpaRepository postRepository;
+
+  @Autowired private SpringDataLoungeCommentJpaRepository commentRepository;
+
+  @MockitoBean private LoungeWriterRepository writerRepository;
+
+  private LoungePost post;
+  private LoungeComment comment;
+
+  @BeforeEach
+  void setUp() {
+    when(writerRepository.findByUserIds(anyList())).thenReturn(Map.of());
+    post =
+        postRepository.saveAndFlush(
+            LoungePost.create(
+                new UserId(101L), "전시 후기", "분위기가 좋았어요.", LoungePostCategory.DISPLAY_REVIEW));
+    comment =
+        commentRepository.saveAndFlush(
+            LoungeComment.createComment(post.getId(), new UserId(102L), "저도 다녀왔어요."));
+    commentRepository.saveAndFlush(
+        LoungeComment.createReply(post.getId(), comment.getId(), new UserId(103L), "저도 같은 생각이에요."));
+  }
+
+  @Test
+  void anonymousRequestsReturnPublicLoungeResponses() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/lounge/posts"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posts[0].isLiked").value(false))
+        .andExpect(jsonPath("$.success.data.posts[0].isMyPost").value(false));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.isLiked").value(false))
+        .andExpect(jsonPath("$.success.data.isScrapped").value(false))
+        .andExpect(jsonPath("$.success.data.isMyPost").value(false));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comments[0].replyCount").value(1))
+        .andExpect(jsonPath("$.success.data.comments[0].isLiked").value(false))
+        .andExpect(jsonPath("$.success.data.comments[0].isMyComment").value(false));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.replies[0].replyCount").doesNotExist())
+        .andExpect(jsonPath("$.success.data.replies[0].isLiked").value(false))
+        .andExpect(jsonPath("$.success.data.replies[0].isMyComment").value(false));
+  }
+
+  @Test
+  void anonymousCommentRequestReturnsBadRequestWhenSizeIsInvalid() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()).param("size", "51"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+}
