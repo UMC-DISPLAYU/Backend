@@ -1,9 +1,9 @@
 package com.example.demo.domain.display.presentation;
 
-import com.example.demo.domain.display.application.command.AcceptDisplayInvitationService;
-import com.example.demo.domain.display.application.command.InviteDisplayMemberService;
-import com.example.demo.domain.display.application.command.RejectDisplayInvitationService;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
+import com.example.demo.domain.display.application.service.AcceptDisplayInvitationService;
+import com.example.demo.domain.display.application.service.InviteDisplayMemberService;
+import com.example.demo.domain.display.application.service.RejectDisplayInvitationService;
 import com.example.demo.domain.display.presentation.docs.DisplayMemberInvitationControllerDocs;
 import com.example.demo.domain.display.presentation.mapper.DisplayMemberInvitationPresentationMapper;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;

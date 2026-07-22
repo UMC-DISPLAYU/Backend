@@ -1,5 +1,6 @@
-package com.example.demo.domain.display.application.command;
+package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;

@@ -1,5 +1,6 @@
-package com.example.demo.domain.display.application.command;
+package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.command.AcceptDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
