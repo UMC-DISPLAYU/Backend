@@ -17,6 +17,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.DisplayInvitationTokenHasher;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.security.JwtFactory;
 import com.jayway.jsonpath.JsonPath;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -32,6 +33,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -47,6 +49,8 @@ class DisplayInvitationControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
+  @Autowired private JwtFactory jwtFactory;
+
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
   @Autowired private DisplayInvitationTokenHasher tokenHasher;
@@ -57,7 +61,9 @@ class DisplayInvitationControllerTest {
 
     MvcResult result =
         mockMvc
-            .perform(post("/api/v1/display/{displayId}/invitation", display.getId()))
+            .perform(
+                post("/api/v1/display/{displayId}/invitation", display.getId())
+                    .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultType").value("SUCCESS"))
             .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -95,18 +101,37 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
+  void issueInvitationFailsWhenRequesterIsNotOwnerOrTeamLeader() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
+
+    Display savedDisplay = displayJpaRepository.findById(display.getId()).orElseThrow();
+    assertThat(savedDisplay.getInvitationToken()).isNull();
+  }
+
+  @Test
   void disableInvitationIsIdempotent() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     String invitationUrl = invitationUrl(issue(display.getId()));
 
     mockMvc
-        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
-        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
@@ -114,6 +139,22 @@ class DisplayInvitationControllerTest {
         .perform(get("/api/v1/display/invitation/{token}", rawToken(invitationUrl)))
         .andExpect(status().isGone())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_DISABLED"));
+  }
+
+  @Test
+  void disableInvitationFailsWhenRequesterIsNotOwnerOrTeamLeader() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    issue(display.getId());
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
+
+    Display savedDisplay = displayJpaRepository.findById(display.getId()).orElseThrow();
+    assertThat(savedDisplay.getInvitationDisabledAt()).isNull();
   }
 
   @Test
@@ -129,16 +170,24 @@ class DisplayInvitationControllerTest {
     Display display = displayJpaRepository.saveAndFlush(display());
 
     mockMvc
-        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_NOT_ISSUED"));
   }
 
   private MvcResult issue(Long displayId) throws Exception {
     return mockMvc
-        .perform(post("/api/v1/display/{displayId}/invitation", displayId))
+        .perform(
+            post("/api/v1/display/{displayId}/invitation", displayId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andReturn();
+  }
+
+  private String bearer(Long userId) {
+    return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
   }
 
   private String invitationUrl(MvcResult result) throws Exception {

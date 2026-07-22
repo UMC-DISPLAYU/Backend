@@ -115,7 +115,10 @@ import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -125,6 +128,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -310,8 +314,10 @@ public class DisplayController {
               example = INVITATION_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    DisplayInvitationResult result = displayInvitationCommandService.issueInvitation(displayId);
+    DisplayInvitationResult result =
+        displayInvitationCommandService.issueInvitation(requireUserId(user), displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -333,9 +339,10 @@ public class DisplayController {
               example = INVITATION_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     DisplayInvitationDisableResult result =
-        displayInvitationCommandService.disableInvitation(displayId);
+        displayInvitationCommandService.disableInvitation(requireUserId(user), displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -478,5 +485,12 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }

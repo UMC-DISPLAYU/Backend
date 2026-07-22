@@ -37,16 +37,18 @@ public class DisplayInvitationCommandService {
   }
 
   @Transactional
-  public DisplayInvitationResult issueInvitation(Long displayId) {
+  public DisplayInvitationResult issueInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
+    validateRequester(display, requesterUserId);
     String rawToken = tokenGenerator.generate();
     display.issueInvitationToken(tokenHasher.hash(rawToken));
     return new DisplayInvitationResult(display.getId(), invitationUrl(rawToken));
   }
 
   @Transactional
-  public DisplayInvitationDisableResult disableInvitation(Long displayId) {
+  public DisplayInvitationDisableResult disableInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
+    validateRequester(display, requesterUserId);
     display.disableInvitation(LocalDateTime.now(clock));
     return new DisplayInvitationDisableResult(display.getId(), display.getInvitationDisabledAt());
   }
@@ -55,6 +57,12 @@ public class DisplayInvitationCommandService {
     return displayRepository
         .findById(displayId)
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
+  }
+
+  private void validateRequester(Display display, Long requesterUserId) {
+    if (!display.canInviteMember(requesterUserId)) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
+    }
   }
 
   private String invitationUrl(String rawToken) {
