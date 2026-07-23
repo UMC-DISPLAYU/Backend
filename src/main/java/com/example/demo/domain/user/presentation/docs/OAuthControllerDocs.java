@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.presentation.docs;
 
 import com.example.demo.domain.user.presentation.response.OAuthAuthorizationUrlResponse;
+import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +22,7 @@ public interface OAuthControllerDocs {
   @Operation(
       summary = "카카오 OAuth 콜백",
       description = "카카오 인가 코드를 Access Token으로 교환하고 기존 회원 로그인 또는 신규 회원가입 정보를 반환합니다.")
-  ApiResponseBody<?> kakaoCallback(
+  ApiResponseBody<OAuthCallbackResponse> kakaoCallback(
       String code,
       String state,
       String expectedState,
@@ -31,7 +32,7 @@ public interface OAuthControllerDocs {
   @Operation(
       summary = "구글 OAuth 콜백",
       description = "구글 인가 코드를 ID Token으로 교환하고 기존 회원 로그인 또는 신규 회원가입 정보를 반환합니다.")
-  ApiResponseBody<?> googleCallback(
+  ApiResponseBody<OAuthCallbackResponse> googleCallback(
       String code,
       String state,
       String expectedState,

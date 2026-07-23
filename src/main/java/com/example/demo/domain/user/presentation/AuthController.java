@@ -11,6 +11,7 @@ import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.vo.Nickname;
+import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
@@ -20,8 +21,10 @@ import com.example.demo.domain.user.presentation.request.KakaoLoginRequest;
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
+import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
+import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import com.example.demo.global.security.TokenProvider;
@@ -30,6 +33,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -56,7 +60,7 @@ public class AuthController
       @RequestHeader("Authorization") String authorization,
       HttpServletRequest httpRequest) {
 
-    String signupToken = authorization.substring(7);
+    String signupToken = extractSignupToken(authorization);
 
     SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
@@ -77,7 +81,7 @@ public class AuthController
 
   @Override
   @PostMapping("/login/kakao")
-  public ApiResponseBody<?> loginWithKakao(
+  public ApiResponseBody<OAuthCallbackResponse> loginWithKakao(
       @Valid @RequestBody KakaoLoginRequest request, HttpServletRequest httpRequest) {
 
     return login(Provider.Kakao, request.accessToken(), httpRequest);
@@ -85,7 +89,7 @@ public class AuthController
 
   @Override
   @PostMapping("/login/google")
-  public ApiResponseBody<?> loginWithGoogle(
+  public ApiResponseBody<OAuthCallbackResponse> loginWithGoogle(
       @Valid @RequestBody GoogleLoginRequest request, HttpServletRequest httpRequest) {
 
     return login(Provider.Google, request.idToken(), httpRequest);
@@ -113,11 +117,21 @@ public class AuthController
     return ApiResponseBody.success(null, httpRequest);
   }
 
-  private ApiResponseBody<?> login(
+  private ApiResponseBody<OAuthCallbackResponse> login(
       Provider provider, String idToken, HttpServletRequest httpRequest) {
 
     LoginResult result = authService.login(provider, idToken);
 
     return ApiResponseBody.success(loginResponseMapper.toResponse(result), httpRequest);
+  }
+
+  private String extractSignupToken(String authorization) {
+    String bearerPrefix = "Bearer ";
+    if (!StringUtils.hasText(authorization)
+        || !authorization.startsWith(bearerPrefix)
+        || !StringUtils.hasText(authorization.substring(bearerPrefix.length()))) {
+      throw new BusinessException(AuthErrorCode.INVALID_SIGNUP_TOKEN);
+    }
+    return authorization.substring(bearerPrefix.length()).trim();
   }
 }

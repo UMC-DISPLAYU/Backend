@@ -22,7 +22,11 @@ public record KakaoUserInfoResponse(
   public record Properties(String nickname) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  public record KakaoAccount(String email, Profile profile) {}
+  public record KakaoAccount(
+      String email,
+      Profile profile,
+      @JsonProperty("profile_nickname_needs_agreement") Boolean profileNicknameNeedsAgreement,
+      @JsonProperty("email_needs_agreement") Boolean emailNeedsAgreement) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Profile(String nickname) {}

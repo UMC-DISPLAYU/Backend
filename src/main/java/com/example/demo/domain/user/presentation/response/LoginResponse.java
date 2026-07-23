@@ -9,14 +9,16 @@ public class LoginResponse {
       @Schema(description = "신규 회원 여부", example = "false") boolean isNewUser,
       @Schema(description = "Access Token", example = "eyJhbGciOi...") String accessToken,
       @Schema(description = "Refresh Token", example = "eyJhbGciOi...") String refreshToken,
-      @Schema(description = "사용자 정보") UserInfo user) {}
+      @Schema(description = "사용자 정보") UserInfo user)
+      implements OAuthCallbackResponse {}
 
   public record Signup(
       @Schema(description = "신규 회원 여부", example = "true") boolean isNewUser,
       @Schema(description = "회원가입용 Signup Token", example = "eyJhbGciOi...") String signupToken,
       @Schema(description = "소셜 로그인 제공자", example = "Kakao") Provider provider,
       @Schema(description = "소셜 계정 이름", example = "마야") String name,
-      @Schema(description = "소셜 계정 이메일", example = "maya@gmail.com") String socialEmail) {}
+      @Schema(description = "소셜 계정 이메일", example = "maya@gmail.com") String socialEmail)
+      implements OAuthCallbackResponse {}
 
   public record UserInfo(
       @Schema(description = "사용자 ID", example = "1") Long id,

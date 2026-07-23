@@ -2,6 +2,7 @@ package com.example.demo.domain.user.presentation.docs;
 
 import com.example.demo.domain.user.presentation.request.GoogleLoginRequest;
 import com.example.demo.domain.user.presentation.request.KakaoLoginRequest;
+import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +21,8 @@ public interface LoginControllerDocs {
                     - 신규 회원: 추가 회원가입을 위한 signupToken과 소셜 사용자 정보를 반환합니다.
                     - 잘못되거나 만료된 토큰, 다른 Provider의 토큰은 INVALID_SOCIAL_TOKEN 오류를 반환합니다.
                     """)
-  ApiResponseBody<?> loginWithKakao(KakaoLoginRequest request, HttpServletRequest httpRequest);
+  ApiResponseBody<OAuthCallbackResponse> loginWithKakao(
+      KakaoLoginRequest request, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "구글 소셜 로그인",
@@ -32,5 +34,6 @@ public interface LoginControllerDocs {
                     - 신규 회원: 추가 회원가입을 위한 signupToken과 소셜 사용자 정보를 반환합니다.
                     - 잘못되거나 만료된 토큰, 다른 Provider의 토큰은 INVALID_SOCIAL_TOKEN 오류를 반환합니다.
                     """)
-  ApiResponseBody<?> loginWithGoogle(GoogleLoginRequest request, HttpServletRequest httpRequest);
+  ApiResponseBody<OAuthCallbackResponse> loginWithGoogle(
+      GoogleLoginRequest request, HttpServletRequest httpRequest);
 }

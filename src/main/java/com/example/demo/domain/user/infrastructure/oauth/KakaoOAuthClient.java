@@ -21,6 +21,7 @@ public class KakaoOAuthClient {
   private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
   private static final String TOKEN_URL = "https://kauth.kakao.com/oauth/token";
   private static final String USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
+  private static final String REQUIRED_SCOPES = "profile_nickname,account_email";
 
   private final RestTemplate restTemplate;
   private final KakaoOAuthProperties properties;
@@ -35,6 +36,7 @@ public class KakaoOAuthClient {
         .queryParam("client_id", properties.client().id())
         .queryParam("redirect_uri", properties.redirectUri())
         .queryParam("response_type", "code")
+        .queryParam("scope", REQUIRED_SCOPES)
         .queryParam("state", state)
         .build()
         .encode()
@@ -60,8 +62,11 @@ public class KakaoOAuthClient {
       return response.accessToken();
     } catch (RestClientResponseException e) {
       log.warn(
-          "Kakao OAuth token exchange failed. status={}, responseBody={}",
+          "Kakao OAuth token exchange failed. status={}, redirectUri={}, "
+              + "clientSecretConfigured={}, responseBody={}",
           e.getStatusCode().value(),
+          properties.redirectUri(),
+          StringUtils.hasText(properties.client().secret()),
           safeResponseBody(e.getResponseBodyAsString()));
       throw new IllegalStateException("Kakao OAuth token exchange failed.", e);
     }
@@ -70,13 +75,21 @@ public class KakaoOAuthClient {
   public KakaoUserInfoResponse getUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
-    return restTemplate
-        .exchange(
-            USER_INFO_URL,
-            org.springframework.http.HttpMethod.GET,
-            new HttpEntity<>(headers),
-            KakaoUserInfoResponse.class)
-        .getBody();
+    try {
+      return restTemplate
+          .exchange(
+              USER_INFO_URL,
+              org.springframework.http.HttpMethod.GET,
+              new HttpEntity<>(headers),
+              KakaoUserInfoResponse.class)
+          .getBody();
+    } catch (RestClientResponseException e) {
+      log.warn(
+          "Kakao user info request failed. status={}, responseBody={}",
+          e.getStatusCode().value(),
+          safeResponseBody(e.getResponseBodyAsString()));
+      throw new IllegalStateException("Kakao user info request failed.", e);
+    }
   }
 
   private HttpEntity<MultiValueMap<String, String>> formEntity(MultiValueMap<String, String> form) {
