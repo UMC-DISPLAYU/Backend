@@ -148,6 +148,7 @@ public class DisplayPresentationMapper {
         result.displayType(),
         result.displayFields(),
         result.region(),
+        result.likeCount(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),

@@ -9,6 +9,7 @@ import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQu
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
@@ -20,6 +21,7 @@ import com.example.demo.domain.displayartwork.presentation.request.ReorderDispla
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
@@ -88,6 +90,17 @@ public class DisplayArtworkController {
       HttpServletRequest httpRequest) {
     DisplayArtworkPreviewResult result =
         displayArtworkQueryService.getPreview(type, field, school, page, size);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @GetMapping("/api/v1/artworks")
+  @Operation(
+      summary = "전시 상세 - 작품 탭 목록 조회",
+      description = "특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.")
+  public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
+      @Parameter(description = "조회할 전시 ID") @RequestParam Long displayId,
+      HttpServletRequest httpRequest) {
+    DisplayArtworkListResult result = displayArtworkQueryService.getArtworksByDisplayId(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
