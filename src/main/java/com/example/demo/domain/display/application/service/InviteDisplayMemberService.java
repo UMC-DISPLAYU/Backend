@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.service;
 
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
+import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
@@ -26,16 +27,19 @@ public class InviteDisplayMemberService {
   private final DisplayInvitationRepository invitationRepository;
   private final TeamMemberRepository teamMemberRepository;
   private final UserRepository userRepository;
+  private final DisplayMemberInvitationMapper mapper;
 
   public InviteDisplayMemberService(
       DisplayRepository displayRepository,
       DisplayInvitationRepository invitationRepository,
       TeamMemberRepository teamMemberRepository,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      DisplayMemberInvitationMapper mapper) {
     this.displayRepository = displayRepository;
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.userRepository = userRepository;
+    this.mapper = mapper;
   }
 
   @Transactional
@@ -63,7 +67,7 @@ public class InviteDisplayMemberService {
     display.addInvitation(invitation);
 
     try {
-      return DisplayMemberInvitationResult.from(invitationRepository.save(invitation));
+      return mapper.toResult(invitationRepository.save(invitation));
     } catch (DataIntegrityViolationException e) {
       throw new BusinessException(DisplayErrorCode.PENDING_DISPLAY_INVITATION_EXISTS, e);
     }

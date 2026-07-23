@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.service;
 
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
+import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
@@ -16,11 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class RejectDisplayInvitationService {
 
   private final DisplayInvitationRepository invitationRepository;
+  private final DisplayMemberInvitationMapper mapper;
   private final Clock clock;
 
   public RejectDisplayInvitationService(
-      DisplayInvitationRepository invitationRepository, Clock clock) {
+      DisplayInvitationRepository invitationRepository,
+      DisplayMemberInvitationMapper mapper,
+      Clock clock) {
     this.invitationRepository = invitationRepository;
+    this.mapper = mapper;
     this.clock = clock;
   }
 
@@ -38,6 +43,6 @@ public class RejectDisplayInvitationService {
     }
 
     invitation.reject(LocalDateTime.now(clock));
-    return DisplayMemberInvitationResult.from(invitation);
+    return mapper.toResult(invitation);
   }
 }

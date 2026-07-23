@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.service;
 
 import com.example.demo.domain.display.application.command.AcceptDisplayInvitationCommand;
+import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
@@ -23,16 +24,19 @@ public class AcceptDisplayInvitationService {
   private final DisplayInvitationRepository invitationRepository;
   private final TeamMemberRepository teamMemberRepository;
   private final DisplayRepository displayRepository;
+  private final DisplayMemberInvitationMapper mapper;
   private final Clock clock;
 
   public AcceptDisplayInvitationService(
       DisplayInvitationRepository invitationRepository,
       TeamMemberRepository teamMemberRepository,
       DisplayRepository displayRepository,
+      DisplayMemberInvitationMapper mapper,
       Clock clock) {
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.displayRepository = displayRepository;
+    this.mapper = mapper;
     this.clock = clock;
   }
 
@@ -56,7 +60,7 @@ public class AcceptDisplayInvitationService {
     try {
       teamMemberRepository.save(teamMember);
       displayRepository.save(display);
-      return DisplayMemberInvitationResult.from(invitation);
+      return mapper.toResult(invitation);
     } catch (DataIntegrityViolationException e) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_CONCURRENTLY_CREATED, e);
     }
