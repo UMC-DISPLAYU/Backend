@@ -8,6 +8,7 @@ public record DisplayArtworkPreviewResponse(
   public record ArtworkCardResponse(
       Long artworkId,
       String artworkName,
+      String artistName,
       String artworkImageUrl,
       int imageWidth,
       int imageHeight,

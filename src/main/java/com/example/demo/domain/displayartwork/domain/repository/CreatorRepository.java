@@ -10,6 +10,8 @@ public interface CreatorRepository {
 
   Optional<Creator> findLeaderByDisplayArtworkId(Long displayArtworkId);
 
+  List<Creator> findLeadersByDisplayArtworkIds(List<Long> displayArtworkIds);
+
   Creator save(Creator creator);
 
   List<Creator> saveAll(List<Creator> creators);
