@@ -95,7 +95,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @RequestHeader("X-User-Id") Long userId, // 테스트용
       HttpServletRequest httpServletRequest) {
     DeletePersonalArtworkQuestionCommand command =
-        new DeletePersonalArtworkQuestionCommand(personalArtworkId, personalQuestionId, userId);
+        mapper.toCommand(personalArtworkId, personalQuestionId, userId);
 
     DeletedPersonalArtworkQuestionResult result =
         deletePersonalArtworkQuestionService.deleteQuestion(command);

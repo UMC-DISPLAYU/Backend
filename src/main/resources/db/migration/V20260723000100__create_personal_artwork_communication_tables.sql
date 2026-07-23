@@ -89,8 +89,14 @@ ALTER TABLE `PersonalArtworkQuestionReply`
     ADD CONSTRAINT `FK_PERSONALARTWORKQUESTIONREPLY_USER`
         FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
 
-CREATE INDEX `IDX_PERSONALARTWORKFEELING_ARTWORK_CREATEDAT`
-    ON `PersonalArtworkFeeling` (`personalArtworkId`, `createdAt`);
+CREATE INDEX `IDX_PERSONALARTWORKFEELING_LIST`
+    ON `PersonalArtworkFeeling` (`personalArtworkId`, `deletedAt`, `personalFeelingId`);
 
-CREATE INDEX `IDX_PERSONALARTWORKQUESTION_ARTWORK_CREATEDAT`
-    ON `PersonalArtworkQuestion` (`personalArtworkId`, `createdAt`);
+CREATE INDEX `IDX_PERSONALARTWORKFEELINGREPLY_LIST`
+    ON `PersonalArtworkFeelingReply` (`personalFeelingId`, `deletedAt`, `createdAt`);
+
+CREATE INDEX `IDX_PERSONALARTWORKQUESTION_LIST`
+    ON `PersonalArtworkQuestion` (`personalArtworkId`, `deletedAt`, `personalQuestionId`);
+
+CREATE INDEX `IDX_PERSONALARTWORKQUESTIONREPLY_LIST`
+    ON `PersonalArtworkQuestionReply` (`personalQuestionId`, `deletedAt`, `createdAt`);

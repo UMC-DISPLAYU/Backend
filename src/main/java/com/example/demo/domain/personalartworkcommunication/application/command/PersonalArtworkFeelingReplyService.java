@@ -6,7 +6,6 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PersonalArtworkFeelingReplyService {
 
-  private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
@@ -32,12 +30,7 @@ public class PersonalArtworkFeelingReplyService {
     personalArtworkFeelingValidator.validateContent(command.content());
 
     PersonalArtworkFeeling personalArtworkFeeling =
-        personalArtworkFeelingRepository
-            .findById(command.personalFeelingId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
+        personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
 
     personalArtworkFeelingValidator.validateReplyTarget(
         personalArtworkFeeling, command.personalArtworkId());

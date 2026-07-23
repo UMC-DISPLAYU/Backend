@@ -114,7 +114,7 @@ public class GetPersonalArtworkQuestionsService {
         question.getPersonalQuestionId(),
         question.getContent(),
         question.getIsPublic(),
-        question.getAnswerStatus().name(),
+        question.getAnswerStatus(),
         question.getCreatedAt(),
         user,
         replyResult);

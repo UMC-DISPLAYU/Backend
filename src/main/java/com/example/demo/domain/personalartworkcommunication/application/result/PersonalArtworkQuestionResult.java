@@ -1,6 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.result;
 
-import com.example.demo.domain.artworkcommunication.domain.type.AnswerStatus;
+import com.example.demo.domain.personalartworkcommunication.domain.type.AnswerStatus;
 import java.time.LocalDateTime;
 
 public record PersonalArtworkQuestionResult(

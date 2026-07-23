@@ -85,7 +85,7 @@ public interface PersonalArtworkQuestionApiDocs {
                             "resultType": "FAIL",
                             "success": null,
                             "error": {
-                              "code": "PERSONAL_NOT_FOUND",
+                              "code": "PERSONAL_ARTWORK_NOT_FOUND",
                               "message": "개인 작품을 찾을 수 없습니다.",
                               "details": null
                             },
@@ -344,7 +344,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "resultType": "FAIL",
                                       "success": null,
                                       "error": {
-                                        "code": "PERSONAL_NOT_FOUND",
+                                        "code": "PERSONAL_ARTWORK_NOT_FOUND",
                                         "message": "개인 작품을 찾을 수 없습니다.",
                                         "details": null
                                       },

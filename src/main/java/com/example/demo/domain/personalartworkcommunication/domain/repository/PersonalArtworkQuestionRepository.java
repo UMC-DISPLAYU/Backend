@@ -9,6 +9,8 @@ public interface PersonalArtworkQuestionRepository {
 
   Optional<PersonalArtworkQuestion> findById(Long personalArtworkQuestionId);
 
+  Optional<PersonalArtworkQuestion> findActiveById(Long personalArtworkQuestionId);
+
   List<PersonalArtworkQuestion> findActiveByPersonalArtworkIdWithCursor(
       Long personalArtworkId, Long cursorId, int limit);
 }

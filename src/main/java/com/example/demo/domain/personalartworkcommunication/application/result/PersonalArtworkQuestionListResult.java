@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.result;
 
+import com.example.demo.domain.personalartworkcommunication.domain.type.AnswerStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public record PersonalArtworkQuestionListResult(
       Long personalQuestionId,
       String content,
       Boolean isPublic,
-      String answerStatus,
+      AnswerStatus answerStatus,
       LocalDateTime createdAt,
       PersonalArtworkQuestionUserResult user,
       PersonalArtworkQuestionReplyItemResult reply) {}

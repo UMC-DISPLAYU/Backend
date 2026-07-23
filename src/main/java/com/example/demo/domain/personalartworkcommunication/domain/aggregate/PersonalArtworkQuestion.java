@@ -1,6 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.domain.aggregate;
 
-import com.example.demo.domain.artworkcommunication.domain.type.AnswerStatus;
+import com.example.demo.domain.personalartworkcommunication.domain.type.AnswerStatus;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

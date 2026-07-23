@@ -36,7 +36,7 @@ public class PersonalArtworkQuestionReplyService {
 
     PersonalArtworkQuestion personalArtworkQuestion =
         personalArtworkQuestionRepository
-            .findById(command.personalQuestionId())
+            .findActiveById(command.personalQuestionId())
             .orElseThrow(
                 () ->
                     new BusinessException(
