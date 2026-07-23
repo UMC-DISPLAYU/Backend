@@ -7,11 +7,13 @@ import com.example.demo.domain.user.infrastructure.oauth.GoogleAuthorizationCode
 import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthClient;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OAuthLoginService {
 
   private final KakaoOAuthClient kakaoOAuthClient;
@@ -36,6 +38,10 @@ public class OAuthLoginService {
     } catch (BusinessException e) {
       throw e;
     } catch (Exception e) {
+      log.warn(
+          "OAuth authorization code login failed. provider={}, exception={}",
+          provider,
+          e.getClass().getSimpleName());
       throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
   }

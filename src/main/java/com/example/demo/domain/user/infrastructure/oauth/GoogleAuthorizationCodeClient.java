@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -8,10 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
+@Slf4j
 public class GoogleAuthorizationCodeClient {
 
   private static final String AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -46,17 +49,32 @@ public class GoogleAuthorizationCodeClient {
     form.add("redirect_uri", properties.redirectUri());
     form.add("code", code);
 
-    OAuthTokenResponse response =
-        restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
-    if (response == null || !StringUtils.hasText(response.idToken())) {
-      throw new IllegalStateException("Google token response does not contain an ID token.");
+    try {
+      OAuthTokenResponse response =
+          restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
+      if (response == null || !StringUtils.hasText(response.idToken())) {
+        throw new IllegalStateException("Google token response does not contain an ID token.");
+      }
+      return response.idToken();
+    } catch (RestClientResponseException e) {
+      log.warn(
+          "Google OAuth token exchange failed. status={}, responseBody={}",
+          e.getStatusCode().value(),
+          safeResponseBody(e.getResponseBodyAsString()));
+      throw new IllegalStateException("Google OAuth token exchange failed.", e);
     }
-    return response.idToken();
   }
 
   private HttpEntity<MultiValueMap<String, String>> formEntity(MultiValueMap<String, String> form) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     return new HttpEntity<>(form, headers);
+  }
+
+  private String safeResponseBody(String responseBody) {
+    if (!StringUtils.hasText(responseBody)) {
+      return "<empty>";
+    }
+    return responseBody.length() <= 1000 ? responseBody : responseBody.substring(0, 1000);
   }
 }

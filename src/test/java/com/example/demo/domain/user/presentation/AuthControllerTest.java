@@ -132,21 +132,6 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.error.code").value("INVALID_SOCIAL_TOKEN"));
   }
 
-  @Test
-  void deprecatedLoginDelegatesToCommonLoginService() throws Exception {
-    stubSignupResult(Provider.Google);
-
-    mockMvc
-        .perform(
-            post("/api/v1/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"provider\":\"Google\",\"idToken\":\"google-id-token\"}"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.isNewUser").value(true));
-
-    verify(authService).login(Provider.Google, "google-id-token");
-  }
-
   private void stubSignupResult(Provider provider) {
     SocialUserInfo socialUserInfo =
         new SocialUserInfo(provider, "provider-user", "소셜 사용자", "social@example.com");

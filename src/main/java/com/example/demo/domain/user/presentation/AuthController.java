@@ -20,7 +20,6 @@ import com.example.demo.domain.user.presentation.request.KakaoLoginRequest;
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
-import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -74,15 +73,6 @@ public class AuthController
         signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
 
     return ApiResponseBody.success(response, httpRequest);
-  }
-
-  @Override
-  @Deprecated
-  @PostMapping("/login")
-  public ApiResponseBody<?> login(
-      @Valid @RequestBody SocialLoginRequest request, HttpServletRequest httpRequest) {
-
-    return login(request.provider(), request.idToken(), httpRequest);
   }
 
   @Override

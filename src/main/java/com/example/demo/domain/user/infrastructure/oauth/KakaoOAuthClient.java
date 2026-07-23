@@ -2,6 +2,7 @@ package com.example.demo.domain.user.infrastructure.oauth;
 
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -9,10 +10,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
+@Slf4j
 public class KakaoOAuthClient {
 
   private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
@@ -48,12 +51,20 @@ public class KakaoOAuthClient {
       form.add("client_secret", properties.client().secret());
     }
 
-    OAuthTokenResponse response =
-        restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
-    if (response == null || !StringUtils.hasText(response.accessToken())) {
-      throw new IllegalStateException("Kakao token response does not contain an access token.");
+    try {
+      OAuthTokenResponse response =
+          restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
+      if (response == null || !StringUtils.hasText(response.accessToken())) {
+        throw new IllegalStateException("Kakao token response does not contain an access token.");
+      }
+      return response.accessToken();
+    } catch (RestClientResponseException e) {
+      log.warn(
+          "Kakao OAuth token exchange failed. status={}, responseBody={}",
+          e.getStatusCode().value(),
+          safeResponseBody(e.getResponseBodyAsString()));
+      throw new IllegalStateException("Kakao OAuth token exchange failed.", e);
     }
-    return response.accessToken();
   }
 
   public KakaoUserInfoResponse getUserInfo(String accessToken) {
@@ -72,5 +83,12 @@ public class KakaoOAuthClient {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     return new HttpEntity<>(form, headers);
+  }
+
+  private String safeResponseBody(String responseBody) {
+    if (!StringUtils.hasText(responseBody)) {
+      return "<empty>";
+    }
+    return responseBody.length() <= 1000 ? responseBody : responseBody.substring(0, 1000);
   }
 }
