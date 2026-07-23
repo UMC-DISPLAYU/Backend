@@ -13,12 +13,13 @@ public class PersonalArtworkExistenceJpaAdapter implements PersonalArtworkExiste
 
   @Override
   public boolean existsById(Long personalArtworkId) {
-    return repository.existsById(personalArtworkId);
+    return repository.existsByPersonalArtworkIdAndDeletedAtIsNull(personalArtworkId);
   }
 
   @Override
   public boolean existsByIdAndUserId(Long personalArtworkId, Long userId) {
-    return repository.existsByPersonalArtworkIdAndUserId(personalArtworkId, userId);
+    return repository.existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(
+        personalArtworkId, userId);
   }
 
   @Override

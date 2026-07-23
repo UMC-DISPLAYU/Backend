@@ -1,4 +1,4 @@
-package com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.adapter;
+package com.example.demo.domain.personalartworkcommunication.infrastructure.persistence;
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import java.util.List;

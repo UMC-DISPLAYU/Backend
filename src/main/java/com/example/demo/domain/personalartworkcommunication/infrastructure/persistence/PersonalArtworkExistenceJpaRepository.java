@@ -8,10 +8,13 @@ import org.springframework.data.repository.query.Param;
 public interface PersonalArtworkExistenceJpaRepository
     extends JpaRepository<PersonalArtworkReferenceJpaEntity, Long> {
 
-  boolean existsByPersonalArtworkIdAndUserId(Long personalArtworkId, Long userId);
+  boolean existsByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId);
+
+  boolean existsByPersonalArtworkIdAndUserIdAndDeletedAtIsNull(Long personalArtworkId, Long userId);
 
   @Query(
       "select artwork.userId from PersonalArtworkReferenceJpaEntity artwork "
-          + "where artwork.personalArtworkId = :personalArtworkId")
+          + "where artwork.personalArtworkId = :personalArtworkId "
+          + "and artwork.deletedAt is null")
   Optional<Long> findOwnerUserIdById(@Param("personalArtworkId") Long personalArtworkId);
 }
