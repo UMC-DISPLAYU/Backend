@@ -9,6 +9,7 @@ import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
+import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -526,6 +527,12 @@ public class Display extends BaseTimeEntity {
         Objects.requireNonNull(invitation, "invitation must not be null.");
     if (!Objects.equals(id, displayInvitation.getDisplay().getId())) {
       throw new IllegalArgumentException("invitation must belong to this display.");
+    }
+    if (displayInvitation.isDeleted()) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_ALREADY_REJECTED);
+    }
+    if (displayInvitation.getStatus() != DisplayInvitationStatus.ACCEPTED) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_INVITATION_STATUS);
     }
     TeamMember teamMember =
         new TeamMember(
