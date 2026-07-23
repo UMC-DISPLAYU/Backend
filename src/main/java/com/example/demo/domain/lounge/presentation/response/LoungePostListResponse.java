@@ -1,13 +1,14 @@
 package com.example.demo.domain.lounge.presentation.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record LoungePostListResponse(
     Long loungePostId,
     String category,
     String title,
     String content,
-    String postImageUrl,
+    List<String> postImageUrls,
     LoungeWriterResponse writer,
     LocalDateTime createdAt,
     long commentCount,
