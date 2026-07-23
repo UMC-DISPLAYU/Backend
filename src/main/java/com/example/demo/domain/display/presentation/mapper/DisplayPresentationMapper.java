@@ -57,9 +57,9 @@ public class DisplayPresentationMapper {
         ContentOpenPolicy.ON_EXHIBITION);
   }
 
-  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request) {
+  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
     return new UpdateDisplayCommand(
-        request.userId(),
+        userId,
         request.displayId(),
         request.title(),
         request.posterImageUrl(),
@@ -175,6 +175,8 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        result.organization(),
+        result.department(),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft());
@@ -186,6 +188,8 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        result.organization(),
+        result.department(),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft());

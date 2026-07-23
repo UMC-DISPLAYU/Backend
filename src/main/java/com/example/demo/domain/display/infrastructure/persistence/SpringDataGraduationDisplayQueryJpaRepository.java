@@ -18,6 +18,8 @@ public interface SpringDataGraduationDisplayQueryJpaRepository
         d.id,
         d.title,
         image.imageUrl,
+        d.organization,
+        d.department,
         d.period.startDate,
         d.period.endDate
       )

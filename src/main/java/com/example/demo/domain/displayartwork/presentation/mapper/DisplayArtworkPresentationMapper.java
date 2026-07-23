@@ -42,6 +42,7 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkPreviewResponse.ArtworkCardResponse(
         result.artworkId(),
         result.artworkName(),
+        result.artistName(),
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),

@@ -124,6 +124,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -141,8 +142,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = TAG_NAME, description = TAG_DESCRIPTION)
 public class DisplayController {
-
-  private static final Long TEMP_OWNER_USER_ID = 1L;
 
   private final CreateDisplayService createDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
@@ -187,6 +186,7 @@ public class DisplayController {
   @PostMapping("/api/v1/display")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_SUMMARY, description = CREATE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = CREATE_REQUEST_DESCRIPTION,
       required = true,
@@ -208,10 +208,12 @@ public class DisplayController {
                       name = CREATE_SUCCESS_EXAMPLE_NAME,
                       value = CREATE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayDetailResponse> createDisplay(
-      @Valid @RequestBody CreateDisplayRequest createDisplayRequest, HttpServletRequest request) {
+      @Valid @RequestBody CreateDisplayRequest createDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     Long displayId =
         createDisplayService
-            .createDisplay(mapper.toCommand(createDisplayRequest, TEMP_OWNER_USER_ID))
+            .createDisplay(mapper.toCommand(createDisplayRequest, requireUserId(user)))
             .displayId();
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -219,6 +221,7 @@ public class DisplayController {
 
   @PatchMapping("/api/v1/display")
   @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = UPDATE_REQUEST_DESCRIPTION,
       required = true,
@@ -240,14 +243,18 @@ public class DisplayController {
                       name = UPDATE_SUCCESS_EXAMPLE_NAME,
                       value = UPDATE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayDetailResponse> updateDisplay(
-      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest, HttpServletRequest request) {
+      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     DisplayDetailResult result =
-        updateDisplayService.updateDisplay(mapper.toCommand(updateDisplayRequest));
+        updateDisplayService.updateDisplay(
+            mapper.toCommand(updateDisplayRequest, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PostMapping("/api/v1/display/like")
   @Operation(summary = LIKE_SUMMARY, description = LIKE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = LIKE_REQUEST_DESCRIPTION,
       required = true,
@@ -265,13 +272,17 @@ public class DisplayController {
               examples =
                   @ExampleObject(name = LIKE_SUCCESS_EXAMPLE_NAME, value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> likeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
-    DisplayLikeResult result = displayLikeCommandService.like(displayLikeRequest.toCommand());
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayLikeResult result =
+        displayLikeCommandService.like(displayLikeRequest.toCommand(requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PatchMapping("/api/v1/display/like")
   @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = LIKE_REQUEST_DESCRIPTION,
       required = true,
@@ -291,13 +302,17 @@ public class DisplayController {
                       name = LIKE_CANCEL_SUCCESS_EXAMPLE_NAME,
                       value = LIKE_CANCEL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
-    DisplayLikeResult result = displayLikeCommandService.cancel(displayLikeRequest.toCommand());
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayLikeResult result =
+        displayLikeCommandService.cancel(displayLikeRequest.toCommand(requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PostMapping("/api/v1/display/{displayId}/invitation")
   @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_ISSUE_SUCCESS_DESCRIPTION,
@@ -323,6 +338,7 @@ public class DisplayController {
 
   @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
   @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_DISABLE_SUCCESS_DESCRIPTION,

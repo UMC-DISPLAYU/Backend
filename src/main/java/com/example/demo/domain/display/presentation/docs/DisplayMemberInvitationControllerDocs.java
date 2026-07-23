@@ -35,9 +35,8 @@ public interface DisplayMemberInvitationControllerDocs {
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 멤버 목록 조회", description = "해당 전시의 수락된 전시 멤버 목록을 조회합니다.")
-  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<DisplayMemberListResponse> getMembers(
-      Long displayId, AuthUser user, HttpServletRequest httpRequest);
+      Long displayId, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "내 전시 멤버 초대 목록 조회",

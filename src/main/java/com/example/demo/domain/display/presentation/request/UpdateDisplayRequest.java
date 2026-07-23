@@ -8,7 +8,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 public record UpdateDisplayRequest(
-    @NotNull @Positive Long userId,
     @NotNull @Positive Long displayId,
     String title,
     String posterImageUrl,
