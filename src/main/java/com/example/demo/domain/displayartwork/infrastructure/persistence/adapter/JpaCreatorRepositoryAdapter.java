@@ -27,6 +27,11 @@ public class JpaCreatorRepositoryAdapter implements CreatorRepository {
   }
 
   @Override
+  public List<Creator> findLeadersByDisplayArtworkIds(List<Long> displayArtworkIds) {
+    return jpaRepository.findByDisplayArtworkIdInAndIsLeaderTrue(displayArtworkIds);
+  }
+
+  @Override
   public Creator save(Creator creator) {
     return jpaRepository.save(creator);
   }

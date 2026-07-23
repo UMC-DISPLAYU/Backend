@@ -18,7 +18,9 @@ import com.example.demo.global.error.BusinessException;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,11 +83,19 @@ public class DisplayArtworkQueryService {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
-    List<ArtworkCardResult> cards = pageItems.stream().map(this::toCard).toList();
+    Map<Long, String> artistNamesByArtworkId =
+        creatorRepository
+            .findLeadersByDisplayArtworkIds(pageItems.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+
+    List<ArtworkCardResult> cards =
+        pageItems.stream().map(artwork -> toCard(artwork, artistNamesByArtworkId)).toList();
     return new DisplayArtworkPreviewResult(cards, page, size, isLast);
   }
 
-  private ArtworkCardResult toCard(DisplayArtwork displayArtwork) {
+  private ArtworkCardResult toCard(
+      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
@@ -96,6 +106,7 @@ public class DisplayArtworkQueryService {
     return new ArtworkCardResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
+        artistNamesByArtworkId.get(displayArtwork.getId()),
         thumbnail != null ? thumbnail.getImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
