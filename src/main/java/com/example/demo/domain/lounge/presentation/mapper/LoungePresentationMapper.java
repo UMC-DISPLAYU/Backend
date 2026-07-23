@@ -32,7 +32,7 @@ public class LoungePresentationMapper {
         result.category(),
         result.title(),
         result.content(),
-        result.postImageUrl(),
+        result.postImageUrls(),
         toResponse(result.writer()),
         result.createdAt(),
         result.commentCount(),
@@ -53,7 +53,7 @@ public class LoungePresentationMapper {
     return new LoungePostDetailResponse(
         result.loungePostId(),
         result.title(),
-        result.postImageUrl(),
+        result.postImageUrls(),
         result.content(),
         result.category(),
         result.postStatus(),
