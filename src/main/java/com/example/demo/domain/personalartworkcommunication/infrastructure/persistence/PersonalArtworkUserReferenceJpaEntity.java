@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "User")
+@Table(name = "`User`")
 public class PersonalArtworkUserReferenceJpaEntity {
 
   @Id
