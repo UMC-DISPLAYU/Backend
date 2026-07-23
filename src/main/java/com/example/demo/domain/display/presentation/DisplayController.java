@@ -383,6 +383,77 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
+  @PostMapping("/api/v1/display/{displayId}/invitation")
+  @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_ISSUE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_ISSUE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayInvitationResponse> issueDisplayInvitation(
+      @Parameter(
+              description = INVITATION_DISPLAY_ID_DESCRIPTION,
+              example = INVITATION_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayInvitationResult result =
+        displayInvitationCommandService.issueInvitation(requireUserId(user), displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
+  @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_DISABLE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_DISABLE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayInvitationDisableResponse> disableDisplayInvitation(
+      @Parameter(
+              description = INVITATION_DISPLAY_ID_DESCRIPTION,
+              example = INVITATION_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayInvitationDisableResult result =
+        displayInvitationCommandService.disableInvitation(requireUserId(user), displayId);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @GetMapping("/api/v1/display/invitation/{token}")
+  @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = INVITATION_DETAIL_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME,
+                      value = INVITATION_DETAIL_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> getDisplayByInvitation(
+      @Parameter(description = INVITATION_TOKEN_DESCRIPTION, example = INVITATION_TOKEN_EXAMPLE)
+          @PathVariable
+          String token,
+      HttpServletRequest request) {
+    DisplayDetailResult result = getDisplayByInvitationService.getDisplay(token);
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
   @GetMapping("/api/v1/display/map")
   @Operation(summary = MAP_SUMMARY, description = MAP_DESCRIPTION)
   @ApiResponse(
