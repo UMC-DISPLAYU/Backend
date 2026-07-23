@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.entity.RefreshToken;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
@@ -17,6 +18,7 @@ import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
 import com.example.demo.global.security.TokenProvider;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class AuthServiceTest {
 
@@ -45,6 +47,9 @@ class AuthServiceTest {
         .thenReturn(Optional.of(user));
     when(tokenProvider.createAccessToken(user)).thenReturn("access-token");
     when(tokenProvider.createRefreshToken(user)).thenReturn("refresh-token");
+    RefreshToken previousToken =
+        RefreshToken.builder().user(user).refreshToken("previous-refresh-token").build();
+    when(refreshTokenRepository.findByUserId(1L)).thenReturn(Optional.of(previousToken));
 
     LoginResult result = authService.login(Provider.Kakao, SOCIAL_TOKEN);
 
@@ -52,6 +57,10 @@ class AuthServiceTest {
     assertThat(result.accessToken()).isEqualTo("access-token");
     assertThat(result.refreshToken()).isEqualTo("refresh-token");
     verify(googleOAuthVerifier, never()).verify(SOCIAL_TOKEN);
+    verify(refreshTokenRepository).delete(previousToken);
+    ArgumentCaptor<RefreshToken> refreshTokenCaptor = ArgumentCaptor.forClass(RefreshToken.class);
+    verify(refreshTokenRepository).save(refreshTokenCaptor.capture());
+    assertThat(refreshTokenCaptor.getValue().getRefreshToken()).isEqualTo("refresh-token");
   }
 
   @Test
@@ -79,6 +88,7 @@ class AuthServiceTest {
         .thenReturn(Optional.of(user));
     when(tokenProvider.createAccessToken(user)).thenReturn("access-token");
     when(tokenProvider.createRefreshToken(user)).thenReturn("refresh-token");
+    when(refreshTokenRepository.findByUserId(2L)).thenReturn(Optional.empty());
 
     LoginResult result = authService.login(Provider.Google, SOCIAL_TOKEN);
 
@@ -86,6 +96,9 @@ class AuthServiceTest {
     assertThat(result.accessToken()).isEqualTo("access-token");
     assertThat(result.refreshToken()).isEqualTo("refresh-token");
     verify(kakaoOAuthVerifier, never()).verify(SOCIAL_TOKEN);
+    ArgumentCaptor<RefreshToken> refreshTokenCaptor = ArgumentCaptor.forClass(RefreshToken.class);
+    verify(refreshTokenRepository).save(refreshTokenCaptor.capture());
+    assertThat(refreshTokenCaptor.getValue().getRefreshToken()).isEqualTo("refresh-token");
   }
 
   @Test

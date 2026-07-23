@@ -46,6 +46,9 @@ public class AuthService {
 
     // 기존 회원
     if (user != null) {
+      if (user.getDeletedAt() != null) {
+        throw new BusinessException(AuthErrorCode.WITHDRAWAL_USER);
+      }
 
       String accessToken = tokenProvider.createAccessToken(user);
 

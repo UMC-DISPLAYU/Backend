@@ -48,4 +48,16 @@ class OAuthLoginServiceTest {
                 org.assertj.core.api.Assertions.assertThat(exception.errorCode())
                     .isEqualTo(AuthErrorCode.INVALID_SOCIAL_TOKEN));
   }
+
+  @Test
+  void rejectsMissingAuthorizationCodeBeforeCallingKakao() {
+    assertThatExceptionOfType(BusinessException.class)
+        .isThrownBy(() -> service.loginWithAuthorizationCode(Provider.Kakao, " "))
+        .satisfies(
+            exception ->
+                org.assertj.core.api.Assertions.assertThat(exception.errorCode())
+                    .isEqualTo(AuthErrorCode.INVALID_SOCIAL_TOKEN));
+
+    org.mockito.Mockito.verifyNoInteractions(kakaoOAuthClient, authService);
+  }
 }

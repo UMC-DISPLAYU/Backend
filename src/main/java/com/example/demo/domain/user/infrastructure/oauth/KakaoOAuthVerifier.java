@@ -18,16 +18,24 @@ public class KakaoOAuthVerifier {
   private final KakaoOAuthClient kakaoOAuthClient;
 
   public SocialUserInfo verify(String accessToken) {
-
+    String failureStage = "USER_INFO_REQUEST";
     try {
       KakaoUserInfoResponse userInfo = kakaoOAuthClient.getUserInfo(accessToken);
+      failureStage = "USER_INFO_PROFILE_VALIDATION";
 
-      if (userInfo == null || userInfo.id() == null) {
+      boolean hasUserId = userInfo != null && userInfo.id() != null;
+      boolean hasNickname = userInfo != null && StringUtils.hasText(userInfo.nickname());
+      boolean hasEmail = userInfo != null && StringUtils.hasText(userInfo.email());
+      log.info(
+          "Kakao user info received. userIdPresent={}, nicknamePresent={}, emailPresent={}",
+          hasUserId,
+          hasNickname,
+          hasEmail);
+
+      if (!hasUserId) {
         log.warn("Kakao user info is missing the required user ID.");
         throw new IllegalArgumentException("Kakao user info does not contain a user ID.");
       }
-      boolean hasNickname = StringUtils.hasText(userInfo.nickname());
-      boolean hasEmail = StringUtils.hasText(userInfo.email());
       if (!hasNickname || !hasEmail) {
         log.warn(
             "Kakao user info is missing required profile data. hasNickname={}, hasEmail={}, "
@@ -46,7 +54,8 @@ public class KakaoOAuthVerifier {
 
     } catch (Exception e) {
       log.warn(
-          "Kakao access token verification failed. exception={}, message={}",
+          "Kakao access token verification failed. stage={}, exception={}, message={}",
+          failureStage,
           e.getClass().getSimpleName(),
           e.getMessage());
       throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);

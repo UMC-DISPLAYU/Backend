@@ -1,7 +1,10 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
+import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoOAuthErrorResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +25,7 @@ public class KakaoOAuthClient {
   private static final String TOKEN_URL = "https://kauth.kakao.com/oauth/token";
   private static final String USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
   private static final String REQUIRED_SCOPES = "profile_nickname,account_email";
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final RestTemplate restTemplate;
   private final KakaoOAuthProperties properties;
@@ -53,21 +57,26 @@ public class KakaoOAuthClient {
       form.add("client_secret", properties.client().secret());
     }
 
+    log.info(
+        "Kakao token exchange request. grantType={}, clientIdConfigured={}, redirectUri={}, "
+            + "authorizationCodePresent={}, clientSecretConfigured={}",
+        form.getFirst("grant_type"),
+        StringUtils.hasText(form.getFirst("client_id")),
+        form.getFirst("redirect_uri"),
+        StringUtils.hasText(form.getFirst("code")),
+        StringUtils.hasText(form.getFirst("client_secret")));
+
     try {
       OAuthTokenResponse response =
           restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
-      if (response == null || !StringUtils.hasText(response.accessToken())) {
+      boolean accessTokenPresent = response != null && StringUtils.hasText(response.accessToken());
+      log.info("Kakao token exchange succeeded. accessTokenPresent={}", accessTokenPresent);
+      if (!accessTokenPresent) {
         throw new IllegalStateException("Kakao token response does not contain an access token.");
       }
       return response.accessToken();
     } catch (RestClientResponseException e) {
-      log.warn(
-          "Kakao OAuth token exchange failed. status={}, redirectUri={}, "
-              + "clientSecretConfigured={}, responseBody={}",
-          e.getStatusCode().value(),
-          properties.redirectUri(),
-          StringUtils.hasText(properties.client().secret()),
-          safeResponseBody(e.getResponseBodyAsString()));
+      logKakaoApiError("token exchange", e);
       throw new IllegalStateException("Kakao OAuth token exchange failed.", e);
     }
   }
@@ -75,6 +84,10 @@ public class KakaoOAuthClient {
   public KakaoUserInfoResponse getUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
+    log.info(
+        "Kakao user info request. endpoint={}, accessTokenPresent={}",
+        USER_INFO_URL,
+        StringUtils.hasText(accessToken));
     try {
       return restTemplate
           .exchange(
@@ -84,10 +97,7 @@ public class KakaoOAuthClient {
               KakaoUserInfoResponse.class)
           .getBody();
     } catch (RestClientResponseException e) {
-      log.warn(
-          "Kakao user info request failed. status={}, responseBody={}",
-          e.getStatusCode().value(),
-          safeResponseBody(e.getResponseBodyAsString()));
+      logKakaoApiError("user info", e);
       throw new IllegalStateException("Kakao user info request failed.", e);
     }
   }
@@ -103,5 +113,35 @@ public class KakaoOAuthClient {
       return "<empty>";
     }
     return responseBody.length() <= 1000 ? responseBody : responseBody.substring(0, 1000);
+  }
+
+  private void logKakaoApiError(String stage, RestClientResponseException exception) {
+    String responseBody = exception.getResponseBodyAsString();
+    KakaoOAuthErrorResponse errorResponse = parseErrorResponse(responseBody);
+    log.warn(
+        "Kakao OAuth API failed. stage={}, status={}, redirectUri={}, clientIdConfigured={}, "
+            + "clientSecretConfigured={}, error={}, errorDescription={}, kakaoCode={}, "
+            + "message={}, responseBody={}",
+        stage,
+        exception.getStatusCode().value(),
+        properties.redirectUri(),
+        StringUtils.hasText(properties.client().id()),
+        StringUtils.hasText(properties.client().secret()),
+        errorResponse == null ? null : errorResponse.error(),
+        errorResponse == null ? null : errorResponse.errorDescription(),
+        errorResponse == null ? null : errorResponse.code(),
+        errorResponse == null ? null : errorResponse.msg(),
+        safeResponseBody(responseBody));
+  }
+
+  private KakaoOAuthErrorResponse parseErrorResponse(String responseBody) {
+    if (!StringUtils.hasText(responseBody)) {
+      return null;
+    }
+    try {
+      return OBJECT_MAPPER.readValue(responseBody, KakaoOAuthErrorResponse.class);
+    } catch (JsonProcessingException ignored) {
+      return null;
+    }
   }
 }

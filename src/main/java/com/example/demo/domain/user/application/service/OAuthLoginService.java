@@ -28,20 +28,31 @@ public class OAuthLoginService {
   }
 
   public LoginResult loginWithAuthorizationCode(Provider provider, String code) {
+    if (!StringUtils.hasText(code)) {
+      log.warn("OAuth authorization code is missing. provider={}", provider);
+      throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
+    }
     try {
       String socialToken =
           switch (provider) {
             case Kakao -> kakaoOAuthClient.exchangeCode(code);
             case Google -> googleAuthorizationCodeClient.exchangeCode(code);
           };
+      log.info(
+          "OAuth provider token exchange completed. provider={}, socialTokenPresent={}",
+          provider,
+          StringUtils.hasText(socialToken));
       return authService.login(provider, socialToken);
     } catch (BusinessException e) {
       throw e;
     } catch (Exception e) {
       log.warn(
-          "OAuth authorization code login failed. provider={}, exception={}",
+          "OAuth authorization code login failed. provider={}, authorizationCodePresent={}, "
+              + "exception={}, message={}",
           provider,
-          e.getClass().getSimpleName());
+          true,
+          e.getClass().getSimpleName(),
+          e.getMessage());
       throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
   }

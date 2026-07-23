@@ -15,6 +15,7 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.service.OAuthLoginService;
+import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.presentation.response.LoginResponse;
 import com.example.demo.global.error.GlobalExceptionHandler;
@@ -117,6 +118,92 @@ class OAuthControllerTest {
 
     verify(oauthLoginService).validateState("state", "state");
     verify(oauthLoginService).loginWithAuthorizationCode(Provider.Google, "authorization-code");
+  }
+
+  @Test
+  void returnsServiceTokensForExistingGoogleUser() throws Exception {
+    User user =
+        User.builder()
+            .id(1L)
+            .provider(Provider.Google)
+            .providerId("google-user")
+            .name("구글 사용자")
+            .nickname("google-user")
+            .socialEmail("google@example.com")
+            .build();
+    LoginResult result = LoginResult.login(user, "access-token", "refresh-token");
+    LoginResponse.Login response =
+        new LoginResponse.Login(
+            false,
+            "access-token",
+            "refresh-token",
+            new LoginResponse.UserInfo(
+                1L,
+                Provider.Google,
+                "google-user",
+                "구글 사용자",
+                "google-user",
+                "google@example.com",
+                null,
+                false));
+    when(oauthLoginService.loginWithAuthorizationCode(Provider.Google, "authorization-code"))
+        .thenReturn(result);
+    when(loginResponseMapper.toResponse(result)).thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/api/auth/google/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(new Cookie("google_oauth_state", "state")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.isNewUser").value(false))
+        .andExpect(jsonPath("$.success.data.accessToken").value("access-token"))
+        .andExpect(jsonPath("$.success.data.refreshToken").value("refresh-token"))
+        .andExpect(jsonPath("$.success.data.user.provider").value("Google"));
+  }
+
+  @Test
+  void returnsServiceTokensForExistingKakaoUser() throws Exception {
+    User user =
+        User.builder()
+            .id(2L)
+            .provider(Provider.Kakao)
+            .providerId("kakao-user")
+            .name("카카오 사용자")
+            .nickname("kakao-user")
+            .socialEmail("kakao@example.com")
+            .build();
+    LoginResult result = LoginResult.login(user, "access-token", "refresh-token");
+    LoginResponse.Login response =
+        new LoginResponse.Login(
+            false,
+            "access-token",
+            "refresh-token",
+            new LoginResponse.UserInfo(
+                2L,
+                Provider.Kakao,
+                "kakao-user",
+                "카카오 사용자",
+                "kakao-user",
+                "kakao@example.com",
+                null,
+                false));
+    when(oauthLoginService.loginWithAuthorizationCode(Provider.Kakao, "authorization-code"))
+        .thenReturn(result);
+    when(loginResponseMapper.toResponse(result)).thenReturn(response);
+
+    mockMvc
+        .perform(
+            get("/api/auth/kakao/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(new Cookie("kakao_oauth_state", "state")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.isNewUser").value(false))
+        .andExpect(jsonPath("$.success.data.accessToken").value("access-token"))
+        .andExpect(jsonPath("$.success.data.refreshToken").value("refresh-token"))
+        .andExpect(jsonPath("$.success.data.user.provider").value("Kakao"));
   }
 
   private LoginResult signupResult(Provider provider) {
