@@ -118,6 +118,17 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
+  void issueInvitationReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(post("/api/v1/display/{displayId}/invitation", display.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void disableInvitationIsIdempotent() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     String invitationUrl = invitationUrl(issue(display.getId()));
@@ -157,6 +168,18 @@ class DisplayInvitationControllerTest {
 
     Display savedDisplay = displayJpaRepository.findById(display.getId()).orElseThrow();
     assertThat(savedDisplay.getInvitationDisabledAt()).isNull();
+  }
+
+  @Test
+  void disableInvitationReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    issue(display.getId());
+
+    mockMvc
+        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   @Test

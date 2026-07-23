@@ -57,6 +57,19 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
   }
 
+  @Test
+  void createDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody("SEOUL")))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+  }
+
   private static String requestBody(String region) {
     return """
         {

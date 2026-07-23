@@ -52,7 +52,7 @@ class DisplayControllerUpdateTest {
             patch("/api/v1/display")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(display.getId(), 1L)))
+                .content(updateRequest(display.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -81,16 +81,30 @@ class DisplayControllerUpdateTest {
             patch("/api/v1/display")
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(display.getId(), 2L)))
+                .content(updateRequest(display.getId())))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
-  private static String updateRequest(Long displayId, Long userId) {
+  @Test
+  void updateDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateRequest(display.getId())))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  private static String updateRequest(Long displayId) {
     return """
         {
-          "userId": %d,
           "displayId": %d,
           "title": "FORM 2026 (수정본)",
           "posterImageUrl": "https://cdn.displayu.com/posters/updated.png",
@@ -109,7 +123,7 @@ class DisplayControllerUpdateTest {
           "precautions": "물품 보관소를 운영하지 않습니다."
         }
         """
-        .formatted(userId, displayId);
+        .formatted(displayId);
   }
 
   private static Display displayWithTeamMembers() {

@@ -140,6 +140,18 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void inviteReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(1L)))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void acceptUpdatesInvitationAndCreatesTeamMember() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -191,6 +203,18 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void acceptReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void rejectUpdatesInvitationWithoutCreatingTeamMember() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -211,6 +235,15 @@ class DisplayMemberInvitationControllerTest {
             teamMemberJpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(
                 display.getId(), invitee.getId()))
         .isFalse();
+  }
+
+  @Test
+  void rejectReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(post("/api/v1/display-invitations/{invitationId}/reject", 1L))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   @Test
@@ -328,6 +361,15 @@ class DisplayMemberInvitationControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitations.length()").value(0));
+  }
+
+  @Test
+  void getMyInvitationsReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/display-invitations/me"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   private Long invite(Long displayId, Long leaderUserId, Long inviteeUserId) throws Exception {

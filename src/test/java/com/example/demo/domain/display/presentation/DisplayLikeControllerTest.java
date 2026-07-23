@@ -54,7 +54,7 @@ class DisplayLikeControllerTest {
             post("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -71,7 +71,7 @@ class DisplayLikeControllerTest {
             post("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk());
 
     mockMvc
@@ -79,7 +79,7 @@ class DisplayLikeControllerTest {
             post("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DUPLICATE_RESOURCE"));
@@ -93,7 +93,7 @@ class DisplayLikeControllerTest {
             post("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk());
 
     mockMvc
@@ -101,7 +101,7 @@ class DisplayLikeControllerTest {
             patch("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -122,14 +122,14 @@ class DisplayLikeControllerTest {
             post("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk());
     mockMvc
         .perform(
             patch("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk());
 
     mockMvc
@@ -137,7 +137,7 @@ class DisplayLikeControllerTest {
             patch("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.likeCount").value(0));
   }
@@ -151,20 +151,47 @@ class DisplayLikeControllerTest {
             patch("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody(display.getId(), 1L)))
+                .content(requestBody(display.getId())))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
   }
 
-  private static String requestBody(Long displayId, Long userId) {
+  @Test
+  void likeDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display/like")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody(display.getId())))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void cancelLikeDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display/like")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody(display.getId())))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  private static String requestBody(Long displayId) {
     return """
         {
-          "displayId": %d,
-          "userId": %d
+          "displayId": %d
         }
         """
-        .formatted(displayId, userId);
+        .formatted(displayId);
   }
 
   private String bearer(Long userId) {
