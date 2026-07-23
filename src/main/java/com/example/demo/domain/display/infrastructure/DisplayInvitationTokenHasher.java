@@ -7,8 +7,10 @@ import java.util.HexFormat;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DisplayInvitationTokenHasher {
+public class DisplayInvitationTokenHasher
+    implements com.example.demo.domain.display.application.port.DisplayInvitationTokenHasher {
 
+  @Override
   public String hash(String rawToken) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
