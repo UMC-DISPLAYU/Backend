@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class LoginResponseMapper {
 
+  public Object toResponse(LoginResult result) {
+    return result.isNewUser() ? toSignupResponse(result) : toLoginResponse(result);
+  }
+
   public LoginResponse.Login toLoginResponse(LoginResult result) {
 
     User user = result.user();

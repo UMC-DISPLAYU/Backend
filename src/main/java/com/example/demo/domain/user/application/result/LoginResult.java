@@ -17,4 +17,8 @@ public record LoginResult(
   public static LoginResult signup(String signupToken, SocialUserInfo socialUserInfo) {
     return new LoginResult(null, null, null, signupToken, socialUserInfo);
   }
+
+  public boolean isNewUser() {
+    return user == null;
+  }
 }
