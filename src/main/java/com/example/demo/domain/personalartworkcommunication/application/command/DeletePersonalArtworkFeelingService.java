@@ -1,0 +1,36 @@
+package com.example.demo.domain.personalartworkcommunication.application.command;
+
+import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class DeletePersonalArtworkFeelingService {
+
+  private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
+  private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
+
+  public DeletedPersonalArtworkFeelingResult deleteFeeling(
+      DeletePersonalArtworkFeelingCommand command) {
+    personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
+    personalArtworkFeelingValidator.validateUserExists(command.userId());
+
+    PersonalArtworkFeeling personalArtworkFeeling =
+        personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
+
+    personalArtworkFeelingValidator.validateAccessiblePersonalFeeling(
+        personalArtworkFeeling, command.personalArtworkId(), command.userId());
+
+    personalArtworkFeeling.delete();
+    PersonalArtworkFeeling savedFeeling =
+        personalArtworkFeelingRepository.save(personalArtworkFeeling);
+
+    return new DeletedPersonalArtworkFeelingResult(
+        savedFeeling.getPersonalFeelingId(), savedFeeling.getDeletedAt());
+  }
+}
