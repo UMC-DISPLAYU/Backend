@@ -1,11 +1,15 @@
 package com.example.demo.domain.personalartwork.presentation;
 
 import com.example.demo.domain.personalartwork.application.command.PersonalArtworkCommandService;
+import com.example.demo.domain.personalartwork.application.command.PersonalArtworkLikeCommand;
+import com.example.demo.domain.personalartwork.application.command.PersonalArtworkLikeCommandService;
 import com.example.demo.domain.personalartwork.application.query.PersonalArtworkQueryService;
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkLikeResult;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.presentation.mapper.PersonalArtworkPresentationMapper;
 import com.example.demo.domain.personalartwork.presentation.request.PersonalArtworkRequest;
+import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkLikeResponse;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkResponse;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkSummaryResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -35,14 +39,17 @@ public class PersonalArtworkController {
 
   private final PersonalArtworkCommandService personalArtworkCommandService;
   private final PersonalArtworkQueryService personalArtworkQueryService;
+  private final PersonalArtworkLikeCommandService personalArtworkLikeCommandService;
   private final PersonalArtworkPresentationMapper mapper;
 
   public PersonalArtworkController(
       PersonalArtworkCommandService personalArtworkCommandService,
       PersonalArtworkQueryService personalArtworkQueryService,
+      PersonalArtworkLikeCommandService personalArtworkLikeCommandService,
       PersonalArtworkPresentationMapper mapper) {
     this.personalArtworkCommandService = personalArtworkCommandService;
     this.personalArtworkQueryService = personalArtworkQueryService;
+    this.personalArtworkLikeCommandService = personalArtworkLikeCommandService;
     this.mapper = mapper;
   }
 
@@ -102,5 +109,27 @@ public class PersonalArtworkController {
       HttpServletRequest request) {
     personalArtworkCommandService.deletePersonalArtwork(personalArtworkId, TEMP_USER_ID);
     return ApiResponseBody.success(null, request);
+  }
+
+  @PostMapping("/api/v1/personal-artworks/{personalArtworkId}/like")
+  @Operation(summary = "개인 작품 좋아요 등록", description = "개인 작품에 좋아요를 등록합니다.")
+  public ApiResponseBody<PersonalArtworkLikeResponse> likePersonalArtwork(
+      @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      HttpServletRequest request) {
+    PersonalArtworkLikeResult result =
+        personalArtworkLikeCommandService.like(
+            new PersonalArtworkLikeCommand(personalArtworkId, TEMP_USER_ID));
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @DeleteMapping("/api/v1/personal-artworks/{personalArtworkId}/like")
+  @Operation(summary = "개인 작품 좋아요 취소", description = "개인 작품 좋아요를 취소합니다.")
+  public ApiResponseBody<PersonalArtworkLikeResponse> cancelPersonalArtworkLike(
+      @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      HttpServletRequest request) {
+    PersonalArtworkLikeResult result =
+        personalArtworkLikeCommandService.cancel(
+            new PersonalArtworkLikeCommand(personalArtworkId, TEMP_USER_ID));
+    return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 }

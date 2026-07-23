@@ -31,6 +31,7 @@ public class LoungePresentationMapper {
         result.loungePostId(),
         result.category(),
         result.title(),
+        result.content(),
         result.postImageUrl(),
         toResponse(result.writer()),
         result.createdAt(),

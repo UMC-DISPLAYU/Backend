@@ -6,6 +6,7 @@ public record LoungePostListResponse(
     Long loungePostId,
     String category,
     String title,
+    String content,
     String postImageUrl,
     LoungeWriterResponse writer,
     LocalDateTime createdAt,

@@ -437,7 +437,7 @@ jobs:
             -e FLYWAY_USER \
             -e FLYWAY_PASSWORD \
             -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
-            "$FLYWAY_IMAGE" validate
+            "$FLYWAY_IMAGE" -ignoreMigrationPatterns="*:pending" validate
 
           set +e
           docker run --rm --network host \
@@ -589,7 +589,7 @@ jobs:
             -e FLYWAY_USER \
             -e FLYWAY_PASSWORD \
             -v "$PWD/src/main/resources/db/migration:/flyway/sql:ro" \
-            "$FLYWAY_IMAGE" validate
+            "$FLYWAY_IMAGE" -ignoreMigrationPatterns="*:pending" validate
 
           set +e
           docker run --rm --network host \

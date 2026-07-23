@@ -35,6 +35,9 @@ spring:
             enable: true
 
 app:
+  display:
+    invitation:
+      base-url: ${DISPLAY_INVITATION_BASE_URL:https://displayu.co.kr/display/invitation}
   kakao:
     client:
       id: ${KAKAO_CLIENT_ID}
