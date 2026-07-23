@@ -369,6 +369,8 @@ public final class DisplayApiDocs {
                 "displayId": 5,
                 "title": "ABOUT THE FLOW OF TIME",
                 "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "organization": "중앙대학교",
+                "department": "디자인학부",
                 "startedAt": "2026-06-20",
                 "endedAt": "2026-07-15",
                 "dayLeft": 3
@@ -400,6 +402,8 @@ public final class DisplayApiDocs {
                 "displayId": 15,
                 "title": "2026 디자인 졸업전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "organization": "중앙대학교",
+                "department": "디자인학부",
                 "startedAt": "2026-07-10",
                 "endedAt": "2026-07-20",
                 "dayLeft": 8
