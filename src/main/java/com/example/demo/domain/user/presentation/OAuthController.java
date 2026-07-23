@@ -6,6 +6,7 @@ import com.example.demo.domain.user.application.service.OAuthLoginService;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.presentation.docs.OAuthControllerDocs;
 import com.example.demo.domain.user.presentation.response.OAuthAuthorizationUrlResponse;
+import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +58,7 @@ public class OAuthController implements OAuthControllerDocs {
 
   @Override
   @GetMapping("/kakao/callback")
-  public ApiResponseBody<?> kakaoCallback(
+  public ApiResponseBody<OAuthCallbackResponse> kakaoCallback(
       @RequestParam String code,
       @RequestParam String state,
       @CookieValue(name = KAKAO_STATE_COOKIE, required = false) String expectedState,
@@ -69,7 +70,7 @@ public class OAuthController implements OAuthControllerDocs {
 
   @Override
   @GetMapping("/google/callback")
-  public ApiResponseBody<?> googleCallback(
+  public ApiResponseBody<OAuthCallbackResponse> googleCallback(
       @RequestParam String code,
       @RequestParam String state,
       @CookieValue(name = GOOGLE_STATE_COOKIE, required = false) String expectedState,
@@ -90,7 +91,7 @@ public class OAuthController implements OAuthControllerDocs {
     return ApiResponseBody.success(new OAuthAuthorizationUrlResponse(authorizationUrl), request);
   }
 
-  private ApiResponseBody<?> callback(
+  private ApiResponseBody<OAuthCallbackResponse> callback(
       Provider provider,
       String code,
       String state,

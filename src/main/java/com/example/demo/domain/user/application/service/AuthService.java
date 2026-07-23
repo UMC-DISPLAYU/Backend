@@ -27,14 +27,14 @@ public class AuthService {
 
   private final TokenProvider tokenProvider;
 
-  public LoginResult login(Provider provider, String idToken) {
+  public LoginResult login(Provider provider, String socialToken) {
 
     SocialUserInfo socialUserInfo;
 
     switch (provider) {
-      case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(idToken);
+      case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(socialToken);
 
-      case Google -> socialUserInfo = googleOAuthVerifier.verify(idToken);
+      case Google -> socialUserInfo = googleOAuthVerifier.verify(socialToken);
 
       default -> throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
@@ -46,6 +46,9 @@ public class AuthService {
 
     // 기존 회원
     if (user != null) {
+      if (user.getDeletedAt() != null) {
+        throw new BusinessException(AuthErrorCode.WITHDRAWAL_USER);
+      }
 
       String accessToken = tokenProvider.createAccessToken(user);
 

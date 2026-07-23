@@ -3,19 +3,30 @@ package com.example.demo.domain.user.infrastructure.oauth;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
+@ExtendWith(OutputCaptureExtension.class)
 class OAuthAuthorizationUrlTest {
 
   private static final String STATE = "random-state";
@@ -63,6 +74,7 @@ class OAuthAuthorizationUrlTest {
         .contains("client_id=kakao-client-id")
         .contains("redirect_uri=http://localhost:8080/api/auth/kakao/callback")
         .contains("response_type=code")
+        .contains("scope=profile_nickname,account_email")
         .contains("state=" + STATE)
         .doesNotContain("/api/auth/google/callback");
   }
@@ -146,5 +158,91 @@ class OAuthAuthorizationUrlTest {
                     new KakaoOAuthProperties.Client("kakao-client-id", "kakao-client-secret"),
                     "http://localhost:8080/api/auth/google/callback"))
         .withMessage("Kakao OAuth configuration is invalid.");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void kakaoTokenRequestOmitsClientSecretWhenItIsNotConfigured() {
+    KakaoOAuthProperties properties =
+        new KakaoOAuthProperties(
+            new KakaoOAuthProperties.Client("kakao-client-id", null),
+            "http://localhost:8080/api/auth/kakao/callback");
+    KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
+    ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> requestCaptor =
+        ArgumentCaptor.forClass(HttpEntity.class);
+    when(restTemplate.postForObject(
+            eq("https://kauth.kakao.com/oauth/token"),
+            requestCaptor.capture(),
+            eq(OAuthTokenResponse.class)))
+        .thenReturn(new OAuthTokenResponse("kakao-access-token", null));
+
+    client.exchangeCode("authorization-code");
+
+    assertThat(requestCaptor.getValue().getBody()).doesNotContainKey("client_secret");
+  }
+
+  @Test
+  void kakaoUserInfoRequestUsesBearerAccessToken() {
+    KakaoOAuthProperties properties =
+        new KakaoOAuthProperties(
+            new KakaoOAuthProperties.Client("kakao-client-id", null),
+            "http://localhost:8080/api/auth/kakao/callback");
+    KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
+    ArgumentCaptor<HttpEntity<Void>> requestCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+    KakaoUserInfoResponse response =
+        new KakaoUserInfoResponse(
+            1234L,
+            null,
+            new KakaoUserInfoResponse.KakaoAccount(
+                "kakao@example.com", new KakaoUserInfoResponse.Profile("카카오 사용자"), false, false));
+    when(restTemplate.exchange(
+            eq("https://kapi.kakao.com/v2/user/me"),
+            eq(HttpMethod.GET),
+            requestCaptor.capture(),
+            eq(KakaoUserInfoResponse.class)))
+        .thenReturn(ResponseEntity.ok(response));
+
+    KakaoUserInfoResponse result = client.getUserInfo("kakao-access-token");
+
+    assertThat(result).isEqualTo(response);
+    assertThat(requestCaptor.getValue().getHeaders().getFirst("Authorization"))
+        .isEqualTo("Bearer kakao-access-token");
+  }
+
+  @Test
+  void logsOriginalKakaoTokenErrorResponse(CapturedOutput output) {
+    KakaoOAuthProperties properties =
+        new KakaoOAuthProperties(
+            new KakaoOAuthProperties.Client("kakao-client-id", null),
+            "http://localhost:8080/api/auth/kakao/callback");
+    KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
+    String responseBody =
+        """
+        {
+          "error": "invalid_grant",
+          "error_description": "authorization code not found"
+        }
+        """;
+    when(restTemplate.postForObject(
+            eq("https://kauth.kakao.com/oauth/token"),
+            org.mockito.ArgumentMatchers.any(HttpEntity.class),
+            eq(OAuthTokenResponse.class)))
+        .thenThrow(
+            HttpClientErrorException.create(
+                HttpStatus.BAD_REQUEST,
+                "Bad Request",
+                HttpHeaders.EMPTY,
+                responseBody.getBytes(UTF_8),
+                UTF_8));
+
+    assertThatThrownBy(() -> client.exchangeCode("authorization-code"))
+        .isInstanceOf(IllegalStateException.class);
+
+    assertThat(output)
+        .contains("stage=token exchange")
+        .contains("status=400")
+        .contains("error=invalid_grant")
+        .contains("errorDescription=authorization code not found")
+        .contains("clientSecretConfigured=false");
   }
 }
