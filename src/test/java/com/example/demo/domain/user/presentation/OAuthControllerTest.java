@@ -15,10 +15,7 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.service.OAuthLoginService;
-<<<<<<< HEAD
 import com.example.demo.domain.user.domain.aggregate.User;
-=======
->>>>>>> origin/dev
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.presentation.response.LoginResponse;
 import com.example.demo.global.error.GlobalExceptionHandler;
@@ -123,7 +120,6 @@ class OAuthControllerTest {
     verify(oauthLoginService).loginWithAuthorizationCode(Provider.Google, "authorization-code");
   }
 
-<<<<<<< HEAD
   @Test
   void returnsServiceTokensForExistingGoogleUser() throws Exception {
     User user =
@@ -210,8 +206,6 @@ class OAuthControllerTest {
         .andExpect(jsonPath("$.success.data.user.provider").value("Kakao"));
   }
 
-=======
->>>>>>> origin/dev
   private LoginResult signupResult(Provider provider) {
     return LoginResult.signup(
         "signup-token",

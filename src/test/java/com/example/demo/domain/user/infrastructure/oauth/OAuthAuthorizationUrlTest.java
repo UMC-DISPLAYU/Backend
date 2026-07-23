@@ -3,15 +3,11 @@ package com.example.demo.domain.user.infrastructure.oauth;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-=======
->>>>>>> origin/dev
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-<<<<<<< HEAD
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,17 +27,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 @ExtendWith(OutputCaptureExtension.class)
-=======
-import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.HttpEntity;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
-
->>>>>>> origin/dev
 class OAuthAuthorizationUrlTest {
 
   private static final String STATE = "random-state";
@@ -89,10 +74,7 @@ class OAuthAuthorizationUrlTest {
         .contains("client_id=kakao-client-id")
         .contains("redirect_uri=http://localhost:8080/api/auth/kakao/callback")
         .contains("response_type=code")
-<<<<<<< HEAD
         .contains("scope=profile_nickname,account_email")
-=======
->>>>>>> origin/dev
         .contains("state=" + STATE)
         .doesNotContain("/api/auth/google/callback");
   }
@@ -177,7 +159,6 @@ class OAuthAuthorizationUrlTest {
                     "http://localhost:8080/api/auth/google/callback"))
         .withMessage("Kakao OAuth configuration is invalid.");
   }
-<<<<<<< HEAD
 
   @Test
   @SuppressWarnings("unchecked")
@@ -264,6 +245,4 @@ class OAuthAuthorizationUrlTest {
         .contains("errorDescription=authorization code not found")
         .contains("clientSecretConfigured=false");
   }
-=======
->>>>>>> origin/dev
 }

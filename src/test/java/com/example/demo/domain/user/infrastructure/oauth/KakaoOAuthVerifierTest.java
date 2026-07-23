@@ -23,11 +23,7 @@ class KakaoOAuthVerifierTest {
             1234L,
             null,
             new KakaoUserInfoResponse.KakaoAccount(
-<<<<<<< HEAD
                 "kakao@example.com", new KakaoUserInfoResponse.Profile("카카오 사용자"), false, false));
-=======
-                "kakao@example.com", new KakaoUserInfoResponse.Profile("카카오 사용자")));
->>>>>>> origin/dev
     when(kakaoOAuthClient.getUserInfo("access-token")).thenReturn(response);
 
     SocialUserInfo result = verifier.verify("access-token");

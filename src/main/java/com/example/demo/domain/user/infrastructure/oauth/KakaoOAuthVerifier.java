@@ -6,10 +6,7 @@ import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
 import lombok.extern.slf4j.Slf4j;
-=======
->>>>>>> origin/dev
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,17 +16,11 @@ import org.springframework.util.StringUtils;
 public class KakaoOAuthVerifier {
 
   private final KakaoOAuthClient kakaoOAuthClient;
-<<<<<<< HEAD
-=======
-
-  public SocialUserInfo verify(String accessToken) {
->>>>>>> origin/dev
 
   public SocialUserInfo verify(String accessToken) {
     String failureStage = "USER_INFO_REQUEST";
     try {
       KakaoUserInfoResponse userInfo = kakaoOAuthClient.getUserInfo(accessToken);
-<<<<<<< HEAD
       failureStage = "USER_INFO_PROFILE_VALIDATION";
 
       boolean hasUserId = userInfo != null && userInfo.id() != null;
@@ -55,13 +46,6 @@ public class KakaoOAuthVerifier {
                 ? null
                 : userInfo.kakaoAccount().profileNicknameNeedsAgreement(),
             userInfo.kakaoAccount() == null ? null : userInfo.kakaoAccount().emailNeedsAgreement());
-=======
-
-      if (userInfo == null || userInfo.id() == null) {
-        throw new IllegalArgumentException("Kakao user info does not contain a user ID.");
-      }
-      if (!StringUtils.hasText(userInfo.nickname()) || !StringUtils.hasText(userInfo.email())) {
->>>>>>> origin/dev
         throw new IllegalArgumentException("Kakao user info is missing required profile data.");
       }
 

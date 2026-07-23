@@ -1,15 +1,10 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
-<<<<<<< HEAD
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoOAuthErrorResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-=======
-import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
-import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
->>>>>>> origin/dev
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,11 +24,8 @@ public class KakaoOAuthClient {
   private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
   private static final String TOKEN_URL = "https://kauth.kakao.com/oauth/token";
   private static final String USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
-<<<<<<< HEAD
   private static final String REQUIRED_SCOPES = "profile_nickname,account_email";
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-=======
->>>>>>> origin/dev
 
   private final RestTemplate restTemplate;
   private final KakaoOAuthProperties properties;
@@ -48,10 +40,7 @@ public class KakaoOAuthClient {
         .queryParam("client_id", properties.client().id())
         .queryParam("redirect_uri", properties.redirectUri())
         .queryParam("response_type", "code")
-<<<<<<< HEAD
         .queryParam("scope", REQUIRED_SCOPES)
-=======
->>>>>>> origin/dev
         .queryParam("state", state)
         .build()
         .encode()
@@ -68,7 +57,6 @@ public class KakaoOAuthClient {
       form.add("client_secret", properties.client().secret());
     }
 
-<<<<<<< HEAD
     log.info(
         "Kakao token exchange request. grantType={}, clientIdConfigured={}, redirectUri={}, "
             + "authorizationCodePresent={}, clientSecretConfigured={}",
@@ -84,24 +72,11 @@ public class KakaoOAuthClient {
       boolean accessTokenPresent = response != null && StringUtils.hasText(response.accessToken());
       log.info("Kakao token exchange succeeded. accessTokenPresent={}", accessTokenPresent);
       if (!accessTokenPresent) {
-=======
-    try {
-      OAuthTokenResponse response =
-          restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
-      if (response == null || !StringUtils.hasText(response.accessToken())) {
->>>>>>> origin/dev
         throw new IllegalStateException("Kakao token response does not contain an access token.");
       }
       return response.accessToken();
     } catch (RestClientResponseException e) {
-<<<<<<< HEAD
       logKakaoApiError("token exchange", e);
-=======
-      log.warn(
-          "Kakao OAuth token exchange failed. status={}, responseBody={}",
-          e.getStatusCode().value(),
-          safeResponseBody(e.getResponseBodyAsString()));
->>>>>>> origin/dev
       throw new IllegalStateException("Kakao OAuth token exchange failed.", e);
     }
   }
@@ -109,7 +84,6 @@ public class KakaoOAuthClient {
   public KakaoUserInfoResponse getUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
-<<<<<<< HEAD
     log.info(
         "Kakao user info request. endpoint={}, accessTokenPresent={}",
         USER_INFO_URL,
@@ -126,15 +100,6 @@ public class KakaoOAuthClient {
       logKakaoApiError("user info", e);
       throw new IllegalStateException("Kakao user info request failed.", e);
     }
-=======
-    return restTemplate
-        .exchange(
-            USER_INFO_URL,
-            org.springframework.http.HttpMethod.GET,
-            new HttpEntity<>(headers),
-            KakaoUserInfoResponse.class)
-        .getBody();
->>>>>>> origin/dev
   }
 
   private HttpEntity<MultiValueMap<String, String>> formEntity(MultiValueMap<String, String> form) {
@@ -149,7 +114,6 @@ public class KakaoOAuthClient {
     }
     return responseBody.length() <= 1000 ? responseBody : responseBody.substring(0, 1000);
   }
-<<<<<<< HEAD
 
   private void logKakaoApiError(String stage, RestClientResponseException exception) {
     String responseBody = exception.getResponseBodyAsString();
@@ -180,6 +144,4 @@ public class KakaoOAuthClient {
       return null;
     }
   }
-=======
->>>>>>> origin/dev
 }

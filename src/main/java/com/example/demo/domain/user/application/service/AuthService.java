@@ -27,24 +27,14 @@ public class AuthService {
 
   private final TokenProvider tokenProvider;
 
-<<<<<<< HEAD
   public LoginResult login(Provider provider, String socialToken) {
-=======
-  public LoginResult login(Provider provider, String idToken) {
->>>>>>> origin/dev
 
     SocialUserInfo socialUserInfo;
 
     switch (provider) {
-<<<<<<< HEAD
       case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(socialToken);
 
       case Google -> socialUserInfo = googleOAuthVerifier.verify(socialToken);
-=======
-      case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(idToken);
-
-      case Google -> socialUserInfo = googleOAuthVerifier.verify(idToken);
->>>>>>> origin/dev
 
       default -> throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
