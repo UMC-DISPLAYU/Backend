@@ -169,6 +169,53 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
         .containsExactly("두 번째 전시", "세 번째 전시");
   }
 
+  @Test
+  void searchDisplaysFiltersClosingSoonDisplaysEndingWithinThreeDays() {
+    LocalDate today = LocalDate.of(2026, 7, 12);
+    Display endingToday =
+        publishedDisplay(
+            "오늘 종료 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(5),
+            today);
+    Display endingInThreeDays =
+        publishedDisplay(
+            "3일 이내 종료 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(3));
+    Display endingAfterThreeDays =
+        publishedDisplay(
+            "4일 뒤 종료 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(4));
+    Display ended =
+        publishedDisplay(
+            "이미 종료 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(5),
+            today.minusDays(1));
+    jpaRepository.saveAllAndFlush(
+        List.of(endingToday, endingInThreeDays, endingAfterThreeDays, ended));
+
+    List<SearchDisplayQueryResult> results =
+        queryRepository.searchDisplays(
+            new SearchDisplayQuery(
+                null, SearchDisplayStatus.CLOSING_SOON, null, null, null, 0L, 20),
+            today,
+            20);
+
+    assertThat(results)
+        .extracting(SearchDisplayQueryResult::title)
+        .containsExactly("오늘 종료 전시", "3일 이내 종료 전시")
+        .doesNotContain("4일 뒤 종료 전시", "이미 종료 전시");
+  }
+
   private static Display publishedDisplay(
       String title,
       DisplayType displayType,

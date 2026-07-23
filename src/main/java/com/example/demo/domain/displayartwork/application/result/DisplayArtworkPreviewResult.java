@@ -8,6 +8,7 @@ public record DisplayArtworkPreviewResult(
   public record ArtworkCardResult(
       Long artworkId,
       String artworkName,
+      String artistName,
       String artworkImageUrl,
       int imageWidth,
       int imageHeight,

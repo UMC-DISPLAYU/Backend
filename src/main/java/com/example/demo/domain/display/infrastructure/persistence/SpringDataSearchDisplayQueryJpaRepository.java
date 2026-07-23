@@ -56,6 +56,9 @@ public interface SpringDataSearchDisplayQueryJpaRepository extends JpaRepository
             and d.period.startDate <= :today
             and d.period.endDate >= :today)
           or (:isEnded = true and d.period.endDate < :today)
+          or (:isClosingSoon = true
+            and d.period.endDate >= :today
+            and d.period.endDate <= :closingSoonEndDate)
         )
       order by d.id asc
       """)
@@ -65,11 +68,13 @@ public interface SpringDataSearchDisplayQueryJpaRepository extends JpaRepository
       @Param("isUpcoming") boolean isUpcoming,
       @Param("isOngoing") boolean isOngoing,
       @Param("isEnded") boolean isEnded,
+      @Param("isClosingSoon") boolean isClosingSoon,
       @Param("filterByRegion") boolean filterByRegion,
       @Param("region") DisplayRegion region,
       @Param("field") DisplayField field,
       @Param("type") DisplayType type,
       @Param("today") LocalDate today,
+      @Param("closingSoonEndDate") LocalDate closingSoonEndDate,
       @Param("cursor") Long cursor,
       @Param("mainImageType") DisplayImageType mainImageType,
       Pageable pageable);
