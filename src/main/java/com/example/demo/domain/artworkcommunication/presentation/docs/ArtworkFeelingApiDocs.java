@@ -193,8 +193,6 @@ public interface ArtworkFeelingApiDocs {
                                 "feelingReplyId": 8,
                                 "content": "좋은 감상인 것 같아요",
                                 "createdAt": "2026-06-30T23:20:00",
-                                "updatedAt": "2026-06-30T23:20:00",
-                                "deletedAt": null,
                                 "feelingId": 15,
                                 "userId": 4,
                                 "nickname": "고상준",

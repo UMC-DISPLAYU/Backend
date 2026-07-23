@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 public record ArtworkFeelingReplyResponse(
     Long feelingReplyId,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    LocalDateTime deletedAt,
     String content,
     Long feelingId,
     Long userId,

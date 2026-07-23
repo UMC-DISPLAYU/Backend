@@ -58,8 +58,6 @@ public class CreateArtworkFeelingReplyService {
     return new ArtworkFeelingReplyResult(
         savedFeelingReply.getFeelingReplyId(),
         savedFeelingReply.getCreatedAt(),
-        savedFeelingReply.getUpdatedAt(),
-        savedFeelingReply.getDeletedAt(),
         savedFeelingReply.getContent(),
         savedFeelingReply.getFeelingId(),
         savedFeelingReply.getUserId(),

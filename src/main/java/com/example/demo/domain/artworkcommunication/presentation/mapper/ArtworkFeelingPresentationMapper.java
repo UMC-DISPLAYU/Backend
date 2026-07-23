@@ -54,8 +54,6 @@ public class ArtworkFeelingPresentationMapper {
     return new ArtworkFeelingReplyResponse(
         result.feelingReplyId(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
         result.content(),
         result.feelingId(),
         result.userId(),

@@ -213,8 +213,6 @@ public interface ArtworkQuestionApiDocs {
                                 "queReplyId": 8,
                                 "content": "따뜻함과 고요함이 동시에 남아 있는 공간을 표현하고 싶어서 두 색면을 대비시켰습니다.",
                                 "createdAt": "2026-06-30T23:20:00",
-                                "updatedAt": "2026-06-30T23:20:00",
-                                "deletedAt": null,
                                 "artQueId": 15,
                                 "creatorId": 4,
                                 "creatorName": "고상준"
