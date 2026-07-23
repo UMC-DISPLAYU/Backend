@@ -61,7 +61,8 @@ public class DisplayArtworkPresentationMapper {
   }
 
   public DisplayArtworkListResponse toResponse(DisplayArtworkListResult result) {
-    return new DisplayArtworkListResponse(result.artworks().stream().map(this::toResponse).toList());
+    return new DisplayArtworkListResponse(
+        result.artworks().stream().map(this::toResponse).toList());
   }
 
   private DisplayArtworkListResponse.ArtworkItemResponse toResponse(
