@@ -143,6 +143,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 0,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -222,6 +223,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 12,
             "period": {
               "startDate": "2026-05-29",
               "endDate": "2026-06-06",
@@ -504,6 +506,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 143,
             "period": {
               "startDate": "2026-07-01",
               "endDate": "2026-07-10",
