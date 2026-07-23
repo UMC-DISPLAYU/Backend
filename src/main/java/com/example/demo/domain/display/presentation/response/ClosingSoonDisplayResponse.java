@@ -10,6 +10,8 @@ public record ClosingSoonDisplayResponse(
       Long displayId,
       String title,
       String posterImageUrl,
+      String organization,
+      String department,
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft) {}

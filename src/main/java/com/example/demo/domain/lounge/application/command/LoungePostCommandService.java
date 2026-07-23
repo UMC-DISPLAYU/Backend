@@ -37,7 +37,7 @@ public class LoungePostCommandService {
         LoungePost.create(
             new UserId(authorUserId),
             command.title(),
-            command.postImageUrl(),
+            command.postImageUrls(),
             command.content(),
             command.category());
 
@@ -53,7 +53,8 @@ public class LoungePostCommandService {
     LoungePost loungePost = getPost(loungePostId);
     validateAuthor(loungePost, new UserId(requesterUserId));
 
-    loungePost.changeContent(command.title(), command.postImageUrl(), command.content());
+    loungePost.changeContent(command.title(), command.content());
+    loungePost.replaceImages(command.postImageUrls());
     loungePost.changeCategory(command.category());
   }
 

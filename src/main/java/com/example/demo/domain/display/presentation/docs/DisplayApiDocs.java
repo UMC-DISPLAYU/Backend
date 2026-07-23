@@ -7,7 +7,7 @@ public final class DisplayApiDocs {
 
   public static final String CREATE_SUMMARY = "전시 생성";
   public static final String CREATE_DESCRIPTION =
-      "전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다.";
+      "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다.";
   public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
@@ -15,17 +15,17 @@ public final class DisplayApiDocs {
 
   public static final String UPDATE_SUMMARY = "전시 수정";
   public static final String UPDATE_DESCRIPTION =
-      "팀장 권한을 가진 사용자가 전시 정보를 수정합니다. userId와 displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다.";
+      "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다.";
   public static final String UPDATE_REQUEST_DESCRIPTION = "전시 수정 요청";
   public static final String UPDATE_REQUEST_EXAMPLE_NAME = "Display update request";
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
   public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
 
   public static final String LIKE_SUMMARY = "전시 좋아요";
-  public static final String LIKE_DESCRIPTION = "전시에 좋아요를 추가합니다. 인증 구현 전까지 userId를 요청 본문으로 전달합니다.";
+  public static final String LIKE_DESCRIPTION = "인증된 사용자가 전시에 좋아요를 추가합니다.";
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
   public static final String LIKE_CANCEL_DESCRIPTION =
-      "전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
+      "인증된 사용자가 전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
   public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
   public static final String LIKE_REQUEST_EXAMPLE_NAME = "Display like request";
   public static final String LIKE_SUCCESS_DESCRIPTION = "전시 좋아요 처리 성공";
@@ -34,14 +34,14 @@ public final class DisplayApiDocs {
 
   public static final String INVITATION_ISSUE_SUMMARY = "전시 초대 링크 생성";
   public static final String INVITATION_ISSUE_DESCRIPTION =
-      "전시 초대 링크를 생성하거나 재발급합니다. 기존 활성 링크가 있으면 새 토큰으로 교체되어 이전 링크는 즉시 사용할 수 없습니다.";
+      "전시 팀장이 초대 링크를 생성하거나 재발급합니다. 기존 활성 링크가 있으면 새 토큰으로 교체되어 이전 링크는 즉시 사용할 수 없습니다.";
   public static final String INVITATION_ISSUE_SUCCESS_DESCRIPTION = "전시 초대 링크 생성 성공";
   public static final String INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME =
       "Display invitation issue success";
 
   public static final String INVITATION_DISABLE_SUMMARY = "전시 초대 링크 비활성화";
   public static final String INVITATION_DISABLE_DESCRIPTION =
-      "전시 초대 링크를 비활성화합니다. 토큰은 삭제하지 않고 비활성화 시각만 기록하며, 이미 비활성화된 링크도 성공 응답을 반환합니다.";
+      "전시 팀장이 초대 링크를 비활성화합니다. 토큰은 삭제하지 않고 비활성화 시각만 기록하며, 이미 비활성화된 링크도 성공 응답을 반환합니다.";
   public static final String INVITATION_DISABLE_SUCCESS_DESCRIPTION = "전시 초대 링크 비활성화 성공";
   public static final String INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME =
       "Display invitation disable success";
@@ -179,7 +179,6 @@ public final class DisplayApiDocs {
   public static final String UPDATE_REQUEST_EXAMPLE =
       """
       {
-        "userId": 1,
         "displayId": 12,
         "title": "FORM 2026 (수정본)",
         "posterImageUrl": "https://cdn...",
@@ -250,8 +249,7 @@ public final class DisplayApiDocs {
   public static final String LIKE_REQUEST_EXAMPLE =
       """
       {
-        "displayId": 12,
-        "userId": 1
+        "displayId": 12
       }
       """;
 
@@ -371,6 +369,8 @@ public final class DisplayApiDocs {
                 "displayId": 5,
                 "title": "ABOUT THE FLOW OF TIME",
                 "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "organization": "중앙대학교",
+                "department": "디자인학부",
                 "startedAt": "2026-06-20",
                 "endedAt": "2026-07-15",
                 "dayLeft": 3
@@ -402,6 +402,8 @@ public final class DisplayApiDocs {
                 "displayId": 15,
                 "title": "2026 디자인 졸업전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "organization": "중앙대학교",
+                "department": "디자인학부",
                 "startedAt": "2026-07-10",
                 "endedAt": "2026-07-20",
                 "dayLeft": 8

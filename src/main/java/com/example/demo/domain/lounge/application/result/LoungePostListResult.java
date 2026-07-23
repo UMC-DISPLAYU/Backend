@@ -2,13 +2,14 @@ package com.example.demo.domain.lounge.application.result;
 
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record LoungePostListResult(
     Long loungePostId,
     WriterView writer,
     String title,
     String content,
-    String postImageUrl,
+    List<String> postImageUrls,
     String category,
     long likeCount,
     long commentCount,
@@ -27,7 +28,7 @@ public record LoungePostListResult(
         writer,
         loungePost.getTitle(),
         loungePost.getContent(),
-        loungePost.getPostImageUrl(),
+        loungePost.getPostImageUrls(),
         loungePost.getCategory().name(),
         likeCount,
         commentCount,

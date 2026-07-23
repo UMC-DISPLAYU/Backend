@@ -1,11 +1,12 @@
 package com.example.demo.domain.lounge.presentation.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record LoungePostDetailResponse(
     Long loungePostId,
     String title,
-    String postImageUrl,
+    List<String> postImageUrls,
     String content,
     String category,
     String postStatus,

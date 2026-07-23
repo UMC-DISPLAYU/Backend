@@ -60,7 +60,7 @@ public class DisplayInvitationCommandService {
   }
 
   private void validateRequester(Display display, Long requesterUserId) {
-    if (!display.canInviteMember(requesterUserId)) {
+    if (!display.isTeamLeader(requesterUserId)) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
     }
   }

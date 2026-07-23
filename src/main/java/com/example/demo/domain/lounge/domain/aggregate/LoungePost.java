@@ -1,17 +1,24 @@
 package com.example.demo.domain.lounge.domain.aggregate;
 
+import com.example.demo.domain.lounge.domain.entity.LoungePostImage;
 import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
 @Table(name = "LoungePost")
 public class LoungePost extends SoftDeleteBaseEntity {
+  private static final int MAX_IMAGE_COUNT = 5;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "loungePostId")
@@ -26,6 +33,12 @@ public class LoungePost extends SoftDeleteBaseEntity {
 
   @Column(columnDefinition = "TEXT")
   private String postImageUrl;
+
+  @OneToMany(mappedBy = "loungePost", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("sortOrder ASC")
+  @BatchSize(size = 50)
+  @Getter(AccessLevel.NONE)
+  private final List<LoungePostImage> images = new ArrayList<>();
 
   @Column(nullable = false)
   private String content;
@@ -42,17 +55,17 @@ public class LoungePost extends SoftDeleteBaseEntity {
 
   public static LoungePost create(
       UserId authorUserId, String title, String content, LoungePostCategory category) {
-    return create(authorUserId, title, null, content, category);
+    return create(authorUserId, title, List.of(), content, category);
   }
 
   public static LoungePost create(
       UserId authorUserId,
       String title,
-      String postImageUrl,
+      List<String> postImageUrls,
       String content,
       LoungePostCategory category) {
     return new LoungePost(
-        null, authorUserId, title, postImageUrl, content, category, LoungePostStatus.ACTIVE);
+        null, authorUserId, title, postImageUrls, content, category, LoungePostStatus.ACTIVE);
   }
 
   public LoungePost(
@@ -62,28 +75,51 @@ public class LoungePost extends SoftDeleteBaseEntity {
       String content,
       LoungePostCategory category,
       LoungePostStatus status) {
-    this(id, authorUserId, title, null, content, category, status);
+    this(id, authorUserId, title, List.of(), content, category, status);
   }
 
   public LoungePost(
       Long id,
       UserId authorUserId,
       String title,
-      String postImageUrl,
+      List<String> postImageUrls,
       String content,
       LoungePostCategory category,
       LoungePostStatus status) {
     this.id = id;
     this.authorUserId = Objects.requireNonNull(authorUserId, "authorUserId must not be null");
-    changeContent(title, postImageUrl, content);
+    changeContent(title, content);
+    replaceImages(postImageUrls);
     changeCategory(category);
     this.status = Objects.requireNonNullElse(status, LoungePostStatus.ACTIVE);
   }
 
-  public void changeContent(String title, String postImageUrl, String content) {
+  public List<String> getPostImageUrls() {
+    if (images.isEmpty() && postImageUrl != null && !postImageUrl.isBlank()) {
+      return List.of(postImageUrl);
+    }
+    return images.stream().map(LoungePostImage::getImageUrl).toList();
+  }
+
+  public void changeContent(String title, String content) {
     this.title = requireNonBlank(title, "title");
-    this.postImageUrl = postImageUrl;
     this.content = requireNonBlank(content, "content");
+  }
+
+  public void replaceImages(List<String> postImageUrls) {
+    Objects.requireNonNull(postImageUrls, "postImageUrls must not be null");
+    if (postImageUrls.size() > MAX_IMAGE_COUNT) {
+      throw new IllegalArgumentException("postImageUrls must contain at most 5 images");
+    }
+    images.clear();
+    for (int index = 0; index < postImageUrls.size(); index++) {
+      addImage(postImageUrls.get(index), index);
+    }
+    postImageUrl = postImageUrls.isEmpty() ? null : postImageUrls.get(0);
+  }
+
+  private void addImage(String imageUrl, int sortOrder) {
+    images.add(new LoungePostImage(this, imageUrl, sortOrder));
   }
 
   public void changeCategory(LoungePostCategory category) {
