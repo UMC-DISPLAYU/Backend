@@ -27,6 +27,7 @@ public record DisplayDetailResult(
     String displayType,
     List<String> displayFields,
     String region,
+    long likeCount,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -38,7 +39,7 @@ public record DisplayDetailResult(
     List<TeamMemberResult> teamMembers,
     List<InvitationResult> invitations) {
 
-  public static DisplayDetailResult from(Display display) {
+  public static DisplayDetailResult from(Display display, long likeCount) {
     return new DisplayDetailResult(
         display.getId(),
         display.getOwnerUserId().value(),
@@ -53,6 +54,7 @@ public record DisplayDetailResult(
         display.getDisplayType().name(),
         display.getFieldSelections().stream().map(FieldResult::from).toList(),
         display.getRegion().name(),
+        likeCount,
         PeriodResult.from(display),
         display.getArtworkContentOpen().name(),
         display.getExhibitionContentOpen().name(),

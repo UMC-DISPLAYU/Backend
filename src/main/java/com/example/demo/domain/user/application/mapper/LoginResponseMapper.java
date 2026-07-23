@@ -10,7 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class LoginResponseMapper {
 
+<<<<<<< HEAD
   public OAuthCallbackResponse toResponse(LoginResult result) {
+=======
+  public Object toResponse(LoginResult result) {
+>>>>>>> origin/dev
     return result.isNewUser() ? toSignupResponse(result) : toLoginResponse(result);
   }
 
