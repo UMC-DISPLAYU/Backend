@@ -646,11 +646,11 @@ jobs:
 
           RUNTIME_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           RUNTIME_GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          RUNTIME_GOOGLE_REDIRECT_URI: https://api.displayu.co.kr/api/auth/google/callback
+          RUNTIME_GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
           RUNTIME_KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           RUNTIME_KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          RUNTIME_KAKAO_REDIRECT_URI: https://api.displayu.co.kr/api/auth/kakao/callback
-          RUNTIME_OAUTH_COOKIE_SECURE: "true"
+          RUNTIME_KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          RUNTIME_OAUTH_COOKIE_SECURE: ${{ secrets.OAUTH_COOKIE_SECURE }}
           RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
           RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
