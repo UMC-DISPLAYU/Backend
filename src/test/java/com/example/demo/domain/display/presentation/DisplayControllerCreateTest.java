@@ -4,10 +4,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.global.security.JwtFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,11 +23,14 @@ class DisplayControllerCreateTest {
 
   @Autowired private MockMvc mockMvc;
 
+  @Autowired private JwtFactory jwtFactory;
+
   @Test
   void createDisplayReturnsRegionInDetailResponse() throws Exception {
     mockMvc
         .perform(
             post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("SEOUL")))
         .andExpect(status().isCreated())
@@ -43,6 +48,7 @@ class DisplayControllerCreateTest {
     mockMvc
         .perform(
             post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("ALL")))
         .andExpect(status().isBadRequest())
@@ -76,5 +82,9 @@ class DisplayControllerCreateTest {
         }
         """
         .formatted(region);
+  }
+
+  private String bearer(Long userId) {
+    return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
   }
 }

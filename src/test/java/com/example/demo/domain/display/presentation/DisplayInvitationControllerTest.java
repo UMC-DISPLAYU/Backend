@@ -8,10 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
@@ -199,27 +201,31 @@ class DisplayInvitationControllerTest {
   }
 
   private static Display display() {
-    return Display.create(
-        new UserId(1L),
-        "FORM 2026",
-        "https://cdn.displayu.com/posters/main.png",
-        "subtitle",
-        "content",
-        new DisplayLocation("전시장", bd("37.5513"), bd("126.9248")),
-        "",
-        "",
-        "organization",
-        "department",
-        DisplayType.GRADUATION,
-        List.of(DisplayField.DESIGN),
-        DisplayRegion.SEOUL,
-        new DisplayPeriod(
-            LocalDate.of(2026, 5, 28),
-            LocalDate.of(2026, 6, 5),
-            LocalTime.of(10, 0),
-            LocalTime.of(18, 0)),
-        ContentOpenPolicy.IMMEDIATELY,
-        ContentOpenPolicy.ON_EXHIBITION);
+    Display display =
+        Display.create(
+            new UserId(1L),
+            "FORM 2026",
+            "https://cdn.displayu.com/posters/main.png",
+            "subtitle",
+            "content",
+            new DisplayLocation("전시장", bd("37.5513"), bd("126.9248")),
+            "",
+            "",
+            "organization",
+            "department",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            DisplayRegion.SEOUL,
+            new DisplayPeriod(
+                LocalDate.of(2026, 5, 28),
+                LocalDate.of(2026, 6, 5),
+                LocalTime.of(10, 0),
+                LocalTime.of(18, 0)),
+            ContentOpenPolicy.IMMEDIATELY,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.addTeamMember(
+        new TeamMember(null, new UserId(1L), "팀장", TeamMemberRole.TEAM_LEADER, true));
+    return display;
   }
 
   private static BigDecimal bd(String value) {

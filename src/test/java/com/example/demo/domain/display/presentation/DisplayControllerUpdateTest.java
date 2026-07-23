@@ -15,6 +15,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.security.JwtFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,6 +40,8 @@ class DisplayControllerUpdateTest {
 
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
+  @Autowired private JwtFactory jwtFactory;
+
   @Test
   void updateDisplayUpdatesOptionalFieldsWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithTeamMembers();
@@ -46,6 +50,7 @@ class DisplayControllerUpdateTest {
     mockMvc
         .perform(
             patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(display.getId(), 1L)))
         .andExpect(status().isOk())
@@ -74,6 +79,7 @@ class DisplayControllerUpdateTest {
     mockMvc
         .perform(
             patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(display.getId(), 2L)))
         .andExpect(status().isForbidden())
@@ -135,5 +141,9 @@ class DisplayControllerUpdateTest {
     display.addTeamMember(
         new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
     return display;
+  }
+
+  private String bearer(Long userId) {
+    return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
   }
 }

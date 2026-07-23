@@ -266,17 +266,16 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
-  void getMembersReturnsForbiddenWhenRequesterIsNotTeamMember() throws Exception {
+  void getMembersReturnsAcceptedDisplayMembersWithoutAuthentication() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
-    User other = userJpaRepository.save(user("other"));
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
 
     mockMvc
-        .perform(
-            get("/api/v1/display/{displayId}/members", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        .perform(get("/api/v1/display/{displayId}/members", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.members.length()").value(1));
   }
 
   @Test
