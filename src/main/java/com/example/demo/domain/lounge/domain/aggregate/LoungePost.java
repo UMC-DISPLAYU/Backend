@@ -31,9 +31,6 @@ public class LoungePost extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private String title;
 
-  @Column(columnDefinition = "TEXT")
-  private String postImageUrl;
-
   @OneToMany(mappedBy = "loungePost", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   @BatchSize(size = 50)
@@ -95,9 +92,6 @@ public class LoungePost extends SoftDeleteBaseEntity {
   }
 
   public List<String> getPostImageUrls() {
-    if (images.isEmpty() && postImageUrl != null && !postImageUrl.isBlank()) {
-      return List.of(postImageUrl);
-    }
     return images.stream().map(LoungePostImage::getImageUrl).toList();
   }
 
@@ -115,7 +109,6 @@ public class LoungePost extends SoftDeleteBaseEntity {
     for (int index = 0; index < postImageUrls.size(); index++) {
       addImage(postImageUrls.get(index), index);
     }
-    postImageUrl = postImageUrls.isEmpty() ? null : postImageUrls.get(0);
   }
 
   private void addImage(String imageUrl, int sortOrder) {
