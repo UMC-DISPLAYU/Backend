@@ -175,6 +175,8 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        result.organization(),
+        result.department(),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft());
@@ -186,6 +188,8 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        result.organization(),
+        result.department(),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft());

@@ -37,6 +37,8 @@ class GetRandomGraduationDisplaysServiceTest {
         displayId,
         title,
         "https://cdn.displayu.com/posters/main.png",
+        "organization",
+        "department",
         endedAt.minusDays(7),
         endedAt);
   }
