@@ -86,6 +86,24 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void inviteUsesTeamMemberRoleWhenRequestRoleIsMissing() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequestWithoutRole(invitee.getId())))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.inviteeUserId").value(invitee.getId()))
+        .andExpect(jsonPath("$.success.data.status").value("PENDING"));
+  }
+
+  @Test
   void inviteReturnsConflictWhenPendingInvitationAlreadyExists() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -298,6 +316,15 @@ class DisplayMemberInvitationControllerTest {
         {
           "inviteeUserId": %d,
           "role": "TEAM_MEM"
+        }
+        """
+        .formatted(inviteeUserId);
+  }
+
+  private static String inviteRequestWithoutRole(Long inviteeUserId) {
+    return """
+        {
+          "inviteeUserId": %d
         }
         """
         .formatted(inviteeUserId);

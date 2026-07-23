@@ -9,6 +9,7 @@ import com.example.demo.domain.display.application.result.MyDisplayInvitationLis
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
+import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRoleRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
@@ -20,10 +21,16 @@ public class DisplayMemberInvitationPresentationMapper {
   public InviteDisplayMemberCommand toCommand(
       Long requesterUserId, Long displayId, InviteDisplayMemberRequest request) {
     return new InviteDisplayMemberCommand(
-        requesterUserId,
-        displayId,
-        request.inviteeUserId(),
-        request.role() == null ? TeamMemberRole.TEAM_MEM : request.role());
+        requesterUserId, displayId, request.inviteeUserId(), toTeamMemberRole(request.role()));
+  }
+
+  private TeamMemberRole toTeamMemberRole(InviteDisplayMemberRoleRequest role) {
+    if (role == null) {
+      return TeamMemberRole.TEAM_MEM;
+    }
+    return switch (role) {
+      case TEAM_MEM -> TeamMemberRole.TEAM_MEM;
+    };
   }
 
   public AcceptDisplayInvitationCommand toAcceptCommand(
