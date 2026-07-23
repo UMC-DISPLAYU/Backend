@@ -1,0 +1,102 @@
+CREATE TABLE `PersonalArtworkFeeling` (
+    `personalFeelingId` BIGINT NOT NULL AUTO_INCREMENT,
+    `content` VARCHAR(300) NOT NULL,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `personalArtworkId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_PERSONALARTWORKFEELING` PRIMARY KEY (`personalFeelingId`)
+);
+
+CREATE TABLE `PersonalArtworkFeelingReply` (
+    `personalFeelingReplyId` BIGINT NOT NULL AUTO_INCREMENT,
+    `content` VARCHAR(300) NOT NULL,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `personalFeelingId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_PERSONALARTWORKFEELINGREPLY` PRIMARY KEY (`personalFeelingReplyId`)
+);
+
+CREATE TABLE `PersonalArtworkFeelingLike` (
+    `personalFeelingLikeId` BIGINT NOT NULL AUTO_INCREMENT,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `personalFeelingId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_PERSONALARTWORKFEELINGLIKE` PRIMARY KEY (`personalFeelingLikeId`),
+    CONSTRAINT `UK_PERSONALARTWORKFEELINGLIKE_FEELING_USER`
+        UNIQUE (`personalFeelingId`, `userId`)
+);
+
+CREATE TABLE `PersonalArtworkQuestion` (
+    `personalQuestionId` BIGINT NOT NULL AUTO_INCREMENT,
+    `content` VARCHAR(300) NOT NULL,
+    `isPublic` BOOLEAN NOT NULL DEFAULT TRUE,
+    `answerStatus` ENUM('WAITING', 'ANSWERED') NOT NULL DEFAULT 'WAITING'
+        COMMENT 'WAITING, ANSWERED',
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `personalArtworkId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_PERSONALARTWORKQUESTION` PRIMARY KEY (`personalQuestionId`)
+);
+
+CREATE TABLE `PersonalArtworkQuestionReply` (
+    `personalQuestionReplyId` BIGINT NOT NULL AUTO_INCREMENT,
+    `content` TEXT NOT NULL,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `personalQuestionId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_PERSONALARTWORKQUESTIONREPLY` PRIMARY KEY (`personalQuestionReplyId`),
+    CONSTRAINT `UK_PERSONALARTWORKQUESTIONREPLY_QUESTION` UNIQUE (`personalQuestionId`)
+);
+
+ALTER TABLE `PersonalArtworkFeeling`
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELING_ARTWORK`
+        FOREIGN KEY (`personalArtworkId`) REFERENCES `PersonalArtwork` (`personalArtworkId`),
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELING_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `PersonalArtworkFeelingReply`
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELINGREPLY_FEELING`
+        FOREIGN KEY (`personalFeelingId`) REFERENCES `PersonalArtworkFeeling` (`personalFeelingId`),
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELINGREPLY_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `PersonalArtworkFeelingLike`
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELINGLIKE_FEELING`
+        FOREIGN KEY (`personalFeelingId`) REFERENCES `PersonalArtworkFeeling` (`personalFeelingId`),
+    ADD CONSTRAINT `FK_PERSONALARTWORKFEELINGLIKE_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `PersonalArtworkQuestion`
+    ADD CONSTRAINT `FK_PERSONALARTWORKQUESTION_ARTWORK`
+        FOREIGN KEY (`personalArtworkId`) REFERENCES `PersonalArtwork` (`personalArtworkId`),
+    ADD CONSTRAINT `FK_PERSONALARTWORKQUESTION_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `PersonalArtworkQuestionReply`
+    ADD CONSTRAINT `FK_PERSONALARTWORKQUESTIONREPLY_QUESTION`
+        FOREIGN KEY (`personalQuestionId`)
+            REFERENCES `PersonalArtworkQuestion` (`personalQuestionId`),
+    ADD CONSTRAINT `FK_PERSONALARTWORKQUESTIONREPLY_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+CREATE INDEX `IDX_PERSONALARTWORKFEELING_LIST`
+    ON `PersonalArtworkFeeling` (`personalArtworkId`, `deletedAt`, `personalFeelingId`);
+
+CREATE INDEX `IDX_PERSONALARTWORKFEELINGREPLY_LIST`
+    ON `PersonalArtworkFeelingReply` (`personalFeelingId`, `deletedAt`, `createdAt`);
+
+CREATE INDEX `IDX_PERSONALARTWORKQUESTION_LIST`
+    ON `PersonalArtworkQuestion` (`personalArtworkId`, `deletedAt`, `personalQuestionId`);
+
+CREATE INDEX `IDX_PERSONALARTWORKQUESTIONREPLY_LIST`
+    ON `PersonalArtworkQuestionReply` (`personalQuestionId`, `deletedAt`, `createdAt`);

@@ -1,5 +1,3 @@
-USE DisplayU;
-
 INSERT INTO Agreement
     (title, type, content, isRequired)
 VALUES
