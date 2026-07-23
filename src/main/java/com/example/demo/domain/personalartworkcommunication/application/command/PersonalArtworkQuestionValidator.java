@@ -50,13 +50,6 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  public void validateNotAnswered(PersonalArtworkQuestion personalArtworkQuestion) {
-    if (personalArtworkQuestion.isAnswered()) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
-    }
-  }
-
   public void validateAccessiblePersonalQuestion(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId, Long userId) {
     validateNotDeleted(personalArtworkQuestion);

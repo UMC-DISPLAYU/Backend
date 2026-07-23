@@ -1,7 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.domain.aggregate;
 
+import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.type.AnswerStatus;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
+import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -60,8 +62,14 @@ public class PersonalArtworkQuestion extends SoftDeleteBaseEntity {
         null, content, isPublic, AnswerStatus.WAITING, personalArtworkId, userId);
   }
 
-  public void markAnswered() {
+  public PersonalArtworkQuestionReply answer(Long userId, String content) {
+    if (isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
+
     this.answerStatus = AnswerStatus.ANSWERED;
+    return PersonalArtworkQuestionReply.create(this.personalQuestionId, userId, content);
   }
 
   public boolean isAnswered() {

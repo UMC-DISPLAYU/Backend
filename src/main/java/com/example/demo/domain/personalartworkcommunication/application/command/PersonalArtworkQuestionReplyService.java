@@ -44,11 +44,10 @@ public class PersonalArtworkQuestionReplyService {
 
     personalArtworkQuestionValidator.validateReplyTarget(
         personalArtworkQuestion, command.personalArtworkId());
-    personalArtworkQuestionValidator.validateNotAnswered(personalArtworkQuestion);
 
-    PersonalArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(command);
-
-    personalArtworkQuestion.markAnswered();
+    PersonalArtworkQuestionReply questionReply =
+        personalArtworkQuestion.answer(command.userId(), command.content());
+    PersonalArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(questionReply);
 
     boolean isCreator =
         personalArtworkExistenceRepository.existsByIdAndUserId(
@@ -71,11 +70,9 @@ public class PersonalArtworkQuestionReplyService {
   }
 
   private PersonalArtworkQuestionReply saveQuestionReplyOrThrow(
-      PersonalArtworkQuestionReplyCommand command) {
+      PersonalArtworkQuestionReply questionReply) {
     try {
-      return personalArtworkQuestionReplyRepository.save(
-          PersonalArtworkQuestionReply.create(
-              command.personalQuestionId(), command.userId(), command.content()));
+      return personalArtworkQuestionReplyRepository.save(questionReply);
     } catch (DataIntegrityViolationException exception) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
