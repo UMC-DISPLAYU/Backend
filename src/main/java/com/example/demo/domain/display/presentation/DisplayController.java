@@ -124,6 +124,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -185,6 +186,7 @@ public class DisplayController {
   @PostMapping("/api/v1/display")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_SUMMARY, description = CREATE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = CREATE_REQUEST_DESCRIPTION,
       required = true,
@@ -219,6 +221,7 @@ public class DisplayController {
 
   @PatchMapping("/api/v1/display")
   @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = UPDATE_REQUEST_DESCRIPTION,
       required = true,
@@ -251,6 +254,7 @@ public class DisplayController {
 
   @PostMapping("/api/v1/display/like")
   @Operation(summary = LIKE_SUMMARY, description = LIKE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = LIKE_REQUEST_DESCRIPTION,
       required = true,
@@ -278,6 +282,7 @@ public class DisplayController {
 
   @PatchMapping("/api/v1/display/like")
   @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = LIKE_REQUEST_DESCRIPTION,
       required = true,
@@ -307,6 +312,7 @@ public class DisplayController {
 
   @PostMapping("/api/v1/display/{displayId}/invitation")
   @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_ISSUE_SUCCESS_DESCRIPTION,
@@ -332,6 +338,7 @@ public class DisplayController {
 
   @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
   @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_DISABLE_SUCCESS_DESCRIPTION,
