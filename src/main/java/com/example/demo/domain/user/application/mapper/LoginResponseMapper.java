@@ -4,12 +4,13 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.presentation.response.LoginResponse;
+import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LoginResponseMapper {
 
-  public Object toResponse(LoginResult result) {
+  public OAuthCallbackResponse toResponse(LoginResult result) {
     return result.isNewUser() ? toSignupResponse(result) : toLoginResponse(result);
   }
 

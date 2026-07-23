@@ -7,6 +7,7 @@ import com.example.demo.domain.user.presentation.request.SignupRequest;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,6 +25,7 @@ public interface AuthControllerDocs {
                     OAuth 인증이 완료된 사용자가 회원가입을 진행합니다.
 
                     - signupToken을 통해 인증된 사용자임을 확인합니다.
+                    - Swagger Authorize에는 Bearer 접두사 없이 signupToken 값만 입력합니다.
                     - 1번 서비스 이용약관과 2번 개인정보 처리방침은 필수 동의입니다.
                     - 3번 마케팅 정보 수신 동의는 선택 동의입니다.
                     - 회원가입 완료 후 사용자 정보를 반환합니다.
@@ -44,5 +46,7 @@ public interface AuthControllerDocs {
               examples = @ExampleObject(name = "회원가입 성공", value = SIGNUP_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<SignupResponse.Signup> signup(
-      SignupRequest request, String authorization, HttpServletRequest httpRequest);
+      SignupRequest request,
+      @Parameter(hidden = true) String authorization,
+      HttpServletRequest httpRequest);
 }

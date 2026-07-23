@@ -3,25 +3,21 @@ package com.example.demo.domain.user.presentation;
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.command.AgreementCommand;
 import com.example.demo.domain.user.application.command.SignupCommand;
-import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.mapper.SignupResponseMapper;
-import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
-import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.vo.Nickname;
+import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
-import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
-import com.example.demo.domain.user.presentation.request.GoogleLoginRequest;
-import com.example.demo.domain.user.presentation.request.KakaoLoginRequest;
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
+import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import com.example.demo.global.security.TokenProvider;
@@ -30,23 +26,19 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController
-    implements AuthControllerDocs,
-        LoginControllerDocs,
-        RefreshControllerDocs,
-        LogoutControllerDocs {
+    implements AuthControllerDocs, RefreshControllerDocs, LogoutControllerDocs {
 
   private final UserService userService;
   private final AuthService authService;
 
   private final SignupResponseMapper signupResponseMapper;
-  private final LoginResponseMapper loginResponseMapper;
-
   private final TokenProvider tokenProvider;
 
   @Override
@@ -56,7 +48,7 @@ public class AuthController
       @RequestHeader("Authorization") String authorization,
       HttpServletRequest httpRequest) {
 
-    String signupToken = authorization.substring(7);
+    String signupToken = extractSignupToken(authorization);
 
     SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
@@ -73,22 +65,6 @@ public class AuthController
         signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
 
     return ApiResponseBody.success(response, httpRequest);
-  }
-
-  @Override
-  @PostMapping("/login/kakao")
-  public ApiResponseBody<?> loginWithKakao(
-      @Valid @RequestBody KakaoLoginRequest request, HttpServletRequest httpRequest) {
-
-    return login(Provider.Kakao, request.accessToken(), httpRequest);
-  }
-
-  @Override
-  @PostMapping("/login/google")
-  public ApiResponseBody<?> loginWithGoogle(
-      @Valid @RequestBody GoogleLoginRequest request, HttpServletRequest httpRequest) {
-
-    return login(Provider.Google, request.idToken(), httpRequest);
   }
 
   @Override
@@ -113,11 +89,13 @@ public class AuthController
     return ApiResponseBody.success(null, httpRequest);
   }
 
-  private ApiResponseBody<?> login(
-      Provider provider, String idToken, HttpServletRequest httpRequest) {
-
-    LoginResult result = authService.login(provider, idToken);
-
-    return ApiResponseBody.success(loginResponseMapper.toResponse(result), httpRequest);
+  private String extractSignupToken(String authorization) {
+    String bearerPrefix = "Bearer ";
+    if (!StringUtils.hasText(authorization)
+        || !authorization.startsWith(bearerPrefix)
+        || !StringUtils.hasText(authorization.substring(bearerPrefix.length()))) {
+      throw new BusinessException(AuthErrorCode.INVALID_SIGNUP_TOKEN);
+    }
+    return authorization.substring(bearerPrefix.length()).trim();
   }
 }
