@@ -27,6 +27,19 @@ class LoungePostTest {
   }
 
   @Test
+  void allowsExactlyFiveImagesInRequestOrder() {
+    LoungePost post =
+        LoungePost.create(
+            new UserId(1L),
+            "제목",
+            List.of("1", "2", "3", "4", "5"),
+            "내용",
+            LoungePostCategory.DISPLAY_REVIEW);
+
+    assertThat(post.getPostImageUrls()).containsExactly("1", "2", "3", "4", "5");
+  }
+
+  @Test
   void rejectsMoreThanFiveImages() {
     assertThatThrownBy(
             () ->

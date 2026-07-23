@@ -7,9 +7,9 @@ import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 
@@ -37,6 +37,7 @@ public class LoungePost extends SoftDeleteBaseEntity {
   @OneToMany(mappedBy = "loungePost", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   @BatchSize(size = 50)
+  @Getter(AccessLevel.NONE)
   private final List<LoungePostImage> images = new ArrayList<>();
 
   @Column(nullable = false)
@@ -93,10 +94,6 @@ public class LoungePost extends SoftDeleteBaseEntity {
     this.status = Objects.requireNonNullElse(status, LoungePostStatus.ACTIVE);
   }
 
-  public List<LoungePostImage> getImages() {
-    return Collections.unmodifiableList(images);
-  }
-
   public List<String> getPostImageUrls() {
     if (images.isEmpty() && postImageUrl != null && !postImageUrl.isBlank()) {
       return List.of(postImageUrl);
@@ -116,14 +113,13 @@ public class LoungePost extends SoftDeleteBaseEntity {
     }
     images.clear();
     for (int index = 0; index < postImageUrls.size(); index++) {
-      addImage(new LoungePostImage(postImageUrls.get(index), index));
+      addImage(postImageUrls.get(index), index);
     }
     postImageUrl = postImageUrls.isEmpty() ? null : postImageUrls.get(0);
   }
 
-  private void addImage(LoungePostImage image) {
-    image.assignLoungePost(this);
-    images.add(image);
+  private void addImage(String imageUrl, int sortOrder) {
+    images.add(new LoungePostImage(this, imageUrl, sortOrder));
   }
 
   public void changeCategory(LoungePostCategory category) {

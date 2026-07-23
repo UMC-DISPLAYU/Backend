@@ -36,13 +36,10 @@ public class LoungePostImage extends BaseTimeEntity {
 
   protected LoungePostImage() {}
 
-  public LoungePostImage(String imageUrl, int sortOrder) {
+  public LoungePostImage(LoungePost loungePost, String imageUrl, int sortOrder) {
+    this.loungePost = Objects.requireNonNull(loungePost, "loungePost must not be null");
     this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
-  }
-
-  public void assignLoungePost(LoungePost loungePost) {
-    this.loungePost = Objects.requireNonNull(loungePost, "loungePost must not be null");
   }
 
   private static String requireNonBlank(String value, String fieldName) {
