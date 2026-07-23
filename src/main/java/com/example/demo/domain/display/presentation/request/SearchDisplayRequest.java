@@ -13,8 +13,10 @@ import jakarta.validation.constraints.NotNull;
 public record SearchDisplayRequest(
     @Schema(description = "전시명 검색어. title 부분 일치로 검색합니다.", example = "졸업") String searchWord,
     @Schema(
-            description = "전시 진행 상태. UPCOMING: 예정, ONGOING: 진행 중, ENDED: 종료",
-            allowableValues = {"UPCOMING", "ONGOING", "ENDED"},
+            description =
+                "전시 진행 상태. UPCOMING: 예정, ONGOING: 진행 중, ENDED: 종료, "
+                    + "CLOSING_SOON: 종료 예정(오늘부터 3일 이내 종료)",
+            allowableValues = {"UPCOMING", "ONGOING", "ENDED", "CLOSING_SOON"},
             example = "ONGOING")
         SearchDisplayStatus status,
     @Schema(
