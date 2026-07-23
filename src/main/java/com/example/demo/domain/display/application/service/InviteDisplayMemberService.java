@@ -89,9 +89,13 @@ public class InviteDisplayMemberService {
     if (requesterUserId.equals(inviteeUserId)) {
       throw new BusinessException(DisplayErrorCode.SELF_INVITATION_NOT_ALLOWED);
     }
-    userRepository
-        .findById(inviteeUserId)
-        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    var invitee =
+        userRepository
+            .findById(inviteeUserId)
+            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    if (invitee.getDeletedAt() != null) {
+      throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
+    }
   }
 
   private void validateNotMember(Long displayId, Long inviteeUserId) {

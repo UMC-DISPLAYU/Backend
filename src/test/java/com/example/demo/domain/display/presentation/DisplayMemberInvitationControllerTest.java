@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -118,6 +119,24 @@ class DisplayMemberInvitationControllerTest {
                 .content(inviteRequest(invitee.getId())))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.error.code").value("PENDING_DISPLAY_INVITATION_EXISTS"));
+  }
+
+  @Test
+  void inviteReturnsConflictWhenInviteeIsWithdrawnUser() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = user("invitee");
+    invitee.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
+    userJpaRepository.save(invitee);
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(invitee.getId())))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("ALREADY_WITHDRAWN_USER"));
   }
 
   @Test
@@ -224,6 +243,26 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.members[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.members[1].userId").value(member.getId()))
         .andExpect(jsonPath("$.success.data.members[1].role").value("TEAM_MEM"));
+  }
+
+  @Test
+  void getMembersReturnsAcceptedDisplayMembersWhenRequesterIsTeamLeader() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User member = userJpaRepository.save(user("member"));
+    Display display = displayWithLeader(leader);
+    display.addTeamMember(
+        new TeamMember(
+            null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/members", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.members.length()").value(2));
   }
 
   @Test
