@@ -57,9 +57,9 @@ public class DisplayPresentationMapper {
         ContentOpenPolicy.ON_EXHIBITION);
   }
 
-  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request) {
+  public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
     return new UpdateDisplayCommand(
-        request.userId(),
+        userId,
         request.displayId(),
         request.title(),
         request.posterImageUrl(),

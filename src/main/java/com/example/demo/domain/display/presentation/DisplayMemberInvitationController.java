@@ -88,11 +88,8 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   @Override
   @GetMapping("/display/{displayId}/members")
   public ApiResponseBody<DisplayMemberListResponse> getMembers(
-      @PathVariable Long displayId,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest httpRequest) {
-    DisplayMemberListResult result =
-        getDisplayMembersService.getMembers(requireUserId(user), displayId);
+      @PathVariable Long displayId, HttpServletRequest httpRequest) {
+    DisplayMemberListResult result = getDisplayMembersService.getMembers(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
