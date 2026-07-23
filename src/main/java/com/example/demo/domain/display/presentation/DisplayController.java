@@ -142,8 +142,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = TAG_NAME, description = TAG_DESCRIPTION)
 public class DisplayController {
 
-  private static final Long TEMP_OWNER_USER_ID = 1L;
-
   private final CreateDisplayService createDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
   private final DisplayInvitationCommandService displayInvitationCommandService;
@@ -208,10 +206,12 @@ public class DisplayController {
                       name = CREATE_SUCCESS_EXAMPLE_NAME,
                       value = CREATE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayDetailResponse> createDisplay(
-      @Valid @RequestBody CreateDisplayRequest createDisplayRequest, HttpServletRequest request) {
+      @Valid @RequestBody CreateDisplayRequest createDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     Long displayId =
         createDisplayService
-            .createDisplay(mapper.toCommand(createDisplayRequest, TEMP_OWNER_USER_ID))
+            .createDisplay(mapper.toCommand(createDisplayRequest, requireUserId(user)))
             .displayId();
     DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -240,9 +240,12 @@ public class DisplayController {
                       name = UPDATE_SUCCESS_EXAMPLE_NAME,
                       value = UPDATE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayDetailResponse> updateDisplay(
-      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest, HttpServletRequest request) {
+      @Valid @RequestBody UpdateDisplayRequest updateDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     DisplayDetailResult result =
-        updateDisplayService.updateDisplay(mapper.toCommand(updateDisplayRequest));
+        updateDisplayService.updateDisplay(
+            mapper.toCommand(updateDisplayRequest, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -265,8 +268,11 @@ public class DisplayController {
               examples =
                   @ExampleObject(name = LIKE_SUCCESS_EXAMPLE_NAME, value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> likeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
-    DisplayLikeResult result = displayLikeCommandService.like(displayLikeRequest.toCommand());
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayLikeResult result =
+        displayLikeCommandService.like(displayLikeRequest.toCommand(requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -291,8 +297,11 @@ public class DisplayController {
                       name = LIKE_CANCEL_SUCCESS_EXAMPLE_NAME,
                       value = LIKE_CANCEL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest, HttpServletRequest request) {
-    DisplayLikeResult result = displayLikeCommandService.cancel(displayLikeRequest.toCommand());
+      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayLikeResult result =
+        displayLikeCommandService.cancel(displayLikeRequest.toCommand(requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
