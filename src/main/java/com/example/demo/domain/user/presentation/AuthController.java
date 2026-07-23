@@ -9,11 +9,14 @@ import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
+import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
+import com.example.demo.domain.user.presentation.request.GoogleLoginRequest;
+import com.example.demo.domain.user.presentation.request.KakaoLoginRequest;
 import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
@@ -74,18 +77,28 @@ public class AuthController
   }
 
   @Override
+  @Deprecated
   @PostMapping("/login")
   public ApiResponseBody<?> login(
       @Valid @RequestBody SocialLoginRequest request, HttpServletRequest httpRequest) {
 
-    LoginResult result = authService.login(request);
+    return login(request.provider(), request.idToken(), httpRequest);
+  }
 
-    Object response =
-        result.user() != null
-            ? loginResponseMapper.toLoginResponse(result)
-            : loginResponseMapper.toSignupResponse(result);
+  @Override
+  @PostMapping("/login/kakao")
+  public ApiResponseBody<?> loginWithKakao(
+      @Valid @RequestBody KakaoLoginRequest request, HttpServletRequest httpRequest) {
 
-    return ApiResponseBody.success(response, httpRequest);
+    return login(Provider.Kakao, request.accessToken(), httpRequest);
+  }
+
+  @Override
+  @PostMapping("/login/google")
+  public ApiResponseBody<?> loginWithGoogle(
+      @Valid @RequestBody GoogleLoginRequest request, HttpServletRequest httpRequest) {
+
+    return login(Provider.Google, request.idToken(), httpRequest);
   }
 
   @Override
@@ -108,5 +121,13 @@ public class AuthController
     authService.logout(user.userId(), request.refreshToken());
 
     return ApiResponseBody.success(null, httpRequest);
+  }
+
+  private ApiResponseBody<?> login(
+      Provider provider, String idToken, HttpServletRequest httpRequest) {
+
+    LoginResult result = authService.login(provider, idToken);
+
+    return ApiResponseBody.success(loginResponseMapper.toResponse(result), httpRequest);
   }
 }

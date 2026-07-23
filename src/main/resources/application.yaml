@@ -15,6 +15,12 @@ app:
   kakao:
     client:
       id: test-kakao-client-id
+      secret:
+    redirect-uri: http://localhost:8080/api/auth/kakao/callback
   google:
     client:
       id: test-google-client-id
+      secret: test-google-client-secret
+    redirect-uri: http://localhost:8080/api/auth/google/callback
+  oauth:
+    cookie-secure: false

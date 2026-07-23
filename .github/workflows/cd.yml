@@ -478,7 +478,10 @@ jobs:
           MAIL_PASSWORD: precheck
           GOOGLE_CLIENT_ID: precheck-google-client-id
           GOOGLE_CLIENT_SECRET: precheck-google-client-secret
+          GOOGLE_REDIRECT_URI: http://localhost:8080/api/auth/google/callback
           KAKAO_CLIENT_ID: precheck-kakao-client-id
+          KAKAO_CLIENT_SECRET: precheck-kakao-client-secret
+          KAKAO_REDIRECT_URI: http://localhost:8080/api/auth/kakao/callback
           JWT_SECRET: precheck-jwt-secret-precheck-jwt-secret-precheck-jwt-secret
           AWS_REGION: ap-northeast-2
           S3_BUCKET: precheck-bucket
@@ -643,7 +646,11 @@ jobs:
 
           RUNTIME_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           RUNTIME_GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          RUNTIME_GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
           RUNTIME_KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          RUNTIME_KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          RUNTIME_KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          RUNTIME_OAUTH_COOKIE_SECURE: ${{ secrets.OAUTH_COOKIE_SECURE || 'true' }}
           RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
           RUNTIME_JWT_REFRESH_EXPIRATION: ${{ secrets.JWT_REFRESH_EXPIRATION }}
@@ -666,7 +673,11 @@ jobs:
             printf 'MAIL_PASSWORD=%s\n' "$RUNTIME_MAIL_PASSWORD"
             printf 'GOOGLE_CLIENT_ID=%s\n' "$RUNTIME_GOOGLE_CLIENT_ID"
             printf 'GOOGLE_CLIENT_SECRET=%s\n' "$RUNTIME_GOOGLE_CLIENT_SECRET"
+            printf 'GOOGLE_REDIRECT_URI=%s\n' "$RUNTIME_GOOGLE_REDIRECT_URI"
             printf 'KAKAO_CLIENT_ID=%s\n' "$RUNTIME_KAKAO_CLIENT_ID"
+            printf 'KAKAO_CLIENT_SECRET=%s\n' "$RUNTIME_KAKAO_CLIENT_SECRET"
+            printf 'KAKAO_REDIRECT_URI=%s\n' "$RUNTIME_KAKAO_REDIRECT_URI"
+            printf 'OAUTH_COOKIE_SECURE=%s\n' "$RUNTIME_OAUTH_COOKIE_SECURE"
             printf 'JWT_SECRET=%s\n' "$RUNTIME_JWT_SECRET"
             printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"
             printf 'JWT_REFRESH_EXPIRATION=%s\n' "$RUNTIME_JWT_REFRESH_EXPIRATION"
