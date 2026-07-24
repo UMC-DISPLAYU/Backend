@@ -6,6 +6,7 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface LogoutControllerDocs {
@@ -21,5 +22,9 @@ public interface LogoutControllerDocs {
                     - 로그아웃 완료 후 기존 Refresh Token은 사용할 수 없습니다.
                     """)
   ApiResponseBody<Void> logout(
-      LogoutRequest request, AuthUser user, HttpServletRequest httpRequest);
+      LogoutRequest request,
+      String cookieRefreshToken,
+      AuthUser user,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse);
 }

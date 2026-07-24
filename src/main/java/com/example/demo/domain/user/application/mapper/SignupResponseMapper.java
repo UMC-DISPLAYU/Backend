@@ -7,13 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class SignupResponseMapper {
 
-  public SignupResponse.Signup toResponse(User user, String accessToken, String refreshToken) {
+  public SignupResponse.Signup toResponse(User user, String accessToken) {
 
-    return SignupResponse.Signup.builder()
-        .user(toUserInfo(user))
-        .accessToken(accessToken)
-        .refreshToken(refreshToken)
-        .build();
+    return SignupResponse.Signup.builder().user(toUserInfo(user)).accessToken(accessToken).build();
   }
 
   private SignupResponse.UserInfo toUserInfo(User user) {

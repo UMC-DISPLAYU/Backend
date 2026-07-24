@@ -1,12 +1,12 @@
 package com.example.demo.domain.user.presentation.docs;
 
 import com.example.demo.domain.user.presentation.response.OAuthAuthorizationUrlResponse;
-import com.example.demo.domain.user.presentation.response.OAuthCallbackResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface OAuthControllerDocs {
@@ -37,29 +37,21 @@ public interface OAuthControllerDocs {
       summary = "카카오 OAuth 콜백",
       description =
           """
-          카카오 인가 코드를 Access Token으로 교환합니다.
-          기존 회원은 서비스 Access Token과 Refresh Token을 반환하고,
-          신규 회원은 추가 회원가입에 사용할 signupToken과 소셜 사용자 정보를 반환합니다.
+          카카오 인가 코드를 검증한 뒤 프론트엔드로 리다이렉트합니다.
+          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 Access Token을 쿼리로 전달하며 홈으로 이동합니다.
+          신규 회원은 signupToken을 HttpOnly Cookie와 쿼리로 전달하며 온보딩으로 이동합니다.
           """)
-  ApiResponseBody<OAuthCallbackResponse> kakaoCallback(
-      String code,
-      String state,
-      String expectedState,
-      HttpServletRequest request,
-      HttpServletResponse response);
+  ResponseEntity<Void> kakaoCallback(
+      String code, String state, String expectedState, HttpServletResponse response);
 
   @Operation(
       summary = "구글 OAuth 콜백",
       description =
           """
-          구글 인가 코드를 ID Token으로 교환합니다.
-          기존 회원은 서비스 Access Token과 Refresh Token을 반환하고,
-          신규 회원은 추가 회원가입에 사용할 signupToken과 소셜 사용자 정보를 반환합니다.
+          구글 인가 코드를 검증한 뒤 프론트엔드로 리다이렉트합니다.
+          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 Access Token을 쿼리로 전달하며 홈으로 이동합니다.
+          신규 회원은 signupToken을 HttpOnly Cookie와 쿼리로 전달하며 온보딩으로 이동합니다.
           """)
-  ApiResponseBody<OAuthCallbackResponse> googleCallback(
-      String code,
-      String state,
-      String expectedState,
-      HttpServletRequest request,
-      HttpServletResponse response);
+  ResponseEntity<Void> googleCallback(
+      String code, String state, String expectedState, HttpServletResponse response);
 }
