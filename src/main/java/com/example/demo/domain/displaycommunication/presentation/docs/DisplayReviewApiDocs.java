@@ -3,22 +3,19 @@ package com.example.demo.domain.displaycommunication.presentation.docs;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
-import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @Tag(name = "Display Review", description = "전시 후기 API")
-@SecurityRequirement(name = "Authorization")
 public interface DisplayReviewApiDocs {
 
-  @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다.")
+  @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다. 임시로 X-User-Id 헤더를 사용합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 작성 성공",
@@ -80,31 +77,6 @@ public interface DisplayReviewApiDocs {
                                   "message": "후기 내용은 필수입니다."
                                 }
                               ]
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "401",
-      description = "인증 필요",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Authentication required",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "UNAUTHORIZED",
-                              "message": "인증이 필요합니다.",
-                              "details": null
                             },
                             "meta": {
                               "timestamp": "2026-07-23T20:00:00",
@@ -227,7 +199,7 @@ public interface DisplayReviewApiDocs {
                           """)))
   ApiResponseBody<DisplayReviewResponse> createReview(
       @Parameter(description = "후기를 작성할 전시 ID", example = "1") Long displayId,
-      @Parameter(hidden = true) AuthUser user,
+      @Parameter(description = "후기를 작성하는 사용자 ID", required = true, example = "2") Long userId,
       @Valid CreateDisplayReviewRequest request,
       HttpServletRequest httpServletRequest);
 }
