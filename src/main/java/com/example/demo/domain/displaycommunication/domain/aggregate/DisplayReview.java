@@ -48,5 +48,9 @@ public class DisplayReview extends SoftDeleteBaseEntity {
     return review;
   }
 
+  public boolean belongsToDisplay(Long displayId) {
+    return this.displayId.equals(displayId);
+  }
+
   public record ImageInfo(String imageUrl, int width, int height) {}
 }

@@ -31,13 +31,6 @@ public class DisplayReviewValidator {
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 
-  public void validateNotDisplayTeamMember(DisplayReviewAccess access, Long userId) {
-    if (access.ownerUserId().equals(userId) || access.acceptedTeamMember()) {
-      throw new BusinessException(
-          DisplayCommunicationErrorCode.DISPLAY_TEAM_MEMBER_REVIEW_FORBIDDEN);
-    }
-  }
-
   public void validateDisplayIsOngoing(DisplayReviewAccess access) {
     LocalDate today = LocalDate.now(clock);
     boolean isOngoing = !today.isBefore(access.startDate()) && !today.isAfter(access.endDate());

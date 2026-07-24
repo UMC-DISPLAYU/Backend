@@ -1,11 +1,16 @@
 package com.example.demo.domain.displaycommunication.presentation;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
+import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyService;
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewService;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.presentation.docs.DisplayReviewApiDocs;
 import com.example.demo.domain.displaycommunication.presentation.mapper.DisplayReviewPresentationMapper;
+import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +22,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DisplayReviewController implements DisplayReviewApiDocs {
   private final CreateDisplayReviewService createDisplayReviewService;
+  private final CreateDisplayReviewReplyService createDisplayReviewReplyService;
   private final DisplayReviewPresentationMapper mapper;
 
   @Override
   @PostMapping("/api/v1/display/{displayId}/reviews")
+  // 전시 후기 작성
   public ApiResponseBody<DisplayReviewResponse> createReview(
       @PathVariable Long displayId,
       @RequestHeader("X-User-Id") Long userId, // 테스트용
@@ -29,6 +36,22 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
     CreateDisplayReviewCommand command = mapper.toCommand(displayId, userId, request);
     DisplayReviewResult result = createDisplayReviewService.create(command);
     DisplayReviewResponse response = mapper.toResponse(result);
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/api/v1/display/{displayId}/reviews/{displayReviewId}/replies")
+  // 전시 후기 답글 작성
+  public ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(
+      @PathVariable Long displayId,
+      @PathVariable Long displayReviewId,
+      @RequestHeader("X-User-Id") Long userId,
+      @Valid @RequestBody CreateDisplayReviewReplyRequest request,
+      HttpServletRequest httpServletRequest) {
+    CreateDisplayReviewReplyCommand command =
+        mapper.toCommand(displayId, displayReviewId, userId, request);
+    DisplayReviewReplyResult result = createDisplayReviewReplyService.create(command);
+    DisplayReviewReplyResponse response = mapper.toResponse(result);
     return ApiResponseBody.success(response, httpServletRequest);
   }
 }

@@ -18,5 +18,8 @@ public class DisplayCommunicationUserReferenceJpaEntity {
   @Column(name = "deletedAt")
   private LocalDateTime deletedAt;
 
+  @Column(name = "nickname")
+  private String nickname;
+
   protected DisplayCommunicationUserReferenceJpaEntity() {}
 }

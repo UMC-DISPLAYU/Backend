@@ -1,9 +1,13 @@
 package com.example.demo.domain.displaycommunication.presentation.mapper;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
+import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
+import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse.ImageResponse;
 import java.util.List;
@@ -23,6 +27,12 @@ public class DisplayReviewPresentationMapper {
     return new CreateDisplayReviewCommand(displayId, userId, request.content(), images);
   }
 
+  public CreateDisplayReviewReplyCommand toCommand(
+      Long displayId, Long displayReviewId, Long userId, CreateDisplayReviewReplyRequest request) {
+    return new CreateDisplayReviewReplyCommand(
+        displayId, displayReviewId, userId, request.content());
+  }
+
   public DisplayReviewResponse toResponse(DisplayReviewResult result) {
     return new DisplayReviewResponse(
         result.displayReviewId(),
@@ -40,5 +50,16 @@ public class DisplayReviewPresentationMapper {
                         image.height(),
                         image.sortOrder()))
             .toList());
+  }
+
+  public DisplayReviewReplyResponse toResponse(DisplayReviewReplyResult result) {
+    return new DisplayReviewReplyResponse(
+        result.displayReviewReplyId(),
+        result.createdAt(),
+        result.content(),
+        result.displayReviewId(),
+        result.userId(),
+        result.nickname(),
+        result.isTeamMember());
   }
 }

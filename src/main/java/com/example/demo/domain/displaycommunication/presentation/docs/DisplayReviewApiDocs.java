@@ -1,6 +1,8 @@
 package com.example.demo.domain.displaycommunication.presentation.docs;
 
+import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +17,7 @@ import jakarta.validation.Valid;
 @Tag(name = "Display Review", description = "전시 후기 API")
 public interface DisplayReviewApiDocs {
 
-  @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다. 임시로 X-User-Id 헤더를 사용합니다.")
+  @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 작성 성공",
@@ -86,48 +88,29 @@ public interface DisplayReviewApiDocs {
                           """)))
   @ApiResponse(
       responseCode = "403",
-      description = "작성할 수 없는 전시 또는 전시 관계자",
+      description = "후기를 작성할 수 없는 전시",
       content =
           @Content(
               mediaType = "application/json",
-              examples = {
-                @ExampleObject(
-                    name = "Display review not writable",
-                    value =
-                        """
-                        {
-                          "resultType": "FAIL",
-                          "success": null,
-                          "error": {
-                            "code": "DISPLAY_REVIEW_NOT_WRITABLE",
-                            "message": "진행 중인 공개 전시에만 후기를 작성할 수 있습니다.",
-                            "details": null
-                          },
-                          "meta": {
-                            "timestamp": "2026-07-23T20:00:00",
-                            "path": "/api/v1/display/1/reviews"
+              examples =
+                  @ExampleObject(
+                      name = "Display review not writable",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "DISPLAY_REVIEW_NOT_WRITABLE",
+                              "message": "진행 중인 공개 전시에만 후기를 작성할 수 있습니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-07-23T20:00:00",
+                              "path": "/api/v1/display/1/reviews"
+                            }
                           }
-                        }
-                        """),
-                @ExampleObject(
-                    name = "Display team member forbidden",
-                    value =
-                        """
-                        {
-                          "resultType": "FAIL",
-                          "success": null,
-                          "error": {
-                            "code": "DISPLAY_TEAM_MEMBER_REVIEW_FORBIDDEN",
-                            "message": "전시 팀에 속한 회원은 해당 전시의 후기를 작성할 수 없습니다.",
-                            "details": null
-                          },
-                          "meta": {
-                            "timestamp": "2026-07-23T20:00:00",
-                            "path": "/api/v1/display/1/reviews"
-                          }
-                        }
-                        """)
-              }))
+                          """)))
   @ApiResponse(
       responseCode = "404",
       description = "전시 또는 사용자 없음",
@@ -201,5 +184,46 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "후기를 작성할 전시 ID", example = "1") Long displayId,
       @Parameter(description = "후기를 작성하는 사용자 ID", required = true, example = "2") Long userId,
       @Valid CreateDisplayReviewRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "전시 후기 답글 작성", description = "전시 후기에 답글을 작성합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 후기 답글 작성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display review reply create success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "displayReviewReplyId": 1,
+                                "createdAt": "2026-07-24T01:00:00",
+                                "content": "좋은 후기 감사합니다.",
+                                "displayReviewId": 1,
+                                "userId": 2,
+                                "nickname": "달의작업실",
+                                "isTeamMember": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-24T01:00:00",
+                              "path": "/api/v1/display/1/reviews/1/replies"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "400", description = "답글 내용 검증 실패")
+  @ApiResponse(responseCode = "404", description = "전시, 후기 또는 사용자 없음")
+  ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "답글을 작성할 후기 ID", example = "1") Long displayReviewId,
+      @Parameter(description = "답글을 작성하는 사용자 ID", required = true, example = "2") Long userId,
+      @Valid CreateDisplayReviewReplyRequest request,
       HttpServletRequest httpServletRequest);
 }

@@ -25,7 +25,6 @@ public class CreateDisplayReviewService {
     displayReviewValidator.validateDisplayIsOngoing(displayAccess);
     displayReviewValidator.validateContent(command.content());
     displayReviewValidator.validateImages(command.images());
-    displayReviewValidator.validateNotDisplayTeamMember(displayAccess, command.userId());
     displayReviewValidator.validateReviewNotExists(command.displayId(), command.userId());
 
     DisplayReview saved;
