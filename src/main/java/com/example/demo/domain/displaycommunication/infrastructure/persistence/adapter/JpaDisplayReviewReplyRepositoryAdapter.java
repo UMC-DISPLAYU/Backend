@@ -1,7 +1,8 @@
-package com.example.demo.domain.displaycommunication.infrastructure.persistence;
+package com.example.demo.domain.displaycommunication.infrastructure.persistence.adapter;
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewReplyJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,7 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
+import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
@@ -17,8 +18,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DisplayReviewValidator {
-  private static final int MAX_CONTENT_LENGTH = 300;
-  private static final int MAX_IMAGE_COUNT = 5;
 
   private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final DisplayReviewRepository displayReviewRepository;
@@ -45,6 +44,25 @@ public class DisplayReviewValidator {
     }
   }
 
+  public DisplayReview findReviewOrThrow(Long displayReviewId) {
+    DisplayReview displayReview =
+        displayReviewRepository
+            .findById(displayReviewId)
+            .orElseThrow(
+                () ->
+                    new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
+    if (displayReview.isDeleted()) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);
+    }
+    return displayReview;
+  }
+
+  public void validateReviewTarget(DisplayReview displayReview, Long displayId) {
+    if (!displayReview.belongsToDisplay(displayId)) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);
+    }
+  }
+
   public void validateReviewNotExists(Long displayId, Long userId) {
     if (displayReviewRepository.existsByDisplayIdAndUserId(displayId, userId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_ALREADY_EXISTS);
@@ -52,13 +70,20 @@ public class DisplayReviewValidator {
   }
 
   public void validateContent(String content) {
-    if (content == null || content.isBlank() || content.length() > MAX_CONTENT_LENGTH) {
+    if (content == null || content.isBlank() || content.length() > 300) {
       throw new BusinessException(DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_CONTENT);
     }
   }
 
+  public void validateReplyContent(String content) {
+    if (content == null || content.isBlank() || content.length() > 300) {
+      throw new BusinessException(
+          DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_CONTENT);
+    }
+  }
+
   public void validateImages(List<ImageInfo> images) {
-    if (images == null || images.size() > MAX_IMAGE_COUNT) {
+    if (images == null || images.size() > 5) {
       throw new BusinessException(DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_IMAGES);
     }
     if (images.stream()

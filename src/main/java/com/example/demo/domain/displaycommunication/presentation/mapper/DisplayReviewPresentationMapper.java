@@ -2,11 +2,13 @@ package com.example.demo.domain.displaycommunication.presentation.mapper;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse.ImageResponse;
@@ -61,5 +63,14 @@ public class DisplayReviewPresentationMapper {
         result.userId(),
         result.nickname(),
         result.isTeamMember());
+  }
+
+  public DisplayReviewLikeResponse toResponse(DisplayReviewLikeResult result) {
+    return new DisplayReviewLikeResponse(
+        result.displayReviewId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
   }
 }

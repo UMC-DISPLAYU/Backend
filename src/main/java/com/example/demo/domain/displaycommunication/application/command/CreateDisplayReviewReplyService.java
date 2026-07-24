@@ -18,17 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class CreateDisplayReviewReplyService {
-  private final DisplayReviewReplyValidator validator;
+  private final DisplayReviewValidator validator;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public DisplayReviewReplyResult create(CreateDisplayReviewReplyCommand command) {
     validator.validateUserExists(command.userId());
-    validator.validateContent(command.content());
+    validator.validateReplyContent(command.content());
 
     DisplayReview displayReview = validator.findReviewOrThrow(command.displayReviewId());
-    validator.validateReplyTarget(displayReview, command.displayId());
+    validator.validateReviewTarget(displayReview, command.displayId());
 
     DisplayReviewAccess displayAccess =
         displayReviewAccessRepository
