@@ -115,4 +115,18 @@ class AuthServiceTest {
     assertThat(result.isNewUser()).isTrue();
     assertThat(result.signupToken()).isEqualTo("signup-token");
   }
+
+  @Test
+  void deletesSavedRefreshTokenOnLogout() {
+    User user = User.builder().id(1L).provider(Provider.Google).providerId("google-user").build();
+    RefreshToken savedToken =
+        RefreshToken.builder().user(user).refreshToken("refresh-token").build();
+    when(tokenProvider.getUserId("refresh-token")).thenReturn(1L);
+    when(refreshTokenRepository.findByUserId(1L)).thenReturn(Optional.of(savedToken));
+
+    authService.logout(1L, "refresh-token");
+
+    verify(tokenProvider).validateRefreshTokenOrThrow("refresh-token");
+    verify(refreshTokenRepository).delete(savedToken);
+  }
 }

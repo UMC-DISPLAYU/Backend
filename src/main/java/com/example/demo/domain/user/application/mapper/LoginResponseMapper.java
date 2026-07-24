@@ -21,7 +21,6 @@ public class LoginResponseMapper {
     return new LoginResponse.Login(
         false,
         result.accessToken(),
-        result.refreshToken(),
         new LoginResponse.UserInfo(
             user.getId(),
             user.getProvider(),

@@ -26,5 +26,6 @@ public interface RefreshControllerDocs {
                     Authorization Header는 필요하지 않으며,
                     Request Body의 Refresh Token을 사용합니다.
                     """)
-  ApiResponseBody<RefreshResponse> refresh(RefreshRequest request, HttpServletRequest httpRequest);
+  ApiResponseBody<RefreshResponse> refresh(
+      RefreshRequest request, String cookieRefreshToken, HttpServletRequest httpRequest);
 }

@@ -30,6 +30,11 @@ public class GoogleAuthorizationCodeClient {
   }
 
   public String authorizationUrl(String state) {
+    log.info(
+        "Google OAuth authorization URL created. responseType=code, redirectUri={}, "
+            + "statePresent={}",
+        properties.redirectUri(),
+        StringUtils.hasText(state));
     return UriComponentsBuilder.fromUriString(AUTHORIZATION_URL)
         .queryParam("client_id", properties.client().id())
         .queryParam("redirect_uri", properties.redirectUri())
@@ -50,16 +55,32 @@ public class GoogleAuthorizationCodeClient {
     form.add("code", code);
 
     try {
+      log.info(
+          "Google OAuth token exchange requested. grantType=authorization_code, redirectUri={}, "
+              + "authorizationCodePresent={}",
+          properties.redirectUri(),
+          StringUtils.hasText(code));
       OAuthTokenResponse response =
           restTemplate.postForObject(TOKEN_URL, formEntity(form), OAuthTokenResponse.class);
       if (response == null || !StringUtils.hasText(response.idToken())) {
+        log.warn(
+            "Google OAuth token response is invalid. responsePresent={}, accessTokenPresent={}, "
+                + "idTokenPresent={}",
+            response != null,
+            response != null && StringUtils.hasText(response.accessToken()),
+            response != null && StringUtils.hasText(response.idToken()));
         throw new IllegalStateException("Google token response does not contain an ID token.");
       }
+      log.info(
+          "Google OAuth token exchange completed. accessTokenPresent={}, idTokenPresent={}",
+          StringUtils.hasText(response.accessToken()),
+          true);
       return response.idToken();
     } catch (RestClientResponseException e) {
       log.warn(
-          "Google OAuth token exchange failed. status={}, responseBody={}",
+          "Google OAuth token exchange failed. status={}, redirectUri={}, responseBody={}",
           e.getStatusCode().value(),
+          properties.redirectUri(),
           safeResponseBody(e.getResponseBodyAsString()));
       throw new IllegalStateException("Google OAuth token exchange failed.", e);
     }

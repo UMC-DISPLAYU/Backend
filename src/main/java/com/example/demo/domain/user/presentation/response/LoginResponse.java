@@ -8,7 +8,6 @@ public class LoginResponse {
   public record Login(
       @Schema(description = "신규 회원 여부", example = "false") boolean isNewUser,
       @Schema(description = "Access Token", example = "eyJhbGciOi...") String accessToken,
-      @Schema(description = "Refresh Token", example = "eyJhbGciOi...") String refreshToken,
       @Schema(description = "사용자 정보") UserInfo user)
       implements OAuthCallbackResponse {}
 
