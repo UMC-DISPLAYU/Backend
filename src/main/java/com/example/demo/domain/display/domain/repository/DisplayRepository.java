@@ -14,5 +14,7 @@ public interface DisplayRepository {
 
   Display save(Display display);
 
+  void flush();
+
   void delete(Display display);
 }

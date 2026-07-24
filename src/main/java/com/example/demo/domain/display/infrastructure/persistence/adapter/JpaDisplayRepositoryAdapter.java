@@ -37,6 +37,11 @@ public class JpaDisplayRepositoryAdapter implements DisplayRepository {
   }
 
   @Override
+  public void flush() {
+    jpaRepository.flush();
+  }
+
+  @Override
   public void delete(Display display) {
     jpaRepository.delete(display);
   }

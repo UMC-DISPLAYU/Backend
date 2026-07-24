@@ -19,6 +19,16 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT, "PENDING_DISPLAY_INVITATION_EXISTS", "처리 대기 중인 전시 멤버 초대가 이미 존재합니다."),
   DISPLAY_MEMBER_INVITATION_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_MEMBER_INVITATION_NOT_FOUND", "전시 멤버 초대를 찾을 수 없습니다."),
+  DISPLAY_CONTENT_CATEGORY_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_CONTENT_CATEGORY_NOT_FOUND", "전시 콘텐츠 카테고리를 찾을 수 없습니다."),
+  DISPLAY_CONTENT_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_CONTENT_NOT_FOUND", "전시 콘텐츠를 찾을 수 없습니다."),
+  DISPLAY_CONTENT_LIMIT_EXCEEDED(
+      HttpStatus.BAD_REQUEST, "DISPLAY_CONTENT_LIMIT_EXCEEDED", "카테고리당 등록 가능한 이미지 개수를 초과했습니다."),
+  INVALID_DISPLAY_CONTENT_ORDER(
+      HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_CONTENT_ORDER", "전시 콘텐츠 순서 변경 요청이 올바르지 않습니다."),
+  DISPLAY_CONTENT_PERMISSION_DENIED(
+      HttpStatus.FORBIDDEN, "DISPLAY_CONTENT_PERMISSION_DENIED", "전시 콘텐츠를 수정할 권한이 없습니다."),
   DISPLAY_INVITATION_INVITEE_MISMATCH(
       HttpStatus.FORBIDDEN, "DISPLAY_INVITATION_INVITEE_MISMATCH", "해당 초대의 대상 사용자가 아닙니다."),
   DISPLAY_INVITATION_ALREADY_ACCEPTED(
