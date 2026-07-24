@@ -59,7 +59,13 @@ public class OAuthLoginService {
 
   public void validateState(String expectedState, String actualState) {
     if (!StringUtils.hasText(expectedState) || !expectedState.equals(actualState)) {
+      log.warn(
+          "OAuth state validation failed. expectedStatePresent={}, actualStatePresent={}, matched={}",
+          StringUtils.hasText(expectedState),
+          StringUtils.hasText(actualState),
+          false);
       throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
+    log.debug("OAuth state validation completed.");
   }
 }

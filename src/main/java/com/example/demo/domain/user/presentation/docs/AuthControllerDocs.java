@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface AuthControllerDocs {
@@ -24,7 +25,8 @@ public interface AuthControllerDocs {
           """
                     OAuth 인증이 완료된 사용자가 회원가입을 진행합니다.
 
-                    - signupToken을 통해 인증된 사용자임을 확인합니다.
+                    - HttpOnly Cookie의 signupToken을 통해 인증된 사용자임을 확인합니다.
+                    - 기존 Authorization Bearer 방식도 계속 지원합니다.
                     - Swagger Authorize에는 Bearer 접두사 없이 signupToken 값만 입력합니다.
                     - 1번 서비스 이용약관과 2번 개인정보 처리방침은 필수 동의입니다.
                     - 3번 마케팅 정보 수신 동의는 선택 동의입니다.
@@ -48,5 +50,7 @@ public interface AuthControllerDocs {
   ApiResponseBody<SignupResponse.Signup> signup(
       SignupRequest request,
       @Parameter(hidden = true) String authorization,
-      HttpServletRequest httpRequest);
+      @Parameter(hidden = true) String cookieSignupToken,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse);
 }

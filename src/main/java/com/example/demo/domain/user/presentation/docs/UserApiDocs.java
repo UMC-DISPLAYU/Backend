@@ -29,8 +29,7 @@ public final class UserApiDocs {
               "schoolEmail": null,
               "isVerified": false
             },
-            "accessToken": "eyJhbGciOi...",
-            "refreshToken": "eyJhbGciOi..."
+            "accessToken": "eyJhbGciOi..."
           }
         },
         "error": null,

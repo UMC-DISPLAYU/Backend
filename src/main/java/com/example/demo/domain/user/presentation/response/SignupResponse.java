@@ -8,8 +8,7 @@ public class SignupResponse {
   @Builder
   public record Signup(
       @Schema(description = "가입 완료된 사용자 정보") UserInfo user,
-      @Schema(description = "Access Token", example = "eyJhbGciOi...") String accessToken,
-      @Schema(description = "Refresh Token", example = "eyJhbGciOi...") String refreshToken) {}
+      @Schema(description = "Access Token", example = "eyJhbGciOi...") String accessToken) {}
 
   @Builder
   public record UserInfo(

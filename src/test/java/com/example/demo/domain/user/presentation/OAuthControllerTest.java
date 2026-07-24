@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.presentation;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -12,13 +13,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.service.OAuthLoginService;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
-import com.example.demo.domain.user.presentation.response.LoginResponse;
+import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
+import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.global.error.GlobalExceptionHandler;
+import com.example.demo.global.security.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,13 +31,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class OAuthControllerTest {
 
   private final OAuthLoginService oauthLoginService = mock(OAuthLoginService.class);
-  private final LoginResponseMapper loginResponseMapper = mock(LoginResponseMapper.class);
 
   private MockMvc mockMvc;
 
   @BeforeEach
   void setUp() {
-    OAuthController controller = new OAuthController(oauthLoginService, loginResponseMapper, false);
+    JwtProperties jwtProperties = new JwtProperties();
+    jwtProperties.setRefreshExpiration(1209600000);
+    jwtProperties.setSignupExpiration(600000);
+    RefreshTokenCookieManager refreshTokenCookieManager =
+        new RefreshTokenCookieManager(jwtProperties, false);
+    SignupTokenCookieManager signupTokenCookieManager =
+        new SignupTokenCookieManager(jwtProperties, false);
+    OAuthController controller =
+        new OAuthController(
+            oauthLoginService, refreshTokenCookieManager, signupTokenCookieManager, false);
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
@@ -75,12 +85,8 @@ class OAuthControllerTest {
   @Test
   void handlesKakaoAuthorizationCallback() throws Exception {
     LoginResult result = signupResult(Provider.Kakao);
-    LoginResponse.Signup response =
-        new LoginResponse.Signup(
-            true, "signup-token", Provider.Kakao, "소셜 사용자", "social@example.com");
     when(oauthLoginService.loginWithAuthorizationCode(Provider.Kakao, "authorization-code"))
         .thenReturn(result);
-    when(loginResponseMapper.toResponse(result)).thenReturn(response);
 
     mockMvc
         .perform(
@@ -88,9 +94,19 @@ class OAuthControllerTest {
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.isNewUser").value(true))
-        .andExpect(jsonPath("$.meta.path").value("/api/auth/kakao/callback"));
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    HttpHeaders.LOCATION,
+                    "https://display-frontend-five.vercel.app/onboarding"
+                        + "?signupToken=signup-token"))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("signupToken=signup-token"))))
+        .andExpect(
+            header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("HttpOnly"))));
 
     verify(oauthLoginService).validateState("state", "state");
     verify(oauthLoginService).loginWithAuthorizationCode(Provider.Kakao, "authorization-code");
@@ -99,12 +115,8 @@ class OAuthControllerTest {
   @Test
   void handlesGoogleAuthorizationCallback() throws Exception {
     LoginResult result = signupResult(Provider.Google);
-    LoginResponse.Signup response =
-        new LoginResponse.Signup(
-            true, "signup-token", Provider.Google, "소셜 사용자", "social@example.com");
     when(oauthLoginService.loginWithAuthorizationCode(Provider.Google, "authorization-code"))
         .thenReturn(result);
-    when(loginResponseMapper.toResponse(result)).thenReturn(response);
 
     mockMvc
         .perform(
@@ -112,9 +124,17 @@ class OAuthControllerTest {
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.isNewUser").value(true))
-        .andExpect(jsonPath("$.meta.path").value("/api/auth/google/callback"));
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    HttpHeaders.LOCATION,
+                    "https://display-frontend-five.vercel.app/onboarding"
+                        + "?signupToken=signup-token"))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("signupToken=signup-token"))));
 
     verify(oauthLoginService).validateState("state", "state");
     verify(oauthLoginService).loginWithAuthorizationCode(Provider.Google, "authorization-code");
@@ -132,23 +152,8 @@ class OAuthControllerTest {
             .socialEmail("google@example.com")
             .build();
     LoginResult result = LoginResult.login(user, "access-token", "refresh-token");
-    LoginResponse.Login response =
-        new LoginResponse.Login(
-            false,
-            "access-token",
-            "refresh-token",
-            new LoginResponse.UserInfo(
-                1L,
-                Provider.Google,
-                "google-user",
-                "구글 사용자",
-                "google-user",
-                "google@example.com",
-                null,
-                false));
     when(oauthLoginService.loginWithAuthorizationCode(Provider.Google, "authorization-code"))
         .thenReturn(result);
-    when(loginResponseMapper.toResponse(result)).thenReturn(response);
 
     mockMvc
         .perform(
@@ -156,11 +161,20 @@ class OAuthControllerTest {
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.isNewUser").value(false))
-        .andExpect(jsonPath("$.success.data.accessToken").value("access-token"))
-        .andExpect(jsonPath("$.success.data.refreshToken").value("refresh-token"))
-        .andExpect(jsonPath("$.success.data.user.provider").value("Google"));
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    HttpHeaders.LOCATION,
+                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("refreshToken=refresh-token"))))
+        .andExpect(
+            header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("HttpOnly"))))
+        .andExpect(
+            header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("SameSite=Lax"))));
   }
 
   @Test
@@ -175,23 +189,8 @@ class OAuthControllerTest {
             .socialEmail("kakao@example.com")
             .build();
     LoginResult result = LoginResult.login(user, "access-token", "refresh-token");
-    LoginResponse.Login response =
-        new LoginResponse.Login(
-            false,
-            "access-token",
-            "refresh-token",
-            new LoginResponse.UserInfo(
-                2L,
-                Provider.Kakao,
-                "kakao-user",
-                "카카오 사용자",
-                "kakao-user",
-                "kakao@example.com",
-                null,
-                false));
     when(oauthLoginService.loginWithAuthorizationCode(Provider.Kakao, "authorization-code"))
         .thenReturn(result);
-    when(loginResponseMapper.toResponse(result)).thenReturn(response);
 
     mockMvc
         .perform(
@@ -199,11 +198,16 @@ class OAuthControllerTest {
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.isNewUser").value(false))
-        .andExpect(jsonPath("$.success.data.accessToken").value("access-token"))
-        .andExpect(jsonPath("$.success.data.refreshToken").value("refresh-token"))
-        .andExpect(jsonPath("$.success.data.user.provider").value("Kakao"));
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    HttpHeaders.LOCATION,
+                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("refreshToken=refresh-token"))));
   }
 
   private LoginResult signupResult(Provider provider) {

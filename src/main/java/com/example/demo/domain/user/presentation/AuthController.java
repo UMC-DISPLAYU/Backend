@@ -9,6 +9,8 @@ import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
+import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
@@ -22,6 +24,7 @@ import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +43,19 @@ public class AuthController
 
   private final SignupResponseMapper signupResponseMapper;
   private final TokenProvider tokenProvider;
+  private final RefreshTokenCookieManager refreshTokenCookieManager;
+  private final SignupTokenCookieManager signupTokenCookieManager;
 
   @Override
   @PostMapping("/signup")
   public ApiResponseBody<SignupResponse.Signup> signup(
       @Valid @RequestBody SignupRequest request,
-      @RequestHeader("Authorization") String authorization,
-      HttpServletRequest httpRequest) {
+      @RequestHeader(name = "Authorization", required = false) String authorization,
+      @CookieValue(name = "signupToken", required = false) String cookieSignupToken,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
 
-    String signupToken = extractSignupToken(authorization);
+    String signupToken = resolveSignupToken(authorization, cookieSignupToken);
 
     SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
@@ -62,7 +69,9 @@ public class AuthController
     SignupResult result = userService.signup(command, socialUserInfo);
 
     SignupResponse.Signup response =
-        signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
+        signupResponseMapper.toResponse(result.user(), result.accessToken());
+    refreshTokenCookieManager.add(httpResponse, result.refreshToken());
+    signupTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(response, httpRequest);
   }
@@ -70,9 +79,13 @@ public class AuthController
   @Override
   @PostMapping("/refresh")
   public ApiResponseBody<RefreshResponse> refresh(
-      @Valid @RequestBody RefreshRequest request, HttpServletRequest httpRequest) {
+      @Valid @RequestBody(required = false) RefreshRequest request,
+      @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
+      HttpServletRequest httpRequest) {
 
-    String accessToken = authService.refresh(request.refreshToken());
+    String refreshToken =
+        resolveRefreshToken(request == null ? null : request.refreshToken(), cookieRefreshToken);
+    String accessToken = authService.refresh(refreshToken);
 
     return ApiResponseBody.success(new RefreshResponse(accessToken), httpRequest);
   }
@@ -80,11 +93,16 @@ public class AuthController
   @Override
   @PostMapping("/logout")
   public ApiResponseBody<Void> logout(
-      @Valid @RequestBody LogoutRequest request,
+      @Valid @RequestBody(required = false) LogoutRequest request,
+      @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
       @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest httpRequest) {
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
 
-    authService.logout(user.userId(), request.refreshToken());
+    String refreshToken =
+        resolveRefreshToken(request == null ? null : request.refreshToken(), cookieRefreshToken);
+    authService.logout(user.userId(), refreshToken);
+    refreshTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(null, httpRequest);
   }
@@ -97,5 +115,19 @@ public class AuthController
       throw new BusinessException(AuthErrorCode.INVALID_SIGNUP_TOKEN);
     }
     return authorization.substring(bearerPrefix.length()).trim();
+  }
+
+  private String resolveSignupToken(String authorization, String cookieSignupToken) {
+    if (StringUtils.hasText(authorization)) {
+      return extractSignupToken(authorization);
+    }
+    if (!StringUtils.hasText(cookieSignupToken)) {
+      return extractSignupToken(null);
+    }
+    return cookieSignupToken;
+  }
+
+  private String resolveRefreshToken(String bodyRefreshToken, String cookieRefreshToken) {
+    return StringUtils.hasText(bodyRefreshToken) ? bodyRefreshToken : cookieRefreshToken;
   }
 }
