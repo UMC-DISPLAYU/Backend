@@ -3,8 +3,10 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
 import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,5 +27,12 @@ public class JpaDisplayReviewRepositoryAdapter implements DisplayReviewRepositor
   @Override
   public boolean existsByDisplayIdAndUserId(Long displayId, Long userId) {
     return repository.existsByDisplayIdAndUserId(displayId, userId);
+  }
+
+  @Override
+  public List<DisplayReview> findActiveByDisplayIdWithCursor(
+      Long displayId, Long cursorId, int limit) {
+    return repository.findActiveByDisplayIdWithCursor(
+        displayId, cursorId, PageRequest.of(0, limit));
   }
 }

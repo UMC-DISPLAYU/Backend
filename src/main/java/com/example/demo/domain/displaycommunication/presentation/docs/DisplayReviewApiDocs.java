@@ -5,6 +5,7 @@ import com.example.demo.domain.displaycommunication.presentation.request.CreateD
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
@@ -20,6 +21,17 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Display Review", description = "전시 후기 API")
 public interface DisplayReviewApiDocs {
+
+  @Operation(
+      summary = "전시 후기 목록 조회",
+      description = "전시 후기와 답글을 최신순 커서 페이지네이션으로 조회합니다. 비회원도 조회할 수 있습니다.")
+  @ApiResponse(responseCode = "200", description = "전시 후기 목록 조회 성공")
+  @ApiResponse(responseCode = "404", description = "전시 없음")
+  ApiResponseBody<DisplayReviewListResponse> getReviews(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "마지막으로 조회한 후기 ID", example = "20") Long cursorId,
+      @Parameter(description = "조회 개수(최대 50)", example = "10") int size,
+      HttpServletRequest httpServletRequest);
 
   @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다.")
   @ApiResponse(

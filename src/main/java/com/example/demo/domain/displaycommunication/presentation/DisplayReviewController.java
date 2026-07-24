@@ -12,9 +12,11 @@ import com.example.demo.domain.displaycommunication.application.command.DisplayR
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewLikeService;
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewReplyLikeCommand;
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewReplyLikeService;
+import com.example.demo.domain.displaycommunication.application.query.GetDisplayReviewsService;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
@@ -25,6 +27,7 @@ import com.example.demo.domain.displaycommunication.presentation.request.CreateD
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
@@ -44,7 +47,24 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
   private final DeleteDisplayReviewService deleteDisplayReviewService;
   private final DisplayReviewLikeService displayReviewLikeService;
   private final DisplayReviewReplyLikeService displayReviewReplyLikeService;
+  private final GetDisplayReviewsService getDisplayReviewsService;
   private final DisplayReviewPresentationMapper mapper;
+
+  @Override
+  @GetMapping
+  // 전시 후기 및 답글 목록 조회
+  public ApiResponseBody<DisplayReviewListResponse> getReviews(
+      @PathVariable Long displayId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      HttpServletRequest httpServletRequest) {
+    DisplayReviewListResult result =
+        getDisplayReviewsService.getReviews(mapper.toQuery(displayId, cursorId, size));
+
+    DisplayReviewListResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
 
   @Override
   @PostMapping

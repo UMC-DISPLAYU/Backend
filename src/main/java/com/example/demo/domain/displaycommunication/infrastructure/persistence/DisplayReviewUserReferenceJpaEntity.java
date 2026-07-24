@@ -21,5 +21,8 @@ public class DisplayReviewUserReferenceJpaEntity {
   @Column(name = "nickname")
   private String nickname;
 
+  @Column(name = "profileImageUrl")
+  private String profileImageUrl;
+
   protected DisplayReviewUserReferenceJpaEntity() {}
 }

@@ -3,7 +3,10 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReplyLike;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyLikeRepository;
 import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyLikeJpaRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -34,5 +37,11 @@ public class JpaDisplayReviewReplyLikeRepositoryAdapter
         likeCount,
         replyLike.getCreatedAt(),
         replyLike.getDeletedAt());
+  }
+
+  @Override
+  public Map<Long, Long> countByDisplayReviewReplyIds(List<Long> displayReviewReplyIds) {
+    return repository.countByDisplayReviewReplyIds(displayReviewReplyIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }

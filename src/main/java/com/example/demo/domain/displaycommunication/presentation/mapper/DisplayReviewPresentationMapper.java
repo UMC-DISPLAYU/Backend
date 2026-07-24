@@ -2,9 +2,11 @@ package com.example.demo.domain.displaycommunication.presentation.mapper;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.query.GetDisplayReviewsQuery;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
@@ -14,10 +16,14 @@ import com.example.demo.domain.displaycommunication.presentation.request.CreateD
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.DisplayReviewItemResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.ImageResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.ReplyResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.UserResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
-import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse.ImageResponse;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +47,10 @@ public class DisplayReviewPresentationMapper {
         displayId, displayReviewId, userId, request.content());
   }
 
+  public GetDisplayReviewsQuery toQuery(Long displayId, Long cursorId, int size) {
+    return new GetDisplayReviewsQuery(displayId, cursorId, size);
+  }
+
   public DisplayReviewResponse toResponse(DisplayReviewResult result) {
     return new DisplayReviewResponse(
         result.displayReviewId(),
@@ -51,7 +61,7 @@ public class DisplayReviewPresentationMapper {
         result.images().stream()
             .map(
                 image ->
-                    new ImageResponse(
+                    new DisplayReviewResponse.ImageResponse(
                         image.reviewImageId(),
                         image.imageUrl(),
                         image.width(),
@@ -95,5 +105,50 @@ public class DisplayReviewPresentationMapper {
         result.likeCount(),
         result.createdAt(),
         result.deletedAt());
+  }
+
+  public DisplayReviewListResponse toResponse(DisplayReviewListResult result) {
+    return new DisplayReviewListResponse(
+        result.reviews().stream()
+            .map(
+                review ->
+                    new DisplayReviewItemResponse(
+                        review.displayReviewId(),
+                        review.content(),
+                        review.createdAt(),
+                        new UserResponse(
+                            review.user().userId(),
+                            review.user().nickname(),
+                            review.user().profileImageUrl()),
+                        review.images().stream()
+                            .map(
+                                image ->
+                                    new ImageResponse(
+                                        image.reviewImageId(),
+                                        image.imageUrl(),
+                                        image.width(),
+                                        image.height(),
+                                        image.sortOrder()))
+                            .toList(),
+                        review.likeCount(),
+                        review.replyCount(),
+                        review.replies().stream()
+                            .map(
+                                reply ->
+                                    new ReplyResponse(
+                                        reply.displayReviewReplyId(),
+                                        reply.content(),
+                                        reply.createdAt(),
+                                        new UserResponse(
+                                            reply.user().userId(),
+                                            reply.user().nickname(),
+                                            reply.user().profileImageUrl()),
+                                        reply.isTeamMember(),
+                                        reply.likeCount()))
+                            .toList()))
+            .toList(),
+        result.nextCursorId(),
+        result.size(),
+        result.hasNext());
   }
 }

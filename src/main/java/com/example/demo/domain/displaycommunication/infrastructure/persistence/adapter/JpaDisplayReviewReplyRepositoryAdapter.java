@@ -3,6 +3,7 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -25,5 +26,11 @@ public class JpaDisplayReviewReplyRepositoryAdapter implements DisplayReviewRepl
   @Override
   public void softDeleteAllByDisplayReviewId(Long displayReviewId) {
     repository.softDeleteAllByDisplayReviewId(displayReviewId);
+  }
+
+  @Override
+  public List<DisplayReviewReply> findActiveByDisplayReviewIds(List<Long> displayReviewIds) {
+    return repository.findByDisplayReviewIdInAndDeletedAtIsNullOrderByDisplayReviewReplyIdAsc(
+        displayReviewIds);
   }
 }

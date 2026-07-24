@@ -42,4 +42,15 @@ public interface DisplayReviewReplyLikeJpaRepository
       Long displayReviewReplyId, Long userId);
 
   long countByDisplayReviewReplyIdAndDeletedAtIsNull(Long displayReviewReplyId);
+
+  @Query(
+      """
+      SELECT replyLike.displayReviewReplyId, COUNT(replyLike)
+      FROM DisplayReviewReplyLike replyLike
+      WHERE replyLike.displayReviewReplyId IN :displayReviewReplyIds
+        AND replyLike.deletedAt IS NULL
+      GROUP BY replyLike.displayReviewReplyId
+      """)
+  List<Object[]> countByDisplayReviewReplyIds(
+      @Param("displayReviewReplyIds") List<Long> displayReviewReplyIds);
 }
