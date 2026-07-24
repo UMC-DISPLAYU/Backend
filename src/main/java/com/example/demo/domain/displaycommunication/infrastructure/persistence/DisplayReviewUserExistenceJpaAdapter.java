@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class DisplayReviewUserExistenceJpaAdapter implements UserExistenceRepository {
   private final DisplayReviewUserExistenceJpaRepository repository;
+  private final DisplayReviewPersistenceMapper mapper;
 
   @Override
   public boolean existsById(Long userId) {
@@ -33,9 +34,6 @@ public class DisplayReviewUserExistenceJpaAdapter implements UserExistenceReposi
     }
     return repository.findByUserIdInAndDeletedAtIsNull(userIds).stream()
         .collect(
-            Collectors.toMap(
-                DisplayReviewUserReferenceJpaEntity::getUserId,
-                user ->
-                    new UserInfo(user.getUserId(), user.getNickname(), user.getProfileImageUrl())));
+            Collectors.toMap(DisplayReviewUserReferenceJpaEntity::getUserId, mapper::toUserInfo));
   }
 }

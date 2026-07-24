@@ -4,30 +4,19 @@ import com.example.demo.domain.displaycommunication.domain.repository.DisplayRev
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class DisplayReviewAccessJpaAdapter implements DisplayReviewAccessRepository {
-  private static final String PUBLISHED = "PUBLISHED";
-
   private final DisplayExistenceJpaRepository displayRepository;
   private final DisplayReviewTeamMemberReferenceJpaRepository teamMemberRepository;
+  private final DisplayReviewPersistenceMapper mapper;
 
   @Override
   public Optional<DisplayReviewAccess> findByDisplayId(Long displayId) {
-    return displayRepository
-        .findById(displayId)
-        .map(
-            display ->
-                new DisplayReviewAccess(
-                    display.getOwnerUserId(),
-                    display.getStartDate(),
-                    display.getEndDate(),
-                    PUBLISHED.equals(display.getStatus()),
-                    false));
+    return displayRepository.findById(displayId).map(display -> mapper.toAccess(display, false));
   }
 
   @Override
@@ -36,19 +25,14 @@ public class DisplayReviewAccessJpaAdapter implements DisplayReviewAccessReposit
         .findById(displayId)
         .map(
             display ->
-                new DisplayReviewAccess(
-                    display.getOwnerUserId(),
-                    display.getStartDate(),
-                    display.getEndDate(),
-                    PUBLISHED.equals(display.getStatus()),
+                mapper.toAccess(
+                    display,
                     teamMemberRepository.existsByDisplayIdAndUserIdAndAcceptedTrue(
                         displayId, userId)));
   }
 
   @Override
   public Set<Long> findAcceptedTeamMemberUserIds(Long displayId) {
-    return teamMemberRepository.findByDisplayIdAndAcceptedTrue(displayId).stream()
-        .map(DisplayReviewTeamMemberReferenceJpaEntity::getUserId)
-        .collect(Collectors.toSet());
+    return teamMemberRepository.findAcceptedUserIdsByDisplayId(displayId);
   }
 }

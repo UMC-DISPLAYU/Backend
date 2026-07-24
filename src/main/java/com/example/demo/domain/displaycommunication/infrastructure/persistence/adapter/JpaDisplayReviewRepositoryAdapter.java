@@ -26,7 +26,7 @@ public class JpaDisplayReviewRepositoryAdapter implements DisplayReviewRepositor
 
   @Override
   public boolean existsByDisplayIdAndUserId(Long displayId, Long userId) {
-    return repository.existsByDisplayIdAndUserId(displayId, userId);
+    return repository.existsByDisplayIdAndUserIdAndDeletedAtIsNull(displayId, userId);
   }
 
   @Override

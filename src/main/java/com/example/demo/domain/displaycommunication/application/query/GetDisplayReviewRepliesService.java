@@ -1,6 +1,5 @@
 package com.example.demo.domain.displaycommunication.application.query;
 
-import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewValidator;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.ReplyItemResult;
@@ -28,24 +27,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetDisplayReviewRepliesService {
 
-  private static final int MAX_PAGE_SIZE = 50;
-
   private final DisplayReviewValidator displayReviewValidator;
+  private final DisplayReviewPagingPolicy pagingPolicy;
   private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final DisplayReviewReplyLikeRepository displayReviewReplyLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public DisplayReviewReplyListResult getReplies(GetDisplayReviewRepliesQuery query) {
-    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
-    displayReviewValidator.validateDisplayExists(query.displayId());
+    int pageSize = pagingPolicy.normalize(query.size());
+    DisplayReviewAccess access = displayReviewValidator.findDisplayAccessOrThrow(query.displayId());
     DisplayReview review = displayReviewValidator.findReviewOrThrow(query.displayReviewId());
     displayReviewValidator.validateReviewTarget(review, query.displayId());
 
-    DisplayReviewAccess access =
-        displayReviewAccessRepository
-            .findByDisplayId(query.displayId())
-            .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
     List<DisplayReviewReply> fetched =
         displayReviewReplyRepository.findActiveByDisplayReviewIdWithCursor(
             query.displayReviewId(), query.cursorId(), pageSize + 1);

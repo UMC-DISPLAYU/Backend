@@ -106,7 +106,7 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
   }
 
   @Override
-  @PostMapping("/{displayReviewId}/reply")
+  @PostMapping("/{displayReviewId}/replies")
   // 전시 후기 답글 작성
   public ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(
       @PathVariable Long displayId,

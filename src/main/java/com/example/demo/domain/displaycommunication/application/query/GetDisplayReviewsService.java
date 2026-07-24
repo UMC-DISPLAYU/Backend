@@ -1,13 +1,12 @@
 package com.example.demo.domain.displaycommunication.application.query;
 
-import com.example.demo.domain.display.domain.error.DisplayErrorCode;
+import com.example.demo.domain.displaycommunication.application.command.DisplayReviewValidator;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult.DisplayReviewItemResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult.ImageResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult.UserResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayExistenceRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewLikeRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
@@ -27,19 +26,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetDisplayReviewsService {
 
-  private static final int MAX_PAGE_SIZE = 50;
-
-  private final DisplayExistenceRepository displayExistenceRepository;
+  private final DisplayReviewValidator displayReviewValidator;
+  private final DisplayReviewPagingPolicy pagingPolicy;
   private final DisplayReviewRepository displayReviewRepository;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final DisplayReviewLikeRepository displayReviewLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public DisplayReviewListResult getReviews(GetDisplayReviewsQuery query) {
-    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
-    if (!displayExistenceRepository.existsById(query.displayId())) {
-      throw new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND);
-    }
+    int pageSize = pagingPolicy.normalize(query.size());
+    displayReviewValidator.findDisplayAccessOrThrow(query.displayId());
 
     List<DisplayReview> fetched =
         displayReviewRepository.findActiveByDisplayIdWithCursor(

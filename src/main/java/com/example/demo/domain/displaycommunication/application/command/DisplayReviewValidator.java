@@ -41,6 +41,12 @@ public class DisplayReviewValidator {
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 
+  public DisplayReviewAccess findDisplayAccessOrThrow(Long displayId) {
+    return displayReviewAccessRepository
+        .findByDisplayId(displayId)
+        .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
+  }
+
   public void validateDisplayIsOngoing(DisplayReviewAccess access) {
     LocalDate today = LocalDate.now(clock);
     boolean isOngoing = !today.isBefore(access.startDate()) && !today.isAfter(access.endDate());
