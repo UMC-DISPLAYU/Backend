@@ -2,6 +2,7 @@ package com.example.demo.domain.displaycommunication.domain.repository;
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface DisplayReviewReplyRepository {
@@ -11,5 +12,8 @@ public interface DisplayReviewReplyRepository {
 
   void softDeleteAllByDisplayReviewId(Long displayReviewId);
 
-  List<DisplayReviewReply> findActiveByDisplayReviewIds(List<Long> displayReviewIds);
+  List<DisplayReviewReply> findActiveByDisplayReviewIdWithCursor(
+      Long displayReviewId, Long cursorId, int limit);
+
+  Map<Long, Long> countActiveByDisplayReviewIds(List<Long> displayReviewIds);
 }

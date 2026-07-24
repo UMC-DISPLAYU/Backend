@@ -7,6 +7,7 @@ import com.example.demo.domain.displaycommunication.presentation.response.Delete
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -30,6 +31,18 @@ public interface DisplayReviewApiDocs {
   ApiResponseBody<DisplayReviewListResponse> getReviews(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "마지막으로 조회한 후기 ID", example = "20") Long cursorId,
+      @Parameter(description = "조회 개수(최대 50)", example = "10") int size,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "전시 후기 답글 목록 조회",
+      description = "특정 후기의 답글을 등록순 커서 페이지네이션으로 조회합니다. 비회원도 조회할 수 있습니다.")
+  @ApiResponse(responseCode = "200", description = "전시 후기 답글 목록 조회 성공")
+  @ApiResponse(responseCode = "404", description = "전시 또는 후기 없음")
+  ApiResponseBody<DisplayReviewReplyListResponse> getReviewReplies(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
+      @Parameter(description = "마지막으로 조회한 답글 ID", example = "20") Long cursorId,
       @Parameter(description = "조회 개수(최대 50)", example = "10") int size,
       HttpServletRequest httpServletRequest);
 

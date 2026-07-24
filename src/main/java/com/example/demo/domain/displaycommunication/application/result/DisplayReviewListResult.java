@@ -13,19 +13,10 @@ public record DisplayReviewListResult(
       UserResult user,
       List<ImageResult> images,
       long likeCount,
-      long replyCount,
-      List<ReplyResult> replies) {}
+      long replyCount) {}
 
   public record UserResult(Long userId, String nickname, String profileImageUrl) {}
 
   public record ImageResult(
       Long reviewImageId, String imageUrl, int width, int height, int sortOrder) {}
-
-  public record ReplyResult(
-      Long displayReviewReplyId,
-      String content,
-      LocalDateTime createdAt,
-      UserResult user,
-      boolean isTeamMember,
-      long likeCount) {}
 }

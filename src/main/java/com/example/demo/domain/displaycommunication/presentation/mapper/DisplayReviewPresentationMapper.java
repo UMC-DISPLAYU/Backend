@@ -2,12 +2,14 @@ package com.example.demo.domain.displaycommunication.presentation.mapper;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.query.GetDisplayReviewRepliesQuery;
 import com.example.demo.domain.displaycommunication.application.query.GetDisplayReviewsQuery;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyLikeResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
@@ -19,9 +21,10 @@ import com.example.demo.domain.displaycommunication.presentation.response.Displa
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.DisplayReviewItemResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.ImageResponse;
-import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.ReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewListResponse.UserResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyListResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyListResponse.ReplyItemResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import java.util.List;
@@ -49,6 +52,11 @@ public class DisplayReviewPresentationMapper {
 
   public GetDisplayReviewsQuery toQuery(Long displayId, Long cursorId, int size) {
     return new GetDisplayReviewsQuery(displayId, cursorId, size);
+  }
+
+  public GetDisplayReviewRepliesQuery toReplyQuery(
+      Long displayId, Long displayReviewId, Long cursorId, int size) {
+    return new GetDisplayReviewRepliesQuery(displayId, displayReviewId, cursorId, size);
   }
 
   public DisplayReviewResponse toResponse(DisplayReviewResult result) {
@@ -131,21 +139,28 @@ public class DisplayReviewPresentationMapper {
                                         image.sortOrder()))
                             .toList(),
                         review.likeCount(),
-                        review.replyCount(),
-                        review.replies().stream()
-                            .map(
-                                reply ->
-                                    new ReplyResponse(
-                                        reply.displayReviewReplyId(),
-                                        reply.content(),
-                                        reply.createdAt(),
-                                        new UserResponse(
-                                            reply.user().userId(),
-                                            reply.user().nickname(),
-                                            reply.user().profileImageUrl()),
-                                        reply.isTeamMember(),
-                                        reply.likeCount()))
-                            .toList()))
+                        review.replyCount()))
+            .toList(),
+        result.nextCursorId(),
+        result.size(),
+        result.hasNext());
+  }
+
+  public DisplayReviewReplyListResponse toResponse(DisplayReviewReplyListResult result) {
+    return new DisplayReviewReplyListResponse(
+        result.replies().stream()
+            .map(
+                reply ->
+                    new ReplyItemResponse(
+                        reply.displayReviewReplyId(),
+                        reply.content(),
+                        reply.createdAt(),
+                        new DisplayReviewReplyListResponse.UserResponse(
+                            reply.user().userId(),
+                            reply.user().nickname(),
+                            reply.user().profileImageUrl()),
+                        reply.isTeamMember(),
+                        reply.likeCount()))
             .toList(),
         result.nextCursorId(),
         result.size(),

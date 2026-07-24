@@ -4,8 +4,11 @@ import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayRevi
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyJpaRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,8 +32,15 @@ public class JpaDisplayReviewReplyRepositoryAdapter implements DisplayReviewRepl
   }
 
   @Override
-  public List<DisplayReviewReply> findActiveByDisplayReviewIds(List<Long> displayReviewIds) {
-    return repository.findByDisplayReviewIdInAndDeletedAtIsNullOrderByDisplayReviewReplyIdAsc(
-        displayReviewIds);
+  public List<DisplayReviewReply> findActiveByDisplayReviewIdWithCursor(
+      Long displayReviewId, Long cursorId, int limit) {
+    return repository.findActiveByDisplayReviewIdWithCursor(
+        displayReviewId, cursorId, PageRequest.of(0, limit));
+  }
+
+  @Override
+  public Map<Long, Long> countActiveByDisplayReviewIds(List<Long> displayReviewIds) {
+    return repository.countActiveByDisplayReviewIds(displayReviewIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }
