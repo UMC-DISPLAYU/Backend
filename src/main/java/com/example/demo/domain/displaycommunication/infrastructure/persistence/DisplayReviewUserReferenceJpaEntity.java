@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "`User`")
-public class DisplayCommunicationUserReferenceJpaEntity {
+public class DisplayReviewUserReferenceJpaEntity {
   @Id
   @Column(name = "userId")
   private Long userId;
@@ -21,5 +21,5 @@ public class DisplayCommunicationUserReferenceJpaEntity {
   @Column(name = "nickname")
   private String nickname;
 
-  protected DisplayCommunicationUserReferenceJpaEntity() {}
+  protected DisplayReviewUserReferenceJpaEntity() {}
 }

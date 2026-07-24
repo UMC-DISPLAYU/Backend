@@ -20,4 +20,14 @@ public class DisplayReviewLike extends SoftDeleteBaseEntity {
   private Long userId;
 
   protected DisplayReviewLike() {}
+
+  private DisplayReviewLike(Long displayReviewLikeId, Long displayReviewId, Long userId) {
+    this.displayReviewLikeId = displayReviewLikeId;
+    this.displayReviewId = displayReviewId;
+    this.userId = userId;
+  }
+
+  public static DisplayReviewLike create(Long displayReviewId, Long userId) {
+    return new DisplayReviewLike(null, displayReviewId, userId);
+  }
 }

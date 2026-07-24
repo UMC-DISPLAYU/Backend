@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
+import com.example.demo.domain.displaycommunication.domain.repository.DisplayExistenceRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
@@ -19,10 +20,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DisplayReviewValidator {
 
+  private final DisplayExistenceRepository displayExistenceRepository;
   private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final DisplayReviewRepository displayReviewRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final Clock clock;
+
+  public void validateDisplayExists(Long displayId) {
+    if (!displayExistenceRepository.existsById(displayId)) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND);
+    }
+  }
 
   public DisplayReviewAccess findDisplayAccessOrThrow(Long displayId, Long userId) {
     return displayReviewAccessRepository
@@ -61,6 +69,17 @@ public class DisplayReviewValidator {
     if (!displayReview.belongsToDisplay(displayId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);
     }
+  }
+
+  public void validateWriter(DisplayReview displayReview, Long userId) {
+    if (!displayReview.isWrittenBy(userId)) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_FORBIDDEN);
+    }
+  }
+
+  public void validateAccessibleReview(DisplayReview displayReview, Long displayId, Long userId) {
+    validateReviewTarget(displayReview, displayId);
+    validateWriter(displayReview, userId);
   }
 
   public void validateReviewNotExists(Long displayId, Long userId) {

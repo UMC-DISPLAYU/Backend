@@ -2,16 +2,15 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewLike;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewLikeRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewLikeJpaRepository;
 import java.util.Optional;
-
-import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewLikeJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class JpaDisplayReviewLikeRepositoryAdapter implements DisplayReviewLikeRepository {
-  private final SpringDataDisplayReviewLikeJpaRepository repository;
+  private final DisplayReviewLikeJpaRepository repository;
 
   @Override
   public Optional<DisplayReviewLikeSnapshot> toggleAndGetSnapshot(

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record DisplayReviewLikeResult(
     Long displayReviewId,
-    boolean liked,
-    int likeCount,
+    Boolean liked,
+    Integer likeCount,
     LocalDateTime createdAt,
     LocalDateTime deletedAt) {}

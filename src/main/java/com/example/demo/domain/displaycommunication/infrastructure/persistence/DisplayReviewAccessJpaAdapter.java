@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public class DisplayReviewAccessJpaAdapter implements DisplayReviewAccessRepository {
   private static final String PUBLISHED = "PUBLISHED";
 
-  private final DisplayReviewDisplayReferenceJpaRepository displayRepository;
+  private final DisplayExistenceJpaRepository displayRepository;
   private final DisplayReviewTeamMemberReferenceJpaRepository teamMemberRepository;
 
   @Override

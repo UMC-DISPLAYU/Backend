@@ -52,5 +52,9 @@ public class DisplayReview extends SoftDeleteBaseEntity {
     return this.displayId.equals(displayId);
   }
 
+  public boolean isWrittenBy(Long userId) {
+    return this.userId.equals(userId);
+  }
+
   public record ImageInfo(String imageUrl, int width, int height) {}
 }

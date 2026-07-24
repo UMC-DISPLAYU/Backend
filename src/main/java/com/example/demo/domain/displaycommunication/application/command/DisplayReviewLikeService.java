@@ -14,13 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class DisplayReviewLikeService {
-  private final DisplayReviewValidator validator;
+  private final DisplayReviewValidator displayReviewValidator;
   private final DisplayReviewLikeRepository displayReviewLikeRepository;
 
-  public DisplayReviewLikeResult toggle(DisplayReviewLikeCommand command) {
-    validator.validateUserExists(command.userId());
-    DisplayReview displayReview = validator.findReviewOrThrow(command.displayReviewId());
-    validator.validateReviewTarget(displayReview, command.displayId());
+  public DisplayReviewLikeResult toggleReviewLike(DisplayReviewLikeCommand command) {
+    displayReviewValidator.validateDisplayExists(command.displayId());
+    displayReviewValidator.validateUserExists(command.userId());
+
+    DisplayReview displayReview =
+        displayReviewValidator.findReviewOrThrow(command.displayReviewId());
+
+    displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
     DisplayReviewLikeSnapshot snapshot =
         displayReviewLikeRepository

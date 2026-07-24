@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class DisplayCommunicationUserExistenceJpaAdapter implements UserExistenceRepository {
-  private final DisplayCommunicationUserExistenceJpaRepository repository;
+public class DisplayReviewUserExistenceJpaAdapter implements UserExistenceRepository {
+  private final DisplayReviewUserExistenceJpaRepository repository;
 
   @Override
   public boolean existsById(Long userId) {
@@ -19,6 +19,6 @@ public class DisplayCommunicationUserExistenceJpaAdapter implements UserExistenc
   public Optional<String> findNicknameById(Long userId) {
     return repository
         .findByUserIdAndDeletedAtIsNull(userId)
-        .map(DisplayCommunicationUserReferenceJpaEntity::getNickname);
+        .map(DisplayReviewUserReferenceJpaEntity::getNickname);
   }
 }
