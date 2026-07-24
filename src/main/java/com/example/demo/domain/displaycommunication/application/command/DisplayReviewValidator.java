@@ -101,9 +101,17 @@ public class DisplayReviewValidator {
 
   public void validateAccessibleReply(
       DisplayReviewReply displayReviewReply, Long displayReviewId, Long userId) {
+    validateReplyTarget(displayReviewReply, displayReviewId);
+    validateReplyWriter(displayReviewReply, userId);
+  }
+
+  public void validateReplyTarget(DisplayReviewReply displayReviewReply, Long displayReviewId) {
     if (!displayReviewReply.belongsToReview(displayReviewId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND);
     }
+  }
+
+  private void validateReplyWriter(DisplayReviewReply displayReviewReply, Long userId) {
     if (!displayReviewReply.isWrittenBy(userId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_FORBIDDEN);
     }

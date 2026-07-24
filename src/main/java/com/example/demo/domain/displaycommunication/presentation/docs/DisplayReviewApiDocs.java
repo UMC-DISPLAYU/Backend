@@ -5,6 +5,7 @@ import com.example.demo.domain.displaycommunication.presentation.request.CreateD
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -333,5 +334,42 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "삭제할 답글 ID", example = "1") Long displayReviewReplyId,
       @Parameter(description = "답글 작성자 ID", required = true, example = "2") Long userId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "전시 후기 답글 좋아요", description = "전시 후기 답글 좋아요를 등록하거나 취소합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 후기 답글 좋아요 토글 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "displayReviewReplyId": 1,
+                                "liked": true,
+                                "likeCount": 3,
+                                "createdAt": "2026-07-24T17:30:00",
+                                "deletedAt": null
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-24T17:30:00",
+                              "path": "/api/v1/display/1/reviews/1/reply/1/like"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "404", description = "전시, 후기, 답글 또는 사용자 없음")
+  ApiResponseBody<DisplayReviewReplyLikeResponse> reviewReplyLike(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
+      @Parameter(description = "좋아요를 누를 답글 ID", example = "1") Long displayReviewReplyId,
+      @Parameter(description = "좋아요를 누르는 사용자 ID", required = true, example = "2") Long userId,
       HttpServletRequest httpServletRequest);
 }

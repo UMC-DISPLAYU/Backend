@@ -5,6 +5,7 @@ import com.example.demo.domain.displaycommunication.application.command.CreateDi
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
@@ -13,6 +14,7 @@ import com.example.demo.domain.displaycommunication.presentation.request.CreateD
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
+import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse.ImageResponse;
@@ -80,6 +82,15 @@ public class DisplayReviewPresentationMapper {
   public DisplayReviewLikeResponse toResponse(DisplayReviewLikeResult result) {
     return new DisplayReviewLikeResponse(
         result.displayReviewId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
+
+  public DisplayReviewReplyLikeResponse toResponse(DisplayReviewReplyLikeResult result) {
+    return new DisplayReviewReplyLikeResponse(
+        result.displayReviewReplyId(),
         result.liked(),
         result.likeCount(),
         result.createdAt(),
