@@ -7,4 +7,6 @@ public interface DisplayReviewReplyRepository {
   DisplayReviewReply save(DisplayReviewReply displayReviewReply);
 
   Optional<DisplayReviewReply> findById(Long displayReviewReplyId);
+
+  void softDeleteAllByDisplayReviewId(Long displayReviewId);
 }

@@ -21,4 +21,9 @@ public class JpaDisplayReviewReplyRepositoryAdapter implements DisplayReviewRepl
   public Optional<DisplayReviewReply> findById(Long displayReviewReplyId) {
     return repository.findById(displayReviewReplyId);
   }
+
+  @Override
+  public void softDeleteAllByDisplayReviewId(Long displayReviewId) {
+    repository.softDeleteAllByDisplayReviewId(displayReviewId);
+  }
 }
