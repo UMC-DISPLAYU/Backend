@@ -69,7 +69,8 @@ public class AuthController
     SignupResult result = userService.signup(command, socialUserInfo);
 
     SignupResponse.Signup response =
-        signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
+        signupResponseMapper.toResponse(result.user(), result.accessToken());
+    refreshTokenCookieManager.add(httpResponse, result.refreshToken());
     signupTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(response, httpRequest);

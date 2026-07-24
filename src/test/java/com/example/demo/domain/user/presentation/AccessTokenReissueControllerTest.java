@@ -14,6 +14,7 @@ import com.example.demo.global.error.GlobalExceptionHandler;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -36,7 +37,10 @@ class AccessTokenReissueControllerTest {
     when(authService.refresh("refresh-token")).thenReturn("new-access-token");
 
     mockMvc
-        .perform(get("/api/auth/reissue").cookie(new Cookie("refreshToken", "refresh-token")))
+        .perform(
+            get("/api/auth/reissue")
+                .header(HttpHeaders.ORIGIN, "https://display-frontend-five.vercel.app")
+                .cookie(new Cookie("refreshToken", "refresh-token")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").value("new-access-token"));
 

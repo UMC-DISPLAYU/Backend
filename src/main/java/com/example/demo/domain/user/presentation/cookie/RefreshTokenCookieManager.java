@@ -13,7 +13,6 @@ public class RefreshTokenCookieManager {
 
   private static final String COOKIE_NAME = "refreshToken";
   private static final String COOKIE_PATH = "/";
-  private static final String SAME_SITE = "Lax";
 
   private final JwtProperties jwtProperties;
   private final boolean cookieSecure;
@@ -38,7 +37,7 @@ public class RefreshTokenCookieManager {
         ResponseCookie.from(COOKIE_NAME, value)
             .httpOnly(true)
             .secure(cookieSecure)
-            .sameSite(SAME_SITE)
+            .sameSite(cookieSecure ? "None" : "Lax")
             .path(COOKIE_PATH)
             .maxAge(maxAge)
             .build();

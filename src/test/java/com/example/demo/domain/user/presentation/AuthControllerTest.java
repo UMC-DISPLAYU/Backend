@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,13 +91,11 @@ class AuthControllerTest {
         new SignupResponse.Signup(
             new SignupResponse.UserInfo(
                 1L, "Google", "구글 사용자", "maya", "google@example.com", null, false),
-            "access-token",
-            "refresh-token");
+            "access-token");
     when(tokenProvider.parseSignupToken("signup-token")).thenReturn(socialUserInfo);
     when(userService.signup(ArgumentMatchers.any(SignupCommand.class), eq(socialUserInfo)))
         .thenReturn(result);
-    when(signupResponseMapper.toResponse(user, "access-token", "refresh-token"))
-        .thenReturn(response);
+    when(signupResponseMapper.toResponse(user, "access-token")).thenReturn(response);
 
     mockMvc
         .perform(
@@ -117,7 +116,17 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.user.provider").value("Google"))
         .andExpect(jsonPath("$.success.data.accessToken").value("access-token"))
-        .andExpect(jsonPath("$.success.data.refreshToken").value("refresh-token"));
+        .andExpect(jsonPath("$.success.data.refreshToken").doesNotExist())
+        .andExpect(
+            header()
+                .stringValues(
+                    org.springframework.http.HttpHeaders.SET_COOKIE,
+                    org.hamcrest.Matchers.hasItem(
+                        org.hamcrest.Matchers.allOf(
+                            org.hamcrest.Matchers.containsString("refreshToken=refresh-token"),
+                            org.hamcrest.Matchers.containsString("HttpOnly"),
+                            org.hamcrest.Matchers.containsString("Path=/"),
+                            org.hamcrest.Matchers.containsString("SameSite=Lax")))));
 
     ArgumentCaptor<SignupCommand> commandCaptor = ArgumentCaptor.forClass(SignupCommand.class);
     verify(userService).signup(commandCaptor.capture(), eq(socialUserInfo));
@@ -143,13 +152,11 @@ class AuthControllerTest {
         new SignupResponse.Signup(
             new SignupResponse.UserInfo(
                 1L, "Google", "소셜 사용자", "maya", "google@example.com", null, false),
-            "access-token",
-            "refresh-token");
+            "access-token");
     when(tokenProvider.parseSignupToken("signup-token")).thenReturn(socialUserInfo);
     when(userService.signup(ArgumentMatchers.any(SignupCommand.class), eq(socialUserInfo)))
         .thenReturn(result);
-    when(signupResponseMapper.toResponse(user, "access-token", "refresh-token"))
-        .thenReturn(response);
+    when(signupResponseMapper.toResponse(user, "access-token")).thenReturn(response);
 
     mockMvc
         .perform(
@@ -168,15 +175,13 @@ class AuthControllerTest {
                     """))
         .andExpect(status().isOk())
         .andExpect(
-            org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
-                .string(
+            header()
+                .stringValues(
                     org.springframework.http.HttpHeaders.SET_COOKIE,
-                    org.hamcrest.Matchers.containsString("signupToken=;")))
-        .andExpect(
-            org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
-                .string(
-                    org.springframework.http.HttpHeaders.SET_COOKIE,
-                    org.hamcrest.Matchers.containsString("Max-Age=0")));
+                    org.hamcrest.Matchers.hasItem(
+                        org.hamcrest.Matchers.allOf(
+                            org.hamcrest.Matchers.containsString("signupToken=;"),
+                            org.hamcrest.Matchers.containsString("Max-Age=0")))));
   }
 
   @Test
