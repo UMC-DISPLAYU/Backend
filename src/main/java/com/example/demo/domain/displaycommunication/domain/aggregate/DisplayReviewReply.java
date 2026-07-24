@@ -33,4 +33,12 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
   public static DisplayReviewReply create(Long displayReviewId, Long userId, String content) {
     return new DisplayReviewReply(displayReviewId, userId, content);
   }
+
+  public boolean belongsToReview(Long displayReviewId) {
+    return this.displayReviewId.equals(displayReviewId);
+  }
+
+  public boolean isWrittenBy(Long userId) {
+    return this.userId.equals(userId);
+  }
 }

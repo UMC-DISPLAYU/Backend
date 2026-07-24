@@ -3,10 +3,12 @@ package com.example.demo.domain.displaycommunication.application.command;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
+import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayExistenceRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
+import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -23,6 +25,7 @@ public class DisplayReviewValidator {
   private final DisplayExistenceRepository displayExistenceRepository;
   private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final DisplayReviewRepository displayReviewRepository;
+  private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final Clock clock;
 
@@ -80,6 +83,30 @@ public class DisplayReviewValidator {
   public void validateAccessibleReview(DisplayReview displayReview, Long displayId, Long userId) {
     validateReviewTarget(displayReview, displayId);
     validateWriter(displayReview, userId);
+  }
+
+  public DisplayReviewReply findReplyOrThrow(Long displayReviewReplyId) {
+    DisplayReviewReply displayReviewReply =
+        displayReviewReplyRepository
+            .findById(displayReviewReplyId)
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND));
+    if (displayReviewReply.isDeleted()) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND);
+    }
+    return displayReviewReply;
+  }
+
+  public void validateAccessibleReply(
+      DisplayReviewReply displayReviewReply, Long displayReviewId, Long userId) {
+    if (!displayReviewReply.belongsToReview(displayReviewId)) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND);
+    }
+    if (!displayReviewReply.isWrittenBy(userId)) {
+      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_FORBIDDEN);
+    }
   }
 
   public void validateReviewNotExists(Long displayId, Long userId) {

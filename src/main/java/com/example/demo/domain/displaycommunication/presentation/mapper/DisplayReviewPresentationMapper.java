@@ -2,6 +2,7 @@ package com.example.demo.domain.displaycommunication.presentation.mapper;
 
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewCommand;
 import com.example.demo.domain.displaycommunication.application.command.CreateDisplayReviewReplyCommand;
+import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewLikeResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
@@ -9,6 +10,7 @@ import com.example.demo.domain.displaycommunication.application.result.DisplayRe
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
@@ -69,6 +71,10 @@ public class DisplayReviewPresentationMapper {
 
   public DeletedDisplayReviewResponse toResponse(DeletedDisplayReviewResult result) {
     return new DeletedDisplayReviewResponse(result.displayReviewId(), result.deletedAt());
+  }
+
+  public DeletedDisplayReviewReplyResponse toResponse(DeletedDisplayReviewReplyResult result) {
+    return new DeletedDisplayReviewReplyResponse(result.displayReviewReplyId(), result.deletedAt());
   }
 
   public DisplayReviewLikeResponse toResponse(DisplayReviewLikeResult result) {

@@ -2,6 +2,7 @@ package com.example.demo.domain.displaycommunication.presentation.docs;
 
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
+import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewLikeResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
@@ -297,5 +298,40 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "삭제할 후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "후기 작성자 ID", required = true, example = "2") Long userId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "전시 후기 답글 삭제", description = "작성자가 자신의 전시 후기 답글을 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 후기 답글 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "displayReviewReplyId": 1,
+                                "deletedAt": "2026-07-24T17:00:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-24T17:00:00",
+                              "path": "/api/v1/display/1/reviews/1/reply/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "403", description = "답글 작성자가 아님")
+  @ApiResponse(responseCode = "404", description = "전시, 후기, 답글 또는 사용자 없음")
+  ApiResponseBody<DeletedDisplayReviewReplyResponse> deleteReviewReply(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
+      @Parameter(description = "삭제할 답글 ID", example = "1") Long displayReviewReplyId,
+      @Parameter(description = "답글 작성자 ID", required = true, example = "2") Long userId,
       HttpServletRequest httpServletRequest);
 }

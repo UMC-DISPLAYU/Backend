@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 public enum DisplayCommunicationErrorCode implements BaseErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   DISPLAY_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_NOT_FOUND", "전시 후기를 찾을 수 없습니다."),
+  DISPLAY_REVIEW_REPLY_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_REPLY_NOT_FOUND", "전시 후기 답글을 찾을 수 없습니다."),
   INVALID_DISPLAY_REVIEW_CONTENT(
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_REVIEW_CONTENT", "후기 내용을 입력해주세요."),
   INVALID_DISPLAY_REVIEW_REPLY_CONTENT(
@@ -16,6 +18,8 @@ public enum DisplayCommunicationErrorCode implements BaseErrorCode {
       HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_NOT_WRITABLE", "진행 중인 공개 전시에만 후기를 작성할 수 있습니다."),
   DISPLAY_REVIEW_FORBIDDEN(
       HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_FORBIDDEN", "전시 후기 작성자만 삭제할 수 있습니다."),
+  DISPLAY_REVIEW_REPLY_FORBIDDEN(
+      HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_REPLY_FORBIDDEN", "전시 후기 답글 작성자만 삭제할 수 있습니다."),
   DISPLAY_REVIEW_ALREADY_EXISTS(
       HttpStatus.CONFLICT, "DISPLAY_REVIEW_ALREADY_EXISTS", "이미 해당 전시의 후기를 작성했습니다.");
 
