@@ -1,0 +1,17 @@
+ALTER TABLE `DisplayReview`
+    ADD CONSTRAINT `FK_DISPLAYREVIEW_DISPLAY`
+        FOREIGN KEY (`displayId`) REFERENCES `Display` (`displayId`),
+    ADD CONSTRAINT `FK_DISPLAYREVIEW_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `DisplayReviewReply`
+    ADD CONSTRAINT `FK_DISPLAYREVIEWREPLY_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `DisplayReviewLike`
+    ADD CONSTRAINT `FK_DISPLAYREVIEWLIKE_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
+
+ALTER TABLE `DisplayReviewReplyLike`
+    ADD CONSTRAINT `FK_DISPLAYREVIEWREPLYLIKE_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`);
