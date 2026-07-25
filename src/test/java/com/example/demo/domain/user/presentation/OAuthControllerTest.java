@@ -49,6 +49,7 @@ class OAuthControllerTest {
             refreshTokenCookieManager,
             signupTokenCookieManager,
             "https://www.displayu.co.kr",
+            "http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app",
             false);
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
@@ -84,6 +85,25 @@ class OAuthControllerTest {
             jsonPath("$.success.data.authorizationUrl")
                 .value("https://accounts.google.com/o/oauth2/v2/auth?state=state"))
         .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("google_oauth_state=")));
+  }
+
+  @Test
+  void storesAllowedFrontendOriginForOAuthCallback() throws Exception {
+    when(oauthLoginService.authorizationUrl(eq(Provider.Google), anyString()))
+        .thenReturn("https://accounts.google.com/o/oauth2/v2/auth?state=state");
+
+    mockMvc
+        .perform(
+            get("/api/auth/google/login-url")
+                .header(HttpHeaders.ORIGIN, "https://display-frontend-five.vercel.app"))
+        .andExpect(status().isOk())
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE,
+                    hasItem(
+                        containsString(
+                            "oauth_frontend_origin=https://display-frontend-five.vercel.app"))));
   }
 
   @Test
@@ -194,6 +214,70 @@ class OAuthControllerTest {
             header()
                 .stringValues(
                     HttpHeaders.SET_COOKIE, hasItem(containsString("refreshToken=refresh-token"))));
+  }
+
+  @Test
+  void redirectsVercelLoginToVercelOnboarding() throws Exception {
+    when(oauthLoginService.loginWithAuthorizationCode(Provider.Google, "authorization-code"))
+        .thenReturn(signupResult(Provider.Google));
+
+    mockMvc
+        .perform(
+            get("/api/auth/google/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(
+                    new Cookie("google_oauth_state", "state"),
+                    new Cookie(
+                        "oauth_frontend_origin", "https://display-frontend-five.vercel.app")))
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    HttpHeaders.LOCATION, "https://display-frontend-five.vercel.app/onboarding"));
+  }
+
+  @Test
+  void redirectsLocalLoginToLocalHome() throws Exception {
+    User user =
+        User.builder()
+            .id(3L)
+            .provider(Provider.Google)
+            .providerId("local-google-user")
+            .name("Local User")
+            .nickname("local-user")
+            .socialEmail("local@example.com")
+            .build();
+    when(oauthLoginService.loginWithAuthorizationCode(Provider.Google, "authorization-code"))
+        .thenReturn(LoginResult.login(user, "access-token", "refresh-token"));
+
+    mockMvc
+        .perform(
+            get("/api/auth/google/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(
+                    new Cookie("google_oauth_state", "state"),
+                    new Cookie("oauth_frontend_origin", "http://localhost:5173")))
+        .andExpect(status().isFound())
+        .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost:5173/home"));
+  }
+
+  @Test
+  void redirectsUnknownOriginToDefaultFrontend() throws Exception {
+    when(oauthLoginService.loginWithAuthorizationCode(Provider.Kakao, "authorization-code"))
+        .thenReturn(signupResult(Provider.Kakao));
+
+    mockMvc
+        .perform(
+            get("/api/auth/kakao/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(
+                    new Cookie("kakao_oauth_state", "state"),
+                    new Cookie("oauth_frontend_origin", "https://malicious.example")))
+        .andExpect(status().isFound())
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/onboarding"));
   }
 
   private LoginResult signupResult(Provider provider) {

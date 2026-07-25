@@ -43,7 +43,11 @@ public interface OAuthControllerDocs {
           JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   ResponseEntity<Void> kakaoCallback(
-      String code, String state, String expectedState, HttpServletResponse response);
+      String code,
+      String state,
+      String expectedState,
+      String frontendOrigin,
+      HttpServletResponse response);
 
   @Operation(
       summary = "구글 OAuth 콜백",
@@ -55,5 +59,9 @@ public interface OAuthControllerDocs {
           JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   ResponseEntity<Void> googleCallback(
-      String code, String state, String expectedState, HttpServletResponse response);
+      String code,
+      String state,
+      String expectedState,
+      String frontendOrigin,
+      HttpServletResponse response);
 }

@@ -74,3 +74,4 @@ springdoc:
 
 frontend:
   base-url: http://localhost:5173
+  allowed-origins: http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app
