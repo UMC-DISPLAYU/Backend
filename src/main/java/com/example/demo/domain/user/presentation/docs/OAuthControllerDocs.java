@@ -38,8 +38,9 @@ public interface OAuthControllerDocs {
       description =
           """
           카카오 인가 코드를 검증한 뒤 프론트엔드로 리다이렉트합니다.
-          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 Access Token을 쿼리로 전달하며 홈으로 이동합니다.
-          신규 회원은 signupToken을 HttpOnly Cookie와 쿼리로 전달하며 온보딩으로 이동합니다.
+          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 토큰 재발급 API를 통해 Access Token을 받도록 홈으로 이동합니다.
+          신규 회원은 signupToken을 HttpOnly Cookie에 저장하고 온보딩으로 이동합니다.
+          JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   ResponseEntity<Void> kakaoCallback(
       String code, String state, String expectedState, HttpServletResponse response);
@@ -49,8 +50,9 @@ public interface OAuthControllerDocs {
       description =
           """
           구글 인가 코드를 검증한 뒤 프론트엔드로 리다이렉트합니다.
-          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 Access Token을 쿼리로 전달하며 홈으로 이동합니다.
-          신규 회원은 signupToken을 HttpOnly Cookie와 쿼리로 전달하며 온보딩으로 이동합니다.
+          기존 회원은 Refresh Token을 HttpOnly Cookie에 저장하고 토큰 재발급 API를 통해 Access Token을 받도록 홈으로 이동합니다.
+          신규 회원은 signupToken을 HttpOnly Cookie에 저장하고 온보딩으로 이동합니다.
+          JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   ResponseEntity<Void> googleCallback(
       String code, String state, String expectedState, HttpServletResponse response);

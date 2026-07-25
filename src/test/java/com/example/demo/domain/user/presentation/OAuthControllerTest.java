@@ -45,7 +45,11 @@ class OAuthControllerTest {
         new SignupTokenCookieManager(jwtProperties, false);
     OAuthController controller =
         new OAuthController(
-            oauthLoginService, refreshTokenCookieManager, signupTokenCookieManager, false);
+            oauthLoginService,
+            refreshTokenCookieManager,
+            signupTokenCookieManager,
+            "https://www.displayu.co.kr",
+            false);
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
@@ -95,12 +99,7 @@ class OAuthControllerTest {
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
         .andExpect(status().isFound())
-        .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/onboarding"
-                        + "?signupToken=signup-token"))
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/onboarding"))
         .andExpect(
             header()
                 .stringValues(
@@ -125,12 +124,7 @@ class OAuthControllerTest {
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
         .andExpect(status().isFound())
-        .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/onboarding"
-                        + "?signupToken=signup-token"))
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/onboarding"))
         .andExpect(
             header()
                 .stringValues(
@@ -162,11 +156,7 @@ class OAuthControllerTest {
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
         .andExpect(status().isFound())
-        .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/home"))
         .andExpect(
             header()
                 .stringValues(
@@ -199,11 +189,7 @@ class OAuthControllerTest {
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
         .andExpect(status().isFound())
-        .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/home"))
         .andExpect(
             header()
                 .stringValues(
