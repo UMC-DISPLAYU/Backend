@@ -2,18 +2,22 @@ package com.example.demo.domain.personalartworkcommunication.presentation;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.*;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkFeelingsService;
+import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkFeelingApiDocs;
 import com.example.demo.domain.personalartworkcommunication.presentation.mapper.PersonalArtworkFeelingPresentationMapper;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -30,8 +34,10 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
 
   private final PersonalArtworkFeelingService createPersonalArtworkFeelingService;
   private final DeletePersonalArtworkFeelingService deletePersonalArtworkFeelingService;
+  private final DeletePersonalArtworkFeelingReplyService deletePersonalArtworkFeelingReplyService;
   private final PersonalArtworkFeelingReplyService personalArtworkFeelingReplyService;
   private final PersonalArtworkFeelingLikeService personalArtworkFeelingLikeService;
+  private final PersonalArtworkFeelingReplyLikeService personalArtworkFeelingReplyLikeService;
   private final GetPersonalArtworkFeelingsService getPersonalArtworkFeelingsService;
   private final PersonalArtworkFeelingPresentationMapper mapper;
 
@@ -89,6 +95,27 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   }
 
   @Override
+  @DeleteMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}")
+  // 개인 작품 감상평 답변 삭제
+  public ApiResponseBody<DeletedPersonalArtworkFeelingReplyResponse> deleteFeelingReply(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalFeelingId,
+      @PathVariable Long personalFeelingReplyId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    DeletePersonalArtworkFeelingReplyCommand command =
+        new DeletePersonalArtworkFeelingReplyCommand(
+            personalArtworkId, personalFeelingId, personalFeelingReplyId, userId);
+
+    DeletedPersonalArtworkFeelingReplyResult result =
+        deletePersonalArtworkFeelingReplyService.deleteReply(command);
+
+    DeletedPersonalArtworkFeelingReplyResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
   @DeleteMapping("/{personalFeelingId}")
   // 개인 작품 감상평 삭제
   public ApiResponseBody<DeletedPersonalArtworkFeelingResponse> deleteFeeling(
@@ -122,6 +149,27 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
         personalArtworkFeelingLikeService.toggleFeelingLike(command);
 
     PersonalArtworkFeelingLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}/like")
+  // 개인 작품 감상평 답변 좋아요 등록 및 취소
+  public ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalFeelingId,
+      @PathVariable Long personalFeelingReplyId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkFeelingReplyLikeCommand command =
+        new PersonalArtworkFeelingReplyLikeCommand(
+            personalArtworkId, personalFeelingId, personalFeelingReplyId, userId);
+
+    PersonalArtworkFeelingReplyLikeResult result =
+        personalArtworkFeelingReplyLikeService.toggleReplyLike(command);
+
+    PersonalArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

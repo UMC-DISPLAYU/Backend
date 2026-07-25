@@ -4,6 +4,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingReplyJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,11 @@ public class JpaPersonalArtworkFeelingReplyRepositoryAdapter
   @Override
   public PersonalArtworkFeelingReply save(PersonalArtworkFeelingReply personalArtworkFeelingReply) {
     return personalArtworkFeelingReplyJpaRepository.save(personalArtworkFeelingReply);
+  }
+
+  @Override
+  public Optional<PersonalArtworkFeelingReply> findById(Long personalFeelingReplyId) {
+    return personalArtworkFeelingReplyJpaRepository.findById(personalFeelingReplyId);
   }
 
   @Override
