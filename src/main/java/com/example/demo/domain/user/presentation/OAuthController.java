@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -118,20 +117,14 @@ public class OAuthController implements OAuthControllerDocs {
     LoginResult result = oauthLoginService.loginWithAuthorizationCode(provider, code);
     if (result.isNewUser()) {
       signupTokenCookieManager.add(response, result.signupToken());
-      return redirect(ONBOARDING_REDIRECT_URI, "signupToken", result.signupToken());
+      return redirect(ONBOARDING_REDIRECT_URI);
     }
     refreshTokenCookieManager.add(response, result.refreshToken());
-    return redirect(HOME_REDIRECT_URI, "accessToken", result.accessToken());
+    return redirect(HOME_REDIRECT_URI);
   }
 
-  private ResponseEntity<Void> redirect(URI redirectUri, String tokenName, String token) {
-    URI location =
-        UriComponentsBuilder.fromUri(redirectUri)
-            .queryParam(tokenName, token)
-            .build()
-            .encode()
-            .toUri();
-    return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
+  private ResponseEntity<Void> redirect(URI redirectUri) {
+    return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
   }
 
   private void addStateCookie(

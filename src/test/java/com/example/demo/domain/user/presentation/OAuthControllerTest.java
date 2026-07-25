@@ -98,9 +98,7 @@ class OAuthControllerTest {
         .andExpect(
             header()
                 .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/onboarding"
-                        + "?signupToken=signup-token"))
+                    HttpHeaders.LOCATION, "https://display-frontend-five.vercel.app/onboarding"))
         .andExpect(
             header()
                 .stringValues(
@@ -128,9 +126,7 @@ class OAuthControllerTest {
         .andExpect(
             header()
                 .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/onboarding"
-                        + "?signupToken=signup-token"))
+                    HttpHeaders.LOCATION, "https://display-frontend-five.vercel.app/onboarding"))
         .andExpect(
             header()
                 .stringValues(
@@ -163,10 +159,7 @@ class OAuthControllerTest {
                 .cookie(new Cookie("google_oauth_state", "state")))
         .andExpect(status().isFound())
         .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+            header().string(HttpHeaders.LOCATION, "https://display-frontend-five.vercel.app/home"))
         .andExpect(
             header()
                 .stringValues(
@@ -200,10 +193,7 @@ class OAuthControllerTest {
                 .cookie(new Cookie("kakao_oauth_state", "state")))
         .andExpect(status().isFound())
         .andExpect(
-            header()
-                .string(
-                    HttpHeaders.LOCATION,
-                    "https://display-frontend-five.vercel.app/home?accessToken=access-token"))
+            header().string(HttpHeaders.LOCATION, "https://display-frontend-five.vercel.app/home"))
         .andExpect(
             header()
                 .stringValues(
