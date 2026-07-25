@@ -6,6 +6,7 @@ import com.example.demo.domain.artworkcommunication.presentation.request.UpdateA
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyLikeResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingReplyResponse;
@@ -28,8 +29,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface ArtworkFeelingApiDocs {
 
   @Operation(
-      summary = "작품 감상평 목록 및 답변 조회",
-      description = "작품 방명록 감상 탭에서 감상평 목록과 답변을 조회합니다. 비회원도 조회할 수 있습니다.")
+      summary = "작품 감상평 목록 조회",
+      description = "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -55,15 +56,8 @@ public interface ArtworkFeelingApiDocs {
                                       "nickname": "User1",
                                       "isCreator": false
                                     },
-                                    "replies": [
-                                      {
-                                        "userId": 1,
-                                        "nickname": "고상준",
-                                        "content": "감사합니다.",
-                                        "createdAt": "2026-06-30T22:10:00",
-                                        "isCreator": true
-                                      }
-                                    ]
+                                    "likeCount": 13,
+                                    "replyCount": 2
                                   }
                                 ],
                                 "nextCursorId": 3,
@@ -106,6 +100,56 @@ public interface ArtworkFeelingApiDocs {
   ApiResponseBody<ArtworkFeelingListResponse> getFeelings(
       @Parameter(description = "감상평을 조회할 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "마지막으로 조회한 감상평 ID. 첫 요청이면 전달하지 않음", example = "10")
+          @RequestParam(required = false)
+          @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 답변 목록 조회", description = "감상평의 답변 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "감상평 답변 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling reply list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "replies": [
+                                  {
+                                    "feelingReplyId": 8,
+                                    "content": "감사합니다.",
+                                    "createdAt": "2026-07-26T03:30:00",
+                                    "user": {
+                                      "userId": 2,
+                                      "nickname": "고상준",
+                                      "isCreator": true
+                                    },
+                                    "likeCount": 3
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 3,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-26T03:30:00",
+                              "path": "/api/v1/artworks/3/feelings/7/replies"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "404", description = "작품 또는 감상평 없음")
+  ApiResponseBody<ArtworkFeelingReplyListResponse> getFeelingReplies(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "답변을 조회할 감상평 ID", example = "7") Long feelingId,
+      @Parameter(description = "마지막으로 조회한 답변 ID. 첫 요청이면 전달하지 않음", example = "8")
           @RequestParam(required = false)
           @Positive Long cursorId,
       HttpServletRequest httpServletRequest);

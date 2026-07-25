@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.*;
+import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingRepliesService;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsService;
 import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFeelingApiDocs;
@@ -27,6 +28,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
   private final DeleteArtworkFeelingReplyService deleteArtworkFeelingReplyService;
   private final GetArtworkFeelingsService getArtworkFeelingsService;
+  private final GetArtworkFeelingRepliesService getArtworkFeelingRepliesService;
   private final ArtworkFeelingLikeService artworkFeelingLikeService;
   private final ArtworkFeelingReplyLikeService artworkFeelingReplyLikeService;
   private final ArtworkFeelingPresentationMapper mapper;
@@ -42,6 +44,23 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
         getArtworkFeelingsService.getFeelings(mapper.toQuery(artworkId, cursorId));
 
     ArtworkFeelingListResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @GetMapping("/{feelingId}/replies")
+  // 감상평 답변 목록 조회
+  public ApiResponseBody<ArtworkFeelingReplyListResponse> getFeelingReplies(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @RequestParam(required = false) @Positive Long cursorId,
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingReplyListResult result =
+        getArtworkFeelingRepliesService.getReplies(
+            mapper.toRepliesQuery(artworkId, feelingId, cursorId));
+
+    ArtworkFeelingReplyListResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

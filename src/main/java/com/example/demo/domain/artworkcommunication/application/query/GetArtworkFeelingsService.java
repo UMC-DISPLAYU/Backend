@@ -2,18 +2,16 @@ package com.example.demo.domain.artworkcommunication.application.query;
 
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingItemResult;
-import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingReplyItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingUserResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
-import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
+import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +29,7 @@ public class GetArtworkFeelingsService {
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
+  private final ArtworkFeelingLikeRepository artworkFeelingLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
 
@@ -43,89 +42,44 @@ public class GetArtworkFeelingsService {
         artworkFeelingRepository.findActiveByDisplayArtworkIdWithCursor(
             query.displayArtworkId(), query.cursorId(), PAGE_SIZE + 1);
     boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<ArtworkFeeling> pageFeelings = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
-
-    if (pageFeelings.isEmpty()) {
+    List<ArtworkFeeling> feelings = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+    if (feelings.isEmpty()) {
       return new ArtworkFeelingListResult(List.of(), null, PAGE_SIZE, false);
     }
 
-    Map<Long, List<ArtworkFeelingReply>> repliesByFeelingId = findRepliesByFeelingId(pageFeelings);
-    List<ArtworkFeelingReply> pageReplies =
-        repliesByFeelingId.values().stream().flatMap(List::stream).toList();
-    Set<Long> userIds = collectUserIds(pageFeelings, pageReplies);
+    List<Long> feelingIds = feelings.stream().map(ArtworkFeeling::getFeelingId).toList();
+    Map<Long, Long> likeCounts = artworkFeelingLikeRepository.countByFeelingIds(feelingIds);
+    Map<Long, Long> replyCounts = artworkFeelingReplyRepository.countActiveByFeelingIds(feelingIds);
+    Set<Long> userIds =
+        feelings.stream().map(ArtworkFeeling::getUserId).collect(Collectors.toSet());
     Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
     Map<Long, String> creatorNameByUserId =
         creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(
             query.displayArtworkId(), userIds);
 
-    List<ArtworkFeelingItemResult> feelings =
-        pageFeelings.stream()
+    List<ArtworkFeelingItemResult> items =
+        feelings.stream()
             .map(
                 feeling ->
-                    toFeelingItem(
-                        query.displayArtworkId(),
-                        feeling,
-                        repliesByFeelingId.getOrDefault(feeling.getFeelingId(), List.of()),
-                        nicknameByUserId,
-                        creatorNameByUserId))
+                    new ArtworkFeelingItemResult(
+                        feeling.getFeelingId(),
+                        feeling.getContent(),
+                        feeling.getCreatedAt(),
+                        toUserResult(feeling.getUserId(), nicknameByUserId, creatorNameByUserId),
+                        likeCounts.getOrDefault(feeling.getFeelingId(), 0L),
+                        replyCounts.getOrDefault(feeling.getFeelingId(), 0L)))
             .toList();
 
-    Long nextCursorId = hasNext ? feelings.get(feelings.size() - 1).feelingId() : null;
-    return new ArtworkFeelingListResult(feelings, nextCursorId, PAGE_SIZE, hasNext);
+    Long nextCursorId = hasNext ? items.get(items.size() - 1).feelingId() : null;
+    return new ArtworkFeelingListResult(items, nextCursorId, PAGE_SIZE, hasNext);
   }
 
-  private Map<Long, List<ArtworkFeelingReply>> findRepliesByFeelingId(
-      List<ArtworkFeeling> feelings) {
-    List<Long> feelingIds = feelings.stream().map(ArtworkFeeling::getFeelingId).toList();
-    return artworkFeelingReplyRepository.findActiveByFeelingIds(feelingIds).stream()
-        .collect(Collectors.groupingBy(ArtworkFeelingReply::getFeelingId));
-  }
-
-  private Set<Long> collectUserIds(
-      List<ArtworkFeeling> feelings, List<ArtworkFeelingReply> replies) {
-    Set<Long> userIds = new HashSet<>();
-    feelings.forEach(feeling -> userIds.add(feeling.getUserId()));
-    replies.forEach(reply -> userIds.add(reply.getUserId()));
-    return userIds;
-  }
-
-  private ArtworkFeelingItemResult toFeelingItem(
-      Long displayArtworkId,
-      ArtworkFeeling feeling,
-      List<ArtworkFeelingReply> replies,
-      Map<Long, String> nicknameByUserId,
-      Map<Long, String> creatorNameByUserId) {
-    ArtworkFeelingUserResult user =
-        toFeelingUserResult(feeling.getUserId(), nicknameByUserId, creatorNameByUserId);
-
-    List<ArtworkFeelingReplyItemResult> replyResults =
-        replies.stream()
-            .map(reply -> toReplyItem(reply, nicknameByUserId, creatorNameByUserId))
-            .toList();
-
-    return new ArtworkFeelingItemResult(
-        feeling.getFeelingId(), feeling.getContent(), feeling.getCreatedAt(), user, replyResults);
-  }
-
-  private ArtworkFeelingUserResult toFeelingUserResult(
+  private ArtworkFeelingUserResult toUserResult(
       Long userId, Map<Long, String> nicknameByUserId, Map<Long, String> creatorNameByUserId) {
     String creatorName = creatorNameByUserId.get(userId);
     boolean isCreator = creatorName != null;
     String nickname = isCreator ? creatorName : findNicknameOrThrow(nicknameByUserId, userId);
     return new ArtworkFeelingUserResult(userId, nickname, isCreator);
-  }
-
-  private ArtworkFeelingReplyItemResult toReplyItem(
-      ArtworkFeelingReply reply,
-      Map<Long, String> nicknameByUserId,
-      Map<Long, String> creatorNameByUserId) {
-    String creatorName = creatorNameByUserId.get(reply.getUserId());
-    boolean isCreator = creatorName != null;
-    String nickname =
-        isCreator ? creatorName : findNicknameOrThrow(nicknameByUserId, reply.getUserId());
-
-    return new ArtworkFeelingReplyItemResult(
-        reply.getUserId(), nickname, reply.getContent(), reply.getCreatedAt(), isCreator);
   }
 
   private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {

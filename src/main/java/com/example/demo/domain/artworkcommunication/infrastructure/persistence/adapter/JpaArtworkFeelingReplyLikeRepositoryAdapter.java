@@ -3,7 +3,10 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReplyLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingReplyLikeJpaRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -34,5 +37,11 @@ public class JpaArtworkFeelingReplyLikeRepositoryAdapter
         likeCount,
         replyLike.getCreatedAt(),
         replyLike.getDeletedAt());
+  }
+
+  @Override
+  public Map<Long, Long> countByFeelingReplyIds(List<Long> feelingReplyIds) {
+    return repository.countByFeelingReplyIds(feelingReplyIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }

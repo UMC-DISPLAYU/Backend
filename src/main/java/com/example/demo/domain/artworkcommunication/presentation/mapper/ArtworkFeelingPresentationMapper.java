@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.presentation.mapper;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
+import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingRepliesQuery;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsQuery;
 import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
@@ -10,7 +11,6 @@ import com.example.demo.domain.artworkcommunication.presentation.request.CreateA
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingItemResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingReplyItemResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingUserResponse;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +24,11 @@ public class ArtworkFeelingPresentationMapper {
 
   public GetArtworkFeelingsQuery toQuery(Long artworkId, Long cursorId) {
     return new GetArtworkFeelingsQuery(artworkId, cursorId);
+  }
+
+  public GetArtworkFeelingRepliesQuery toRepliesQuery(
+      Long artworkId, Long feelingId, Long cursorId) {
+    return new GetArtworkFeelingRepliesQuery(artworkId, feelingId, cursorId);
   }
 
   public UpdateArtworkFeelingCommand toCommand(
@@ -72,6 +77,26 @@ public class ArtworkFeelingPresentationMapper {
         result.hasNext());
   }
 
+  public ArtworkFeelingReplyListResponse toResponse(ArtworkFeelingReplyListResult result) {
+    return new ArtworkFeelingReplyListResponse(
+        result.replies().stream()
+            .map(
+                reply ->
+                    new ArtworkFeelingReplyListResponse.ArtworkFeelingReplyItemResponse(
+                        reply.feelingReplyId(),
+                        reply.content(),
+                        reply.createdAt(),
+                        new ArtworkFeelingReplyListResponse.ArtworkFeelingReplyUserResponse(
+                            reply.user().userId(),
+                            reply.user().nickname(),
+                            reply.user().isCreator()),
+                        reply.likeCount()))
+            .toList(),
+        result.nextCursorId(),
+        result.size(),
+        result.hasNext());
+  }
+
   private ArtworkFeelingItemResponse toFeelingItemResponse(
       ArtworkFeelingListResult.ArtworkFeelingItemResult result) {
     return new ArtworkFeelingItemResponse(
@@ -80,17 +105,8 @@ public class ArtworkFeelingPresentationMapper {
         result.createdAt(),
         new ArtworkFeelingUserResponse(
             result.user().userId(), result.user().nickname(), result.user().isCreator()),
-        result.replies().stream().map(this::toReplyItemResponse).toList());
-  }
-
-  private ArtworkFeelingReplyItemResponse toReplyItemResponse(
-      ArtworkFeelingListResult.ArtworkFeelingReplyItemResult result) {
-    return new ArtworkFeelingReplyItemResponse(
-        result.userId(),
-        result.nickname(),
-        result.content(),
-        result.createdAt(),
-        result.isCreator());
+        result.likeCount(),
+        result.replyCount());
   }
 
   public ArtworkFeelingLikeResponse toResponse(ArtworkFeelingLikeResult result) {

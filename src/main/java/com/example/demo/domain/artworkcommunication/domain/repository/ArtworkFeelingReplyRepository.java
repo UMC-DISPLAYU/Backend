@@ -9,7 +9,8 @@ public interface ArtworkFeelingReplyRepository {
 
   Optional<ArtworkFeelingReply> findById(Long feelingReplyId);
 
-  Optional<ArtworkFeelingReply> findActiveByFeelingId(Long feelingId);
+  List<ArtworkFeelingReply> findActiveByFeelingIdWithCursor(
+      Long feelingId, Long cursorId, int limit);
 
-  List<ArtworkFeelingReply> findActiveByFeelingIds(List<Long> feelingIds);
+  java.util.Map<Long, Long> countActiveByFeelingIds(List<Long> feelingIds);
 }
