@@ -12,7 +12,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -33,12 +36,13 @@ public class OAuthController implements OAuthControllerDocs {
   private static final Duration STATE_COOKIE_MAX_AGE = Duration.ofMinutes(5);
   private static final String KAKAO_STATE_COOKIE = "kakao_oauth_state";
   private static final String GOOGLE_STATE_COOKIE = "google_oauth_state";
+  private static final String FRONTEND_ORIGIN_COOKIE = "oauth_frontend_origin";
 
   private final OAuthLoginService oauthLoginService;
   private final RefreshTokenCookieManager refreshTokenCookieManager;
   private final SignupTokenCookieManager signupTokenCookieManager;
-  private final URI homeRedirectUri;
-  private final URI onboardingRedirectUri;
+  private final String defaultFrontendOrigin;
+  private final Set<String> allowedFrontendOrigins;
   private final boolean cookieSecure;
 
   public OAuthController(
@@ -46,13 +50,18 @@ public class OAuthController implements OAuthControllerDocs {
       RefreshTokenCookieManager refreshTokenCookieManager,
       SignupTokenCookieManager signupTokenCookieManager,
       @Value("${frontend.base-url}") String frontendBaseUrl,
+      @Value("${frontend.allowed-origins:${frontend.base-url}}") String allowedFrontendOrigins,
       @Value("${app.oauth.cookie-secure:false}") boolean cookieSecure) {
     this.oauthLoginService = oauthLoginService;
     this.refreshTokenCookieManager = refreshTokenCookieManager;
     this.signupTokenCookieManager = signupTokenCookieManager;
-    String normalizedFrontendBaseUrl = frontendBaseUrl.replaceFirst("/+$", "");
-    this.homeRedirectUri = URI.create(normalizedFrontendBaseUrl + "/home");
-    this.onboardingRedirectUri = URI.create(normalizedFrontendBaseUrl + "/onboarding");
+    this.defaultFrontendOrigin = normalizeOrigin(frontendBaseUrl);
+    this.allowedFrontendOrigins =
+        Arrays.stream(allowedFrontendOrigins.split(","))
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .map(this::normalizeOrigin)
+            .collect(Collectors.toUnmodifiableSet());
     this.cookieSecure = cookieSecure;
   }
 
@@ -76,8 +85,10 @@ public class OAuthController implements OAuthControllerDocs {
       @RequestParam String code,
       @RequestParam String state,
       @CookieValue(name = KAKAO_STATE_COOKIE, required = false) String expectedState,
+      @CookieValue(name = FRONTEND_ORIGIN_COOKIE, required = false) String frontendOrigin,
       HttpServletResponse response) {
-    return callback(Provider.Kakao, code, state, expectedState, KAKAO_STATE_COOKIE, response);
+    return callback(
+        Provider.Kakao, code, state, expectedState, KAKAO_STATE_COOKIE, frontendOrigin, response);
   }
 
   @Override
@@ -86,8 +97,10 @@ public class OAuthController implements OAuthControllerDocs {
       @RequestParam String code,
       @RequestParam String state,
       @CookieValue(name = GOOGLE_STATE_COOKIE, required = false) String expectedState,
+      @CookieValue(name = FRONTEND_ORIGIN_COOKIE, required = false) String frontendOrigin,
       HttpServletResponse response) {
-    return callback(Provider.Google, code, state, expectedState, GOOGLE_STATE_COOKIE, response);
+    return callback(
+        Provider.Google, code, state, expectedState, GOOGLE_STATE_COOKIE, frontendOrigin, response);
   }
 
   private ApiResponseBody<OAuthAuthorizationUrlResponse> authorizationUrl(
@@ -97,6 +110,8 @@ public class OAuthController implements OAuthControllerDocs {
       HttpServletResponse response) {
     String state = UUID.randomUUID().toString();
     addStateCookie(response, cookieName, state, STATE_COOKIE_MAX_AGE);
+    addFrontendOriginCookie(
+        response, cookieName, resolveFrontendOrigin(request.getHeader(HttpHeaders.ORIGIN)));
     String authorizationUrl = oauthLoginService.authorizationUrl(provider, state);
     return ApiResponseBody.success(new OAuthAuthorizationUrlResponse(authorizationUrl), request);
   }
@@ -107,6 +122,7 @@ public class OAuthController implements OAuthControllerDocs {
       String state,
       String expectedState,
       String cookieName,
+      String frontendOrigin,
       HttpServletResponse response) {
     log.info(
         "OAuth callback received. provider={}, codePresent={}, statePresent={}, stateCookiePresent={}",
@@ -116,17 +132,21 @@ public class OAuthController implements OAuthControllerDocs {
         org.springframework.util.StringUtils.hasText(expectedState));
     oauthLoginService.validateState(expectedState, state);
     clearStateCookie(response, cookieName);
+    clearFrontendOriginCookie(response, cookieName);
     LoginResult result = oauthLoginService.loginWithAuthorizationCode(provider, code);
+    String redirectOrigin = resolveFrontendOrigin(frontendOrigin);
     if (result.isNewUser()) {
       signupTokenCookieManager.add(response, result.signupToken());
-      return redirect(onboardingRedirectUri);
+      return redirect(redirectOrigin, "/onboarding");
     }
     refreshTokenCookieManager.add(response, result.refreshToken());
-    return redirect(homeRedirectUri);
+    return redirect(redirectOrigin, "/home");
   }
 
-  private ResponseEntity<Void> redirect(URI redirectUri) {
-    return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
+  private ResponseEntity<Void> redirect(String frontendOrigin, String path) {
+    return ResponseEntity.status(HttpStatus.FOUND)
+        .location(URI.create(frontendOrigin + path))
+        .build();
   }
 
   private void addStateCookie(
@@ -144,6 +164,45 @@ public class OAuthController implements OAuthControllerDocs {
 
   private void clearStateCookie(HttpServletResponse response, String name) {
     addStateCookie(response, name, "", Duration.ZERO);
+  }
+
+  private void addFrontendOriginCookie(
+      HttpServletResponse response, String stateCookieName, String frontendOrigin) {
+    ResponseCookie cookie =
+        ResponseCookie.from(FRONTEND_ORIGIN_COOKIE, frontendOrigin)
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .sameSite("Lax")
+            .path(callbackPath(stateCookieName))
+            .maxAge(STATE_COOKIE_MAX_AGE)
+            .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+  }
+
+  private void clearFrontendOriginCookie(HttpServletResponse response, String stateCookieName) {
+    ResponseCookie cookie =
+        ResponseCookie.from(FRONTEND_ORIGIN_COOKIE, "")
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .sameSite("Lax")
+            .path(callbackPath(stateCookieName))
+            .maxAge(Duration.ZERO)
+            .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+  }
+
+  private String resolveFrontendOrigin(String origin) {
+    if (origin == null || origin.isBlank()) {
+      return defaultFrontendOrigin;
+    }
+    String normalizedOrigin = normalizeOrigin(origin);
+    return allowedFrontendOrigins.contains(normalizedOrigin)
+        ? normalizedOrigin
+        : defaultFrontendOrigin;
+  }
+
+  private String normalizeOrigin(String origin) {
+    return origin.replaceFirst("/+$", "");
   }
 
   private String callbackPath(String cookieName) {
