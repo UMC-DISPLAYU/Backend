@@ -47,7 +47,8 @@ public interface PersonalArtworkFeelingApiDocs {
                                     "createdAt": "2026-07-23T16:00:00",
                                     "user": {
                                       "userId": 2,
-                                      "nickname": "관람객"
+                                      "nickname": "관람객",
+                                      "isCreator": false
                                     },
                                     "replies": [
                                       {
@@ -120,7 +121,9 @@ public interface PersonalArtworkFeelingApiDocs {
       @Valid CreatePersonalArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "개인 작품 감상평 작성", description = "개인 작품 상세 화면에서 사용자가 감상평을 작성합니다.")
+  @Operation(
+      summary = "개인 작품 감상평 작성",
+      description = "로그인 사용자가 감상평을 작성합니다. 해당 개인 작품의 소유자도 작성할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 작성 성공",

@@ -16,7 +16,8 @@ public record PersonalArtworkFeelingListResponse(
       PersonalArtworkFeelingUserResponse user,
       List<PersonalArtworkFeelingReplyItemResponse> replies) {}
 
-  public record PersonalArtworkFeelingUserResponse(Long userId, String nickname) {}
+  public record PersonalArtworkFeelingUserResponse(
+      Long userId, String nickname, Boolean isCreator) {}
 
   public record PersonalArtworkFeelingReplyItemResponse(
       Long personalFeelingReplyId,

@@ -85,7 +85,8 @@ public class PersonalArtworkFeelingPresentationMapper {
   private PersonalArtworkFeelingItemResponse toFeelingItemResponse(
       PersonalArtworkFeelingItemResult result) {
     PersonalArtworkFeelingUserResponse user =
-        new PersonalArtworkFeelingUserResponse(result.user().userId(), result.user().nickname());
+        new PersonalArtworkFeelingUserResponse(
+            result.user().userId(), result.user().nickname(), result.user().isCreator());
     return new PersonalArtworkFeelingItemResponse(
         result.personalFeelingId(),
         result.content(),

@@ -97,7 +97,9 @@ public class GetPersonalArtworkFeelingsService {
       Long ownerUserId) {
     PersonalArtworkFeelingUserResult user =
         new PersonalArtworkFeelingUserResult(
-            feeling.getUserId(), findNicknameOrThrow(nicknameByUserId, feeling.getUserId()));
+            feeling.getUserId(),
+            findNicknameOrThrow(nicknameByUserId, feeling.getUserId()),
+            ownerUserId.equals(feeling.getUserId()));
 
     List<PersonalArtworkFeelingReplyItemResult> replyResults =
         replies.stream().map(reply -> toReplyItem(reply, nicknameByUserId, ownerUserId)).toList();

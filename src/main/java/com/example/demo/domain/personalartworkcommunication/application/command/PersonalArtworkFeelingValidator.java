@@ -38,13 +38,6 @@ public class PersonalArtworkFeelingValidator {
     }
   }
 
-  public void validateNotPersonalArtworkCreator(Long personalArtworkId, Long userId) {
-    if (personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_FEELING);
-    }
-  }
-
   public void validateAccessiblePersonalFeeling(
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId, Long userId) {
     validateNotDeleted(personalArtworkFeeling);
