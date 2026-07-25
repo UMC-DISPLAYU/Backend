@@ -54,13 +54,10 @@ public class ArtworkFeelingPresentationMapper {
     return new ArtworkFeelingReplyResponse(
         result.feelingReplyId(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
         result.content(),
         result.feelingId(),
         result.userId(),
-        result.nickname(),
-        result.isCreator());
+        result.nickname());
   }
 
   public ArtworkFeelingListResponse toResponse(ArtworkFeelingListResult result) {
@@ -77,7 +74,8 @@ public class ArtworkFeelingPresentationMapper {
         result.feelingId(),
         result.content(),
         result.createdAt(),
-        new ArtworkFeelingUserResponse(result.user().userId(), result.user().nickname()),
+        new ArtworkFeelingUserResponse(
+            result.user().userId(), result.user().nickname(), result.user().isCreator()),
         result.replies().stream().map(this::toReplyItemResponse).toList());
   }
 

@@ -34,8 +34,6 @@ public class CreateArtworkQuestionService {
         savedQuestion.getIsPublic(),
         savedQuestion.getAnswerStatus(),
         savedQuestion.getCreatedAt(),
-        savedQuestion.getUpdatedAt(),
-        savedQuestion.getDeletedAt(),
         savedQuestion.getDisplayArtworkId(),
         savedQuestion.getUserId());
   }

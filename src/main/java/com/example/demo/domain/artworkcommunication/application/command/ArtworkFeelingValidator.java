@@ -2,7 +2,6 @@ package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
-import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -15,7 +14,6 @@ public class ArtworkFeelingValidator {
 
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
-  private final CreatorExistenceRepository creatorExistenceRepository;
 
   public void validateDisplayArtworkExists(Long displayArtworkId) {
     if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
@@ -35,14 +33,6 @@ public class ArtworkFeelingValidator {
     }
     if (content.length() > 300) {
       throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
-    }
-  }
-
-  public void validateNotArtworkCreator(Long displayArtworkId, Long userId) {
-    if (creatorExistenceRepository
-        .findCreatorNameByDisplayArtworkIdAndUserId(displayArtworkId, userId)
-        .isPresent()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_FEELING);
     }
   }
 

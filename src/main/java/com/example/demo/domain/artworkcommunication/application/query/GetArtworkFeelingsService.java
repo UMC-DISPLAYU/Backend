@@ -96,8 +96,7 @@ public class GetArtworkFeelingsService {
       Map<Long, String> nicknameByUserId,
       Map<Long, String> creatorNameByUserId) {
     ArtworkFeelingUserResult user =
-        new ArtworkFeelingUserResult(
-            feeling.getUserId(), findNicknameOrThrow(nicknameByUserId, feeling.getUserId()));
+        toFeelingUserResult(feeling.getUserId(), nicknameByUserId, creatorNameByUserId);
 
     List<ArtworkFeelingReplyItemResult> replyResults =
         replies.stream()
@@ -106,6 +105,14 @@ public class GetArtworkFeelingsService {
 
     return new ArtworkFeelingItemResult(
         feeling.getFeelingId(), feeling.getContent(), feeling.getCreatedAt(), user, replyResults);
+  }
+
+  private ArtworkFeelingUserResult toFeelingUserResult(
+      Long userId, Map<Long, String> nicknameByUserId, Map<Long, String> creatorNameByUserId) {
+    String creatorName = creatorNameByUserId.get(userId);
+    boolean isCreator = creatorName != null;
+    String nickname = isCreator ? creatorName : findNicknameOrThrow(nicknameByUserId, userId);
+    return new ArtworkFeelingUserResult(userId, nickname, isCreator);
   }
 
   private ArtworkFeelingReplyItemResult toReplyItem(

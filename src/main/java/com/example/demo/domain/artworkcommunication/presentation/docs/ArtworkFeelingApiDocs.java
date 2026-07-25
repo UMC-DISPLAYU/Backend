@@ -50,7 +50,8 @@ public interface ArtworkFeelingApiDocs {
                                     "createdAt": "2026-06-30T22:10:00",
                                     "user": {
                                       "userId": 1,
-                                      "nickname": "User1"
+                                      "nickname": "User1",
+                                      "isCreator": false
                                     },
                                     "replies": [
                                       {
@@ -197,8 +198,7 @@ public interface ArtworkFeelingApiDocs {
                                 "deletedAt": null,
                                 "feelingId": 15,
                                 "userId": 4,
-                                "nickname": "고상준",
-                                "isCreator": false
+                                "nickname": "고상준"
                               }
                             },
                             "error": null,

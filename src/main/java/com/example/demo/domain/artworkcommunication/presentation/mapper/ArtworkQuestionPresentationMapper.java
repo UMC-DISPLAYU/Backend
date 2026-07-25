@@ -48,8 +48,6 @@ public class ArtworkQuestionPresentationMapper {
         result.isPublic(),
         result.answerStatus(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
         result.displayArtworkId(),
         result.userId());
   }
@@ -63,8 +61,6 @@ public class ArtworkQuestionPresentationMapper {
         result.queReplyId(),
         result.content(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
         result.artQueId(),
         result.creatorId(),
         result.creatorName());

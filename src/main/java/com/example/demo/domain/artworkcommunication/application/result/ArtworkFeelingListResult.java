@@ -13,7 +13,7 @@ public record ArtworkFeelingListResult(
       ArtworkFeelingUserResult user,
       List<ArtworkFeelingReplyItemResult> replies) {}
 
-  public record ArtworkFeelingUserResult(Long userId, String nickname) {}
+  public record ArtworkFeelingUserResult(Long userId, String nickname, Boolean isCreator) {}
 
   public record ArtworkFeelingReplyItemResult(
       Long userId, String nickname, String content, LocalDateTime createdAt, Boolean isCreator) {}
