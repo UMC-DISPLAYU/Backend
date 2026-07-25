@@ -9,7 +9,5 @@ public record ArtworkQuestionResult(
     Boolean isPublic,
     AnswerStatus answerStatus,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    LocalDateTime deletedAt,
     Long displayArtworkId,
     Long userId) {}
