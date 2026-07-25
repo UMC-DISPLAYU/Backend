@@ -9,5 +9,8 @@ public interface PersonalArtworkFeelingReplyRepository {
 
   Optional<PersonalArtworkFeelingReply> findById(Long personalFeelingReplyId);
 
-  List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIds(List<Long> personalFeelingIds);
+  List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIdWithCursor(
+      Long personalFeelingId, Long cursorId, int limit);
+
+  java.util.Map<Long, Long> countActiveByPersonalFeelingIds(List<Long> personalFeelingIds);
 }

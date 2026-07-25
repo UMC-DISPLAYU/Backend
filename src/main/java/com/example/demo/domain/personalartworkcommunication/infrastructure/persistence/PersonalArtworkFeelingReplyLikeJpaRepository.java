@@ -42,4 +42,15 @@ public interface PersonalArtworkFeelingReplyLikeJpaRepository
       Long personalFeelingReplyId, Long userId);
 
   long countByPersonalFeelingReplyIdAndDeletedAtIsNull(Long personalFeelingReplyId);
+
+  @Query(
+      """
+      SELECT replyLike.personalFeelingReplyId, COUNT(replyLike)
+      FROM PersonalArtworkFeelingReplyLike replyLike
+      WHERE replyLike.personalFeelingReplyId IN :personalFeelingReplyIds
+        AND replyLike.deletedAt IS NULL
+      GROUP BY replyLike.personalFeelingReplyId
+      """)
+  List<Object[]> countByPersonalFeelingReplyIds(
+      @Param("personalFeelingReplyIds") List<Long> personalFeelingReplyIds);
 }

@@ -4,8 +4,11 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingReplyJpaRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,9 +28,17 @@ public class JpaPersonalArtworkFeelingReplyRepositoryAdapter
   }
 
   @Override
-  public List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIds(
-      List<Long> personalFeelingIds) {
+  public List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIdWithCursor(
+      Long personalFeelingId, Long cursorId, int limit) {
+    return personalArtworkFeelingReplyJpaRepository.findActiveByPersonalFeelingIdWithCursor(
+        personalFeelingId, cursorId, PageRequest.of(0, limit));
+  }
+
+  @Override
+  public Map<Long, Long> countActiveByPersonalFeelingIds(List<Long> personalFeelingIds) {
     return personalArtworkFeelingReplyJpaRepository
-        .findByPersonalFeelingIdInAndDeletedAtIsNullOrderByCreatedAtAsc(personalFeelingIds);
+        .countActiveByPersonalFeelingIds(personalFeelingIds)
+        .stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }

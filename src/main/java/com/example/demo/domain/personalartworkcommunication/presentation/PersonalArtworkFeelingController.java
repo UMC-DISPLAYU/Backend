@@ -1,12 +1,14 @@
 package com.example.demo.domain.personalartworkcommunication.presentation;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.*;
+import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkFeelingRepliesService;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkFeelingsService;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyLikeResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkFeelingApiDocs;
@@ -18,6 +20,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.respons
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyLikeResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -39,11 +42,12 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   private final PersonalArtworkFeelingLikeService personalArtworkFeelingLikeService;
   private final PersonalArtworkFeelingReplyLikeService personalArtworkFeelingReplyLikeService;
   private final GetPersonalArtworkFeelingsService getPersonalArtworkFeelingsService;
+  private final GetPersonalArtworkFeelingRepliesService getPersonalArtworkFeelingRepliesService;
   private final PersonalArtworkFeelingPresentationMapper mapper;
 
   @Override
   @GetMapping
-  // 개인 작품 감상평 목록 및 답변 조회
+  // 개인 작품 감상평 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
       @PathVariable Long personalArtworkId,
       @RequestParam(required = false) @Positive Long cursorId,
@@ -54,6 +58,21 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
     PersonalArtworkFeelingListResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @GetMapping("/{personalFeelingId}/replies")
+  // 개인 작품 감상평 답변 목록 조회
+  public ApiResponseBody<PersonalArtworkFeelingReplyListResponse> getFeelingReplies(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalFeelingId,
+      @RequestParam(required = false) @Positive Long cursorId,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkFeelingReplyListResult result =
+        getPersonalArtworkFeelingRepliesService.getReplies(
+            mapper.toRepliesQuery(personalArtworkId, personalFeelingId, cursorId));
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
 
   @Override

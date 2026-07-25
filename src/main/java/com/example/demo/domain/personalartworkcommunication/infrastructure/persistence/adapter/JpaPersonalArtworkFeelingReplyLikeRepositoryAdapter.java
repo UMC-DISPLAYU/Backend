@@ -3,7 +3,10 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReplyLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingReplyLikeJpaRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -25,6 +28,12 @@ public class JpaPersonalArtworkFeelingReplyLikeRepositoryAdapter
     return repository
         .findByPersonalFeelingReplyIdAndUserId(personalFeelingReplyId, userId)
         .map(replyLike -> toSnapshot(replyLike, likeCount));
+  }
+
+  @Override
+  public Map<Long, Long> countByPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds) {
+    return repository.countByPersonalFeelingReplyIds(personalFeelingReplyIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 
   private PersonalArtworkFeelingReplyLikeSnapshot toSnapshot(
