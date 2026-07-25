@@ -154,7 +154,7 @@ public interface ArtworkFeelingApiDocs {
           @Positive Long cursorId,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 작성", description = "작품 상세/방명록 화면에서 사용자가 감상평을 작성합니다.")
+  @Operation(summary = "작품 감상평 작성", description = "로그인 사용자가 감상평을 작성합니다. 해당 작품의 작가도 작성할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 작성 성공",
@@ -240,8 +240,6 @@ public interface ArtworkFeelingApiDocs {
                                 "feelingReplyId": 8,
                                 "content": "좋은 감상인 것 같아요",
                                 "createdAt": "2026-06-30T23:20:00",
-                                "updatedAt": "2026-06-30T23:20:00",
-                                "deletedAt": null,
                                 "feelingId": 15,
                                 "userId": 4,
                                 "nickname": "고상준"
