@@ -97,4 +97,13 @@ public class ArtworkFeelingPresentationMapper {
         result.createdAt(),
         result.deletedAt());
   }
+
+  public ArtworkFeelingReplyLikeResponse toResponse(ArtworkFeelingReplyLikeResult result) {
+    return new ArtworkFeelingReplyLikeResponse(
+        result.feelingReplyId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
 }

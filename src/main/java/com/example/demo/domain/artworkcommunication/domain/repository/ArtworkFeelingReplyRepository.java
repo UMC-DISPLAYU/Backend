@@ -7,6 +7,8 @@ import java.util.Optional;
 public interface ArtworkFeelingReplyRepository {
   ArtworkFeelingReply save(ArtworkFeelingReply artworkFeelingReply);
 
+  Optional<ArtworkFeelingReply> findById(Long feelingReplyId);
+
   Optional<ArtworkFeelingReply> findActiveByFeelingId(Long feelingId);
 
   List<ArtworkFeelingReply> findActiveByFeelingIds(List<Long> feelingIds);

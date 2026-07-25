@@ -19,6 +19,11 @@ public class JpaArtworkFeelingReplyRepositoryAdapter implements ArtworkFeelingRe
   }
 
   @Override
+  public Optional<ArtworkFeelingReply> findById(Long feelingReplyId) {
+    return artworkFeelingReplyJpaRepository.findById(feelingReplyId);
+  }
+
+  @Override
   public Optional<ArtworkFeelingReply> findActiveByFeelingId(Long feelingId) {
     return artworkFeelingReplyJpaRepository
         .findFirstByFeelingIdAndDeletedAtIsNullOrderByCreatedAtAsc(feelingId);

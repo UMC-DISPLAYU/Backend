@@ -39,4 +39,8 @@ public class ArtworkFeelingReply extends SoftDeleteBaseEntity {
   public static ArtworkFeelingReply create(Long feelingId, Long userId, String content) {
     return new ArtworkFeelingReply(null, content, feelingId, userId);
   }
+
+  public boolean belongsToFeeling(Long feelingId) {
+    return this.feelingId.equals(feelingId);
+  }
 }

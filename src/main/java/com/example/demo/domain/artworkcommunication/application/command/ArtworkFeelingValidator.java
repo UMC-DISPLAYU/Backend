@@ -1,7 +1,9 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
+import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -14,6 +16,7 @@ public class ArtworkFeelingValidator {
 
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
+  private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
 
   public void validateDisplayArtworkExists(Long displayArtworkId) {
     if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
@@ -46,6 +49,24 @@ public class ArtworkFeelingValidator {
   public void validateReplyTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
     validateNotDeleted(artworkFeeling);
     validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
+  }
+
+  public ArtworkFeelingReply findReplyOrThrow(Long feelingReplyId) {
+    ArtworkFeelingReply reply =
+        artworkFeelingReplyRepository
+            .findById(feelingReplyId)
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND));
+    if (reply.isDeleted()) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND);
+    }
+    return reply;
+  }
+
+  public void validateReplyTarget(ArtworkFeelingReply reply, Long feelingId) {
+    if (!reply.belongsToFeeling(feelingId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND);
+    }
   }
 
   private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
