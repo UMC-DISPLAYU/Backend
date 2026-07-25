@@ -14,7 +14,6 @@ import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
-import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
@@ -93,15 +92,12 @@ public class AuthController
   @Override
   @PostMapping("/logout")
   public ApiResponseBody<Void> logout(
-      @Valid @RequestBody(required = false) LogoutRequest request,
       @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse) {
 
-    String refreshToken =
-        resolveRefreshToken(request == null ? null : request.refreshToken(), cookieRefreshToken);
-    authService.logout(user.userId(), refreshToken);
+    authService.logout(user.userId(), cookieRefreshToken);
     refreshTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(null, httpRequest);

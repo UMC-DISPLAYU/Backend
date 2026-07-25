@@ -20,7 +20,6 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
 import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
-import com.example.demo.domain.user.presentation.request.LogoutRequest;
 import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
 import com.example.demo.global.error.GlobalExceptionHandler;
@@ -231,7 +230,7 @@ class AuthControllerTest {
     MockHttpServletResponse httpResponse = new MockHttpServletResponse();
 
     controller.logout(
-        null, "cookie-refresh-token", new AuthUser(1L), new MockHttpServletRequest(), httpResponse);
+        "cookie-refresh-token", new AuthUser(1L), new MockHttpServletRequest(), httpResponse);
 
     verify(authService).logout(1L, "cookie-refresh-token");
     assertThat(httpResponse.getHeader("Set-Cookie"))
@@ -239,19 +238,5 @@ class AuthControllerTest {
         .contains("Max-Age=0")
         .contains("Path=/")
         .contains("HttpOnly");
-  }
-
-  @Test
-  void logsOutWithBodyRefreshTokenFirst() {
-    MockHttpServletResponse httpResponse = new MockHttpServletResponse();
-
-    controller.logout(
-        new LogoutRequest("body-refresh-token"),
-        "cookie-refresh-token",
-        new AuthUser(1L),
-        new MockHttpServletRequest(),
-        httpResponse);
-
-    verify(authService).logout(1L, "body-refresh-token");
   }
 }
