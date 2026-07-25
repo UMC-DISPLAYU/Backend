@@ -14,7 +14,6 @@ import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
-import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
@@ -78,13 +77,10 @@ public class AuthController
   @Override
   @PostMapping("/refresh")
   public ApiResponseBody<RefreshResponse> refresh(
-      @Valid @RequestBody(required = false) RefreshRequest request,
       @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
       HttpServletRequest httpRequest) {
 
-    String refreshToken =
-        resolveRefreshToken(request == null ? null : request.refreshToken(), cookieRefreshToken);
-    String accessToken = authService.refresh(refreshToken);
+    String accessToken = authService.refresh(cookieRefreshToken);
 
     return ApiResponseBody.success(new RefreshResponse(accessToken), httpRequest);
   }
@@ -121,9 +117,5 @@ public class AuthController
       return extractSignupToken(null);
     }
     return cookieSignupToken;
-  }
-
-  private String resolveRefreshToken(String bodyRefreshToken, String cookieRefreshToken) {
-    return StringUtils.hasText(bodyRefreshToken) ? bodyRefreshToken : cookieRefreshToken;
   }
 }
