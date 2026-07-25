@@ -16,6 +16,8 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   CREATOR_CANNOT_WRITE_QUESTION(
       HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_QUESTION", "작업자는 본인 작품에 질문을 작성할 수 없습니다."),
   ARTWORK_FEELING_FORBIDDEN(HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
+  ARTWORK_FEELING_REPLY_FORBIDDEN(
+      HttpStatus.FORBIDDEN, "ARTWORK_FEELING_REPLY_FORBIDDEN", "감상평 답변에 대한 권한이 없습니다."),
   ARTWORK_QUESTION_FORBIDDEN(
       HttpStatus.FORBIDDEN, "ARTWORK_QUESTION_FORBIDDEN", "질문에 대한 권한이 없습니다."),
   QNA_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "QNA_CONTACT_FORBIDDEN", "QnA 담당 작업자만 답변할 수 있습니다."),

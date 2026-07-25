@@ -43,4 +43,8 @@ public class ArtworkFeelingReply extends SoftDeleteBaseEntity {
   public boolean belongsToFeeling(Long feelingId) {
     return this.feelingId.equals(feelingId);
   }
+
+  public boolean isWrittenBy(Long userId) {
+    return this.userId.equals(userId);
+  }
 }

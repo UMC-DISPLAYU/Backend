@@ -69,6 +69,13 @@ public class ArtworkFeelingValidator {
     }
   }
 
+  public void validateAccessibleReply(ArtworkFeelingReply reply, Long feelingId, Long userId) {
+    validateReplyTarget(reply, feelingId);
+    if (!reply.isWrittenBy(userId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_REPLY_FORBIDDEN);
+    }
+  }
+
   private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
     if (artworkFeeling.isDeleted()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);

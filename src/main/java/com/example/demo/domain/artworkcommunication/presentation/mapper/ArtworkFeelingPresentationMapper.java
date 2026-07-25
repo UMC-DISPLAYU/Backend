@@ -50,6 +50,10 @@ public class ArtworkFeelingPresentationMapper {
     return new DeletedArtworkFeelingResponse(result.feelingId(), result.deletedAt());
   }
 
+  public DeletedArtworkFeelingReplyResponse toResponse(DeletedArtworkFeelingReplyResult result) {
+    return new DeletedArtworkFeelingReplyResponse(result.feelingReplyId(), result.deletedAt());
+  }
+
   public ArtworkFeelingReplyResponse toResponse(ArtworkFeelingReplyResult result) {
     return new ArtworkFeelingReplyResponse(
         result.feelingReplyId(),

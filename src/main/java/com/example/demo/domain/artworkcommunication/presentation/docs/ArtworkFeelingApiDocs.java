@@ -8,6 +8,7 @@ import com.example.demo.domain.artworkcommunication.presentation.response.Artwor
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -298,6 +299,47 @@ public interface ArtworkFeelingApiDocs {
               example = "1")
           Long userId,
       @Valid CreateArtworkFeelingReplyRequest request,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 답변 삭제", description = "작성자가 본인이 작성한 감상평 답변을 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "감상평 답변 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork feeling reply delete success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "feelingReplyId": 8,
+                                "deletedAt": "2026-07-26T03:40:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-26T03:40:00",
+                              "path": "/api/v1/artworks/3/feelings/7/reply/8"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "403", description = "감상평 답변 삭제 권한 없음")
+  @ApiResponse(responseCode = "404", description = "작품, 사용자, 감상평 또는 감상평 답변 없음")
+  ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
+      @Parameter(description = "삭제할 감상평 답변 ID", example = "8") Long feelingReplyId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "1")
+          Long userId,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 수정", description = "사용자가 본인이 작성한 작품 감상평 내용을 수정합니다.")

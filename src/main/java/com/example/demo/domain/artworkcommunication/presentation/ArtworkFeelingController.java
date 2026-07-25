@@ -25,6 +25,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   private final UpdateArtworkFeelingService updateArtworkFeelingService;
   private final DeleteArtworkFeelingService deleteArtworkFeelingService;
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
+  private final DeleteArtworkFeelingReplyService deleteArtworkFeelingReplyService;
   private final GetArtworkFeelingsService getArtworkFeelingsService;
   private final ArtworkFeelingLikeService artworkFeelingLikeService;
   private final ArtworkFeelingReplyLikeService artworkFeelingReplyLikeService;
@@ -76,6 +77,25 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     ArtworkFeelingReplyResult result = createArtworkFeelingReplyService.createFeelingReply(command);
 
     ArtworkFeelingReplyResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @DeleteMapping("/{feelingId}/reply/{feelingReplyId}")
+  // 감상평 답변 삭제
+  public ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @PathVariable Long feelingReplyId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    DeleteArtworkFeelingReplyCommand command =
+        new DeleteArtworkFeelingReplyCommand(artworkId, feelingId, feelingReplyId, userId);
+
+    DeletedArtworkFeelingReplyResult result = deleteArtworkFeelingReplyService.deleteReply(command);
+
+    DeletedArtworkFeelingReplyResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }
