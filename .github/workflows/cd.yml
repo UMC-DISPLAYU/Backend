@@ -482,6 +482,7 @@ jobs:
           KAKAO_CLIENT_ID: precheck-kakao-client-id
           KAKAO_CLIENT_SECRET: precheck-kakao-client-secret
           KAKAO_REDIRECT_URI: http://localhost:8080/api/auth/kakao/callback
+          FRONTEND_BASE_URL: https://www.displayu.co.kr
           JWT_SECRET: precheck-jwt-secret-precheck-jwt-secret-precheck-jwt-secret
           AWS_REGION: ap-northeast-2
           S3_BUCKET: precheck-bucket
@@ -650,6 +651,7 @@ jobs:
           RUNTIME_KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           RUNTIME_KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           RUNTIME_KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          RUNTIME_FRONTEND_BASE_URL: ${{ vars.FRONTEND_BASE_URL || 'https://www.displayu.co.kr' }}
           RUNTIME_OAUTH_COOKIE_SECURE: ${{ secrets.OAUTH_COOKIE_SECURE || 'true' }}
           RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
@@ -677,6 +679,7 @@ jobs:
             printf 'KAKAO_CLIENT_ID=%s\n' "$RUNTIME_KAKAO_CLIENT_ID"
             printf 'KAKAO_CLIENT_SECRET=%s\n' "$RUNTIME_KAKAO_CLIENT_SECRET"
             printf 'KAKAO_REDIRECT_URI=%s\n' "$RUNTIME_KAKAO_REDIRECT_URI"
+            printf 'FRONTEND_BASE_URL=%s\n' "$RUNTIME_FRONTEND_BASE_URL"
             printf 'OAUTH_COOKIE_SECURE=%s\n' "$RUNTIME_OAUTH_COOKIE_SECURE"
             printf 'JWT_SECRET=%s\n' "$RUNTIME_JWT_SECRET"
             printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"

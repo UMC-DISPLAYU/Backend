@@ -37,6 +37,9 @@ springdoc:
   swagger-ui:
     enabled: false
 
+frontend:
+  base-url: https://www.displayu.co.kr
+
 
 app:
   display:

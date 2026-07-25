@@ -1,9 +1,9 @@
 package com.example.demo.domain.user.presentation.docs;
 
-import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -23,9 +23,9 @@ public interface RefreshControllerDocs {
                     - 탈퇴 회원 여부를 확인합니다.
                     - 새로운 Access Token을 발급합니다.
 
-                    Authorization Header는 필요하지 않으며,
-                    Request Body의 Refresh Token을 사용합니다.
+                    Authorization Header와 Request Body는 필요하지 않습니다.
+                    HttpOnly Cookie의 Refresh Token을 사용합니다.
                     """)
   ApiResponseBody<RefreshResponse> refresh(
-      RefreshRequest request, String cookieRefreshToken, HttpServletRequest httpRequest);
+      @Parameter(hidden = true) String cookieRefreshToken, HttpServletRequest httpRequest);
 }

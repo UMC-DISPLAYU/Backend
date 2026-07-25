@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,24 +33,26 @@ public class OAuthController implements OAuthControllerDocs {
   private static final Duration STATE_COOKIE_MAX_AGE = Duration.ofMinutes(5);
   private static final String KAKAO_STATE_COOKIE = "kakao_oauth_state";
   private static final String GOOGLE_STATE_COOKIE = "google_oauth_state";
-  private static final URI HOME_REDIRECT_URI =
-      URI.create("https://display-frontend-five.vercel.app/home");
-  private static final URI ONBOARDING_REDIRECT_URI =
-      URI.create("https://display-frontend-five.vercel.app/onboarding");
 
   private final OAuthLoginService oauthLoginService;
   private final RefreshTokenCookieManager refreshTokenCookieManager;
   private final SignupTokenCookieManager signupTokenCookieManager;
+  private final URI homeRedirectUri;
+  private final URI onboardingRedirectUri;
   private final boolean cookieSecure;
 
   public OAuthController(
       OAuthLoginService oauthLoginService,
       RefreshTokenCookieManager refreshTokenCookieManager,
       SignupTokenCookieManager signupTokenCookieManager,
+      @Value("${frontend.base-url}") String frontendBaseUrl,
       @Value("${app.oauth.cookie-secure:false}") boolean cookieSecure) {
     this.oauthLoginService = oauthLoginService;
     this.refreshTokenCookieManager = refreshTokenCookieManager;
     this.signupTokenCookieManager = signupTokenCookieManager;
+    String normalizedFrontendBaseUrl = frontendBaseUrl.replaceFirst("/+$", "");
+    this.homeRedirectUri = URI.create(normalizedFrontendBaseUrl + "/home");
+    this.onboardingRedirectUri = URI.create(normalizedFrontendBaseUrl + "/onboarding");
     this.cookieSecure = cookieSecure;
   }
 
@@ -118,20 +119,14 @@ public class OAuthController implements OAuthControllerDocs {
     LoginResult result = oauthLoginService.loginWithAuthorizationCode(provider, code);
     if (result.isNewUser()) {
       signupTokenCookieManager.add(response, result.signupToken());
-      return redirect(ONBOARDING_REDIRECT_URI, "signupToken", result.signupToken());
+      return redirect(onboardingRedirectUri);
     }
     refreshTokenCookieManager.add(response, result.refreshToken());
-    return redirect(HOME_REDIRECT_URI, "accessToken", result.accessToken());
+    return redirect(homeRedirectUri);
   }
 
-  private ResponseEntity<Void> redirect(URI redirectUri, String tokenName, String token) {
-    URI location =
-        UriComponentsBuilder.fromUri(redirectUri)
-            .queryParam(tokenName, token)
-            .build()
-            .encode()
-            .toUri();
-    return ResponseEntity.status(HttpStatus.FOUND).location(location).build();
+  private ResponseEntity<Void> redirect(URI redirectUri) {
+    return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
   }
 
   private void addStateCookie(

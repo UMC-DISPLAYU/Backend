@@ -20,8 +20,6 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
 import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
-import com.example.demo.domain.user.presentation.request.LogoutRequest;
-import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
 import com.example.demo.global.error.GlobalExceptionHandler;
 import com.example.demo.global.security.AuthUser;
@@ -203,24 +201,10 @@ class AuthControllerTest {
   }
 
   @Test
-  void refreshesAccessTokenWithBodyRefreshTokenFirst() {
-    when(authService.refresh("body-refresh-token")).thenReturn("new-access-token");
-
-    var response =
-        controller.refresh(
-            new RefreshRequest("body-refresh-token"),
-            "cookie-refresh-token",
-            new MockHttpServletRequest());
-
-    assertThat(response.success().data().accessToken()).isEqualTo("new-access-token");
-    verify(authService).refresh("body-refresh-token");
-  }
-
-  @Test
   void refreshesAccessTokenWithCookieRefreshToken() {
     when(authService.refresh("cookie-refresh-token")).thenReturn("new-access-token");
 
-    var response = controller.refresh(null, "cookie-refresh-token", new MockHttpServletRequest());
+    var response = controller.refresh("cookie-refresh-token", new MockHttpServletRequest());
 
     assertThat(response.success().data().accessToken()).isEqualTo("new-access-token");
     verify(authService).refresh("cookie-refresh-token");
@@ -231,7 +215,7 @@ class AuthControllerTest {
     MockHttpServletResponse httpResponse = new MockHttpServletResponse();
 
     controller.logout(
-        null, "cookie-refresh-token", new AuthUser(1L), new MockHttpServletRequest(), httpResponse);
+        "cookie-refresh-token", new AuthUser(1L), new MockHttpServletRequest(), httpResponse);
 
     verify(authService).logout(1L, "cookie-refresh-token");
     assertThat(httpResponse.getHeader("Set-Cookie"))
@@ -239,19 +223,5 @@ class AuthControllerTest {
         .contains("Max-Age=0")
         .contains("Path=/")
         .contains("HttpOnly");
-  }
-
-  @Test
-  void logsOutWithBodyRefreshTokenFirst() {
-    MockHttpServletResponse httpResponse = new MockHttpServletResponse();
-
-    controller.logout(
-        new LogoutRequest("body-refresh-token"),
-        "cookie-refresh-token",
-        new AuthUser(1L),
-        new MockHttpServletRequest(),
-        httpResponse);
-
-    verify(authService).logout(1L, "body-refresh-token");
   }
 }
