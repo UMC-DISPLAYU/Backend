@@ -33,24 +33,26 @@ public class OAuthController implements OAuthControllerDocs {
   private static final Duration STATE_COOKIE_MAX_AGE = Duration.ofMinutes(5);
   private static final String KAKAO_STATE_COOKIE = "kakao_oauth_state";
   private static final String GOOGLE_STATE_COOKIE = "google_oauth_state";
-  private static final URI HOME_REDIRECT_URI =
-      URI.create("https://display-frontend-five.vercel.app/home");
-  private static final URI ONBOARDING_REDIRECT_URI =
-      URI.create("https://display-frontend-five.vercel.app/onboarding");
 
   private final OAuthLoginService oauthLoginService;
   private final RefreshTokenCookieManager refreshTokenCookieManager;
   private final SignupTokenCookieManager signupTokenCookieManager;
+  private final URI homeRedirectUri;
+  private final URI onboardingRedirectUri;
   private final boolean cookieSecure;
 
   public OAuthController(
       OAuthLoginService oauthLoginService,
       RefreshTokenCookieManager refreshTokenCookieManager,
       SignupTokenCookieManager signupTokenCookieManager,
+      @Value("${frontend.base-url}") String frontendBaseUrl,
       @Value("${app.oauth.cookie-secure:false}") boolean cookieSecure) {
     this.oauthLoginService = oauthLoginService;
     this.refreshTokenCookieManager = refreshTokenCookieManager;
     this.signupTokenCookieManager = signupTokenCookieManager;
+    String normalizedFrontendBaseUrl = frontendBaseUrl.replaceFirst("/+$", "");
+    this.homeRedirectUri = URI.create(normalizedFrontendBaseUrl + "/home");
+    this.onboardingRedirectUri = URI.create(normalizedFrontendBaseUrl + "/onboarding");
     this.cookieSecure = cookieSecure;
   }
 
@@ -117,10 +119,10 @@ public class OAuthController implements OAuthControllerDocs {
     LoginResult result = oauthLoginService.loginWithAuthorizationCode(provider, code);
     if (result.isNewUser()) {
       signupTokenCookieManager.add(response, result.signupToken());
-      return redirect(ONBOARDING_REDIRECT_URI);
+      return redirect(onboardingRedirectUri);
     }
     refreshTokenCookieManager.add(response, result.refreshToken());
-    return redirect(HOME_REDIRECT_URI);
+    return redirect(homeRedirectUri);
   }
 
   private ResponseEntity<Void> redirect(URI redirectUri) {

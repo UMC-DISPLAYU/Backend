@@ -71,3 +71,6 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
+
+frontend:
+  base-url: http://localhost:5173
