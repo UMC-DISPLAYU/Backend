@@ -36,13 +36,17 @@ class OAuthControllerTest {
 
   @BeforeEach
   void setUp() {
+    mockMvc = createMockMvc(false);
+  }
+
+  private MockMvc createMockMvc(boolean cookieSecure) {
     JwtProperties jwtProperties = new JwtProperties();
     jwtProperties.setRefreshExpiration(1209600000);
     jwtProperties.setSignupExpiration(600000);
     RefreshTokenCookieManager refreshTokenCookieManager =
-        new RefreshTokenCookieManager(jwtProperties, false);
+        new RefreshTokenCookieManager(jwtProperties, cookieSecure);
     SignupTokenCookieManager signupTokenCookieManager =
-        new SignupTokenCookieManager(jwtProperties, false);
+        new SignupTokenCookieManager(jwtProperties, cookieSecure);
     OAuthController controller =
         new OAuthController(
             oauthLoginService,
@@ -50,11 +54,10 @@ class OAuthControllerTest {
             signupTokenCookieManager,
             "https://www.displayu.co.kr",
             "http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app",
-            false);
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
+            cookieSecure);
+    return MockMvcBuilders.standaloneSetup(controller)
+        .setControllerAdvice(new GlobalExceptionHandler())
+        .build();
   }
 
   @Test
@@ -71,6 +74,31 @@ class OAuthControllerTest {
         .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("kakao_oauth_state=")))
         .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("HttpOnly")))
         .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("SameSite=Lax")));
+  }
+
+  @Test
+  void usesSameSiteNoneAndSecureForCrossSiteOAuthCookies() throws Exception {
+    MockMvc secureMockMvc = createMockMvc(true);
+    when(oauthLoginService.authorizationUrl(eq(Provider.Kakao), anyString()))
+        .thenReturn("https://kauth.kakao.com/oauth/authorize?state=state");
+
+    secureMockMvc
+        .perform(
+            get("/api/auth/kakao/login-url")
+                .header(HttpHeaders.ORIGIN, "https://display-frontend-five.vercel.app"))
+        .andExpect(status().isOk())
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("kakao_oauth_state="))))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("oauth_frontend_origin="))))
+        .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("Secure"))))
+        .andExpect(
+            header()
+                .stringValues(HttpHeaders.SET_COOKIE, hasItem(containsString("SameSite=None"))));
   }
 
   @Test
