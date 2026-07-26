@@ -31,7 +31,7 @@ import lombok.Getter;
 @Table(name = "DisplayContentCategory")
 public class DisplayContentCategory extends BaseTimeEntity {
 
-  private static final int MAX_CONTENT_COUNT = 20;
+  static final int MAX_CONTENT_COUNT = 20;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

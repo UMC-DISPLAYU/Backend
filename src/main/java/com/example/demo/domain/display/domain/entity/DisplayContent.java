@@ -18,8 +18,6 @@ import lombok.Getter;
 @Table(name = "DisplayContent")
 public class DisplayContent extends BaseTimeEntity {
 
-  private static final int MAX_SORT_ORDER = 19;
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "displayContentId")
@@ -70,8 +68,9 @@ public class DisplayContent extends BaseTimeEntity {
   }
 
   private static int requireSortOrder(int value) {
-    if (value < 0 || value > MAX_SORT_ORDER) {
-      throw new IllegalArgumentException("sortOrder must be between 0 and 19.");
+    int maxSortOrder = DisplayContentCategory.MAX_CONTENT_COUNT - 1;
+    if (value < 0 || value > maxSortOrder) {
+      throw new IllegalArgumentException("sortOrder must be between 0 and " + maxSortOrder + ".");
     }
     return value;
   }
