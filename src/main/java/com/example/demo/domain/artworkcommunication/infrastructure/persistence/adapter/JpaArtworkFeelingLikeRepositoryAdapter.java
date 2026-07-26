@@ -4,7 +4,10 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeel
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository.ArtworkFeelingLikeSnapshot;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingLikeJpaRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -32,5 +35,11 @@ public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLik
         likeCount,
         feelingLike.getCreatedAt(),
         feelingLike.getDeletedAt());
+  }
+
+  @Override
+  public Map<Long, Long> countByFeelingIds(List<Long> feelingIds) {
+    return artworkFeelingLikeJpaRepository.countByFeelingIds(feelingIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }

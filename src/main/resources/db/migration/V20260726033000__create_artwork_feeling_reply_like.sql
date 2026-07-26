@@ -1,0 +1,21 @@
+CREATE TABLE `ArtworkFeelingReplyLike`
+(
+    `feelingReplyLikeId` BIGINT NOT NULL AUTO_INCREMENT,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `feelingReplyId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_ARTWORKFEELINGREPLYLIKE`
+        PRIMARY KEY (`feelingReplyLikeId`),
+    CONSTRAINT `UK_ARTWORKFEELINGREPLYLIKE_REPLY_USER`
+        UNIQUE (`feelingReplyId`, `userId`),
+    CONSTRAINT `FK_ARTWORKFEELINGREPLYLIKE_REPLY`
+        FOREIGN KEY (`feelingReplyId`)
+            REFERENCES `ArtworkFeelingReply` (`feelingReplyId`),
+    CONSTRAINT `FK_ARTWORKFEELINGREPLYLIKE_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`)
+);
+
+CREATE INDEX `IDX_ARTWORKFEELINGREPLYLIKE_REPLY`
+    ON `ArtworkFeelingReplyLike` (`feelingReplyId`, `deletedAt`);

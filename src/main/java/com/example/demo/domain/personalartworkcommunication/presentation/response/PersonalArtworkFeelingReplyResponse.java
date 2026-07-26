@@ -8,5 +8,4 @@ public record PersonalArtworkFeelingReplyResponse(
     String content,
     Long personalFeelingId,
     Long userId,
-    String nickname,
-    Boolean isCreator) {}
+    String nickname) {}

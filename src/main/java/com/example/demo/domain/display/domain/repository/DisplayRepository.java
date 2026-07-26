@@ -8,11 +8,15 @@ public interface DisplayRepository {
 
   Optional<Display> findById(Long displayId);
 
+  Optional<Display> findByIdWithOptimisticLock(Long displayId);
+
   Optional<Display> findByInvitationToken(String invitationTokenHash);
 
   List<Display> findAll();
 
   Display save(Display display);
+
+  void flush();
 
   void delete(Display display);
 }

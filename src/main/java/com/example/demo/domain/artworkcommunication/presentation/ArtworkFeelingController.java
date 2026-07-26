@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.*;
+import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingRepliesService;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsService;
 import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFeelingApiDocs;
@@ -25,8 +26,11 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   private final UpdateArtworkFeelingService updateArtworkFeelingService;
   private final DeleteArtworkFeelingService deleteArtworkFeelingService;
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
+  private final DeleteArtworkFeelingReplyService deleteArtworkFeelingReplyService;
   private final GetArtworkFeelingsService getArtworkFeelingsService;
+  private final GetArtworkFeelingRepliesService getArtworkFeelingRepliesService;
   private final ArtworkFeelingLikeService artworkFeelingLikeService;
+  private final ArtworkFeelingReplyLikeService artworkFeelingReplyLikeService;
   private final ArtworkFeelingPresentationMapper mapper;
 
   @Override
@@ -40,6 +44,23 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
         getArtworkFeelingsService.getFeelings(mapper.toQuery(artworkId, cursorId));
 
     ArtworkFeelingListResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @GetMapping("/{feelingId}/replies")
+  // 감상평 답변 목록 조회
+  public ApiResponseBody<ArtworkFeelingReplyListResponse> getFeelingReplies(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @RequestParam(required = false) @Positive Long cursorId,
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingReplyListResult result =
+        getArtworkFeelingRepliesService.getReplies(
+            mapper.toRepliesQuery(artworkId, feelingId, cursorId));
+
+    ArtworkFeelingReplyListResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }
@@ -75,6 +96,25 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     ArtworkFeelingReplyResult result = createArtworkFeelingReplyService.createFeelingReply(command);
 
     ArtworkFeelingReplyResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @DeleteMapping("/{feelingId}/reply/{feelingReplyId}")
+  // 감상평 답변 삭제
+  public ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @PathVariable Long feelingReplyId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    DeleteArtworkFeelingReplyCommand command =
+        new DeleteArtworkFeelingReplyCommand(artworkId, feelingId, feelingReplyId, userId);
+
+    DeletedArtworkFeelingReplyResult result = deleteArtworkFeelingReplyService.deleteReply(command);
+
+    DeletedArtworkFeelingReplyResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }
@@ -128,6 +168,25 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     ArtworkFeelingLikeResult result = artworkFeelingLikeService.artworkFeelingLike(command);
 
     ArtworkFeelingLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{feelingId}/reply/{feelingReplyId}/like")
+  // 감상평 답변 좋아요 등록 및 취소
+  public ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @PathVariable Long feelingReplyId,
+      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingReplyLikeCommand command =
+        new ArtworkFeelingReplyLikeCommand(artworkId, feelingId, feelingReplyId, userId);
+
+    ArtworkFeelingReplyLikeResult result = artworkFeelingReplyLikeService.toggleReplyLike(command);
+
+    ArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

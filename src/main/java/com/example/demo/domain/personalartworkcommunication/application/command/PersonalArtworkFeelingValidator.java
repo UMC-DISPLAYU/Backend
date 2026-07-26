@@ -1,8 +1,10 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -15,6 +17,7 @@ public class PersonalArtworkFeelingValidator {
 
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
+  private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
@@ -35,13 +38,6 @@ public class PersonalArtworkFeelingValidator {
     }
     if (content.length() > 300) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
-    }
-  }
-
-  public void validateNotPersonalArtworkCreator(Long personalArtworkId, Long userId) {
-    if (personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_FEELING);
     }
   }
 
@@ -67,6 +63,46 @@ public class PersonalArtworkFeelingValidator {
             () ->
                 new BusinessException(
                     PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
+  }
+
+  public PersonalArtworkFeelingReply findReplyOrThrow(Long personalFeelingReplyId) {
+    PersonalArtworkFeelingReply reply =
+        personalArtworkFeelingReplyRepository
+            .findById(personalFeelingReplyId)
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND));
+    if (reply.isDeleted()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND);
+    }
+    return reply;
+  }
+
+  public PersonalArtworkFeelingReply findActiveReplyForUpdateOrThrow(Long personalFeelingReplyId) {
+    return personalArtworkFeelingReplyRepository
+        .findActiveByIdForUpdate(personalFeelingReplyId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND));
+  }
+
+  public void validateReplyTarget(PersonalArtworkFeelingReply reply, Long personalFeelingId) {
+    if (!reply.belongsToFeeling(personalFeelingId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND);
+    }
+  }
+
+  public void validateAccessibleReply(
+      PersonalArtworkFeelingReply reply, Long personalFeelingId, Long userId) {
+    validateReplyTarget(reply, personalFeelingId);
+    if (!reply.isWrittenBy(userId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_FEELING_REPLY_FORBIDDEN);
+    }
   }
 
   private void validateNotDeleted(PersonalArtworkFeeling personalArtworkFeeling) {

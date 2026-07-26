@@ -155,7 +155,7 @@ public class OAuthController implements OAuthControllerDocs {
         ResponseCookie.from(name, value)
             .httpOnly(true)
             .secure(cookieSecure)
-            .sameSite("Lax")
+            .sameSite(cookieSecure ? "None" : "Lax")
             .path(callbackPath(name))
             .maxAge(maxAge)
             .build();
@@ -172,7 +172,7 @@ public class OAuthController implements OAuthControllerDocs {
         ResponseCookie.from(FRONTEND_ORIGIN_COOKIE, frontendOrigin)
             .httpOnly(true)
             .secure(cookieSecure)
-            .sameSite("Lax")
+            .sameSite(cookieSecure ? "None" : "Lax")
             .path(callbackPath(stateCookieName))
             .maxAge(STATE_COOKIE_MAX_AGE)
             .build();
@@ -184,7 +184,7 @@ public class OAuthController implements OAuthControllerDocs {
         ResponseCookie.from(FRONTEND_ORIGIN_COOKIE, "")
             .httpOnly(true)
             .secure(cookieSecure)
-            .sameSite("Lax")
+            .sameSite(cookieSecure ? "None" : "Lax")
             .path(callbackPath(stateCookieName))
             .maxAge(Duration.ZERO)
             .build();
