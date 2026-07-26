@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
@@ -58,7 +59,7 @@ public class AuthController
     SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
     List<AgreementCommand> agreements =
-        request.agreements().stream()
+        Optional.ofNullable(request.agreements()).orElseGet(List::of).stream()
             .map(agreement -> new AgreementCommand(agreement.agreeId(), agreement.isAgreed()))
             .toList();
 

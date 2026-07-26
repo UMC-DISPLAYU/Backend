@@ -16,6 +16,7 @@ import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.global.security.TokenProvider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,24 +55,42 @@ public class UserService {
 
     validateNickname(command.nickname());
 
-    // 필수 약관 조회
-    List<Agreement> requiredAgreements = agreementRepository.findAllByIsRequiredTrue();
+    List<AgreementCommand> agreementCommands =
+        Optional.ofNullable(command.agreements()).orElseGet(List::of);
 
-    // 사용자가 동의한 약관 ID만 추출
+    if (agreementCommands.stream().anyMatch(agreement -> agreement.agreeId() == null)) {
+      throw new UserException(UserErrorCode.AGREEMENT_NOT_FOUND);
+    }
+
+    Set<Long> requestedAgreementIds =
+        agreementCommands.stream().map(AgreementCommand::agreeId).collect(Collectors.toSet());
+
+    List<Agreement> requestedAgreements =
+        agreementRepository.findAllById(new ArrayList<>(requestedAgreementIds));
+
+    if (requestedAgreements.size() != requestedAgreementIds.size()) {
+      throw new UserException(UserErrorCode.AGREEMENT_NOT_FOUND);
+    }
+
+    List<Agreement> signupAgreements = agreementRepository.findAllSignupAgreements();
+    agreementPolicy.validateSignupConfiguration(signupAgreements);
+
+    List<Agreement> requiredAgreements =
+        signupAgreements.stream().filter(Agreement::isRequired).toList();
+
     Set<Long> agreedIds =
-        command.agreements().stream()
+        agreementCommands.stream()
             .filter(AgreementCommand::isAgreed)
             .map(AgreementCommand::agreeId)
             .collect(Collectors.toSet());
 
-    // 필수 약관 동의 여부 검증
     agreementPolicy.validate(requiredAgreements, agreedIds);
 
     User user = userMapper.toUser(command, socialUserInfo);
 
     User savedUser = userRepository.save(user);
 
-    saveUserAgreements(savedUser, command.agreements());
+    saveUserAgreements(savedUser, requestedAgreements, agreedIds);
 
     String accessToken = tokenProvider.createAccessToken(savedUser);
 
@@ -98,21 +117,13 @@ public class UserService {
     return !userRepository.existsByNickname(nickname.value());
   }
 
-  /** 동의한 약관만 저장 */
-  private void saveUserAgreements(User user, List<AgreementCommand> agreements) {
+  private void saveUserAgreements(
+      User user, List<Agreement> requestedAgreements, Set<Long> agreedIds) {
 
     List<UserAgreement> userAgreements =
-        agreements.stream()
-            .filter(AgreementCommand::isAgreed)
-            .map(
-                command -> {
-                  Agreement agreement =
-                      agreementRepository
-                          .findById(command.agreeId())
-                          .orElseThrow(() -> new UserException(UserErrorCode.AGREEMENT_NOT_FOUND));
-
-                  return userAgreementMapper.toUserAgreement(user, agreement, command);
-                })
+        requestedAgreements.stream()
+            .filter(agreement -> agreedIds.contains(agreement.getId()))
+            .map(agreement -> userAgreementMapper.toUserAgreement(user, agreement))
             .toList();
 
     userAgreementRepository.saveAll(userAgreements);

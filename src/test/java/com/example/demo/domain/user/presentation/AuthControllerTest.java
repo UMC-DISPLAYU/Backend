@@ -105,9 +105,9 @@ class AuthControllerTest {
                     {
                       "nickname": "maya",
                       "agreements": [
-                        {"agreeId": 1, "isAgreed": true},
-                        {"agreeId": 2, "isAgreed": true},
-                        {"agreeId": 3, "isAgreed": false}
+                        {"agreeId": 15, "isAgreed": true},
+                        {"agreeId": 27, "isAgreed": true},
+                        {"agreeId": 42, "isAgreed": false}
                       ]
                     }
                     """))
@@ -166,8 +166,8 @@ class AuthControllerTest {
                     {
                       "nickname": "maya",
                       "agreements": [
-                        {"agreeId": 1, "isAgreed": true},
-                        {"agreeId": 2, "isAgreed": true}
+                        {"agreeId": 15, "isAgreed": true},
+                        {"agreeId": 27, "isAgreed": true}
                       ]
                     }
                     """))
@@ -193,7 +193,7 @@ class AuthControllerTest {
                     """
                     {
                       "nickname": "maya",
-                      "agreements": [{"agreeId": 1, "isAgreed": true}]
+                      "agreements": [{"agreeId": 15, "isAgreed": true}]
                     }
                     """))
         .andExpect(status().isUnauthorized())

@@ -9,5 +9,9 @@ public interface AgreementRepository {
 
   List<Agreement> findAllById(List<Long> ids);
 
+  List<Agreement> findAllByOrderByIdAsc();
+
+  List<Agreement> findAllSignupAgreements();
+
   List<Agreement> findAllByIsRequiredTrue();
 }
