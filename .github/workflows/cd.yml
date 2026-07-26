@@ -741,6 +741,15 @@ jobs:
              aws ecr get-login-password --region \"$AWS_REGION\" \
                | docker login --username AWS --password-stdin \"\$ECR_REGISTRY\"
 
+             # Free space before pulling the new image. The running app image is kept in use.
+             echo \"Disk usage before Docker cleanup:\"
+             df -h /
+             docker system df || true
+             docker system prune -af >/dev/null || true
+             echo \"Disk usage after Docker cleanup:\"
+             df -h /
+             docker system df || true
+
              # Pull the image built by this workflow
              docker pull \"\$IMAGE_URI\"
 
@@ -770,7 +779,7 @@ jobs:
                if [ \"\$status\" = \"running\" ] && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
                  success_count=\$((success_count + 1))
                  if [ \"\$success_count\" -ge 2 ]; then
-                   docker image prune -f >/dev/null
+                   docker image prune -af >/dev/null
                    docker ps --filter \"name=\$CONTAINER_NAME\"
                    exit 0
                  fi
