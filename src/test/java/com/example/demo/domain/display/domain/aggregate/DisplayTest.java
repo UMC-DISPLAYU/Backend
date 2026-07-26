@@ -3,6 +3,8 @@ package com.example.demo.domain.display.domain.aggregate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.example.demo.domain.display.domain.entity.DisplayContent;
+import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
@@ -22,6 +24,95 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DisplayTest {
+
+  @Test
+  void createContentAssignsNextSortOrder() {
+    Display display = display();
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            1L,
+            "전시장 전경",
+            "전시장 이미지",
+            0,
+            List.of(new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0)));
+    display.addContentCategory(category);
+
+    DisplayContent content = display.createContent(1L, "https://cdn.displayu.com/2.jpg", 100, 100);
+
+    assertThat(content.getSortOrder()).isEqualTo(1);
+  }
+
+  @Test
+  void createContentFailsWhenCategoryAlreadyHasTwentyContents() {
+    Display display = display();
+    DisplayContentCategory category =
+        new DisplayContentCategory(1L, "전시장 전경", "전시장 이미지", 0, twentyContents());
+    display.addContentCategory(category);
+
+    assertThatThrownBy(() -> display.createContent(1L, "https://cdn.displayu.com/21.jpg", 100, 100))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_LIMIT_EXCEEDED));
+  }
+
+  @Test
+  void createContentFailsWhenCategoryDoesNotExist() {
+    Display display = display();
+
+    assertThatThrownBy(
+            () -> display.createContent(999L, "https://cdn.displayu.com/1.jpg", 100, 100))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_CATEGORY_NOT_FOUND));
+  }
+
+  @Test
+  void reorderContentsChangesSortOrderByRequestedOrder() {
+    Display display = display();
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            1L,
+            "전시장 전경",
+            "전시장 이미지",
+            0,
+            List.of(
+                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0),
+                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 100, 100, 1),
+                new DisplayContent(3L, "https://cdn.displayu.com/3.jpg", 100, 100, 2)));
+    display.addContentCategory(category);
+
+    display.reorderContents(1L, List.of(3L, 1L, 2L));
+
+    assertThat(category.findContent(3L).getSortOrder()).isZero();
+    assertThat(category.findContent(1L).getSortOrder()).isEqualTo(1);
+    assertThat(category.findContent(2L).getSortOrder()).isEqualTo(2);
+  }
+
+  @Test
+  void reorderContentsFailsWhenRequestedIdsDoNotMatchCurrentContents() {
+    Display display = display();
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            1L,
+            "전시장 전경",
+            "전시장 이미지",
+            0,
+            List.of(
+                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0),
+                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 100, 100, 1)));
+    display.addContentCategory(category);
+
+    assertThatThrownBy(() -> display.reorderContents(1L, List.of(1L, 1L)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.INVALID_DISPLAY_CONTENT_ORDER));
+  }
 
   @Test
   void inviteeAsTeamMemberFailsWhenInvitationIsNotAccepted() {
@@ -93,5 +184,18 @@ class DisplayTest {
 
   private static BigDecimal bd(String value) {
     return new BigDecimal(value);
+  }
+
+  private static List<DisplayContent> twentyContents() {
+    return java.util.stream.IntStream.range(0, 20)
+        .mapToObj(
+            index ->
+                new DisplayContent(
+                    (long) index + 1,
+                    "https://cdn.displayu.com/" + (index + 1) + ".jpg",
+                    100,
+                    100,
+                    index))
+        .toList();
   }
 }

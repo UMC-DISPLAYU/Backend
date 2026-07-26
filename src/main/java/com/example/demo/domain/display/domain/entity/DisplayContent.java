@@ -42,10 +42,8 @@ public class DisplayContent extends BaseTimeEntity {
 
   public DisplayContent(Long id, String imageUrl, int width, int height, int sortOrder) {
     this.id = id;
-    this.imageUrl = imageUrl;
-    this.width = requirePositive(width, "width");
-    this.height = requirePositive(height, "height");
-    this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
+    changeImageInfo(imageUrl, width, height);
+    changeSortOrder(sortOrder);
   }
 
   public void assignCategory(DisplayContentCategory category) {
@@ -53,7 +51,20 @@ public class DisplayContent extends BaseTimeEntity {
   }
 
   public void changeSortOrder(int sortOrder) {
-    this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
+    this.sortOrder = requireSortOrder(sortOrder);
+  }
+
+  public void changeImageInfo(String imageUrl, int width, int height) {
+    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
+    this.width = requirePositive(width, "width");
+    this.height = requirePositive(height, "height");
+  }
+
+  private static String requireNonBlank(String value, String fieldName) {
+    if (value == null || value.isBlank()) {
+      throw new IllegalArgumentException(fieldName + " must not be blank.");
+    }
+    return value;
   }
 
   private static int requirePositive(int value, String fieldName) {
@@ -63,9 +74,10 @@ public class DisplayContent extends BaseTimeEntity {
     return value;
   }
 
-  private static int requireNonNegative(int value, String fieldName) {
-    if (value < 0) {
-      throw new IllegalArgumentException(fieldName + " must not be negative.");
+  private static int requireSortOrder(int value) {
+    int maxSortOrder = DisplayContentCategory.MAX_CONTENT_COUNT - 1;
+    if (value < 0 || value > maxSortOrder) {
+      throw new IllegalArgumentException("sortOrder must be between 0 and " + maxSortOrder + ".");
     }
     return value;
   }
