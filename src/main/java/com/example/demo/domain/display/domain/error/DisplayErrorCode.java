@@ -27,6 +27,10 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST, "DISPLAY_CONTENT_LIMIT_EXCEEDED", "카테고리당 등록 가능한 이미지 개수를 초과했습니다."),
   INVALID_DISPLAY_CONTENT_ORDER(
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_CONTENT_ORDER", "전시 콘텐츠 순서 변경 요청이 올바르지 않습니다."),
+  DISPLAY_CONTENT_REORDER_CONFLICT(
+      HttpStatus.CONFLICT,
+      "DISPLAY_CONTENT_REORDER_CONFLICT",
+      "전시 콘텐츠 순서 변경 중 충돌이 발생했습니다. 다시 시도해주세요."),
   DISPLAY_CONTENT_PERMISSION_DENIED(
       HttpStatus.FORBIDDEN, "DISPLAY_CONTENT_PERMISSION_DENIED", "전시 콘텐츠를 수정할 권한이 없습니다."),
   DISPLAY_INVITATION_INVITEE_MISMATCH(

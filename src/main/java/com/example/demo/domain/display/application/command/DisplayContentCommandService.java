@@ -11,8 +11,10 @@ import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.global.error.BusinessException;
+import jakarta.persistence.OptimisticLockException;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,17 +111,28 @@ public class DisplayContentCommandService {
   public ReorderDisplayContentsResult reorderContents(ReorderDisplayContentsCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
-    List<DisplayContent> contents =
-        display.reorderContents(command.categoryId(), command.orderedContentIds());
+    try {
+      Display display = findDisplayWithOptimisticLock(command.displayId());
+      validateContentEditor(display, command.userId());
+      List<DisplayContent> contents =
+          display.reorderContents(command.categoryId(), command.orderedContentIds());
+      displayRepository.flush();
 
-    return ReorderDisplayContentsResult.from(command.displayId(), command.categoryId(), contents);
+      return ReorderDisplayContentsResult.from(command.displayId(), command.categoryId(), contents);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_REORDER_CONFLICT, e);
+    }
   }
 
   private Display findDisplay(Long displayId) {
     return displayRepository
         .findById(displayId)
+        .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
+  }
+
+  private Display findDisplayWithOptimisticLock(Long displayId) {
+    return displayRepository
+        .findByIdWithOptimisticLock(displayId)
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 

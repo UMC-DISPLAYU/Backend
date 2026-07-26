@@ -8,6 +8,8 @@ public interface DisplayRepository {
 
   Optional<Display> findById(Long displayId);
 
+  Optional<Display> findByIdWithOptimisticLock(Long displayId);
+
   Optional<Display> findByInvitationToken(String invitationTokenHash);
 
   List<Display> findAll();

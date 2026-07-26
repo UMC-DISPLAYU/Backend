@@ -33,6 +33,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +56,8 @@ public class Display extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "displayId")
   private Long id;
+
+  @Version private Long version;
 
   @Embedded
   @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))

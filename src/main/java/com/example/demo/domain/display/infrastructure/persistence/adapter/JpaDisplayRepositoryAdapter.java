@@ -22,6 +22,11 @@ public class JpaDisplayRepositoryAdapter implements DisplayRepository {
   }
 
   @Override
+  public Optional<Display> findByIdWithOptimisticLock(Long displayId) {
+    return jpaRepository.findWithOptimisticLockById(displayId);
+  }
+
+  @Override
   public Optional<Display> findByInvitationToken(String invitationTokenHash) {
     return jpaRepository.findByInvitationToken(invitationTokenHash);
   }
