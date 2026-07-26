@@ -55,9 +55,16 @@ public class DisplayContent extends BaseTimeEntity {
   }
 
   public void changeImageInfo(String imageUrl, int width, int height) {
-    this.imageUrl = imageUrl;
+    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
     this.width = requirePositive(width, "width");
     this.height = requirePositive(height, "height");
+  }
+
+  private static String requireNonBlank(String value, String fieldName) {
+    if (value == null || value.isBlank()) {
+      throw new IllegalArgumentException(fieldName + " must not be blank.");
+    }
+    return value;
   }
 
   private static int requirePositive(int value, String fieldName) {
