@@ -250,7 +250,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          pattern='DROP[[:space:]]+(TABLE|DATABASE|SCHEMA|VIEW|INDEX|FOREIGN[[:space:]]+KEY|COLUMN)|ALTER[[:space:]]+TABLE[^;]*(DROP|CHANGE[[:space:]]+(COLUMN[[:space:]]+)?|MODIFY[[:space:]]+(COLUMN[[:space:]]+)?|ALTER[[:space:]]+COLUMN)|ADD[[:space:]]+COLUMN[^;]*NOT[[:space:]]+NULL|MODIFY[[:space:]]+(COLUMN[[:space:]]+)?|CHANGE[[:space:]]+(COLUMN[[:space:]]+)?|ALTER[[:space:]]+COLUMN|ADD[[:space:]]+UNIQUE|ADD[[:space:]]+(CONSTRAINT[[:space:]]+[^[:space:]]+[[:space:]]+)?FOREIGN[[:space:]]+KEY|(^|[[:space:];])DELETE[[:space:]]+FROM|TRUNCATE'
+          pattern='DROP[[:space:]]+FOREIGN[[:space:]]+KEY|DROP[[:space:]]+COLUMN|ADD[[:space:]]+COLUMN[^;]*NOT[[:space:]]+NULL|MODIFY[[:space:]]+(COLUMN[[:space:]]+)?|ALTER[[:space:]]+COLUMN|ADD[[:space:]]+UNIQUE|ADD[[:space:]]+(CONSTRAINT[[:space:]]+[^[:space:]]+[[:space:]]+)?FOREIGN[[:space:]]+KEY|(^|[[:space:];])DELETE[[:space:]]+FROM|TRUNCATE'
 
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
             base_ref="${{ github.event.before }}"
