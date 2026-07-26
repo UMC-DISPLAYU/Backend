@@ -72,31 +72,6 @@ public interface ArtworkQuestionApiDocs {
                           }
                           """)))
   @ApiResponse(
-      responseCode = "403",
-      description = "해당 작품의 작가는 질문 작성 불가",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Creator cannot write question",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
-                              "message": "작업자는 본인 작품에 질문을 작성할 수 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-06-30T22:10:00",
-                              "path": "/api/v1/artworks/3/questions"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
       responseCode = "404",
       description = "작품 없음",
       content =
@@ -156,6 +131,31 @@ public interface ArtworkQuestionApiDocs {
                               }
                             },
                             "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/3/questions"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "해당 작품의 작가는 질문 작성 불가",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Creator cannot write question",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
+                              "message": "작가는 본인 작품에 질문을 작성할 수 없습니다.",
+                              "details": null
+                            },
                             "meta": {
                               "timestamp": "2026-06-30T22:10:00",
                               "path": "/api/v1/artworks/3/questions"

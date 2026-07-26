@@ -14,7 +14,7 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   CREATOR_CANNOT_WRITE_FEELING(
       HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_FEELING", "작업자는 본인 작품에 감상평을 작성할 수 없습니다."),
   CREATOR_CANNOT_WRITE_QUESTION(
-      HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_QUESTION", "작업자는 본인 작품에 질문을 작성할 수 없습니다."),
+      HttpStatus.FORBIDDEN, "CREATOR_CANNOT_WRITE_QUESTION", "작가는 본인 작품에 질문을 작성할 수 없습니다."),
   ARTWORK_FEELING_FORBIDDEN(HttpStatus.FORBIDDEN, "ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
   ARTWORK_FEELING_REPLY_FORBIDDEN(
       HttpStatus.FORBIDDEN, "ARTWORK_FEELING_REPLY_FORBIDDEN", "감상평 답변에 대한 권한이 없습니다."),

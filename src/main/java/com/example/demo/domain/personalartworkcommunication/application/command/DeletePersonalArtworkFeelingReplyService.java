@@ -26,7 +26,8 @@ public class DeletePersonalArtworkFeelingReplyService {
     personalArtworkFeelingValidator.validateReplyTarget(feeling, command.personalArtworkId());
 
     PersonalArtworkFeelingReply reply =
-        personalArtworkFeelingValidator.findReplyOrThrow(command.personalFeelingReplyId());
+        personalArtworkFeelingValidator.findActiveReplyForUpdateOrThrow(
+            command.personalFeelingReplyId());
     personalArtworkFeelingValidator.validateAccessibleReply(
         reply, command.personalFeelingId(), command.userId());
 

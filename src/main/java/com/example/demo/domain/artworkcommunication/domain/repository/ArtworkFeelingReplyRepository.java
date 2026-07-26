@@ -9,6 +9,8 @@ public interface ArtworkFeelingReplyRepository {
 
   Optional<ArtworkFeelingReply> findById(Long feelingReplyId);
 
+  Optional<ArtworkFeelingReply> findActiveByIdForUpdate(Long feelingReplyId);
+
   List<ArtworkFeelingReply> findActiveByFeelingIdWithCursor(
       Long feelingId, Long cursorId, int limit);
 

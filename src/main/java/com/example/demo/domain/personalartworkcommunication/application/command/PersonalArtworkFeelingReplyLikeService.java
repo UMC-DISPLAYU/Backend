@@ -29,7 +29,8 @@ public class PersonalArtworkFeelingReplyLikeService {
     personalArtworkFeelingValidator.validateReplyTarget(feeling, command.personalArtworkId());
 
     PersonalArtworkFeelingReply reply =
-        personalArtworkFeelingValidator.findReplyOrThrow(command.personalFeelingReplyId());
+        personalArtworkFeelingValidator.findActiveReplyForUpdateOrThrow(
+            command.personalFeelingReplyId());
     personalArtworkFeelingValidator.validateReplyTarget(reply, command.personalFeelingId());
 
     PersonalArtworkFeelingReplyLikeSnapshot snapshot =
@@ -43,7 +44,7 @@ public class PersonalArtworkFeelingReplyLikeService {
     return new PersonalArtworkFeelingReplyLikeResult(
         snapshot.personalFeelingReplyId(),
         snapshot.liked(),
-        Math.toIntExact(snapshot.likeCount()),
+        snapshot.likeCount(),
         snapshot.createdAt(),
         snapshot.deletedAt());
   }

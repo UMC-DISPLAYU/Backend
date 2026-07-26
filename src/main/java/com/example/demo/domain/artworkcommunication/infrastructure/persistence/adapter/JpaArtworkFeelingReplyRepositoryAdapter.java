@@ -27,6 +27,11 @@ public class JpaArtworkFeelingReplyRepositoryAdapter implements ArtworkFeelingRe
   }
 
   @Override
+  public Optional<ArtworkFeelingReply> findActiveByIdForUpdate(Long feelingReplyId) {
+    return artworkFeelingReplyJpaRepository.findActiveByIdForUpdate(feelingReplyId);
+  }
+
+  @Override
   public List<ArtworkFeelingReply> findActiveByFeelingIdWithCursor(
       Long feelingId, Long cursorId, int limit) {
     return artworkFeelingReplyJpaRepository.findActiveByFeelingIdWithCursor(

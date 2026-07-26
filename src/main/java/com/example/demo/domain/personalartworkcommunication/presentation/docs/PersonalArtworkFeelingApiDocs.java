@@ -147,9 +147,7 @@ public interface PersonalArtworkFeelingApiDocs {
       @Parameter(description = "다음 페이지 조회를 위한 마지막 답변 ID", example = "3") @Positive Long cursorId,
       HttpServletRequest httpServletRequest);
 
-  @Operation(
-      summary = "개인 작품 감상평 답변 등록",
-      description = "개인 작품의 감상평에 답변을 등록합니다. 개인 작품 소유 여부를 isCreator로 반환합니다.")
+  @Operation(summary = "개인 작품 감상평 답변 등록", description = "개인 작품의 감상평에 답변을 등록합니다.")
   @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
   @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
   ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(

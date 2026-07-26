@@ -20,7 +20,6 @@ public class JpaArtworkFeelingReplyLikeRepositoryAdapter
   @Override
   public Optional<ArtworkFeelingReplyLikeSnapshot> toggleAndGetSnapshot(
       Long feelingReplyId, Long userId) {
-    repository.lockByFeelingReplyId(feelingReplyId);
     repository.toggle(feelingReplyId, userId);
 
     long likeCount = repository.countByFeelingReplyIdAndDeletedAtIsNull(feelingReplyId);

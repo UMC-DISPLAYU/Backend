@@ -32,7 +32,8 @@ public class ArtworkFeelingReplyLikeService {
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
     artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
 
-    ArtworkFeelingReply reply = artworkFeelingValidator.findReplyOrThrow(command.feelingReplyId());
+    ArtworkFeelingReply reply =
+        artworkFeelingValidator.findActiveReplyForUpdateOrThrow(command.feelingReplyId());
     artworkFeelingValidator.validateReplyTarget(reply, command.feelingId());
 
     ArtworkFeelingReplyLikeSnapshot snapshot =

@@ -63,6 +63,13 @@ public class ArtworkFeelingValidator {
     return reply;
   }
 
+  public ArtworkFeelingReply findActiveReplyForUpdateOrThrow(Long feelingReplyId) {
+    return artworkFeelingReplyRepository
+        .findActiveByIdForUpdate(feelingReplyId)
+        .orElseThrow(
+            () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND));
+  }
+
   public void validateReplyTarget(ArtworkFeelingReply reply, Long feelingId) {
     if (!reply.belongsToFeeling(feelingId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND);

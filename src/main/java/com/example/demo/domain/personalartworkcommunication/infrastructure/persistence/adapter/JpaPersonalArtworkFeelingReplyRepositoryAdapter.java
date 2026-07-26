@@ -28,6 +28,12 @@ public class JpaPersonalArtworkFeelingReplyRepositoryAdapter
   }
 
   @Override
+  public Optional<PersonalArtworkFeelingReply> findActiveByIdForUpdate(
+      Long personalFeelingReplyId) {
+    return personalArtworkFeelingReplyJpaRepository.findActiveByIdForUpdate(personalFeelingReplyId);
+  }
+
+  @Override
   public List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIdWithCursor(
       Long personalFeelingId, Long cursorId, int limit) {
     return personalArtworkFeelingReplyJpaRepository.findActiveByPersonalFeelingIdWithCursor(

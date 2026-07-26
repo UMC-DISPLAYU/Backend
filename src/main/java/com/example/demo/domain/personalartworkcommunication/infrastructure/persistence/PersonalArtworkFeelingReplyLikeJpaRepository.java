@@ -11,18 +11,6 @@ import org.springframework.data.repository.query.Param;
 public interface PersonalArtworkFeelingReplyLikeJpaRepository
     extends JpaRepository<PersonalArtworkFeelingReplyLike, Long> {
 
-  @Query(
-      value =
-          """
-          SELECT *
-          FROM PersonalArtworkFeelingReplyLike
-          WHERE personalFeelingReplyId = :personalFeelingReplyId
-          FOR UPDATE
-          """,
-      nativeQuery = true)
-  List<PersonalArtworkFeelingReplyLike> lockByPersonalFeelingReplyId(
-      @Param("personalFeelingReplyId") Long personalFeelingReplyId);
-
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query(
       value =

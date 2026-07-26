@@ -1,5 +1,6 @@
 package com.example.demo.domain.artworkcommunication.application.query;
 
+import com.example.demo.domain.artworkcommunication.application.query.ArtworkFeelingUserDisplayResolver.UserDisplayInfo;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingUserResult;
@@ -32,6 +33,7 @@ public class GetArtworkFeelingsService {
   private final ArtworkFeelingLikeRepository artworkFeelingLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkFeelingUserDisplayResolver userDisplayResolver;
 
   public ArtworkFeelingListResult getFeelings(GetArtworkFeelingsQuery query) {
     if (!displayArtworkExistenceRepository.existsById(query.displayArtworkId())) {
@@ -65,7 +67,9 @@ public class GetArtworkFeelingsService {
                         feeling.getFeelingId(),
                         feeling.getContent(),
                         feeling.getCreatedAt(),
-                        toUserResult(feeling.getUserId(), nicknameByUserId, creatorNameByUserId),
+                        toUserResult(
+                            userDisplayResolver.resolve(
+                                feeling.getUserId(), nicknameByUserId, creatorNameByUserId)),
                         likeCounts.getOrDefault(feeling.getFeelingId(), 0L),
                         replyCounts.getOrDefault(feeling.getFeelingId(), 0L)))
             .toList();
@@ -74,19 +78,7 @@ public class GetArtworkFeelingsService {
     return new ArtworkFeelingListResult(items, nextCursorId, PAGE_SIZE, hasNext);
   }
 
-  private ArtworkFeelingUserResult toUserResult(
-      Long userId, Map<Long, String> nicknameByUserId, Map<Long, String> creatorNameByUserId) {
-    String creatorName = creatorNameByUserId.get(userId);
-    boolean isCreator = creatorName != null;
-    String nickname = isCreator ? creatorName : findNicknameOrThrow(nicknameByUserId, userId);
-    return new ArtworkFeelingUserResult(userId, nickname, isCreator);
-  }
-
-  private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {
-    String nickname = nicknameByUserId.get(userId);
-    if (nickname == null) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.USER_NOT_FOUND);
-    }
-    return nickname;
+  private ArtworkFeelingUserResult toUserResult(UserDisplayInfo user) {
+    return new ArtworkFeelingUserResult(user.userId(), user.nickname(), user.isCreator());
   }
 }

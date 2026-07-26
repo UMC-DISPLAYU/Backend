@@ -9,6 +9,8 @@ public interface PersonalArtworkFeelingReplyRepository {
 
   Optional<PersonalArtworkFeelingReply> findById(Long personalFeelingReplyId);
 
+  Optional<PersonalArtworkFeelingReply> findActiveByIdForUpdate(Long personalFeelingReplyId);
+
   List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIdWithCursor(
       Long personalFeelingId, Long cursorId, int limit);
 

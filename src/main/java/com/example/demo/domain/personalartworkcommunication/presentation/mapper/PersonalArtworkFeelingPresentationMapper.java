@@ -78,8 +78,7 @@ public class PersonalArtworkFeelingPresentationMapper {
         result.content(),
         result.personalFeelingId(),
         result.userId(),
-        result.nickname(),
-        result.isCreator());
+        result.nickname());
   }
 
   public PersonalArtworkFeelingLikeResponse toResponse(PersonalArtworkFeelingLikeResult result) {

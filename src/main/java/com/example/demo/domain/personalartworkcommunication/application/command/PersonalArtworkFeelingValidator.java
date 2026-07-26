@@ -80,6 +80,15 @@ public class PersonalArtworkFeelingValidator {
     return reply;
   }
 
+  public PersonalArtworkFeelingReply findActiveReplyForUpdateOrThrow(Long personalFeelingReplyId) {
+    return personalArtworkFeelingReplyRepository
+        .findActiveByIdForUpdate(personalFeelingReplyId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND));
+  }
+
   public void validateReplyTarget(PersonalArtworkFeelingReply reply, Long personalFeelingId) {
     if (!reply.belongsToFeeling(personalFeelingId)) {
       throw new BusinessException(

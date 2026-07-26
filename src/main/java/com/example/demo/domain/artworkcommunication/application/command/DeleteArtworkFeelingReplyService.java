@@ -31,7 +31,8 @@ public class DeleteArtworkFeelingReplyService {
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
     artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
 
-    ArtworkFeelingReply reply = artworkFeelingValidator.findReplyOrThrow(command.feelingReplyId());
+    ArtworkFeelingReply reply =
+        artworkFeelingValidator.findActiveReplyForUpdateOrThrow(command.feelingReplyId());
     artworkFeelingValidator.validateAccessibleReply(reply, command.feelingId(), command.userId());
 
     reply.delete();
