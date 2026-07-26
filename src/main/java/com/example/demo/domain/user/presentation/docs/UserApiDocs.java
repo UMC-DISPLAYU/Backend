@@ -2,18 +2,6 @@ package com.example.demo.domain.user.presentation.docs;
 
 public final class UserApiDocs {
 
-  public static final String SIGNUP_REQUEST_EXAMPLE =
-      """
-      {
-        "nickname": "maya",
-        "agreements": [
-          { "agreeId": 1, "isAgreed": true },
-          { "agreeId": 2, "isAgreed": true },
-          { "agreeId": 3, "isAgreed": false }
-        ]
-      }
-      """;
-
   public static final String SIGNUP_SUCCESS_EXAMPLE =
       """
       {

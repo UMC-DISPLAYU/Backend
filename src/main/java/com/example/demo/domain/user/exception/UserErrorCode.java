@@ -29,6 +29,9 @@ public enum UserErrorCode implements BaseErrorCode {
   REQUIRED_AGREEMENT_NOT_ACCEPTED(
       HttpStatus.BAD_REQUEST, "REQUIRED_AGREEMENT_NOT_ACCEPTED", "필수 약관에 동의해야 회원가입할 수 있습니다."),
 
+  REQUIRED_AGREEMENT_NOT_FOUND(
+      HttpStatus.INTERNAL_SERVER_ERROR, "REQUIRED_AGREEMENT_NOT_FOUND", "필수 약관이 설정되어 있지 않습니다."),
+
   ALREADY_REGISTERED_USER(HttpStatus.CONFLICT, "ALREADY_REGISTERED_USER", "이미 가입된 사용자입니다."),
 
   MISSING_NICKNAME(HttpStatus.BAD_REQUEST, "MISSING_NICKNAME", "닉네임을 입력해주세요."),
