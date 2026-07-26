@@ -458,7 +458,7 @@ public class Display extends BaseTimeEntity {
     return category.getContents();
   }
 
-  public DisplayContentCategory findContentCategory(Long categoryId) {
+  private DisplayContentCategory findContentCategory(Long categoryId) {
     return contentCategories.stream()
         .filter(category -> Objects.equals(category.getId(), categoryId))
         .findFirst()
