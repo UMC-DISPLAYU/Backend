@@ -102,31 +102,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect migration changes
-        id: migration-changes
-        run: |
-          set -euo pipefail
-
-          if [ "${{ github.event_name }}" = "push" ] \
-            && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
-            base_ref="${{ github.event.before }}"
-          elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-            base_ref="HEAD~1"
-          else
-            base_ref=""
-          fi
-
-          if [ -z "$base_ref" ]; then
-            changed="true"
-          elif git diff --name-only "$base_ref" HEAD -- 'src/main/resources/db/migration/V*.sql' \
-            | grep -q .; then
-            changed="true"
-          else
-            changed="false"
-          fi
-
-          echo "changed=$changed" >> "$GITHUB_OUTPUT"
-
       - name: Download application JAR
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
@@ -150,6 +125,32 @@ jobs:
           printf '%s\n' "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "$EC2_PORT" -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Start temporary MySQL
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name migration-precheck-mysql \
+            -e MYSQL_ROOT_PASSWORD=precheck-root-password \
+            -e MYSQL_DATABASE="$TEMP_DB_NAME" \
+            -p 3307:3306 \
+            "$MYSQL_IMAGE"
+
+          for attempt in $(seq 1 60); do
+            if mysqladmin ping \
+              --host=127.0.0.1 \
+              --port=3307 \
+              --user=root \
+              --password=precheck-root-password \
+              --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs migration-precheck-mysql || true
+          exit 1
 
       - name: Mask production DB values
         env:
@@ -246,8 +247,6 @@ jobs:
           fi
 
       - name: Detect risky migration SQL
-        id: migration-risk
-        if: steps.migration-changes.outputs.changed == 'true'
         run: |
           set -euo pipefail
 
@@ -278,12 +277,6 @@ jobs:
             matches="$(grep -Ein "$pattern" "${changed_migration_files[@]}" || true)"
           fi
 
-          if [ -n "$matches" ]; then
-            echo "risky=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "risky=false" >> "$GITHUB_OUTPUT"
-          fi
-
           {
             echo "## Migration risk scan"
             if [ -n "$matches" ]; then
@@ -299,35 +292,7 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Start temporary MySQL
-        if: steps.migration-changes.outputs.changed == 'true' && steps.migration-risk.outputs.risky == 'true'
-        run: |
-          set -euo pipefail
-
-          docker run -d \
-            --name migration-precheck-mysql \
-            -e MYSQL_ROOT_PASSWORD=precheck-root-password \
-            -e MYSQL_DATABASE="$TEMP_DB_NAME" \
-            -p 3307:3306 \
-            "$MYSQL_IMAGE"
-
-          for attempt in $(seq 1 60); do
-            if mysqladmin ping \
-              --host=127.0.0.1 \
-              --port=3307 \
-              --user=root \
-              --password=precheck-root-password \
-              --silent; then
-              exit 0
-            fi
-            sleep 2
-          done
-
-          docker logs migration-precheck-mysql || true
-          exit 1
-
       - name: Dump production schema and Flyway history
-        if: steps.migration-changes.outputs.changed == 'true' && steps.migration-risk.outputs.risky == 'true'
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
@@ -393,7 +358,6 @@ jobs:
           sed -E -i 's/DEFINER=`[^`]+`@`[^`]+`//g' /tmp/flyway-precheck/production-schema.sql
 
       - name: Restore production schema into temporary MySQL
-        if: steps.migration-changes.outputs.changed == 'true' && steps.migration-risk.outputs.risky == 'true'
         run: |
           set -euo pipefail
 
@@ -485,7 +449,6 @@ jobs:
           echo "Flyway migration order check passed. Latest applied production migration: $latest_applied_version"
 
       - name: Run Flyway validate and migrate on temporary DB
-        if: steps.migration-changes.outputs.changed == 'true' && steps.migration-risk.outputs.risky == 'true'
         env:
           FLYWAY_URL: jdbc:mysql://127.0.0.1:3307/displayu_migration_precheck
           FLYWAY_USER: root
@@ -525,7 +488,6 @@ jobs:
           fi
 
       - name: Verify Spring Boot context and Hibernate schema validation
-        if: steps.migration-changes.outputs.changed == 'true' && steps.migration-risk.outputs.risky == 'true'
         env:
           SPRING_PROFILES_ACTIVE: dev
           SPRING_FLYWAY_ENABLED: "false"
