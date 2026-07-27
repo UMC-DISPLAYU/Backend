@@ -23,7 +23,6 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
 
   private static final QDisplay display = QDisplay.display;
   private static final QDisplayImage image = QDisplayImage.displayImage;
-  private static final QDisplayImage mainImage = new QDisplayImage("mainImage");
   private static final QDisplayFieldSelection fieldSelection =
       QDisplayFieldSelection.displayFieldSelection;
 
@@ -50,13 +49,7 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
         .on(
             image.imageType.eq(DisplayImageType.MAIN),
             image.deletedAt.isNull(),
-            image.sortOrder.eq(
-                JPAExpressions.select(mainImage.sortOrder.min())
-                    .from(mainImage)
-                    .where(
-                        mainImage.display.eq(display),
-                        mainImage.imageType.eq(DisplayImageType.MAIN),
-                        mainImage.deletedAt.isNull())))
+            image.sortOrder.eq(0))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.id.gt(query.cursor()),
