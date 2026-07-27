@@ -2,7 +2,7 @@
 .gradle/
 build/
 
-query-performance-optimization-plan.md
+docs/query-performance-optimization-plan.md
 
 # Java
 *.class
