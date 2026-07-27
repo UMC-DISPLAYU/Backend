@@ -2,6 +2,8 @@
 .gradle/
 build/
 
+query-performance-optimization-plan.md
+
 # Java
 *.class
 *.jar
