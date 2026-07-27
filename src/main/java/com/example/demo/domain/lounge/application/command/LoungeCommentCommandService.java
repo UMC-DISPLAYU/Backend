@@ -69,6 +69,7 @@ public class LoungeCommentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     LoungeComment comment = getActiveComment(loungeCommentId);
+    getActivePost(comment.getLoungePostId());
     validateAuthor(comment, new UserId(requesterUserId));
 
     comment.changeContent(command.content());
@@ -77,6 +78,7 @@ public class LoungeCommentCommandService {
   @Transactional
   public void deleteComment(Long loungeCommentId, Long requesterUserId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
+    getActivePost(comment.getLoungePostId());
     validateAuthor(comment, new UserId(requesterUserId));
 
     comment.delete();
@@ -85,6 +87,7 @@ public class LoungeCommentCommandService {
   @Transactional
   public LoungeCommentLikeResult likeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
+    getActivePost(comment.getLoungePostId());
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.saveIfAbsent(comment.getId(), likeUserId);
@@ -96,6 +99,7 @@ public class LoungeCommentCommandService {
   @Transactional
   public LoungeCommentLikeResult cancelLikeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
+    getActivePost(comment.getLoungePostId());
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
