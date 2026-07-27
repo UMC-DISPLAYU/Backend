@@ -110,6 +110,17 @@ class LoungePublicQueryControllerTest {
   }
 
   @Test
+  void repliesReturnNotFoundWhenPostIsDeleted() throws Exception {
+    post.delete();
+    postRepository.flush();
+
+    mockMvc
+        .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_POST_NOT_FOUND"));
+  }
+
+  @Test
   void replacesPostImagesInRequestOrder() {
     post.replaceImages(List.of("replacement-2", "replacement-1"));
     postRepository.flush();
