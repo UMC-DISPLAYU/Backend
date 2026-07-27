@@ -3,31 +3,84 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 import com.example.demo.domain.display.application.query.DisplayMapQuery;
 import com.example.demo.domain.display.application.query.DisplayMapQueryRepository;
 import com.example.demo.domain.display.application.query.DisplayMapQueryResult;
+import com.example.demo.domain.display.domain.aggregate.QDisplay;
+import com.example.demo.domain.display.domain.entity.QDisplayImage;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
-import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayMapQueryJpaRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepository {
 
-  private final SpringDataDisplayMapQueryJpaRepository jpaRepository;
+  private static final QDisplay display = QDisplay.display;
+  private static final QDisplayImage image = QDisplayImage.displayImage;
+  private static final QDisplayImage mainImage = new QDisplayImage("mainImage");
 
-  public JpaDisplayMapQueryRepositoryAdapter(SpringDataDisplayMapQueryJpaRepository jpaRepository) {
-    this.jpaRepository = jpaRepository;
+  private final JPAQueryFactory queryFactory;
+
+  public JpaDisplayMapQueryRepositoryAdapter(JPAQueryFactory queryFactory) {
+    this.queryFactory = queryFactory;
   }
 
   @Override
   public List<DisplayMapQueryResult> findMarkers(DisplayMapQuery query, int limit) {
-    return jpaRepository.findMarkers(
-        query.southLatitude(),
-        query.westLongitude(),
-        query.northLatitude(),
-        query.eastLongitude(),
-        query.searchWord(),
-        query.cursor(),
-        DisplayImageType.MAIN,
-        PageRequest.of(0, limit));
+    return queryFactory
+        .select(
+            Projections.constructor(
+                DisplayMapQueryResult.class,
+                display.id,
+                display.title,
+                display.period.startDate,
+                display.period.endDate,
+                display.location.placeName,
+                image.imageUrl,
+                display.location.latitude,
+                display.location.longitude))
+        .from(display)
+        .leftJoin(display.images, image)
+        .on(
+            image.imageType.eq(DisplayImageType.MAIN),
+            image.deletedAt.isNull(),
+            image.sortOrder.eq(
+                JPAExpressions.select(mainImage.sortOrder.min())
+                    .from(mainImage)
+                    .where(
+                        mainImage.display.eq(display),
+                        mainImage.imageType.eq(DisplayImageType.MAIN),
+                        mainImage.deletedAt.isNull())))
+        .where(
+            display.status.eq(DisplayStatus.PUBLISHED),
+            display.location.latitude.between(query.southLatitude(), query.northLatitude()),
+            display.location.longitude.between(query.westLongitude(), query.eastLongitude()),
+            cursorBefore(query),
+            searchWordContains(query.searchWord()))
+        .orderBy(display.id.desc())
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanExpression cursorBefore(DisplayMapQuery query) {
+    return query.cursor() == null ? null : display.id.lt(query.cursor());
+  }
+
+  private BooleanExpression searchWordContains(String searchWord) {
+    if (!hasText(searchWord)) {
+      return null;
+    }
+    String normalizedSearchWord = searchWord.toLowerCase();
+    return display
+        .title
+        .lower()
+        .contains(normalizedSearchWord)
+        .or(display.location.placeName.lower().contains(normalizedSearchWord));
+  }
+
+  private boolean hasText(String value) {
+    return value != null && !value.isBlank();
   }
 }

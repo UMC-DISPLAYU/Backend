@@ -7,6 +7,7 @@ import com.example.demo.domain.display.application.query.DuPickQueryRepository;
 import com.example.demo.domain.display.application.query.DuPickQueryResult;
 import com.example.demo.domain.display.infrastructure.persistence.DuPickColumnJpaEntity;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDuPickQueryJpaRepository;
+import com.example.demo.global.config.QuerydslConfig;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(JpaDuPickQueryRepositoryAdapter.class)
+@Import({JpaDuPickQueryRepositoryAdapter.class, QuerydslConfig.class})
 class JpaDuPickQueryRepositoryAdapterTest {
 
   @Autowired private DuPickQueryRepository queryRepository;

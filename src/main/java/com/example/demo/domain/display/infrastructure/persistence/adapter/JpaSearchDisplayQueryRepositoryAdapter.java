@@ -3,44 +3,110 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 import com.example.demo.domain.display.application.query.SearchDisplayQuery;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryResult;
+import com.example.demo.domain.display.domain.aggregate.QDisplay;
+import com.example.demo.domain.display.domain.entity.QDisplayFieldSelection;
+import com.example.demo.domain.display.domain.entity.QDisplayImage;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
-import com.example.demo.domain.display.infrastructure.persistence.SpringDataSearchDisplayQueryJpaRepository;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQueryRepository {
 
-  private final SpringDataSearchDisplayQueryJpaRepository jpaRepository;
+  private static final QDisplay display = QDisplay.display;
+  private static final QDisplayImage image = QDisplayImage.displayImage;
+  private static final QDisplayImage mainImage = new QDisplayImage("mainImage");
+  private static final QDisplayFieldSelection fieldSelection =
+      QDisplayFieldSelection.displayFieldSelection;
 
-  public JpaSearchDisplayQueryRepositoryAdapter(
-      SpringDataSearchDisplayQueryJpaRepository jpaRepository) {
-    this.jpaRepository = jpaRepository;
+  private final JPAQueryFactory queryFactory;
+
+  public JpaSearchDisplayQueryRepositoryAdapter(JPAQueryFactory queryFactory) {
+    this.queryFactory = queryFactory;
   }
 
   @Override
   public List<SearchDisplayQueryResult> searchDisplays(
       SearchDisplayQuery query, LocalDate today, int limit) {
-    LocalDate closingSoonEndDate = today.plusDays(3);
-    return jpaRepository.searchDisplays(
-        query.searchWord(),
-        query.status() != null,
-        query.status() == SearchDisplayStatus.UPCOMING,
-        query.status() == SearchDisplayStatus.ONGOING,
-        query.status() == SearchDisplayStatus.ENDED,
-        query.status() == SearchDisplayStatus.CLOSING_SOON,
-        query.region() != null && query.region() != DisplayRegion.ALL,
-        query.region(),
-        query.field(),
-        query.type(),
-        today,
-        closingSoonEndDate,
-        query.cursor(),
-        DisplayImageType.MAIN,
-        PageRequest.of(0, limit));
+    return queryFactory
+        .select(
+            Projections.constructor(
+                SearchDisplayQueryResult.class,
+                display.id,
+                display.title,
+                image.imageUrl,
+                display.period.startDate,
+                display.period.endDate))
+        .from(display)
+        .leftJoin(display.images, image)
+        .on(
+            image.imageType.eq(DisplayImageType.MAIN),
+            image.deletedAt.isNull(),
+            image.sortOrder.eq(
+                JPAExpressions.select(mainImage.sortOrder.min())
+                    .from(mainImage)
+                    .where(
+                        mainImage.display.eq(display),
+                        mainImage.imageType.eq(DisplayImageType.MAIN),
+                        mainImage.deletedAt.isNull())))
+        .where(
+            display.status.eq(DisplayStatus.PUBLISHED),
+            display.id.gt(query.cursor()),
+            searchWordContains(query.searchWord()),
+            regionEq(query),
+            query.type() == null ? null : display.displayType.eq(query.type()),
+            fieldExists(query),
+            statusCondition(query.status(), today))
+        .orderBy(display.id.asc())
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanExpression searchWordContains(String searchWord) {
+    if (!hasText(searchWord)) {
+      return null;
+    }
+    return display.title.lower().contains(searchWord.toLowerCase());
+  }
+
+  private BooleanExpression regionEq(SearchDisplayQuery query) {
+    if (query.region() == null || query.region() == DisplayRegion.ALL) {
+      return null;
+    }
+    return display.region.eq(query.region());
+  }
+
+  private BooleanExpression fieldExists(SearchDisplayQuery query) {
+    if (query.field() == null) {
+      return null;
+    }
+    return JPAExpressions.selectOne()
+        .from(fieldSelection)
+        .where(fieldSelection.display.eq(display), fieldSelection.field.eq(query.field()))
+        .exists();
+  }
+
+  private BooleanExpression statusCondition(SearchDisplayStatus status, LocalDate today) {
+    if (status == null) {
+      return null;
+    }
+    return switch (status) {
+      case UPCOMING -> display.period.startDate.gt(today);
+      case ONGOING -> display.period.startDate.loe(today).and(display.period.endDate.goe(today));
+      case ENDED -> display.period.endDate.lt(today);
+      case CLOSING_SOON -> display.period.endDate.between(today, today.plusDays(3));
+    };
+  }
+
+  private boolean hasText(String value) {
+    return value != null && !value.isBlank();
   }
 }
