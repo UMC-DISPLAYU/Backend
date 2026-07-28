@@ -3,6 +3,7 @@ package com.example.demo.domain.memo.presentation.docs;
 import com.example.demo.domain.memo.presentation.request.MemoRequest;
 import com.example.demo.domain.memo.presentation.response.MemoResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,11 +50,13 @@ public interface MemoControllerDocs {
   ApiResponseBody<MemoResponse> upsertExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
       @Valid @RequestBody MemoRequest request,
+      AuthUser user,
       HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 메모 삭제", description = "저장된 전시에 작성한 메모를 삭제합니다.")
   ApiResponseBody<Void> deleteExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
+      AuthUser user,
       HttpServletRequest httpRequest);
 
   @Operation(summary = "작품 메모 작성/수정", description = "저장된 작품 1건당 메모를 하나만 작성합니다. 이미 있으면 덮어씁니다.")
@@ -85,10 +88,12 @@ public interface MemoControllerDocs {
   ApiResponseBody<MemoResponse> upsertArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
       @Valid @RequestBody MemoRequest request,
+      AuthUser user,
       HttpServletRequest httpRequest);
 
   @Operation(summary = "작품 메모 삭제", description = "저장된 작품에 작성한 메모를 삭제합니다.")
   ApiResponseBody<Void> deleteArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
+      AuthUser user,
       HttpServletRequest httpRequest);
 }
