@@ -12,14 +12,19 @@ import com.example.demo.domain.personalartwork.presentation.request.PersonalArtw
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkLikeResponse;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkResponse;
 import com.example.demo.domain.personalartwork.presentation.response.PersonalArtworkSummaryResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,9 +38,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Tag(name = "PersonalArtwork", description = "개인 작품(작가 프로필 아카이브) API")
 public class PersonalArtworkController {
-
-  // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. JWT 인증 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
-  private static final Long TEMP_USER_ID = 1L;
 
   private final PersonalArtworkCommandService personalArtworkCommandService;
   private final PersonalArtworkQueryService personalArtworkQueryService;
@@ -55,13 +57,15 @@ public class PersonalArtworkController {
 
   @PostMapping("/api/v1/personal-artworks")
   @ResponseStatus(HttpStatus.CREATED)
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 등록", description = "작가 프로필에 전시와 무관한 개인 작품을 등록합니다.")
   public ApiResponseBody<PersonalArtworkResponse> createPersonalArtwork(
       @Valid @RequestBody PersonalArtworkRequest personalArtworkRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     Long personalArtworkId =
         personalArtworkCommandService.createPersonalArtwork(
-            TEMP_USER_ID, personalArtworkRequest.toCommand());
+            requireUserId(user), personalArtworkRequest.toCommand());
     PersonalArtworkResult result =
         personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -80,56 +84,76 @@ public class PersonalArtworkController {
   }
 
   @GetMapping("/api/v1/personal-artworks/{personalArtworkId}")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 단건 상세 조회", description = "수정 화면 진입 시 본인 소유 개인 작품의 전체 필드를 조회합니다.")
   public ApiResponseBody<PersonalArtworkResponse> getPersonalArtworkDetail(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     PersonalArtworkResult result =
-        personalArtworkQueryService.getOwnedPersonalArtworkDetail(personalArtworkId, TEMP_USER_ID);
+        personalArtworkQueryService.getOwnedPersonalArtworkDetail(
+            personalArtworkId, requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @PatchMapping("/api/v1/personal-artworks/{personalArtworkId}")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 수정", description = "본인이 등록한 개인 작품의 내용과 이미지를 수정합니다.")
   public ApiResponseBody<PersonalArtworkResponse> updatePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @Valid @RequestBody PersonalArtworkRequest personalArtworkRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     personalArtworkCommandService.updatePersonalArtwork(
-        personalArtworkId, TEMP_USER_ID, personalArtworkRequest.toCommand());
+        personalArtworkId, requireUserId(user), personalArtworkRequest.toCommand());
     PersonalArtworkResult result =
         personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @DeleteMapping("/api/v1/personal-artworks/{personalArtworkId}")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 삭제", description = "본인이 등록한 개인 작품을 삭제합니다.")
   public ApiResponseBody<Void> deletePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    personalArtworkCommandService.deletePersonalArtwork(personalArtworkId, TEMP_USER_ID);
+    personalArtworkCommandService.deletePersonalArtwork(personalArtworkId, requireUserId(user));
     return ApiResponseBody.success(null, request);
   }
 
   @PostMapping("/api/v1/personal-artworks/{personalArtworkId}/like")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 좋아요 등록", description = "개인 작품에 좋아요를 등록합니다.")
   public ApiResponseBody<PersonalArtworkLikeResponse> likePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     PersonalArtworkLikeResult result =
         personalArtworkLikeCommandService.like(
-            new PersonalArtworkLikeCommand(personalArtworkId, TEMP_USER_ID));
+            new PersonalArtworkLikeCommand(personalArtworkId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @DeleteMapping("/api/v1/personal-artworks/{personalArtworkId}/like")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "개인 작품 좋아요 취소", description = "개인 작품 좋아요를 취소합니다.")
   public ApiResponseBody<PersonalArtworkLikeResponse> cancelPersonalArtworkLike(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     PersonalArtworkLikeResult result =
         personalArtworkLikeCommandService.cancel(
-            new PersonalArtworkLikeCommand(personalArtworkId, TEMP_USER_ID));
+            new PersonalArtworkLikeCommand(personalArtworkId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  // 인증이 필수인 API에서 사용한다. SecurityConfig가 모든 요청을 permitAll로 통과시키므로
+  // 토큰이 없거나 유효하지 않으면 AuthUser가 null로 주입될 수 있어 컨트롤러단에서 막는다.
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
