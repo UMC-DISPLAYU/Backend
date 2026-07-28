@@ -35,6 +35,22 @@ class LoungeCommentCommandServiceTest {
     when(postRepository.findById(1L)).thenReturn(Optional.of(post));
     when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
 
+    assertCommentChangesReturnPostNotFound();
+  }
+
+  @Test
+  void commentChangesReturnNotFoundWhenPostIsHidden() {
+    LoungePost post =
+        LoungePost.create(new UserId(1L), "게시글 제목", "게시글 내용", LoungePostCategory.DISPLAY_REVIEW);
+    post.hide();
+    LoungeComment comment = LoungeComment.createComment(1L, new UserId(2L), "댓글 내용");
+    when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+    when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
+
+    assertCommentChangesReturnPostNotFound();
+  }
+
+  private void assertCommentChangesReturnPostNotFound() {
     assertPostNotFound(
         () -> service.updateComment(2L, 2L, new LoungeCommentContentCommand("수정 내용")));
     assertPostNotFound(() -> service.deleteComment(2L, 2L));
