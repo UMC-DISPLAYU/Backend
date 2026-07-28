@@ -7,7 +7,8 @@ public final class DisplayApiDocs {
 
   public static final String CREATE_SUMMARY = "전시 생성";
   public static final String CREATE_DESCRIPTION =
-      "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다.";
+      "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
+          + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다.";
   public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
@@ -15,7 +16,8 @@ public final class DisplayApiDocs {
 
   public static final String UPDATE_SUMMARY = "전시 수정";
   public static final String UPDATE_DESCRIPTION =
-      "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다.";
+      "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다. "
+          + "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다.";
   public static final String UPDATE_REQUEST_DESCRIPTION = "전시 수정 요청";
   public static final String UPDATE_REQUEST_EXAMPLE_NAME = "Display update request";
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
@@ -100,6 +102,7 @@ public final class DisplayApiDocs {
       {
         "title": "FORM 2026",
         "posterImageUrl": "https://cdn...",
+        "_posterImageUrlRule": "대표 이미지는 서버에서 imageType=MAIN, sortOrder=0으로 저장됩니다.",
         "type": "GRADUATION",
         "fields": ["DESIGN", "MEDIA"],
         "region": "SEOUL",
@@ -184,6 +187,7 @@ public final class DisplayApiDocs {
         "displayId": 12,
         "title": "FORM 2026 (수정본)",
         "posterImageUrl": "https://cdn...",
+        "_posterImageUrlRule": "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다.",
         "type": "GRADUATION",
         "fields": ["DESIGN", "MEDIA"],
         "schoolOrOrganization": "중앙대학교",

@@ -13,6 +13,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.config.QuerydslConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(JpaDisplayMapQueryRepositoryAdapter.class)
+@Import({JpaDisplayMapQueryRepositoryAdapter.class, QuerydslConfig.class})
 class JpaDisplayMapQueryRepositoryAdapterTest {
 
   @Autowired private DisplayMapQueryRepository displayMapQueryRepository;

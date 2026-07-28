@@ -31,6 +31,8 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT,
       "DISPLAY_CONTENT_REORDER_CONFLICT",
       "전시 콘텐츠 순서 변경 중 충돌이 발생했습니다. 다시 시도해주세요."),
+  DISPLAY_IMAGE_ALREADY_EXISTS(
+      HttpStatus.CONFLICT, "DISPLAY_IMAGE_ALREADY_EXISTS", "이미 같은 순서의 활성 전시 이미지가 존재합니다."),
   DISPLAY_CONTENT_PERMISSION_DENIED(
       HttpStatus.FORBIDDEN, "DISPLAY_CONTENT_PERMISSION_DENIED", "전시 콘텐츠를 수정할 권한이 없습니다."),
   DISPLAY_INVITATION_INVITEE_MISMATCH(

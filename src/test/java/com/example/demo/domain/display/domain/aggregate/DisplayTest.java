@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
+import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -112,6 +114,28 @@ class DisplayTest {
             exception ->
                 assertThat(exception.errorCode())
                     .isEqualTo(DisplayErrorCode.INVALID_DISPLAY_CONTENT_ORDER));
+  }
+
+  @Test
+  void addImageFailsWhenActiveImageTypeAndSortOrderAlreadyExist() {
+    Display display = display();
+
+    assertThatThrownBy(
+            () ->
+                display.addImage(
+                    new DisplayImage(
+                        null,
+                        "https://cdn.displayu.com/posters/duplicate-main.png",
+                        DisplayImageType.MAIN,
+                        1,
+                        1,
+                        0,
+                        null)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_IMAGE_ALREADY_EXISTS));
   }
 
   @Test
