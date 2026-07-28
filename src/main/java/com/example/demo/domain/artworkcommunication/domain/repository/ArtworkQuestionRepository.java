@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface ArtworkQuestionRepository {
   ArtworkQuestion save(ArtworkQuestion artworkQuestion);
 
-  Optional<ArtworkQuestion> findById(Long artQueId);
+  Optional<ArtworkQuestion> findById(Long questionId);
 
   List<ArtworkQuestion> findActiveByDisplayArtworkIdWithCursor(
       Long displayArtworkId, Long cursorId, int limit);

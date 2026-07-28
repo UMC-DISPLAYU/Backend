@@ -13,7 +13,7 @@ public interface ArtworkQuestionReplyJpaRepository
       """
       SELECT reply
       FROM ArtworkQuestionReply reply
-      WHERE reply.artQueId IN :questionIds
+      WHERE reply.questionId IN :questionIds
         AND reply.deletedAt IS NULL
       ORDER BY reply.queReplyId ASC
       """)

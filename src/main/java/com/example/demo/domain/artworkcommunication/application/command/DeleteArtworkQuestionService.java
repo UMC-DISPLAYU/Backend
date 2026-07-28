@@ -29,6 +29,6 @@ public class DeleteArtworkQuestionService {
     ArtworkQuestion savedQuestion = artworkQuestionRepository.save(artworkQuestion);
 
     return new DeletedArtworkQuestionResult(
-        savedQuestion.getArtQueId(), savedQuestion.getDeletedAt());
+        savedQuestion.getQuestionId(), savedQuestion.getDeletedAt());
   }
 }
