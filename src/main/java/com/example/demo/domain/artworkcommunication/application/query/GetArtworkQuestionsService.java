@@ -62,7 +62,7 @@ public class GetArtworkQuestionsService {
                     toQuestionItem(
                         query.displayArtworkId(),
                         question,
-                        repliesByQuestionId.getOrDefault(question.getArtQueId(), List.of()),
+                        repliesByQuestionId.getOrDefault(question.getQuestionId(), List.of()),
                         nicknameByUserId,
                         creatorNameById))
             .toList();
@@ -73,9 +73,9 @@ public class GetArtworkQuestionsService {
 
   private Map<Long, List<ArtworkQuestionReply>> findRepliesByQuestionId(
       List<ArtworkQuestion> questions) {
-    List<Long> questionIds = questions.stream().map(ArtworkQuestion::getArtQueId).toList();
+    List<Long> questionIds = questions.stream().map(ArtworkQuestion::getQuestionId).toList();
     return artworkQuestionReplyRepository.findActiveByQuestionIds(questionIds).stream()
-        .collect(Collectors.groupingBy(ArtworkQuestionReply::getArtQueId));
+        .collect(Collectors.groupingBy(ArtworkQuestionReply::getQuestionId));
   }
 
   private ArtworkQuestionItemResult toQuestionItem(
@@ -95,7 +95,7 @@ public class GetArtworkQuestionsService {
             .orElse(null);
 
     return new ArtworkQuestionItemResult(
-        question.getArtQueId(),
+        question.getQuestionId(),
         question.getContent(),
         question.getIsPublic(),
         question.getAnswerStatus().name(),

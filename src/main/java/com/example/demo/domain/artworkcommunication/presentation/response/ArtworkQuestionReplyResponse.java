@@ -6,6 +6,6 @@ public record ArtworkQuestionReplyResponse(
     Long queReplyId,
     String content,
     LocalDateTime createdAt,
-    Long artQueId,
+    Long questionId,
     Long creatorId,
     String creatorName) {}

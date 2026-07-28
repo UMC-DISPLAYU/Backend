@@ -47,7 +47,7 @@ public class CreateArtworkQuestionReplyService {
         savedQuestionReply.getQueReplyId(),
         savedQuestionReply.getContent(),
         savedQuestionReply.getCreatedAt(),
-        savedQuestionReply.getArtQueId(),
+        savedQuestionReply.getQuestionId(),
         contactCreator.creatorId(),
         contactCreator.creatorName());
   }

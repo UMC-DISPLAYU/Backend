@@ -21,8 +21,8 @@ public class JpaArtworkQuestionRepositoryAdapter implements ArtworkQuestionRepos
   }
 
   @Override
-  public Optional<ArtworkQuestion> findById(Long artQueId) {
-    return artworkQuestionJpaRepository.findById(artQueId);
+  public Optional<ArtworkQuestion> findById(Long questionId) {
+    return artworkQuestionJpaRepository.findById(questionId);
   }
 
   @Override

@@ -22,22 +22,22 @@ public class ArtworkQuestionReply extends SoftDeleteBaseEntity {
   @Column(name = "content", nullable = false, columnDefinition = "TEXT")
   private String content;
 
-  @Column(name = "artQueId", nullable = false)
-  private Long artQueId;
+  @Column(name = "questionId", nullable = false)
+  private Long questionId;
 
   @Column(name = "creatorId")
   private Long creatorId;
 
   protected ArtworkQuestionReply() {}
 
-  private ArtworkQuestionReply(Long queReplyId, String content, Long artQueId, Long creatorId) {
+  private ArtworkQuestionReply(Long queReplyId, String content, Long questionId, Long creatorId) {
     this.queReplyId = queReplyId;
     this.content = content;
-    this.artQueId = artQueId;
+    this.questionId = questionId;
     this.creatorId = creatorId;
   }
 
-  public static ArtworkQuestionReply create(Long artQueId, String content, Long creatorId) {
-    return new ArtworkQuestionReply(null, content, artQueId, creatorId);
+  public static ArtworkQuestionReply create(Long questionId, String content, Long creatorId) {
+    return new ArtworkQuestionReply(null, content, questionId, creatorId);
   }
 }

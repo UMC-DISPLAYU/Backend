@@ -121,7 +121,7 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "content": "붉은 배경과 회색 벽면을 대비시킨 이유가 궁금해요.",
                                 "isPublic": true,
                                 "answerStatus": "WAITING",
@@ -242,7 +242,7 @@ public interface ArtworkQuestionApiDocs {
                                 "queReplyId": 8,
                                 "content": "따뜻함과 고요함이 동시에 남아 있는 공간을 표현하고 싶어서 두 색면을 대비시켰습니다.",
                                 "createdAt": "2026-06-30T23:20:00",
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "creatorId": 4,
                                 "creatorName": "고상준"
                               }
@@ -357,7 +357,7 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "content": "수정된 질문 내용입니다.",
                                 "isPublic": false,
                                 "answerStatus": "WAITING",
@@ -478,7 +478,7 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "deletedAt": "2026-06-30T23:10:00"
                               }
                             },
