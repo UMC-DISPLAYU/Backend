@@ -29,6 +29,8 @@ import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,7 +67,7 @@ public class UserController implements UserControllerDocs {
   @GetMapping("/me")
   public ApiResponseBody<MyUserResponse> getMe(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
-    MyUserResult result = getMyUserService.execute(user.userId());
+    MyUserResult result = getMyUserService.execute(requireUserId(user));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
@@ -139,5 +141,12 @@ public class UserController implements UserControllerDocs {
     boolean isAvailable = userService.isNicknameAvailable(nickname);
 
     return ApiResponseBody.success(new NicknameCheckResponse(nickname, isAvailable), httpRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }

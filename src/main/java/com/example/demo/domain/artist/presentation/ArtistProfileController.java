@@ -16,6 +16,8 @@ import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
 import com.example.demo.domain.artist.presentation.request.CreateArtistProfileRequest;
 import com.example.demo.domain.artist.presentation.response.CreateArtistProfileResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,8 +75,15 @@ public class ArtistProfileController {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     ArtistProfile artistProfile =
-        createArtistProfileService.execute(user.userId(), request.toCommand());
+        createArtistProfileService.execute(requireUserId(user), request.toCommand());
     return ApiResponseBody.success(
         artistProfileMapper.toResponse(artistProfile, request.activityFields()), httpRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
