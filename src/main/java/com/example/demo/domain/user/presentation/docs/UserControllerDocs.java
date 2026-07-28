@@ -50,6 +50,7 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "조회 성공", value = MY_USER_SUCCESS_EXAMPLE)))
+  @ApiResponse(responseCode = "401", description = "Access Token verification failed")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyUserResponse> getMe(AuthUser user, HttpServletRequest httpRequest);
 
@@ -177,6 +178,7 @@ public interface UserControllerDocs {
               mediaType = "application/json",
               examples =
                   @ExampleObject(name = "프로필 없음", value = MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(responseCode = "401", description = "Access Token verification failed")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyArtistProfileResponse> getMyArtistProfile(
       AuthUser user, HttpServletRequest httpRequest);

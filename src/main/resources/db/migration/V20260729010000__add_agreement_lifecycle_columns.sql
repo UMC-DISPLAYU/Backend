@@ -41,7 +41,7 @@ SET code = CASE
     effectiveDate = DATE(createdAt),
     displayOrder = agreeId;
 
-CREATE INDEX idx_agreement_code_version
+CREATE UNIQUE INDEX idx_agreement_code_version
     ON Agreement (code, version);
 
 CREATE INDEX idx_agreement_active_effective_order

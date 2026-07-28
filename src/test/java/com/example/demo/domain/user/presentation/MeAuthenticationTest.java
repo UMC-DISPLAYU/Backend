@@ -1,6 +1,8 @@
 package com.example.demo.domain.user.presentation;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +32,49 @@ class MeAuthenticationTest {
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/users/me"));
+  }
+
+  @Test
+  void updateMeReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    assertUnauthorized(
+        patch("/api/v1/users/me")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"nickname\":\"User2\"}"),
+        "/api/v1/users/me");
+  }
+
+  @Test
+  void withdrawReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    assertUnauthorized(delete("/api/v1/users/me"), "/api/v1/users/me");
+  }
+
+  @Test
+  void changeNicknameReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    assertUnauthorized(
+        patch("/api/v1/users/me/nickname")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"nickname\":\"User2\"}"),
+        "/api/v1/users/me/nickname");
+  }
+
+  @Test
+  void getMyArtistProfileReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    assertUnauthorized(get("/api/v1/users/me/artist-profile"), "/api/v1/users/me/artist-profile");
+  }
+
+  @Test
+  void updateMyArtistProfileReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    assertUnauthorized(
+        patch("/api/v1/users/me/artist-profile")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {
+                  "artistName": "Artist",
+                  "fields": ["PAINTING"]
+                }
+                """),
+        "/api/v1/users/me/artist-profile");
   }
 
   @Test
@@ -68,5 +113,17 @@ class MeAuthenticationTest {
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/artists/me/artist-profile"));
+  }
+
+  private void assertUnauthorized(
+      org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
+      String path)
+      throws Exception {
+    mockMvc
+        .perform(request)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.meta.path").value(path));
   }
 }
