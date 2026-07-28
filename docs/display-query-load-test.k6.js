@@ -31,6 +31,20 @@ export const options = {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_search_default}': ['rate<0.01'],
+    'http_req_duration{api:display_search_default}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_search_filtered}': ['rate<0.01'],
+    'http_req_duration{api:display_search_filtered}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_map_default}': ['rate<0.01'],
+    'http_req_duration{api:display_map_default}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_map_search}': ['rate<0.01'],
+    'http_req_duration{api:display_map_search}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_closing_soon}': ['rate<0.01'],
+    'http_req_duration{api:display_closing_soon}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_graduation}': ['rate<0.01'],
+    'http_req_duration{api:display_graduation}': ['p(95)<500', 'p(99)<1000'],
+    'http_req_failed{api:display_du_picks}': ['rate<0.01'],
+    'http_req_duration{api:display_du_picks}': ['p(95)<500', 'p(99)<1000'],
   },
 };
 

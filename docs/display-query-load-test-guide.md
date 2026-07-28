@@ -75,7 +75,7 @@ k6 콘솔에서 우선 볼 값:
 | `iterations` | 전체 시나리오 반복 수 | 동일 조건에서 높을수록 처리량 좋음 |
 | `checks` | status/body 검증 성공률 | 100% 기대 |
 
-API별로 보려면 k6 출력의 `api` tag 기준 metric을 사용한다. 콘솔 기본 요약이 부족하면 Prometheus/Grafana, InfluxDB, 또는 k6 Cloud로 전송해서 `api=display_map_default` 같은 tag별 P95/P99를 본다.
+API별 SLO는 k6 threshold의 `api` tag 기준으로 판단한다. 각 API의 `http_req_duration{api:<displayName>}` P95는 500ms 미만, P99는 1s 미만이어야 하고 `http_req_failed{api:<displayName>}` 실패율은 1% 미만이어야 한다. 콘솔 기본 요약이 부족하면 Prometheus/Grafana, InfluxDB, 또는 k6 Cloud로 전송해서 `api=display_map_default` 같은 tag별 metric을 본다.
 
 간단 비교 표:
 
