@@ -10,11 +10,16 @@ import com.example.demo.domain.artworkcommunication.presentation.request.CreateA
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -67,13 +72,14 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @PostMapping
+  @SecurityRequirement(name = "Authorization")
   // 감상평 작성
   public ApiResponseBody<ArtworkFeelingResponse> createFeeling(
       @PathVariable Long artworkId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest) {
-    ArtworkFeelingCommand command = mapper.toCommand(artworkId, userId, request);
+    ArtworkFeelingCommand command = mapper.toCommand(artworkId, requireUserId(user), request);
 
     ArtworkFeelingResult result = createArtworkFeelingService.createFeeling(command);
 
@@ -84,14 +90,16 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @PostMapping("{feelingId}/reply")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 답변 등록
   public ApiResponseBody<ArtworkFeelingReplyResponse> createFeelingReply(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest) {
-    ArtworkFeelingReplyCommand command = mapper.toCommand(artworkId, feelingId, userId, request);
+    ArtworkFeelingReplyCommand command =
+        mapper.toCommand(artworkId, feelingId, requireUserId(user), request);
 
     ArtworkFeelingReplyResult result = createArtworkFeelingReplyService.createFeelingReply(command);
 
@@ -102,15 +110,17 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @DeleteMapping("/{feelingId}/reply/{feelingReplyId}")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 답변 삭제
   public ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
       @PathVariable Long feelingReplyId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeleteArtworkFeelingReplyCommand command =
-        new DeleteArtworkFeelingReplyCommand(artworkId, feelingId, feelingReplyId, userId);
+        new DeleteArtworkFeelingReplyCommand(
+            artworkId, feelingId, feelingReplyId, requireUserId(user));
 
     DeletedArtworkFeelingReplyResult result = deleteArtworkFeelingReplyService.deleteReply(command);
 
@@ -121,14 +131,16 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @PatchMapping("/{feelingId}")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 수정
   public ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody UpdateArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest) {
-    UpdateArtworkFeelingCommand command = mapper.toCommand(artworkId, feelingId, userId, request);
+    UpdateArtworkFeelingCommand command =
+        mapper.toCommand(artworkId, feelingId, requireUserId(user), request);
 
     UpdatedArtworkFeelingResult result = updateArtworkFeelingService.updateFeeling(command);
 
@@ -139,14 +151,15 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @DeleteMapping("/{feelingId}")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 삭제
   public ApiResponseBody<DeletedArtworkFeelingResponse> deleteFeeling(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeleteArtworkFeelingCommand command =
-        new DeleteArtworkFeelingCommand(artworkId, feelingId, userId);
+        new DeleteArtworkFeelingCommand(artworkId, feelingId, requireUserId(user));
 
     DeletedArtworkFeelingResult result = deleteArtworkFeelingService.deleteFeeling(command);
 
@@ -157,13 +170,15 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @PostMapping("/{feelingId}/like")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 좋아요 등록 및 취소
   public ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
-    ArtworkFeelingLikeCommand command = new ArtworkFeelingLikeCommand(artworkId, feelingId, userId);
+    ArtworkFeelingLikeCommand command =
+        new ArtworkFeelingLikeCommand(artworkId, feelingId, requireUserId(user));
 
     ArtworkFeelingLikeResult result = artworkFeelingLikeService.artworkFeelingLike(command);
 
@@ -174,20 +189,29 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @PostMapping("/{feelingId}/reply/{feelingReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
   // 감상평 답변 좋아요 등록 및 취소
   public ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
       @PathVariable Long feelingReplyId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkFeelingReplyLikeCommand command =
-        new ArtworkFeelingReplyLikeCommand(artworkId, feelingId, feelingReplyId, userId);
+        new ArtworkFeelingReplyLikeCommand(
+            artworkId, feelingId, feelingReplyId, requireUserId(user));
 
     ArtworkFeelingReplyLikeResult result = artworkFeelingReplyLikeService.toggleReplyLike(command);
 
     ArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
