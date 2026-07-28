@@ -1,3 +1,32 @@
+UPDATE `DisplayImage` image
+    JOIN (
+        SELECT duplicated.`disImageId`,
+               duplicated.`maxSortOrder`
+                   + ROW_NUMBER() OVER (
+                       PARTITION BY duplicated.`displayId`, duplicated.`imageType`
+                       ORDER BY duplicated.`sortOrder`, duplicated.`disImageId`
+                   ) AS repairedSortOrder
+        FROM (
+            SELECT `disImageId`,
+                   `displayId`,
+                   `imageType`,
+                   `sortOrder`,
+                   MAX(`sortOrder`) OVER (
+                       PARTITION BY `displayId`, `imageType`
+                   ) AS maxSortOrder,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY `displayId`, `imageType`, `sortOrder`
+                       ORDER BY `disImageId`
+                   ) AS duplicateRank
+            FROM `DisplayImage`
+            WHERE `deletedAt` IS NULL
+        ) duplicated
+        WHERE duplicated.duplicateRank > 1
+    ) repaired ON repaired.`disImageId` = image.`disImageId`
+SET image.`sortOrder` = repaired.repairedSortOrder,
+    image.`updatedAt` = CURRENT_TIMESTAMP
+WHERE image.`deletedAt` IS NULL;
+
 CREATE TEMPORARY TABLE TMP_DISPLAYIMAGE_ACTIVE_UNIQUE_GUARD
 (
     displayId  BIGINT       NOT NULL,
