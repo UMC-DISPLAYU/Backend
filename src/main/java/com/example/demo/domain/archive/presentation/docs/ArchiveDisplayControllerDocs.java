@@ -39,6 +39,21 @@ public interface ArchiveDisplayControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
+                          }
+                          """)))
   ApiResponseBody<ArchiveDisplayToggleResponse> saveArchiveDisplay(
       @Parameter(description = "전시 ID", example = "1") @PathVariable @Positive Long exhibitionId,
       AuthUser user,
@@ -58,6 +73,21 @@ public interface ArchiveDisplayControllerDocs {
                             "resultType": "SUCCESS",
                             "success": { "data": { "exhibitionId": 1, "isArchived": false } },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
@@ -88,6 +118,21 @@ public interface ArchiveDisplayControllerDocs {
                               }
                             },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
@@ -132,6 +177,21 @@ public interface ArchiveDisplayControllerDocs {
                               }
                             },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions" }
                           }
                           """)))

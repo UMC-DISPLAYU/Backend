@@ -39,6 +39,21 @@ public interface ArchiveArtistControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
   ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
       @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
@@ -57,6 +72,21 @@ public interface ArchiveArtistControllerDocs {
                             "resultType": "SUCCESS",
                             "success": { "data": { "artistId": 1, "isArchived": false } },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
                           """)))
@@ -85,6 +115,21 @@ public interface ArchiveArtistControllerDocs {
                               }
                             },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
                           """)))
@@ -126,6 +171,21 @@ public interface ArchiveArtistControllerDocs {
                               }
                             },
                             "error": null,
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "401",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists" }
                           }
                           """)))
