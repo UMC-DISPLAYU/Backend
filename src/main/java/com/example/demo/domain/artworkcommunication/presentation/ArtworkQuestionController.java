@@ -1,7 +1,5 @@
 package com.example.demo.domain.artworkcommunication.presentation;
 
-import static com.example.demo.global.security.AuthUserSupport.requireUserId;
-
 import com.example.demo.domain.artworkcommunication.application.command.*;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsService;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
@@ -14,6 +12,8 @@ import com.example.demo.domain.artworkcommunication.presentation.request.CreateA
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -128,5 +128,12 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
     DeletedArtworkQuestionResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
