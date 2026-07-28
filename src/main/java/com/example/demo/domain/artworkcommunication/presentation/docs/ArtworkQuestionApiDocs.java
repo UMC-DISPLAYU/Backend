@@ -212,6 +212,7 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionResponse> createQuestion(
       @Parameter(description = "질문을 등록할 작품 ID", example = "3") Long artworkId,
       @Parameter(hidden = true) AuthUser user,
@@ -324,6 +325,7 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionReplyResponse> createQuestionReply(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변을 등록할 질문 ID", example = "15") Long questionId,
@@ -438,6 +440,7 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "수정할 질문 ID", example = "15") Long questionId,
@@ -524,6 +527,7 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "삭제할 질문 ID", example = "15") Long questionId,

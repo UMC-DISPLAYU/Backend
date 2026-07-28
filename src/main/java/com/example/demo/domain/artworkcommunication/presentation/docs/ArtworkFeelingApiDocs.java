@@ -208,6 +208,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingResponse> createFeeling(
       @Parameter(description = "감상평을 작성할 작품 ID", example = "1") Long artworkId,
       @Parameter(hidden = true) AuthUser user,
@@ -326,6 +327,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingReplyResponse> createFeelingReply(
       @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "답변을 작성할 감상평 ID", example = "1") Long feelingId,
@@ -362,6 +364,7 @@ public interface ArtworkFeelingApiDocs {
                           """)))
   @ApiResponse(responseCode = "403", description = "감상평 답변 삭제 권한 없음")
   @ApiResponse(responseCode = "404", description = "작품, 사용자, 감상평 또는 감상평 답변 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
@@ -447,6 +450,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
       @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "수정할 감상평 ID", example = "1") Long feelingId,
@@ -531,6 +535,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DeletedArtworkFeelingResponse> deleteFeeling(
       @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
       @Parameter(description = "삭제할 감상평 ID", example = "1") Long feelingId,
@@ -592,6 +597,7 @@ public interface ArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "좋아요를 토글할 감상평 ID", example = "7") Long feelingId,
@@ -629,6 +635,7 @@ public interface ArtworkFeelingApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "404", description = "작품, 사용자, 감상평 또는 감상평 답변 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
