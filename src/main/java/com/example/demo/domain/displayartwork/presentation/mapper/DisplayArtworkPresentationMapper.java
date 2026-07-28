@@ -3,12 +3,14 @@ package com.example.demo.domain.displayartwork.presentation.mapper;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
@@ -42,6 +44,7 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkPreviewResponse.ArtworkCardResponse(
         result.artworkId(),
         result.artworkName(),
+        result.artistName(),
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
@@ -55,6 +58,22 @@ public class DisplayArtworkPresentationMapper {
         result.exhibitionTitle(),
         result.exhibitionPeriod(),
         result.exhibitionLocation());
+  }
+
+  public DisplayArtworkListResponse toResponse(DisplayArtworkListResult result) {
+    return new DisplayArtworkListResponse(
+        result.artworks().stream().map(this::toResponse).toList());
+  }
+
+  private DisplayArtworkListResponse.ArtworkItemResponse toResponse(
+      DisplayArtworkListResult.ArtworkItemResult result) {
+    return new DisplayArtworkListResponse.ArtworkItemResponse(
+        result.artworkId(),
+        result.artworkName(),
+        result.artistName(),
+        result.artworkImageUrl(),
+        result.imageWidth(),
+        result.imageHeight());
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {

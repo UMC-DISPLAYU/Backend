@@ -66,7 +66,8 @@ public final class DisplayApiDocs {
   public static final String SEARCH_SUMMARY = "전시 검색";
   public static final String SEARCH_DESCRIPTION =
       "발행된 전시를 displayId 오름차순 커서 방식으로 검색합니다. "
-          + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다.";
+          + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다. "
+          + "status=CLOSING_SOON은 현재 날짜 기준 3일 이내 종료되는 전시를 조회합니다.";
   public static final String SEARCH_SUCCESS_DESCRIPTION = "전시 검색 성공";
   public static final String SEARCH_SUCCESS_EXAMPLE_NAME = "Display search success";
 
@@ -142,6 +143,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 0,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -221,6 +223,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 12,
             "period": {
               "startDate": "2026-05-29",
               "endDate": "2026-06-06",
@@ -503,6 +506,7 @@ public final class DisplayApiDocs {
             "displayType": "GRADUATION",
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
+            "likeCount": 143,
             "period": {
               "startDate": "2026-07-01",
               "endDate": "2026-07-10",

@@ -20,6 +20,7 @@ public record DisplayDetailResponse(
     String displayType,
     List<String> displayFields,
     String region,
+    long likeCount,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,

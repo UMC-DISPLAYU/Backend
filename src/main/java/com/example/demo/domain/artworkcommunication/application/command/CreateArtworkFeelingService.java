@@ -18,7 +18,6 @@ public class CreateArtworkFeelingService {
   public ArtworkFeelingResult createFeeling(ArtworkFeelingCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
-    artworkFeelingValidator.validateNotArtworkCreator(command.displayArtworkId(), command.userId());
     artworkFeelingValidator.validateContent(command.content());
 
     ArtworkFeeling artworkFeeling =

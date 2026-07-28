@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -16,9 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDisplayService {
 
   private final DisplayRepository displayRepository;
+  private final DisplayLikeRepository displayLikeRepository;
 
-  public UpdateDisplayService(DisplayRepository displayRepository) {
+  public UpdateDisplayService(
+      DisplayRepository displayRepository, DisplayLikeRepository displayLikeRepository) {
     this.displayRepository = displayRepository;
+    this.displayLikeRepository = displayLikeRepository;
   }
 
   @Transactional
@@ -66,7 +70,8 @@ public class UpdateDisplayService {
               display.getLocation().longitude()));
     }
 
-    return DisplayDetailResult.from(display);
+    return DisplayDetailResult.from(
+        display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
   }
 
   private String organization(

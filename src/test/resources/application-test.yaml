@@ -37,6 +37,10 @@ springdoc:
   swagger-ui:
     enabled: false
 
+frontend:
+  base-url: https://www.displayu.co.kr
+  allowed-origins: http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app
+
 
 app:
   display:
@@ -46,11 +50,17 @@ app:
   kakao:
     client:
       id: test-kakao-client-id
+      secret: test-kakao-client-secret
+    redirect-uri: http://localhost:8080/api/auth/kakao/callback
 
   google:
     client:
       id: test-google-client-id
       secret: test-google-client-secret
+    redirect-uri: http://localhost:8080/api/auth/google/callback
+
+  oauth:
+    cookie-secure: false
 
 
 jwt:

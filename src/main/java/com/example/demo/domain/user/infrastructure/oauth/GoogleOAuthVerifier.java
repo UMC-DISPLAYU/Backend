@@ -35,6 +35,9 @@ public class GoogleOAuthVerifier {
     try {
 
       SignedJWT signedJWT = SignedJWT.parse(idToken);
+      log.debug(
+          "Google ID token parsed. keyIdPresent={}",
+          signedJWT.getHeader() != null && signedJWT.getHeader().getKeyID() != null);
 
       validateSignature(signedJWT);
 
@@ -46,6 +49,10 @@ public class GoogleOAuthVerifier {
 
       validateExpiration(claims);
 
+      log.info(
+          "Google ID token verification completed. subjectPresent={}, emailPresent={}",
+          claims.getSubject() != null,
+          claims.getStringClaim("email") != null);
       return new SocialUserInfo(
           Provider.Google,
           claims.getSubject(),

@@ -38,10 +38,15 @@ app:
   kakao:
     client:
       id: ${KAKAO_CLIENT_ID}
+      secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
   google:
     client:
       id: ${GOOGLE_CLIENT_ID}
       secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+  oauth:
+    cookie-secure: ${OAUTH_COOKIE_SECURE:true}
   file:
     storage:
       region: ${AWS_REGION:ap-northeast-2}
@@ -64,3 +69,7 @@ springdoc:
     enabled: true
     doc-expansion: list
     display-request-duration: true
+
+frontend:
+  base-url: ${FRONTEND_BASE_URL:https://www.displayu.co.kr}
+  allowed-origins: ${FRONTEND_ALLOWED_ORIGINS:http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app}

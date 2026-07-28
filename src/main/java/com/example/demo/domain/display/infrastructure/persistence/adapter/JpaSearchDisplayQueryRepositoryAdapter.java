@@ -25,17 +25,20 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
   @Override
   public List<SearchDisplayQueryResult> searchDisplays(
       SearchDisplayQuery query, LocalDate today, int limit) {
+    LocalDate closingSoonEndDate = today.plusDays(3);
     return jpaRepository.searchDisplays(
         query.searchWord(),
         query.status() != null,
         query.status() == SearchDisplayStatus.UPCOMING,
         query.status() == SearchDisplayStatus.ONGOING,
         query.status() == SearchDisplayStatus.ENDED,
+        query.status() == SearchDisplayStatus.CLOSING_SOON,
         query.region() != null && query.region() != DisplayRegion.ALL,
         query.region(),
         query.field(),
         query.type(),
         today,
+        closingSoonEndDate,
         query.cursor(),
         DisplayImageType.MAIN,
         PageRequest.of(0, limit));

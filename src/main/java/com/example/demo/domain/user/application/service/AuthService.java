@@ -4,12 +4,12 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.RefreshToken;
+import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.GoogleOAuthVerifier;
 import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
-import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +27,14 @@ public class AuthService {
 
   private final TokenProvider tokenProvider;
 
-  public LoginResult login(SocialLoginRequest request) {
+  public LoginResult login(Provider provider, String socialToken) {
 
     SocialUserInfo socialUserInfo;
 
-    switch (request.provider()) {
-      case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(request.idToken());
+    switch (provider) {
+      case Kakao -> socialUserInfo = kakaoOAuthVerifier.verify(socialToken);
 
-      case Google -> socialUserInfo = googleOAuthVerifier.verify(request.idToken());
+      case Google -> socialUserInfo = googleOAuthVerifier.verify(socialToken);
 
       default -> throw new BusinessException(AuthErrorCode.INVALID_SOCIAL_TOKEN);
     }
@@ -46,6 +46,9 @@ public class AuthService {
 
     // 기존 회원
     if (user != null) {
+      if (user.getDeletedAt() != null) {
+        throw new BusinessException(AuthErrorCode.WITHDRAWAL_USER);
+      }
 
       String accessToken = tokenProvider.createAccessToken(user);
 

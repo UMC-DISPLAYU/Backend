@@ -3,5 +3,6 @@ package com.example.demo.domain.display.domain.type;
 public enum SearchDisplayStatus {
   UPCOMING,
   ONGOING,
-  ENDED
+  ENDED,
+  CLOSING_SOON
 }

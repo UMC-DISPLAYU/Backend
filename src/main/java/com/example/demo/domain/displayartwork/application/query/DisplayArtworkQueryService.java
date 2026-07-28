@@ -1,7 +1,10 @@
 package com.example.demo.domain.displayartwork.application.query;
 
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult.ArtworkItemResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult.ArtworkCardResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult.ExhibitionInfoResult;
@@ -18,23 +21,28 @@ import com.example.demo.global.error.BusinessException;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DisplayArtworkQueryService {
 
+  private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
   private final CreatorRepository creatorRepository;
   private final DisplayArtworkLikeRepository displayArtworkLikeRepository;
   private final ArchiveWorkRepository archiveWorkRepository;
 
   public DisplayArtworkQueryService(
+      DisplayRepository displayRepository,
       DisplayArtworkRepository displayArtworkRepository,
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
       ArchiveWorkRepository archiveWorkRepository) {
+    this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.displayArtworkLikeRepository = displayArtworkLikeRepository;
@@ -81,11 +89,19 @@ public class DisplayArtworkQueryService {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
-    List<ArtworkCardResult> cards = pageItems.stream().map(this::toCard).toList();
+    Map<Long, String> artistNamesByArtworkId =
+        creatorRepository
+            .findLeadersByDisplayArtworkIds(pageItems.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+
+    List<ArtworkCardResult> cards =
+        pageItems.stream().map(artwork -> toCard(artwork, artistNamesByArtworkId)).toList();
     return new DisplayArtworkPreviewResult(cards, page, size, isLast);
   }
 
-  private ArtworkCardResult toCard(DisplayArtwork displayArtwork) {
+  private ArtworkCardResult toCard(
+      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
@@ -96,6 +112,7 @@ public class DisplayArtworkQueryService {
     return new ArtworkCardResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
+        artistNamesByArtworkId.get(displayArtwork.getId()),
         thumbnail != null ? thumbnail.getImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
@@ -104,6 +121,40 @@ public class DisplayArtworkQueryService {
             display.getTitle(),
             formattedPeriod,
             display.getLocation().placeName()));
+  }
+
+  @Transactional(readOnly = true)
+  public DisplayArtworkListResult getArtworksByDisplayId(Long displayId) {
+    displayRepository
+        .findById(displayId)
+        .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
+
+    List<DisplayArtwork> artworks =
+        displayArtworkRepository.findAllByDisplayId(displayId).stream()
+            .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
+            .toList();
+
+    Map<Long, String> artistNamesByArtworkId =
+        creatorRepository
+            .findLeadersByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+
+    List<ArtworkItemResult> items =
+        artworks.stream().map(artwork -> toItem(artwork, artistNamesByArtworkId)).toList();
+    return new DisplayArtworkListResult(items);
+  }
+
+  private ArtworkItemResult toItem(
+      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
+    ArtworkImage thumbnail = findThumbnail(displayArtwork);
+    return new ArtworkItemResult(
+        displayArtwork.getId(),
+        displayArtwork.getArtworkName(),
+        artistNamesByArtworkId.get(displayArtwork.getId()),
+        thumbnail != null ? thumbnail.getImageUrl() : null,
+        thumbnail != null ? thumbnail.getWidth() : 0,
+        thumbnail != null ? thumbnail.getHeight() : 0);
   }
 
   private ArtworkImage findThumbnail(DisplayArtwork displayArtwork) {

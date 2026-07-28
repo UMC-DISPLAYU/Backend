@@ -46,7 +46,6 @@ public class CreateArtworkFeelingReplyService {
     Optional<String> creatorName =
         creatorExistenceRepository.findCreatorNameByDisplayArtworkIdAndUserId(
             command.displayArtworkId(), command.userId());
-    boolean isCreator = creatorName.isPresent();
     String nickname =
         creatorName.orElseGet(
             () ->
@@ -61,7 +60,6 @@ public class CreateArtworkFeelingReplyService {
         savedFeelingReply.getContent(),
         savedFeelingReply.getFeelingId(),
         savedFeelingReply.getUserId(),
-        nickname,
-        isCreator);
+        nickname);
   }
 }

@@ -11,5 +11,7 @@ public interface SpringDataCreatorJpaRepository extends JpaRepository<Creator, L
 
   Optional<Creator> findFirstByDisplayArtworkIdAndIsLeaderTrue(Long displayArtworkId);
 
+  List<Creator> findByDisplayArtworkIdInAndIsLeaderTrue(List<Long> displayArtworkIds);
+
   void deleteAllByDisplayArtworkId(Long displayArtworkId);
 }

@@ -3,63 +3,63 @@ package com.example.demo.domain.user.presentation;
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.command.AgreementCommand;
 import com.example.demo.domain.user.application.command.SignupCommand;
-import com.example.demo.domain.user.application.mapper.LoginResponseMapper;
 import com.example.demo.domain.user.application.mapper.SignupResponseMapper;
-import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.domain.vo.Nickname;
+import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
+import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.domain.user.presentation.docs.AuthControllerDocs;
-import com.example.demo.domain.user.presentation.docs.LoginControllerDocs;
 import com.example.demo.domain.user.presentation.docs.LogoutControllerDocs;
 import com.example.demo.domain.user.presentation.docs.RefreshControllerDocs;
-import com.example.demo.domain.user.presentation.request.LogoutRequest;
-import com.example.demo.domain.user.presentation.request.RefreshRequest;
 import com.example.demo.domain.user.presentation.request.SignupRequest;
-import com.example.demo.domain.user.presentation.request.SocialLoginRequest;
 import com.example.demo.domain.user.presentation.response.RefreshResponse;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
+import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController
-    implements AuthControllerDocs,
-        LoginControllerDocs,
-        RefreshControllerDocs,
-        LogoutControllerDocs {
+    implements AuthControllerDocs, RefreshControllerDocs, LogoutControllerDocs {
 
   private final UserService userService;
   private final AuthService authService;
 
   private final SignupResponseMapper signupResponseMapper;
-  private final LoginResponseMapper loginResponseMapper;
-
   private final TokenProvider tokenProvider;
+  private final RefreshTokenCookieManager refreshTokenCookieManager;
+  private final SignupTokenCookieManager signupTokenCookieManager;
 
   @Override
   @PostMapping("/signup")
   public ApiResponseBody<SignupResponse.Signup> signup(
       @Valid @RequestBody SignupRequest request,
-      @RequestHeader("Authorization") String authorization,
-      HttpServletRequest httpRequest) {
+      @RequestHeader(name = "Authorization", required = false) String authorization,
+      @CookieValue(name = "signupToken", required = false) String cookieSignupToken,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
 
-    String signupToken = authorization.substring(7);
+    String signupToken = resolveSignupToken(authorization, cookieSignupToken);
 
     SocialUserInfo socialUserInfo = tokenProvider.parseSignupToken(signupToken);
 
     List<AgreementCommand> agreements =
-        request.agreements().stream()
+        Optional.ofNullable(request.agreements()).orElseGet(List::of).stream()
             .map(agreement -> new AgreementCommand(agreement.agreeId(), agreement.isAgreed()))
             .toList();
 
@@ -68,22 +68,9 @@ public class AuthController
     SignupResult result = userService.signup(command, socialUserInfo);
 
     SignupResponse.Signup response =
-        signupResponseMapper.toResponse(result.user(), result.accessToken(), result.refreshToken());
-
-    return ApiResponseBody.success(response, httpRequest);
-  }
-
-  @Override
-  @PostMapping("/login")
-  public ApiResponseBody<?> login(
-      @Valid @RequestBody SocialLoginRequest request, HttpServletRequest httpRequest) {
-
-    LoginResult result = authService.login(request);
-
-    Object response =
-        result.user() != null
-            ? loginResponseMapper.toLoginResponse(result)
-            : loginResponseMapper.toSignupResponse(result);
+        signupResponseMapper.toResponse(result.user(), result.accessToken());
+    refreshTokenCookieManager.add(httpResponse, result.refreshToken());
+    signupTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(response, httpRequest);
   }
@@ -91,9 +78,10 @@ public class AuthController
   @Override
   @PostMapping("/refresh")
   public ApiResponseBody<RefreshResponse> refresh(
-      @Valid @RequestBody RefreshRequest request, HttpServletRequest httpRequest) {
+      @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
+      HttpServletRequest httpRequest) {
 
-    String accessToken = authService.refresh(request.refreshToken());
+    String accessToken = authService.refresh(cookieRefreshToken);
 
     return ApiResponseBody.success(new RefreshResponse(accessToken), httpRequest);
   }
@@ -101,12 +89,34 @@ public class AuthController
   @Override
   @PostMapping("/logout")
   public ApiResponseBody<Void> logout(
-      @Valid @RequestBody LogoutRequest request,
+      @CookieValue(name = "refreshToken", required = false) String cookieRefreshToken,
       @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest httpRequest) {
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
 
-    authService.logout(user.userId(), request.refreshToken());
+    authService.logout(user.userId(), cookieRefreshToken);
+    refreshTokenCookieManager.clear(httpResponse);
 
     return ApiResponseBody.success(null, httpRequest);
+  }
+
+  private String extractSignupToken(String authorization) {
+    String bearerPrefix = "Bearer ";
+    if (!StringUtils.hasText(authorization)
+        || !authorization.startsWith(bearerPrefix)
+        || !StringUtils.hasText(authorization.substring(bearerPrefix.length()))) {
+      throw new BusinessException(AuthErrorCode.INVALID_SIGNUP_TOKEN);
+    }
+    return authorization.substring(bearerPrefix.length()).trim();
+  }
+
+  private String resolveSignupToken(String authorization, String cookieSignupToken) {
+    if (StringUtils.hasText(authorization)) {
+      return extractSignupToken(authorization);
+    }
+    if (!StringUtils.hasText(cookieSignupToken)) {
+      return extractSignupToken(null);
+    }
+    return cookieSignupToken;
   }
 }

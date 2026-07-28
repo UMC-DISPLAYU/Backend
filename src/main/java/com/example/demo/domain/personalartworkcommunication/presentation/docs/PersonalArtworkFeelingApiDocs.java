@@ -2,9 +2,12 @@ package com.example.demo.domain.personalartworkcommunication.presentation.docs;
 
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyLikeResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -23,8 +26,8 @@ import jakarta.validation.constraints.Positive;
 public interface PersonalArtworkFeelingApiDocs {
 
   @Operation(
-      summary = "개인 작품 감상평 목록 및 답변 조회",
-      description = "개인 작품에 등록된 감상평과 각 감상평의 답변을 커서 방식으로 조회합니다.")
+      summary = "개인 작품 감상평 목록 조회",
+      description = "개인 작품에 등록된 감상평을 커서 방식으로 조회합니다. 답변은 별도 API에서 조회합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 목록 조회 성공",
@@ -47,18 +50,11 @@ public interface PersonalArtworkFeelingApiDocs {
                                     "createdAt": "2026-07-23T16:00:00",
                                     "user": {
                                       "userId": 2,
-                                      "nickname": "관람객"
+                                      "nickname": "관람객",
+                                      "isCreator": false
                                     },
-                                    "replies": [
-                                      {
-                                        "personalFeelingReplyId": 1,
-                                        "userId": 1,
-                                        "nickname": "작품소유자",
-                                        "content": "감상해 주셔서 감사합니다.",
-                                        "createdAt": "2026-07-23T16:10:00",
-                                        "isCreator": true
-                                      }
-                                    ]
+                                    "likeCount": 4,
+                                    "replyCount": 1
                                   }
                                 ],
                                 "nextCursorId": 1,
@@ -103,9 +99,55 @@ public interface PersonalArtworkFeelingApiDocs {
       @Parameter(description = "다음 페이지 조회를 위한 마지막 감상평 ID", example = "3") @Positive Long cursorId,
       HttpServletRequest httpServletRequest);
 
-  @Operation(
-      summary = "개인 작품 감상평 답변 등록",
-      description = "개인 작품의 감상평에 답변을 등록합니다. 개인 작품 소유 여부를 isCreator로 반환합니다.")
+  @Operation(summary = "개인 작품 감상평 답변 목록 조회", description = "특정 감상평의 답변을 커서 방식으로 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 답변 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling reply list success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "replies": [
+                                  {
+                                    "personalFeelingReplyId": 1,
+                                    "content": "감상해 주셔서 감사합니다.",
+                                    "createdAt": "2026-07-23T16:10:00",
+                                    "user": {
+                                      "userId": 1,
+                                      "nickname": "작품소유자",
+                                      "isCreator": true
+                                    },
+                                    "likeCount": 2
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 3,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-23T16:20:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1/replies"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "404", description = "개인 작품 또는 감상평 없음")
+  ApiResponseBody<PersonalArtworkFeelingReplyListResponse> getFeelingReplies(
+      @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "답변을 조회할 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(description = "다음 페이지 조회를 위한 마지막 답변 ID", example = "3") @Positive Long cursorId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "개인 작품 감상평 답변 등록", description = "개인 작품의 감상평에 답변을 등록합니다.")
   @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
   @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
   ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(
@@ -120,7 +162,50 @@ public interface PersonalArtworkFeelingApiDocs {
       @Valid CreatePersonalArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "개인 작품 감상평 작성", description = "개인 작품 상세 화면에서 사용자가 감상평을 작성합니다.")
+  @Operation(summary = "개인 작품 감상평 답변 삭제", description = "작성자가 본인이 작성한 개인 작품 감상평 답변을 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 답변 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling reply delete success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalFeelingReplyId": 1,
+                                "deletedAt": "2026-07-26T04:15:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-26T04:15:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1/reply/1"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "403", description = "감상평 답변 삭제 권한 없음")
+  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 감상평 또는 감상평 답변 없음")
+  ApiResponseBody<DeletedPersonalArtworkFeelingReplyResponse> deleteFeelingReply(
+      @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "답변이 속한 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(description = "삭제할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "2")
+          Long userId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "개인 작품 감상평 작성",
+      description = "로그인 사용자가 감상평을 작성합니다. 해당 개인 작품의 소유자도 작성할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 작성 성공",
@@ -370,6 +455,51 @@ public interface PersonalArtworkFeelingApiDocs {
               description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
               in = ParameterIn.HEADER,
               example = "1")
+          Long userId,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "개인 작품 감상평 답변 좋아요 등록 및 취소",
+      description = "좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 답변 좋아요 상태 변경 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling reply like toggle success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalFeelingReplyId": 1,
+                                "liked": true,
+                                "likeCount": 3,
+                                "createdAt": "2026-07-26T04:10:00",
+                                "deletedAt": null
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-07-26T04:10:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1/reply/1/like"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 감상평 또는 감상평 답변 없음")
+  ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(
+      @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
+      @Parameter(description = "답변이 속한 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(description = "좋아요를 변경할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
+      @Parameter(
+              name = "X-User-Id",
+              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
+              in = ParameterIn.HEADER,
+              example = "2")
           Long userId,
       HttpServletRequest httpServletRequest);
 }

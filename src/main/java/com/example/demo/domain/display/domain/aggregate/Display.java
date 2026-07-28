@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.domain.aggregate;
 
+import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
 import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
@@ -32,6 +33,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +56,8 @@ public class Display extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "displayId")
   private Long id;
+
+  @Version private Long version;
 
   @Embedded
   @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
@@ -411,9 +415,63 @@ public class Display extends BaseTimeEntity {
     contentCategories.add(contentCategory);
   }
 
+  public DisplayContentCategory createContentCategory(String name, String description) {
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            null, name, description, nextContentCategorySortOrder(), List.of());
+    addContentCategory(category);
+    return category;
+  }
+
+  public DisplayContentCategory changeContentCategory(
+      Long categoryId, String name, String description) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    category.changeInfo(name, description);
+    return category;
+  }
+
   // 전시 소개 콘텐츠 카테고리를 제거한다.
   public void removeContentCategory(Long categoryId) {
-    contentCategories.removeIf(category -> category.getId().equals(categoryId));
+    DisplayContentCategory category = findContentCategory(categoryId);
+    contentCategories.remove(category);
+  }
+
+  public DisplayContent createContent(Long categoryId, String imageUrl, int width, int height) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    return category.createContent(imageUrl, width, height);
+  }
+
+  public DisplayContent changeContent(
+      Long categoryId, Long contentId, String imageUrl, int width, int height) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    return category.changeContent(contentId, imageUrl, width, height);
+  }
+
+  public void removeContent(Long categoryId, Long contentId) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    category.removeContent(contentId);
+  }
+
+  public List<DisplayContent> reorderContents(Long categoryId, List<Long> orderedContentIds) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    category.reorderContents(orderedContentIds);
+    return category.getContents();
+  }
+
+  private DisplayContentCategory findContentCategory(Long categoryId) {
+    return contentCategories.stream()
+        .filter(category -> Objects.equals(category.getId(), categoryId))
+        .findFirst()
+        .orElseThrow(
+            () -> new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_CATEGORY_NOT_FOUND));
+  }
+
+  private int nextContentCategorySortOrder() {
+    return contentCategories.stream()
+            .mapToInt(DisplayContentCategory::getSortOrder)
+            .max()
+            .orElse(-1)
+        + 1;
   }
 
   // 전시 분야를 추가한다.
