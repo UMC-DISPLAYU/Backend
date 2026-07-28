@@ -5,7 +5,6 @@ import com.example.demo.domain.display.application.query.DisplayMapQueryReposito
 import com.example.demo.domain.display.application.query.DisplayMapQueryResult;
 import com.example.demo.domain.display.domain.aggregate.QDisplay;
 import com.example.demo.domain.display.domain.entity.QDisplayImage;
-import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -41,10 +40,7 @@ public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepos
                 display.location.longitude))
         .from(display)
         .leftJoin(display.images, image)
-        .on(
-            image.imageType.eq(DisplayImageType.MAIN),
-            image.deletedAt.isNull(),
-            image.sortOrder.eq(0))
+        .on(QDisplayImageConditions.mainImage(image))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.location.latitude.between(query.southLatitude(), query.northLatitude()),

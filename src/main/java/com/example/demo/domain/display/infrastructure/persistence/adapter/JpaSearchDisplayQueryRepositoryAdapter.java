@@ -6,7 +6,6 @@ import com.example.demo.domain.display.application.query.SearchDisplayQueryResul
 import com.example.demo.domain.display.domain.aggregate.QDisplay;
 import com.example.demo.domain.display.domain.entity.QDisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.QDisplayImage;
-import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
@@ -46,10 +45,7 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 display.period.endDate))
         .from(display)
         .leftJoin(display.images, image)
-        .on(
-            image.imageType.eq(DisplayImageType.MAIN),
-            image.deletedAt.isNull(),
-            image.sortOrder.eq(0))
+        .on(QDisplayImageConditions.mainImage(image))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.id.gt(query.cursor()),
