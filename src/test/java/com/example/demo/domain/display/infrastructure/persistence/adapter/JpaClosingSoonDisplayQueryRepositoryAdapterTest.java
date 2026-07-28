@@ -7,8 +7,10 @@ import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -18,6 +20,7 @@ import com.example.demo.global.config.JpaAuditingConfig;
 import com.example.demo.global.config.QuerydslConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -83,6 +86,30 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
         .containsExactly("세 번째 전시", "첫 번째 전시");
   }
 
+  @Test
+  void findClosingSoonDisplaysReturnsOnlyValidRepresentativeImage() {
+    LocalDate today = LocalDate.of(2026, 7, 11);
+    Display display = publishedDisplay("대표 이미지 조건 전시", today.minusDays(1), today.plusDays(1));
+    display.addImage(
+        image("https://cdn.displayu.com/posters/detail.png", DisplayImageType.DETAIL, 0, null));
+    display.addImage(
+        image(
+            "https://cdn.displayu.com/posters/deleted-main.png",
+            DisplayImageType.MAIN,
+            0,
+            LocalDateTime.of(2026, 7, 10, 12, 0)));
+    display.addImage(
+        image("https://cdn.displayu.com/posters/sorted-main.png", DisplayImageType.MAIN, 1, null));
+    jpaRepository.saveAndFlush(display);
+
+    List<ClosingSoonDisplayQueryResult> results =
+        queryRepository.findClosingSoonDisplays(new ClosingSoonDisplayQuery(null, 20), today, 20);
+
+    assertThat(results)
+        .extracting(ClosingSoonDisplayQueryResult::posterImageUrl)
+        .containsExactly("https://cdn.displayu.com/posters/main.png");
+  }
+
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {
     Display display = draftDisplay(title, startDate, endDate);
     display.publish();
@@ -106,6 +133,11 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
         new DisplayPeriod(startDate, endDate, LocalTime.of(10, 0), LocalTime.of(18, 0)),
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION);
+  }
+
+  private static DisplayImage image(
+      String imageUrl, DisplayImageType imageType, int sortOrder, LocalDateTime deletedAt) {
+    return new DisplayImage(null, imageUrl, imageType, 1, 1, sortOrder, deletedAt);
   }
 
   private static BigDecimal bd(String value) {
