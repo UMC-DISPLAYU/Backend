@@ -2,17 +2,15 @@ package com.example.demo.domain.personalartworkcommunication.application.query;
 
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingItemResult;
-import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingUserResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
-import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +29,7 @@ public class GetPersonalArtworkFeelingsService {
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
+  private final PersonalArtworkFeelingLikeRepository personalArtworkFeelingLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public PersonalArtworkFeelingListResult getFeelings(GetPersonalArtworkFeelingsQuery query) {
@@ -52,73 +51,46 @@ public class GetPersonalArtworkFeelingsService {
       return new PersonalArtworkFeelingListResult(List.of(), null, PAGE_SIZE, false);
     }
 
-    Map<Long, List<PersonalArtworkFeelingReply>> repliesByFeelingId =
-        findRepliesByFeelingId(pageFeelings);
-    List<PersonalArtworkFeelingReply> replies =
-        repliesByFeelingId.values().stream().flatMap(List::stream).toList();
-    Set<Long> userIds = collectUserIds(pageFeelings, replies);
+    List<Long> feelingIds =
+        pageFeelings.stream().map(PersonalArtworkFeeling::getPersonalFeelingId).toList();
+    Map<Long, Long> likeCounts =
+        personalArtworkFeelingLikeRepository.countByPersonalFeelingIds(feelingIds);
+    Map<Long, Long> replyCounts =
+        personalArtworkFeelingReplyRepository.countActiveByPersonalFeelingIds(feelingIds);
+    Set<Long> userIds =
+        pageFeelings.stream().map(PersonalArtworkFeeling::getUserId).collect(Collectors.toSet());
     Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
 
     List<PersonalArtworkFeelingItemResult> feelings =
         pageFeelings.stream()
             .map(
                 feeling ->
-                    toFeelingItem(
-                        feeling,
-                        repliesByFeelingId.getOrDefault(feeling.getPersonalFeelingId(), List.of()),
-                        nicknameByUserId,
-                        ownerUserId))
+                    toFeelingItem(feeling, nicknameByUserId, ownerUserId, likeCounts, replyCounts))
             .toList();
 
     Long nextCursorId = hasNext ? feelings.get(feelings.size() - 1).personalFeelingId() : null;
     return new PersonalArtworkFeelingListResult(feelings, nextCursorId, PAGE_SIZE, hasNext);
   }
 
-  private Map<Long, List<PersonalArtworkFeelingReply>> findRepliesByFeelingId(
-      List<PersonalArtworkFeeling> feelings) {
-    List<Long> feelingIds =
-        feelings.stream().map(PersonalArtworkFeeling::getPersonalFeelingId).toList();
-    return personalArtworkFeelingReplyRepository.findActiveByPersonalFeelingIds(feelingIds).stream()
-        .collect(Collectors.groupingBy(PersonalArtworkFeelingReply::getPersonalFeelingId));
-  }
-
-  private Set<Long> collectUserIds(
-      List<PersonalArtworkFeeling> feelings, List<PersonalArtworkFeelingReply> replies) {
-    Set<Long> userIds = new HashSet<>();
-    feelings.forEach(feeling -> userIds.add(feeling.getUserId()));
-    replies.forEach(reply -> userIds.add(reply.getUserId()));
-    return userIds;
-  }
-
   private PersonalArtworkFeelingItemResult toFeelingItem(
       PersonalArtworkFeeling feeling,
-      List<PersonalArtworkFeelingReply> replies,
       Map<Long, String> nicknameByUserId,
-      Long ownerUserId) {
+      Long ownerUserId,
+      Map<Long, Long> likeCounts,
+      Map<Long, Long> replyCounts) {
     PersonalArtworkFeelingUserResult user =
         new PersonalArtworkFeelingUserResult(
-            feeling.getUserId(), findNicknameOrThrow(nicknameByUserId, feeling.getUserId()));
-
-    List<PersonalArtworkFeelingReplyItemResult> replyResults =
-        replies.stream().map(reply -> toReplyItem(reply, nicknameByUserId, ownerUserId)).toList();
+            feeling.getUserId(),
+            findNicknameOrThrow(nicknameByUserId, feeling.getUserId()),
+            ownerUserId.equals(feeling.getUserId()));
 
     return new PersonalArtworkFeelingItemResult(
         feeling.getPersonalFeelingId(),
         feeling.getContent(),
         feeling.getCreatedAt(),
         user,
-        replyResults);
-  }
-
-  private PersonalArtworkFeelingReplyItemResult toReplyItem(
-      PersonalArtworkFeelingReply reply, Map<Long, String> nicknameByUserId, Long ownerUserId) {
-    return new PersonalArtworkFeelingReplyItemResult(
-        reply.getPersonalFeelingReplyId(),
-        reply.getUserId(),
-        findNicknameOrThrow(nicknameByUserId, reply.getUserId()),
-        reply.getContent(),
-        reply.getCreatedAt(),
-        ownerUserId.equals(reply.getUserId()));
+        likeCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L),
+        replyCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L));
   }
 
   private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {

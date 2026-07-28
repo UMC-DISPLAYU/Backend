@@ -7,7 +7,12 @@ import java.util.Optional;
 public interface ArtworkFeelingReplyRepository {
   ArtworkFeelingReply save(ArtworkFeelingReply artworkFeelingReply);
 
-  Optional<ArtworkFeelingReply> findActiveByFeelingId(Long feelingId);
+  Optional<ArtworkFeelingReply> findById(Long feelingReplyId);
 
-  List<ArtworkFeelingReply> findActiveByFeelingIds(List<Long> feelingIds);
+  Optional<ArtworkFeelingReply> findActiveByIdForUpdate(Long feelingReplyId);
+
+  List<ArtworkFeelingReply> findActiveByFeelingIdWithCursor(
+      Long feelingId, Long cursorId, int limit);
+
+  java.util.Map<Long, Long> countActiveByFeelingIds(List<Long> feelingIds);
 }

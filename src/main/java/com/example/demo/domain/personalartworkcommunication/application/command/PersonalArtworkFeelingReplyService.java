@@ -4,7 +4,6 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PersonalArtworkFeelingReplyService {
 
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
@@ -40,9 +38,6 @@ public class PersonalArtworkFeelingReplyService {
             PersonalArtworkFeelingReply.create(
                 command.personalFeelingId(), command.userId(), command.content()));
 
-    boolean isCreator =
-        personalArtworkExistenceRepository.existsByIdAndUserId(
-            command.personalArtworkId(), command.userId());
     String nickname =
         userExistenceRepository
             .findNicknameById(command.userId())
@@ -55,7 +50,6 @@ public class PersonalArtworkFeelingReplyService {
         savedFeelingReply.getContent(),
         savedFeelingReply.getPersonalFeelingId(),
         savedFeelingReply.getUserId(),
-        nickname,
-        isCreator);
+        nickname);
   }
 }

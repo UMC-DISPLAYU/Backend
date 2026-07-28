@@ -40,7 +40,8 @@ public final class DisplayContentApiDocs {
 
   public static final String CREATE_CONTENT_SUMMARY = "전시 콘텐츠 이미지 생성";
   public static final String CREATE_CONTENT_DESCRIPTION =
-      "수락된 전시 팀원이 카테고리 안에 이미지를 추가합니다. 한 카테고리에는 최대 20개까지 등록할 수 있고 sortOrder는 0부터 자동 부여됩니다.";
+      "수락된 전시 팀원이 카테고리 안에 이미지를 추가합니다. 한 카테고리에는 최대 20개까지 등록할 수 있고 sortOrder는 0부터 자동 부여됩니다. "
+          + "이 sortOrder는 카테고리 내부 콘텐츠 이미지 순서이며, 전시 대표 이미지(imageType=MAIN, sortOrder=0)와는 별개입니다.";
   public static final String CREATE_CONTENT_REQUEST_DESCRIPTION = "전시 콘텐츠 이미지 생성 요청";
   public static final String CREATE_CONTENT_REQUEST_EXAMPLE_NAME = "Display content create request";
   public static final String CREATE_CONTENT_SUCCESS_DESCRIPTION = "전시 콘텐츠 이미지 생성 성공";
@@ -48,7 +49,7 @@ public final class DisplayContentApiDocs {
 
   public static final String UPDATE_CONTENT_SUMMARY = "전시 콘텐츠 이미지 수정";
   public static final String UPDATE_CONTENT_DESCRIPTION =
-      "수락된 전시 팀원이 카테고리 안의 이미지 URL과 이미지 크기를 수정합니다.";
+      "수락된 전시 팀원이 카테고리 안의 이미지 URL과 이미지 크기를 수정합니다. 콘텐츠 이미지 수정은 전시 대표 이미지(imageType=MAIN, sortOrder=0)에 영향을 주지 않습니다.";
   public static final String UPDATE_CONTENT_REQUEST_DESCRIPTION = "전시 콘텐츠 이미지 수정 요청";
   public static final String UPDATE_CONTENT_REQUEST_EXAMPLE_NAME = "Display content update request";
   public static final String UPDATE_CONTENT_SUCCESS_DESCRIPTION = "전시 콘텐츠 이미지 수정 성공";
@@ -61,7 +62,8 @@ public final class DisplayContentApiDocs {
 
   public static final String REORDER_CONTENTS_SUMMARY = "전시 콘텐츠 이미지 순서 수정";
   public static final String REORDER_CONTENTS_DESCRIPTION =
-      "수락된 전시 팀원이 카테고리 안의 이미지 순서를 수정합니다. 요청한 ID 순서대로 sortOrder가 0부터 다시 부여됩니다.";
+      "수락된 전시 팀원이 카테고리 안의 이미지 순서를 수정합니다. 요청한 ID 순서대로 sortOrder가 0부터 다시 부여됩니다. "
+          + "이 순서는 카테고리 콘텐츠 전용이며 전시 대표 이미지 조회 조건과는 별개입니다.";
   public static final String REORDER_CONTENTS_REQUEST_DESCRIPTION = "전시 콘텐츠 이미지 순서 수정 요청";
   public static final String REORDER_CONTENTS_REQUEST_EXAMPLE_NAME =
       "Display content reorder request";

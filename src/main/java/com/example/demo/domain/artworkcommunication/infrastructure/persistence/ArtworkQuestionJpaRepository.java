@@ -15,8 +15,8 @@ public interface ArtworkQuestionJpaRepository extends JpaRepository<ArtworkQuest
       FROM ArtworkQuestion question
       WHERE question.displayArtworkId = :displayArtworkId
         AND question.deletedAt IS NULL
-        AND (:cursorId IS NULL OR question.artQueId > :cursorId)
-      ORDER BY question.artQueId ASC
+        AND (:cursorId IS NULL OR question.questionId > :cursorId)
+      ORDER BY question.questionId ASC
       """)
   List<ArtworkQuestion> findActiveByDisplayArtworkIdWithCursor(
       @Param("displayArtworkId") Long displayArtworkId,

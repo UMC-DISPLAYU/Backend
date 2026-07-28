@@ -19,8 +19,6 @@ public class PersonalArtworkFeelingService {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkFeelingValidator.validateUserExists(command.userId());
     personalArtworkFeelingValidator.validateContent(command.content());
-    personalArtworkFeelingValidator.validateNotPersonalArtworkCreator(
-        command.personalArtworkId(), command.userId());
 
     PersonalArtworkFeeling personalArtworkFeeling =
         PersonalArtworkFeeling.create(

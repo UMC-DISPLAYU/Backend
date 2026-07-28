@@ -31,13 +31,11 @@ public class UpdateArtworkQuestionService {
     ArtworkQuestion savedQuestion = artworkQuestionRepository.save(artworkQuestion);
 
     return new ArtworkQuestionResult(
-        savedQuestion.getArtQueId(),
+        savedQuestion.getQuestionId(),
         savedQuestion.getContent(),
         savedQuestion.getIsPublic(),
         savedQuestion.getAnswerStatus(),
         savedQuestion.getCreatedAt(),
-        savedQuestion.getUpdatedAt(),
-        savedQuestion.getDeletedAt(),
         savedQuestion.getDisplayArtworkId(),
         savedQuestion.getUserId());
   }

@@ -398,8 +398,25 @@ public class Display extends BaseTimeEntity {
   // 전시에 이미지를 추가한다.
   public void addImage(DisplayImage image) {
     DisplayImage displayImage = Objects.requireNonNull(image, "image must not be null.");
+    ensureActiveImageNotDuplicated(displayImage);
     displayImage.assignDisplay(this);
     images.add(displayImage);
+  }
+
+  private void ensureActiveImageNotDuplicated(DisplayImage targetImage) {
+    if (targetImage.isDeleted()) {
+      return;
+    }
+    boolean duplicated =
+        images.stream()
+            .filter(image -> !image.isDeleted())
+            .anyMatch(
+                image ->
+                    image.getImageType() == targetImage.getImageType()
+                        && image.getSortOrder() == targetImage.getSortOrder());
+    if (duplicated) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_IMAGE_ALREADY_EXISTS);
+    }
   }
 
   // 전시 이미지 목록에서 특정 이미지를 제거한다.

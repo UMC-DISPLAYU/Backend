@@ -1,2 +1,2 @@
-alter table DisplayU.Display
-    add column version bigint not null default 0;
+ALTER TABLE Display
+    ADD COLUMN version bigint NOT NULL DEFAULT 0;

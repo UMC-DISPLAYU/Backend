@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Artwork Question", description = "작품 Q&A 질문 API")
 public interface ArtworkQuestionApiDocs {
@@ -50,6 +51,7 @@ public interface ArtworkQuestionApiDocs {
                                       "nickname": "User1"
                                     },
                                     "reply": {
+                                      "creatorId": 4,
                                       "creatorName": "고상준",
                                       "isCreator": true,
                                       "content": "캔버스에 유화를 사용했어요.",
@@ -96,10 +98,14 @@ public interface ArtworkQuestionApiDocs {
                           """)))
   ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @Parameter(description = "질문 목록을 조회할 작품 ID", example = "1") Long artworkId,
-      @Parameter(description = "마지막으로 조회한 질문 ID. 첫 요청이면 전달하지 않음", example = "3") @Positive Long cursorId,
+      @Parameter(description = "마지막으로 조회한 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
+          @RequestParam(required = false)
+          @Positive Long cursorId,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 Q&A 질문 등록", description = "작품 상세/방명록 화면에서 사용자가 공개 또는 비공개 질문을 등록합니다.")
+  @Operation(
+      summary = "작품 Q&A 질문 등록",
+      description = "로그인 사용자가 공개 또는 비공개 질문을 등록합니다. 해당 작품의 작가는 질문을 작성할 수 없습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 Q&A 질문 등록 성공",
@@ -115,18 +121,41 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "content": "붉은 배경과 회색 벽면을 대비시킨 이유가 궁금해요.",
                                 "isPublic": true,
                                 "answerStatus": "WAITING",
                                 "createdAt": "2026-06-30T22:10:00",
-                                "updatedAt": "2026-06-30T22:10:00",
-                                "deletedAt": null,
                                 "displayArtworkId": 3,
                                 "userId": 27
                               }
                             },
                             "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/3/questions"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "해당 작품의 작가는 질문 작성 불가",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Creator cannot write question",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
+                              "message": "작가는 본인 작품에 질문을 작성할 수 없습니다.",
+                              "details": null
+                            },
                             "meta": {
                               "timestamp": "2026-06-30T22:10:00",
                               "path": "/api/v1/artworks/3/questions"
@@ -213,9 +242,7 @@ public interface ArtworkQuestionApiDocs {
                                 "queReplyId": 8,
                                 "content": "따뜻함과 고요함이 동시에 남아 있는 공간을 표현하고 싶어서 두 색면을 대비시켰습니다.",
                                 "createdAt": "2026-06-30T23:20:00",
-                                "updatedAt": "2026-06-30T23:20:00",
-                                "deletedAt": null,
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "creatorId": 4,
                                 "creatorName": "고상준"
                               }
@@ -330,13 +357,11 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "content": "수정된 질문 내용입니다.",
                                 "isPublic": false,
                                 "answerStatus": "WAITING",
                                 "createdAt": "2026-06-30T22:10:00",
-                                "updatedAt": "2026-06-30T23:05:00",
-                                "deletedAt": null,
                                 "displayArtworkId": 3,
                                 "userId": 27
                               }
@@ -453,7 +478,7 @@ public interface ArtworkQuestionApiDocs {
                             "resultType": "SUCCESS",
                             "success": {
                               "data": {
-                                "artQueId": 15,
+                                "questionId": 15,
                                 "deletedAt": "2026-06-30T23:10:00"
                               }
                             },

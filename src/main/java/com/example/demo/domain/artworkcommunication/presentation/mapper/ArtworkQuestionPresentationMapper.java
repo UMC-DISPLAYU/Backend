@@ -43,19 +43,17 @@ public class ArtworkQuestionPresentationMapper {
 
   public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
     return new ArtworkQuestionResponse(
-        result.artQueId(),
+        result.questionId(),
         result.content(),
         result.isPublic(),
         result.answerStatus(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
         result.displayArtworkId(),
         result.userId());
   }
 
   public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
-    return new DeletedArtworkQuestionResponse(result.artQueId(), result.deletedAt());
+    return new DeletedArtworkQuestionResponse(result.questionId(), result.deletedAt());
   }
 
   public ArtworkQuestionReplyResponse toResponse(ArtworkQuestionReplyResult result) {
@@ -63,9 +61,7 @@ public class ArtworkQuestionPresentationMapper {
         result.queReplyId(),
         result.content(),
         result.createdAt(),
-        result.updatedAt(),
-        result.deletedAt(),
-        result.artQueId(),
+        result.questionId(),
         result.creatorId(),
         result.creatorName());
   }
