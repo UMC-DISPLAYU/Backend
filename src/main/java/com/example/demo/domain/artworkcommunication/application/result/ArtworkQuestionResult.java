@@ -4,7 +4,7 @@ import com.example.demo.domain.artworkcommunication.domain.type.AnswerStatus;
 import java.time.LocalDateTime;
 
 public record ArtworkQuestionResult(
-    Long artQueId,
+    Long questionId,
     String content,
     Boolean isPublic,
     AnswerStatus answerStatus,

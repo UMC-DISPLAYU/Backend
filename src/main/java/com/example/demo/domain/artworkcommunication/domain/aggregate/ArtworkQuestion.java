@@ -19,8 +19,8 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "artQueId")
-  private Long artQueId;
+  @Column(name = "questionId")
+  private Long questionId;
 
   @Column(name = "content", nullable = false)
   private String content;
@@ -41,13 +41,13 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
   protected ArtworkQuestion() {}
 
   private ArtworkQuestion(
-      Long artQueId,
+      Long questionId,
       String content,
       Boolean isPublic,
       AnswerStatus answerStatus,
       Long displayArtworkId,
       Long userId) {
-    this.artQueId = artQueId;
+    this.questionId = questionId;
     this.content = content;
     this.isPublic = isPublic;
     this.answerStatus = answerStatus;

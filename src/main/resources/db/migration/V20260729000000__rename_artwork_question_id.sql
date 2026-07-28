@@ -1,0 +1,6 @@
+ALTER TABLE `ArtworkQuestion`
+    RENAME COLUMN `artQueId` TO `questionId`;
+
+ALTER TABLE `ArtworkQuestionReply`
+    RENAME COLUMN `artQueId` TO `questionId`,
+    RENAME INDEX `UK_ARTWORKQUESTIONREPLY_ARTQUE` TO `UK_ARTWORKQUESTIONREPLY_QUESTION`;
