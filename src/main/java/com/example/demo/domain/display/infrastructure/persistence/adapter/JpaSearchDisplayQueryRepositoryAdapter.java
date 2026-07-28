@@ -48,7 +48,7 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
         .on(QDisplayImageConditions.mainImage(image))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
-            display.id.gt(query.cursor()),
+            cursorAfter(query.cursor()),
             searchWordContains(query.searchWord()),
             regionEq(query),
             query.type() == null ? null : display.displayType.eq(query.type()),
@@ -57,6 +57,10 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
         .orderBy(display.id.asc())
         .limit(limit)
         .fetch();
+  }
+
+  private BooleanExpression cursorAfter(Long cursor) {
+    return cursor == null ? null : display.id.gt(cursor);
   }
 
   private BooleanExpression searchWordContains(String searchWord) {

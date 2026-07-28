@@ -175,6 +175,34 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
   }
 
   @Test
+  void searchDisplaysOmitsCursorConditionWhenCursorIsNull() {
+    LocalDate today = LocalDate.of(2026, 7, 12);
+    Display first =
+        publishedDisplay(
+            "첫 번째 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(5));
+    Display second =
+        publishedDisplay(
+            "두 번째 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(5));
+    jpaRepository.saveAllAndFlush(List.of(first, second));
+
+    List<SearchDisplayQueryResult> results =
+        queryRepository.searchDisplays(
+            new SearchDisplayQuery(null, null, null, null, null, null, 20), today, 20);
+
+    assertThat(results)
+        .extracting(SearchDisplayQueryResult::title)
+        .containsExactly("첫 번째 전시", "두 번째 전시");
+  }
+
+  @Test
   void searchDisplaysFiltersClosingSoonDisplaysEndingWithinThreeDays() {
     LocalDate today = LocalDate.of(2026, 7, 12);
     Display endingToday =
