@@ -47,6 +47,22 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/12/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증이 필요합니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/12/memo" }
+                          }
+                          """)))
   ApiResponseBody<MemoResponse> upsertExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
       @Valid @RequestBody MemoRequest request,
@@ -54,6 +70,22 @@ public interface MemoControllerDocs {
       HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 메모 삭제", description = "저장된 전시에 작성한 메모를 삭제합니다.")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증이 필요합니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/1/memo" }
+                          }
+                          """)))
   ApiResponseBody<Void> deleteExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
       AuthUser user,
@@ -85,6 +117,22 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/7/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증이 필요합니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/7/memo" }
+                          }
+                          """)))
   ApiResponseBody<MemoResponse> upsertArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
       @Valid @RequestBody MemoRequest request,
@@ -92,6 +140,22 @@ public interface MemoControllerDocs {
       HttpServletRequest httpRequest);
 
   @Operation(summary = "작품 메모 삭제", description = "저장된 작품에 작성한 메모를 삭제합니다.")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증이 필요합니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/1/memo" }
+                          }
+                          """)))
   ApiResponseBody<Void> deleteArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
       AuthUser user,
