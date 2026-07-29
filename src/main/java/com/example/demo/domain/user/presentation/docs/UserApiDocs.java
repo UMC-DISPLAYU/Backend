@@ -12,7 +12,7 @@ public final class UserApiDocs {
               "id": 1,
               "provider": "Kakao",
               "name": "홍길동",
-              "nickname": "maya",
+              "nickname": "maya01",
               "socialEmail": "user@gmail.com",
               "schoolEmail": null,
               "isVerified": false
@@ -149,7 +149,7 @@ public final class UserApiDocs {
       """
       {
         "resultType": "FAIL", "success": null,
-        "error": { "code": "INVALID_NICKNAME_FORMAT", "message": "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다.", "details": null },
+        "error": { "code": "INVALID_NICKNAME_FORMAT", "message": "닉네임은 한글, 영문, 숫자로 5~15자여야 하며 공백과 특수문자는 사용할 수 없습니다.", "details": null },
         "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
       }
       """;

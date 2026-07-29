@@ -80,7 +80,7 @@ public class User extends BaseTimeEntity {
     if (deletedAt != null) {
       throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
     }
-    this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID();
+    this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID(); // 탈퇴한 사용자의 닉네임 사용이 가능하도록 허용
     this.deletedAt = withdrawnAt;
   }
 

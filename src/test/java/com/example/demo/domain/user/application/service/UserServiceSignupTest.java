@@ -66,7 +66,7 @@ class UserServiceSignupTest {
           .provider(Provider.Google)
           .providerId("google-provider-id")
           .name("Google User")
-          .nickname("maya")
+          .nickname("maya01")
           .socialEmail("google@example.com")
           .build();
 
@@ -74,7 +74,7 @@ class UserServiceSignupTest {
   void setUp() {
     when(userRepository.findByProviderAndProviderId(Provider.Google, "google-provider-id"))
         .thenReturn(Optional.empty());
-    when(userRepository.existsByNickname("maya")).thenReturn(false);
+    when(userRepository.existsByNickname("maya01")).thenReturn(false);
     when(userRepository.save(any(User.class))).thenReturn(savedUser);
     when(agreementRepository.findAllSignupAgreements()).thenReturn(signupAgreements);
     when(tokenProvider.createAccessToken(savedUser)).thenReturn("access-token");
@@ -218,7 +218,7 @@ class UserServiceSignupTest {
   }
 
   private SignupCommand command(List<AgreementCommand> agreements) {
-    return new SignupCommand(Nickname.of("maya"), agreements);
+    return new SignupCommand(Nickname.of("maya01"), agreements);
   }
 
   private static AgreementCommand agreed(Long id) {

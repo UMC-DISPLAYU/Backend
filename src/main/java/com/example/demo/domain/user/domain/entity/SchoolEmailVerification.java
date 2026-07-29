@@ -67,7 +67,11 @@ public class SchoolEmailVerification extends BaseTimeEntity {
       User user, String schoolEmail, String univName, String verificationCode) {
 
     return new SchoolEmailVerification(
-        user, schoolEmail, univName, verificationCode, LocalDateTime.now().plusMinutes(5));
+        user,
+        schoolEmail,
+        univName,
+        verificationCode,
+        LocalDateTime.now().plusMinutes(5)); // 인증코드 유효시간: 5분
   }
 
   public boolean isExpired() {
@@ -77,7 +81,7 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
   public boolean canResend() {
 
-    return LocalDateTime.now().isAfter(sentAt.plusMinutes(1));
+    return LocalDateTime.now().isAfter(sentAt.plusMinutes(1)); // 재전송 쿨타임: 1분
   }
 
   public boolean matchCode(String code) {

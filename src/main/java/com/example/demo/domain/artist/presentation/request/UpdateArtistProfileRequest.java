@@ -17,4 +17,5 @@ public record UpdateArtistProfileRequest(
     @Schema(example = "[\"DESIGN\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
     @Schema(example = "https://portfolio.maya.com")
         @Size(max = 255) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String externalLink,
-    @Schema(example = "덕성여자대학교") String univName) {}
+    @Schema(description = "대학교 목록에 존재하며 인증 이메일 도메인과 일치하는 학교명", example = "덕성여자대학교")
+        String univName) {}

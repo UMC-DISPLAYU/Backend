@@ -29,6 +29,8 @@ import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,7 +67,7 @@ public class UserController implements UserControllerDocs {
   @GetMapping("/me")
   public ApiResponseBody<MyUserResponse> getMe(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
-    MyUserResult result = getMyUserService.execute(user.userId());
+    MyUserResult result = getMyUserService.execute(requireUserId(user));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
@@ -76,7 +78,8 @@ public class UserController implements UserControllerDocs {
       @RequestBody UpdateMyProfileRequest request,
       HttpServletRequest httpRequest) {
     UpdateMyProfileResult result =
-        updateMyProfileService.execute(userPresentationMapper.toCommand(user.userId(), request));
+        updateMyProfileService.execute(
+            userPresentationMapper.toCommand(requireUserId(user), request));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
@@ -84,7 +87,7 @@ public class UserController implements UserControllerDocs {
   @DeleteMapping("/me")
   public ApiResponseBody<Void> withdraw(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
-    withdrawUserService.execute(userPresentationMapper.toWithdrawCommand(user.userId()));
+    withdrawUserService.execute(userPresentationMapper.toWithdrawCommand(requireUserId(user)));
     return ApiResponseBody.success(null, httpRequest);
   }
 
@@ -95,7 +98,8 @@ public class UserController implements UserControllerDocs {
       @RequestBody ChangeNicknameRequest request,
       HttpServletRequest httpRequest) {
     ChangeNicknameResult result =
-        changeNicknameService.execute(userPresentationMapper.toCommand(user.userId(), request));
+        changeNicknameService.execute(
+            userPresentationMapper.toCommand(requireUserId(user), request));
     return ApiResponseBody.success(userPresentationMapper.toResponse(result), httpRequest);
   }
 
@@ -103,7 +107,7 @@ public class UserController implements UserControllerDocs {
   @GetMapping("/me/artist-profile")
   public ApiResponseBody<MyArtistProfileResponse> getMyArtistProfile(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
-    ArtistProfileResult result = getArtistProfileService.getMine(user.userId());
+    ArtistProfileResult result = getArtistProfileService.getMine(requireUserId(user));
     return ApiResponseBody.success(artistProfileMapper.toMyResponse(result), httpRequest);
   }
 
@@ -114,7 +118,8 @@ public class UserController implements UserControllerDocs {
       @Valid @RequestBody UpdateArtistProfileRequest request,
       HttpServletRequest httpRequest) {
     UpdateArtistProfileResult result =
-        updateArtistProfileService.execute(artistProfileMapper.toCommand(user.userId(), request));
+        updateArtistProfileService.execute(
+            artistProfileMapper.toCommand(requireUserId(user), request));
     return ApiResponseBody.success(artistProfileMapper.toResponse(result), httpRequest);
   }
 
@@ -139,5 +144,12 @@ public class UserController implements UserControllerDocs {
     boolean isAvailable = userService.isNicknameAvailable(nickname);
 
     return ApiResponseBody.success(new NicknameCheckResponse(nickname, isAvailable), httpRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }

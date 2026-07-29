@@ -19,7 +19,7 @@ public enum UserErrorCode implements BaseErrorCode {
   INVALID_NICKNAME_FORMAT(
       HttpStatus.BAD_REQUEST,
       "INVALID_NICKNAME_FORMAT",
-      "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
+      "닉네임은 한글, 영문, 숫자로 5~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
 
   INVALID_PROFILE_IMAGE_URL(
       HttpStatus.BAD_REQUEST,

@@ -12,6 +12,8 @@ import com.example.demo.domain.user.presentation.request.ResendSchoolEmailVerifi
 import com.example.demo.domain.user.presentation.request.SchoolEmailVerificationRequest;
 import com.example.demo.domain.user.presentation.request.VerifySchoolEmailRequest;
 import com.example.demo.domain.user.presentation.response.SchoolEmailVerificationConfirmResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +42,7 @@ public class SchoolEmailVerificationController implements SchoolEmailVerificatio
       HttpServletRequest httpRequest) {
     sendService.execute(
         new SendSchoolEmailVerificationCommand(
-            user.userId(), request.schoolEmail(), request.univName()));
+            requireUserId(user), request.schoolEmail(), request.univName()));
     return ApiResponseBody.success(null, httpRequest);
   }
 
@@ -50,7 +52,7 @@ public class SchoolEmailVerificationController implements SchoolEmailVerificatio
       @RequestBody ResendSchoolEmailVerificationRequest request,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
-    resendService.execute(user.userId(), request.schoolEmail());
+    resendService.execute(requireUserId(user), request.schoolEmail());
     return ApiResponseBody.success(null, httpRequest);
   }
 
@@ -63,7 +65,14 @@ public class SchoolEmailVerificationController implements SchoolEmailVerificatio
     SchoolEmailConfirmVerificationResult result =
         verifyService.execute(
             new VerifySchoolEmailVerificationCommand(
-                user.userId(), request.schoolEmail(), request.verificationCode()));
+                requireUserId(user), request.schoolEmail(), request.verificationCode()));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
