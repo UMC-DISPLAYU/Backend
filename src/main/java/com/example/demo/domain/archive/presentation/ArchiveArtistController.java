@@ -13,9 +13,13 @@ import com.example.demo.domain.archive.presentation.mapper.ArchivePresentationMa
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistToggleResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 public class ArchiveArtistController implements ArchiveArtistControllerDocs {
-
-  // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. 로그인 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
-  private static final Long TEMP_USER_ID = 1L;
 
   private final SaveArchiveArtistService saveArchiveArtistService;
   private final DeleteArchiveArtistService deleteArchiveArtistService;
@@ -55,28 +56,34 @@ public class ArchiveArtistController implements ArchiveArtistControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
-      @PathVariable Long artistId, HttpServletRequest request) {
+      @PathVariable Long artistId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveArtistToggleResult result =
         saveArchiveArtistService.saveArchiveArtist(
-            new SaveArchiveArtistCommand(TEMP_USER_ID, artistId));
+            new SaveArchiveArtistCommand(requireUserId(user), artistId));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @DeleteMapping("/api/v1/archives/artists/{artistId}")
   @Override
   public ApiResponseBody<ArchiveArtistToggleResponse> deleteArchiveArtist(
-      @PathVariable Long artistId, HttpServletRequest request) {
+      @PathVariable Long artistId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveArtistToggleResult result =
-        deleteArchiveArtistService.deleteArchiveArtist(TEMP_USER_ID, artistId);
+        deleteArchiveArtistService.deleteArchiveArtist(requireUserId(user), artistId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @GetMapping("/api/v1/archives/artists/{savedArtistId}")
   @Override
   public ApiResponseBody<ArchiveArtistResponse> getArchiveArtistDetail(
-      @PathVariable Long savedArtistId, HttpServletRequest request) {
+      @PathVariable Long savedArtistId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveArtistResult result =
-        getArchiveArtistDetailService.getArchiveArtistDetail(TEMP_USER_ID, savedArtistId);
+        getArchiveArtistDetailService.getArchiveArtistDetail(requireUserId(user), savedArtistId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -85,9 +92,17 @@ public class ArchiveArtistController implements ArchiveArtistControllerDocs {
   public ApiResponseBody<ArchiveArtistCursorResponse> getArchivedArtists(
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     ArchiveArtistCursorResult result =
-        getArchivedArtistsService.getArchivedArtists(TEMP_USER_ID, cursorId, size);
+        getArchivedArtistsService.getArchivedArtists(requireUserId(user), cursorId, size);
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
