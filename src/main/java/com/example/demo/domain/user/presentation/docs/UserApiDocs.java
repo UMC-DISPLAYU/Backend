@@ -2,6 +2,24 @@ package com.example.demo.domain.user.presentation.docs;
 
 public final class UserApiDocs {
 
+  public static final String SIGNUP_REQUEST_EXAMPLE =
+      """
+      {
+        "nickname": "displayu01",
+        "agreements": [
+          {
+            "code": "TERMS_OF_SERVICE",
+            "version": "1.0"
+          },
+          {
+            "code": "PRIVACY_COLLECTION_USE",
+            "version": "1.0"
+          }
+        ],
+        "isOver14": true
+      }
+      """;
+
   public static final String SIGNUP_SUCCESS_EXAMPLE =
       """
       {

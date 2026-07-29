@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.presentation.docs;
 
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SIGNUP_REQUEST_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SIGNUP_SUCCESS_EXAMPLE;
 
 import com.example.demo.domain.user.presentation.request.SignupRequest;
@@ -36,7 +37,10 @@ public interface AuthControllerDocs {
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = "회원가입 요청 (약관 목록 조회 API에서 받은 code와 version 사용)",
       required = true,
-      content = @Content(mediaType = "application/json"))
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "필수 약관 동의 회원가입", value = SIGNUP_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
       description = "회원가입 성공",
