@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.cache.DisplayCacheNames;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery.Cursor;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
@@ -11,6 +12,7 @@ import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplay
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,10 @@ public class GetClosingSoonDisplaysService implements GetClosingSoonDisplaysUseC
   }
 
   @Override
+  @Cacheable(
+      cacheNames = DisplayCacheNames.CLOSING_SOON_FIRST_PAGE,
+      key = "#query.size()",
+      condition = "#query.cursor() == null")
   @Transactional(readOnly = true)
   public ClosingSoonDisplayResult getClosingSoonDisplays(ClosingSoonDisplayQuery query) {
     LocalDate today = LocalDate.now(clock);

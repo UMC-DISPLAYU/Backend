@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.cache.DisplayListCacheEvictor;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
@@ -18,11 +19,15 @@ public class UpdateDisplayService {
 
   private final DisplayRepository displayRepository;
   private final DisplayLikeRepository displayLikeRepository;
+  private final DisplayListCacheEvictor displayListCacheEvictor;
 
   public UpdateDisplayService(
-      DisplayRepository displayRepository, DisplayLikeRepository displayLikeRepository) {
+      DisplayRepository displayRepository,
+      DisplayLikeRepository displayLikeRepository,
+      DisplayListCacheEvictor displayListCacheEvictor) {
     this.displayRepository = displayRepository;
     this.displayLikeRepository = displayLikeRepository;
+    this.displayListCacheEvictor = displayListCacheEvictor;
   }
 
   @Transactional
@@ -70,6 +75,7 @@ public class UpdateDisplayService {
               display.getLocation().longitude()));
     }
 
+    displayListCacheEvictor.evictAfterCommit();
     return DisplayDetailResult.from(
         display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
   }
