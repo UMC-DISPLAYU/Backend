@@ -17,6 +17,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.Agreement;
 import com.example.demo.domain.user.domain.entity.AgreementPolicy;
 import com.example.demo.domain.user.domain.entity.UserAgreement;
+import com.example.demo.domain.user.domain.enums.AgreementCode;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
@@ -54,12 +55,10 @@ class UserServiceSignupTest {
   private final SocialUserInfo socialUserInfo =
       new SocialUserInfo(
           Provider.Google, "google-provider-id", "Google User", "google@example.com");
-  private final Agreement locationAgreement = agreement(70L, "위치 기반 서비스 약관", true);
-  private final Agreement serviceAgreement = agreement(110L, "서비스 이용약관", true);
-  private final Agreement privacyAgreement = agreement(120L, "개인정보 처리방침", true);
-  private final Agreement marketingAgreement = agreement(130L, "마케팅 정보 수신 동의", false);
-  private final List<Agreement> signupAgreements =
-      List.of(locationAgreement, serviceAgreement, privacyAgreement, marketingAgreement);
+  private final Agreement terms = agreement(11L, AgreementCode.TERMS_OF_SERVICE, true, 1);
+  private final Agreement privacy = agreement(12L, AgreementCode.PRIVACY_COLLECTION_USE, true, 2);
+  private final Agreement location = agreement(7L, AgreementCode.LOCATION_BASED_SERVICE, false, 3);
+  private final List<Agreement> signupAgreements = List.of(terms, privacy, location);
   private final User savedUser =
       User.builder()
           .id(10L)
@@ -82,97 +81,63 @@ class UserServiceSignupTest {
   }
 
   @Test
-  void signsUpWithAllRequiredAgreementsUsingDatabaseIds() {
-    SignupCommand command =
+  void signsUpWithRequiredAgreementsAndSavesOptionalLocationWhenRequested() {
+    userService.signup(
         command(
-            List.of(agreed(70L), agreed(110L), agreed(120L), new AgreementCommand(130L, false)));
-    when(agreementRepository.findAllById(any())).thenReturn(signupAgreements);
-
-    userService.signup(command, socialUserInfo);
-
-    assertSavedAgreementIds(70L, 110L, 120L);
-  }
-
-  @Test
-  void rejectsSignupWhenLocationAgreementIsMissing() {
-    SignupCommand command = command(List.of(agreed(110L), agreed(120L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(serviceAgreement, privacyAgreement));
-
-    assertUserError(
-        () -> userService.signup(command, socialUserInfo),
-        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
-    assertNothingSaved();
-  }
-
-  @Test
-  void rejectsSignupWhenServiceAgreementIsNotAgreed() {
-    SignupCommand command =
-        command(List.of(agreed(70L), new AgreementCommand(110L, false), agreed(120L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(locationAgreement, serviceAgreement, privacyAgreement));
-
-    assertUserError(
-        () -> userService.signup(command, socialUserInfo),
-        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
-    assertNothingSaved();
-  }
-
-  @Test
-  void rejectsSignupWhenPrivacyAgreementIsMissing() {
-    SignupCommand command = command(List.of(agreed(70L), agreed(110L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(locationAgreement, serviceAgreement));
-
-    assertUserError(
-        () -> userService.signup(command, socialUserInfo),
-        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
-    assertNothingSaved();
-  }
-
-  @Test
-  void signsUpWhenMarketingAgreementIsNotAgreed() {
-    SignupCommand command =
-        command(
-            List.of(agreed(70L), agreed(110L), agreed(120L), new AgreementCommand(130L, false)));
-    when(agreementRepository.findAllById(any())).thenReturn(signupAgreements);
-
-    userService.signup(command, socialUserInfo);
-
-    assertSavedAgreementIds(70L, 110L, 120L);
-  }
-
-  @Test
-  void ignoresPastRequiredAgreementsWhenValidatingSignup() {
-    Agreement pastService = agreement(1L, "서비스 이용약관 v1", true);
-    Agreement pastPrivacy = agreement(2L, "개인정보 처리방침 v1", true);
-    Agreement previousService = agreement(4L, "서비스 이용약관 v2", true);
-    Agreement previousPrivacy = agreement(5L, "개인정보 처리방침 v2", true);
-    Agreement artworkGuide = agreement(8L, "작품 공개 정책 안내", true);
-    Agreement archiveGuide = agreement(9L, "아카이브 이용 안내", true);
-    SignupCommand command = command(List.of(agreed(70L), agreed(110L), agreed(120L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(locationAgreement, serviceAgreement, privacyAgreement));
-
-    userService.signup(command, socialUserInfo);
-
-    assertThat(
             List.of(
-                pastService,
-                pastPrivacy,
-                previousService,
-                previousPrivacy,
-                artworkGuide,
-                archiveGuide))
-        .allMatch(Agreement::isRequired);
-    assertSavedAgreementIds(70L, 110L, 120L);
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.PRIVACY_COLLECTION_USE),
+                agreement(AgreementCode.LOCATION_BASED_SERVICE))),
+        socialUserInfo);
+
+    assertSavedAgreementIds(11L, 12L, 7L);
   }
 
   @Test
-  void rejectsSignupWhenUnknownAgreementIdIsIncluded() {
-    SignupCommand command = command(List.of(agreed(70L), agreed(110L), agreed(120L), agreed(999L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(locationAgreement, serviceAgreement, privacyAgreement));
+  void signsUpWithoutOptionalLocationAgreement() {
+    userService.signup(
+        command(
+            List.of(
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+        socialUserInfo);
+
+    assertSavedAgreementIds(11L, 12L);
+  }
+
+  @Test
+  void rejectsSignupWhenRequiredAgreementIsMissing() {
+    assertUserError(
+        () ->
+            userService.signup(
+                command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo),
+        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
+    assertNothingSaved();
+  }
+
+  @Test
+  void rejectsSignupWhenUserIsNotOver14() {
+    SignupCommand command =
+        new SignupCommand(
+            Nickname.of("maya01"),
+            List.of(
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.PRIVACY_COLLECTION_USE)),
+            false);
+
+    assertUserError(
+        () -> userService.signup(command, socialUserInfo),
+        UserErrorCode.OVER_14_CONFIRMATION_REQUIRED);
+    assertNothingSaved();
+  }
+
+  @Test
+  void rejectsUnknownOrInactiveAgreementVersion() {
+    SignupCommand command =
+        command(
+            List.of(
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                new AgreementCommand(AgreementCode.PRIVACY_COLLECTION_USE, "2.0")));
 
     assertUserError(
         () -> userService.signup(command, socialUserInfo), UserErrorCode.AGREEMENT_NOT_FOUND);
@@ -180,53 +145,105 @@ class UserServiceSignupTest {
   }
 
   @Test
-  void savesEachAgreementOnceWhenIdsAreDuplicated() {
+  void rejectsDuplicatedCodeAndVersion() {
     SignupCommand command =
         command(
             List.of(
-                agreed(70L), agreed(70L), agreed(110L), agreed(110L), agreed(120L), agreed(120L)));
-    when(agreementRepository.findAllById(any()))
-        .thenReturn(List.of(locationAgreement, serviceAgreement, privacyAgreement));
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.PRIVACY_COLLECTION_USE)));
 
-    userService.signup(command, socialUserInfo);
-
-    assertSavedAgreementIds(70L, 110L, 120L);
+    assertUserError(
+        () -> userService.signup(command, socialUserInfo), UserErrorCode.DUPLICATE_AGREEMENT);
+    assertNothingSaved();
   }
 
   @Test
-  void rejectsSignupWhenAgreementListIsNullOrEmpty() {
-    when(agreementRepository.findAllById(any())).thenReturn(List.of());
+  void rejectsInvalidSignupAgreementConfiguration() {
+    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of(terms, privacy));
 
     assertUserError(
-        () -> userService.signup(command(null), socialUserInfo),
-        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
-    assertUserError(
-        () -> userService.signup(command(List.of()), socialUserInfo),
-        UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
-    verify(userRepository, never()).save(any(User.class));
-  }
-
-  @Test
-  void rejectsSignupWhenSignupAgreementsAreNotConfigured() {
-    when(agreementRepository.findAllById(any())).thenReturn(List.of());
-    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of());
-
-    assertUserError(
-        () -> userService.signup(command(List.of()), socialUserInfo),
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
         UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
-    verify(userRepository, never()).save(any(User.class));
+    assertNothingSaved();
+  }
+
+  @Test
+  void rejectsUnsupportedAgreementCodeAsInvalidConfiguration() {
+    Agreement unsupported =
+        Agreement.builder()
+            .id(99L)
+            .code("UNSUPPORTED_AGREEMENT")
+            .version("1.0")
+            .isActive(true)
+            .isRequired(false)
+            .displayOrder(3)
+            .build();
+    when(agreementRepository.findAllSignupAgreements())
+        .thenReturn(List.of(terms, privacy, unsupported));
+
+    assertUserError(
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
+        UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+    assertNothingSaved();
+  }
+
+  @Test
+  void rejectsDuplicatedActiveCodeAndVersionAsInvalidConfiguration() {
+    Agreement duplicatedTerms =
+        Agreement.builder()
+            .id(98L)
+            .code(AgreementCode.TERMS_OF_SERVICE.name())
+            .version("1.0")
+            .isActive(true)
+            .isRequired(true)
+            .displayOrder(4)
+            .build();
+    when(agreementRepository.findAllSignupAgreements())
+        .thenReturn(List.of(terms, privacy, location, duplicatedTerms));
+
+    assertUserError(
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
+        UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+    assertNothingSaved();
   }
 
   private SignupCommand command(List<AgreementCommand> agreements) {
-    return new SignupCommand(Nickname.of("maya01"), agreements);
+    return new SignupCommand(Nickname.of("maya01"), agreements, true);
   }
 
-  private static AgreementCommand agreed(Long id) {
-    return new AgreementCommand(id, true);
+  private static AgreementCommand agreement(AgreementCode code) {
+    return new AgreementCommand(code, "1.0");
   }
 
-  private static Agreement agreement(Long id, String title, boolean required) {
-    return Agreement.builder().id(id).title(title).isRequired(required).build();
+  private static Agreement agreement(
+      Long id, AgreementCode code, boolean required, int displayOrder) {
+    return Agreement.builder()
+        .id(id)
+        .code(code.name())
+        .version("1.0")
+        .isActive(true)
+        .isRequired(required)
+        .displayOrder(displayOrder)
+        .build();
   }
 
   private void assertSavedAgreementIds(Long... ids) {

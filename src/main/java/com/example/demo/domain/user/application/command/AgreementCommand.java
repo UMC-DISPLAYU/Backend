@@ -1,3 +1,5 @@
 package com.example.demo.domain.user.application.command;
 
-public record AgreementCommand(Long agreeId, boolean isAgreed) {}
+import com.example.demo.domain.user.domain.enums.AgreementCode;
+
+public record AgreementCommand(AgreementCode code, String version) {}

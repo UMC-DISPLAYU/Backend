@@ -60,10 +60,11 @@ public class AuthController
 
     List<AgreementCommand> agreements =
         Optional.ofNullable(request.agreements()).orElseGet(List::of).stream()
-            .map(agreement -> new AgreementCommand(agreement.agreeId(), agreement.isAgreed()))
+            .map(agreement -> new AgreementCommand(agreement.code(), agreement.version()))
             .toList();
 
-    SignupCommand command = new SignupCommand(Nickname.of(request.nickname()), agreements);
+    SignupCommand command =
+        new SignupCommand(Nickname.of(request.nickname()), agreements, request.isOver14());
 
     SignupResult result = userService.signup(command, socialUserInfo);
 

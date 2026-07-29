@@ -1,7 +1,9 @@
 package com.example.demo.domain.user.presentation.request;
 
+import com.example.demo.domain.user.domain.enums.AgreementCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -13,11 +15,13 @@ public record SignupRequest(
             regexp = "^[가-힣a-zA-Z0-9]{5,15}$",
             message = "닉네임은 한글, 영문, 숫자로 5~15자여야 하며 공백과 특수문자는 사용할 수 없습니다.")
         String nickname,
-    @Schema(description = "약관 동의 목록. GET /api/v1/agreements에서 받은 ID를 사용하며 필수 약관에 모두 동의해야 합니다.")
-        List<@Valid AgreementRequest> agreements) {
+    @Schema(description = "동의한 약관 목록. GET /api/v1/agreements에서 받은 code와 version을 사용합니다.")
+        List<@Valid AgreementRequest> agreements,
+    @Schema(description = "만 14세 이상 확인", example = "true")
+        @NotNull(message = "만 14세 이상 확인은 필수입니다.") @AssertTrue(message = "만 14세 이상이어야 회원가입할 수 있습니다.") Boolean isOver14) {
 
   public record AgreementRequest(
-      @Schema(description = "GET /api/v1/agreements에서 받은 환경별 실제 약관 ID")
-          @NotNull(message = "agreeId는 필수입니다.") Long agreeId,
-      @Schema(description = "약관 동의 여부", example = "true") boolean isAgreed) {}
+      @Schema(description = "약관 코드", example = "TERMS_OF_SERVICE")
+          @NotNull(message = "약관 코드는 필수입니다.") AgreementCode code,
+      @Schema(description = "약관 버전", example = "1.0") @NotBlank(message = "약관 버전은 필수입니다.") String version) {}
 }
