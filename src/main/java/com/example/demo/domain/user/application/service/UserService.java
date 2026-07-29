@@ -80,9 +80,12 @@ public class UserService {
 
     Map<AgreementKey, Agreement> signupAgreementByKey = new HashMap<>();
     for (Agreement agreement : signupAgreements) {
-      signupAgreementByKey.put(
-          new AgreementKey(AgreementCode.valueOf(agreement.getCode()), agreement.getVersion()),
-          agreement);
+      AgreementKey key =
+          new AgreementKey(
+              agreementPolicy.toAgreementCode(agreement.getCode()), agreement.getVersion());
+      if (signupAgreementByKey.put(key, agreement) != null) {
+        throw new UserException(UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+      }
     }
 
     if (!signupAgreementByKey.keySet().containsAll(requestedAgreementKeys)) {

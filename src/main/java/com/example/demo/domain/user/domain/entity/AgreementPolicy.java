@@ -22,13 +22,13 @@ public class AgreementPolicy {
     Set<AgreementCode> configuredCodes =
         signupAgreements.stream()
             .map(Agreement::getCode)
-            .map(AgreementCode::valueOf)
+            .map(this::toAgreementCode)
             .collect(java.util.stream.Collectors.toSet());
     Set<AgreementCode> requiredCodes =
         signupAgreements.stream()
             .filter(Agreement::isRequired)
             .map(Agreement::getCode)
-            .map(AgreementCode::valueOf)
+            .map(this::toAgreementCode)
             .collect(java.util.stream.Collectors.toSet());
 
     if (signupAgreements.size() != SIGNUP_AGREEMENT_CODES.size()
@@ -47,6 +47,14 @@ public class AgreementPolicy {
   public void validateOver14(boolean isOver14) {
     if (!isOver14) {
       throw new UserException(UserErrorCode.OVER_14_CONFIRMATION_REQUIRED);
+    }
+  }
+
+  public AgreementCode toAgreementCode(String code) {
+    try {
+      return AgreementCode.valueOf(code);
+    } catch (IllegalArgumentException | NullPointerException exception) {
+      throw new UserException(UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
     }
   }
 }

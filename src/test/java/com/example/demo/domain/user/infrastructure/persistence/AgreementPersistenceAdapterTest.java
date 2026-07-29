@@ -19,7 +19,7 @@ class AgreementPersistenceAdapterTest {
       new AgreementPersistenceAdapter(agreementJpaRepository);
 
   @Test
-  void findsOnlyActiveSignupAgreementCodesInDisplayOrder() {
+  void delegatesSignupAgreementCodesToJpaRepository() {
     List<Agreement> agreements = List.of(Agreement.builder().id(11L).build());
     when(agreementJpaRepository.findAllByCodeInAndIsActiveTrueOrderByDisplayOrderAsc(
             anyCollection()))
@@ -31,7 +31,6 @@ class AgreementPersistenceAdapterTest {
     verify(agreementJpaRepository)
         .findAllByCodeInAndIsActiveTrueOrderByDisplayOrderAsc(codesCaptor.capture());
     assertThat(codesCaptor.getValue())
-        .containsExactlyInAnyOrder(
-            "TERMS_OF_SERVICE", "PRIVACY_COLLECTION_USE", "LOCATION_BASED_SERVICE");
+        .containsExactly("TERMS_OF_SERVICE", "PRIVACY_COLLECTION_USE", "LOCATION_BASED_SERVICE");
   }
 }

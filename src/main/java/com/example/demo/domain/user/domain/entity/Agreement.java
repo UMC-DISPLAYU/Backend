@@ -14,7 +14,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Agreement")
+@Table(
+    name = "Agreement",
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "idx_agreement_code_version",
+            columnNames = {"code", "version"}))
 public class Agreement extends BaseTimeEntity {
 
   @Id
@@ -35,18 +40,18 @@ public class Agreement extends BaseTimeEntity {
   @Column(name = "isRequired", nullable = false)
   private boolean isRequired;
 
-  @Column(name = "code")
+  @Column(name = "code", nullable = false, length = 100)
   private String code;
 
-  @Column(name = "version")
+  @Column(name = "version", nullable = false, length = 32)
   private String version;
 
-  @Column(name = "isActive")
-  private Boolean isActive;
+  @Column(name = "isActive", nullable = false)
+  private boolean isActive;
 
-  @Column(name = "effectiveDate")
+  @Column(name = "effectiveDate", nullable = false)
   private LocalDate effectiveDate;
 
-  @Column(name = "displayOrder")
+  @Column(name = "displayOrder", nullable = false)
   private Integer displayOrder;
 }

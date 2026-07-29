@@ -7,6 +7,13 @@ WHERE code IN (
         'LOCATION_BASED_SERVICE'
     );
 
+ALTER TABLE Agreement
+    MODIFY COLUMN code VARCHAR(100) NOT NULL,
+    MODIFY COLUMN version VARCHAR(32) NOT NULL,
+    MODIFY COLUMN isActive TINYINT(1) NOT NULL,
+    MODIFY COLUMN effectiveDate DATE NOT NULL,
+    MODIFY COLUMN displayOrder INT NOT NULL;
+
 INSERT INTO Agreement
     (
         code,

@@ -174,6 +174,58 @@ class UserServiceSignupTest {
     assertNothingSaved();
   }
 
+  @Test
+  void rejectsUnsupportedAgreementCodeAsInvalidConfiguration() {
+    Agreement unsupported =
+        Agreement.builder()
+            .id(99L)
+            .code("UNSUPPORTED_AGREEMENT")
+            .version("1.0")
+            .isActive(true)
+            .isRequired(false)
+            .displayOrder(3)
+            .build();
+    when(agreementRepository.findAllSignupAgreements())
+        .thenReturn(List.of(terms, privacy, unsupported));
+
+    assertUserError(
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
+        UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+    assertNothingSaved();
+  }
+
+  @Test
+  void rejectsDuplicatedActiveCodeAndVersionAsInvalidConfiguration() {
+    Agreement duplicatedTerms =
+        Agreement.builder()
+            .id(98L)
+            .code(AgreementCode.TERMS_OF_SERVICE.name())
+            .version("1.0")
+            .isActive(true)
+            .isRequired(true)
+            .displayOrder(4)
+            .build();
+    when(agreementRepository.findAllSignupAgreements())
+        .thenReturn(List.of(terms, privacy, location, duplicatedTerms));
+
+    assertUserError(
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
+        UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+    assertNothingSaved();
+  }
+
   private SignupCommand command(List<AgreementCommand> agreements) {
     return new SignupCommand(Nickname.of("maya01"), agreements, true);
   }
