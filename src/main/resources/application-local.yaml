@@ -52,7 +52,7 @@ app:
     cookie-secure: false
   file:
     storage:
-      region: ${AWS_REGION}
+      region: ${AWS_REGION:ap-northeast-2}
       bucket: ${S3_BUCKET}
       cdn-base-url: ${CDN_BASE_URL}
       presigned-url-expiration-seconds: ${PRESIGNED_URL_EXPIRATION_SECONDS:3600}

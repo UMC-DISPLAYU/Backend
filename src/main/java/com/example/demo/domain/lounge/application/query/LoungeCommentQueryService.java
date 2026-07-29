@@ -76,6 +76,7 @@ public class LoungeCommentQueryService {
   public LoungeReplyCursorResult getReplies(
       Long parentCommentId, Long cursorId, int size, Long viewerUserId) {
     LoungeComment parentComment = getActiveComment(parentCommentId);
+    getActivePost(parentComment.getLoungePostId());
     if (!parentComment.isRootComment()) {
       throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }

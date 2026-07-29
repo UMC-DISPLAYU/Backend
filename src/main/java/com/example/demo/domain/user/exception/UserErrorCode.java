@@ -29,6 +29,11 @@ public enum UserErrorCode implements BaseErrorCode {
   REQUIRED_AGREEMENT_NOT_ACCEPTED(
       HttpStatus.BAD_REQUEST, "REQUIRED_AGREEMENT_NOT_ACCEPTED", "필수 약관에 동의해야 회원가입할 수 있습니다."),
 
+  DUPLICATE_AGREEMENT(HttpStatus.BAD_REQUEST, "DUPLICATE_AGREEMENT", "동일한 약관이 중복으로 전달되었습니다."),
+
+  OVER_14_CONFIRMATION_REQUIRED(
+      HttpStatus.BAD_REQUEST, "OVER_14_CONFIRMATION_REQUIRED", "만 14세 이상 확인은 필수입니다."),
+
   REQUIRED_AGREEMENT_NOT_FOUND(
       HttpStatus.INTERNAL_SERVER_ERROR, "REQUIRED_AGREEMENT_NOT_FOUND", "필수 약관이 설정되어 있지 않습니다."),
 

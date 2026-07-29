@@ -7,9 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AgreementJpaRepository extends JpaRepository<Agreement, Long> {
 
-  List<Agreement> findAllByOrderByIdAsc();
-
-  List<Agreement> findAllByTitleInOrderByIdAsc(Collection<String> titles);
-
-  List<Agreement> findAllByIsRequiredTrue();
+  List<Agreement> findAllByCodeInAndIsActiveTrueOrderByDisplayOrderAsc(Collection<String> codes);
 }

@@ -8,6 +8,7 @@ import com.example.demo.domain.user.application.mapper.UserMapper;
 import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.*;
+import com.example.demo.domain.user.domain.enums.AgreementCode;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserAgreementRepository;
@@ -16,8 +17,9 @@ import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.global.security.TokenProvider;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,43 +56,54 @@ public class UserService {
     }
 
     validateNickname(command.nickname());
+    agreementPolicy.validateOver14(command.isOver14());
 
     List<AgreementCommand> agreementCommands =
         Optional.ofNullable(command.agreements()).orElseGet(List::of);
 
-    if (agreementCommands.stream().anyMatch(agreement -> agreement.agreeId() == null)) {
+    if (agreementCommands.stream()
+        .anyMatch(agreement -> agreement.code() == null || agreement.version() == null)) {
       throw new UserException(UserErrorCode.AGREEMENT_NOT_FOUND);
     }
 
-    Set<Long> requestedAgreementIds =
-        agreementCommands.stream().map(AgreementCommand::agreeId).collect(Collectors.toSet());
+    Set<AgreementKey> requestedAgreementKeys =
+        agreementCommands.stream()
+            .map(agreement -> new AgreementKey(agreement.code(), agreement.version()))
+            .collect(Collectors.toSet());
 
-    List<Agreement> requestedAgreements =
-        agreementRepository.findAllById(new ArrayList<>(requestedAgreementIds));
-
-    if (requestedAgreements.size() != requestedAgreementIds.size()) {
-      throw new UserException(UserErrorCode.AGREEMENT_NOT_FOUND);
+    if (requestedAgreementKeys.size() != agreementCommands.size()) {
+      throw new UserException(UserErrorCode.DUPLICATE_AGREEMENT);
     }
 
     List<Agreement> signupAgreements = agreementRepository.findAllSignupAgreements();
     agreementPolicy.validateSignupConfiguration(signupAgreements);
 
-    List<Agreement> requiredAgreements =
-        signupAgreements.stream().filter(Agreement::isRequired).toList();
+    Map<AgreementKey, Agreement> signupAgreementByKey = new HashMap<>();
+    for (Agreement agreement : signupAgreements) {
+      AgreementKey key =
+          new AgreementKey(
+              agreementPolicy.toAgreementCode(agreement.getCode()), agreement.getVersion());
+      if (signupAgreementByKey.put(key, agreement) != null) {
+        throw new UserException(UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
+      }
+    }
 
-    Set<Long> agreedIds =
-        agreementCommands.stream()
-            .filter(AgreementCommand::isAgreed)
-            .map(AgreementCommand::agreeId)
-            .collect(Collectors.toSet());
+    if (!signupAgreementByKey.keySet().containsAll(requestedAgreementKeys)) {
+      throw new UserException(UserErrorCode.AGREEMENT_NOT_FOUND);
+    }
 
-    agreementPolicy.validate(requiredAgreements, agreedIds);
+    Set<AgreementCode> requestedCodes =
+        agreementCommands.stream().map(AgreementCommand::code).collect(Collectors.toSet());
+    agreementPolicy.validateRequiredAgreements(requestedCodes);
+
+    List<Agreement> requestedAgreements =
+        requestedAgreementKeys.stream().map(signupAgreementByKey::get).toList();
 
     User user = userMapper.toUser(command, socialUserInfo);
 
     User savedUser = userRepository.save(user);
 
-    saveUserAgreements(savedUser, requestedAgreements, agreedIds);
+    saveUserAgreements(savedUser, requestedAgreements);
 
     String accessToken = tokenProvider.createAccessToken(savedUser);
 
@@ -117,15 +130,14 @@ public class UserService {
     return !userRepository.existsByNickname(nickname.value());
   }
 
-  private void saveUserAgreements(
-      User user, List<Agreement> requestedAgreements, Set<Long> agreedIds) {
-
+  private void saveUserAgreements(User user, List<Agreement> requestedAgreements) {
     List<UserAgreement> userAgreements =
         requestedAgreements.stream()
-            .filter(agreement -> agreedIds.contains(agreement.getId()))
             .map(agreement -> userAgreementMapper.toUserAgreement(user, agreement))
             .toList();
 
     userAgreementRepository.saveAll(userAgreements);
   }
+
+  private record AgreementKey(AgreementCode code, String version) {}
 }

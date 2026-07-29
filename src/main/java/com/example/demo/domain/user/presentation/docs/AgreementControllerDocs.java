@@ -16,13 +16,10 @@ public interface AgreementControllerDocs {
       summary = "회원가입 약관 목록 조회",
       description =
           """
-          회원가입 전에 현재 DB에 저장된 약관 목록을 조회합니다.
-          회원가입에 사용하는 위치 기반 서비스 약관, 서비스 이용약관, 개인정보 처리방침,
-          마케팅 정보 수신 동의만 반환합니다.
-          agreementId는 환경마다 다릅니다.
-          프론트엔드는 약관 ID를 하드코딩하지 않고 응답받은 agreementId를 회원가입 요청에 사용해야 합니다.
-          위치 기반 서비스 약관, 서비스 이용약관, 개인정보 처리방침은 필수이고
-          마케팅 정보 수신 동의는 선택입니다.
+          활성화된 회원가입 약관을 displayOrder 순으로 조회합니다.
+          서비스 이용약관과 개인정보 수집·이용 동의는 필수이고 위치기반서비스 이용약관은 선택입니다.
+          프론트엔드는 code를 기준으로 화면을 구성하고 응답받은 code와 version을 회원가입 요청에 사용해야 합니다.
+          effectiveDate는 안내 정보이며 시행일 전이라도 isActive=true인 약관은 반환합니다.
           """)
   @ApiResponse(
       responseCode = "200",

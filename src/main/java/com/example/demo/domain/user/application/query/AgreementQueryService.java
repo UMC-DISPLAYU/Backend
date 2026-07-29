@@ -25,7 +25,15 @@ public class AgreementQueryService {
         .map(
             agreement ->
                 new AgreementResult(
-                    agreement.getId(), agreement.getTitle(), agreement.isRequired()))
+                    agreement.getId(),
+                    agreement.getCode(),
+                    agreement.getTitle(),
+                    agreement.getType(),
+                    agreement.getContent(),
+                    agreement.isRequired(),
+                    agreement.getVersion(),
+                    agreement.getEffectiveDate(),
+                    agreement.getDisplayOrder()))
         .toList();
   }
 }
