@@ -9,8 +9,12 @@ import com.example.demo.domain.memo.presentation.docs.MemoControllerDocs;
 import com.example.demo.domain.memo.presentation.mapper.MemoPresentationMapper;
 import com.example.demo.domain.memo.presentation.request.MemoRequest;
 import com.example.demo.domain.memo.presentation.response.MemoResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 public class MemoController implements MemoControllerDocs {
-
-  // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. 로그인 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
-  private static final Long TEMP_USER_ID = 1L;
 
   private final UpsertExhibitionMemoService upsertExhibitionMemoService;
   private final DeleteExhibitionMemoService deleteExhibitionMemoService;
@@ -49,18 +50,21 @@ public class MemoController implements MemoControllerDocs {
   public ApiResponseBody<MemoResponse> upsertExhibitionMemo(
       @PathVariable Long archiveDisplayId,
       @RequestBody MemoRequest request,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     MemoResult result =
         upsertExhibitionMemoService.upsertExhibitionMemo(
-            mapper.toExhibitionMemoCommand(archiveDisplayId, TEMP_USER_ID, request));
+            mapper.toExhibitionMemoCommand(archiveDisplayId, requireUserId(user), request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @DeleteMapping("/api/v1/archives/exhibitions/{archiveDisplayId}/memo")
   @Override
   public ApiResponseBody<Void> deleteExhibitionMemo(
-      @PathVariable Long archiveDisplayId, HttpServletRequest httpRequest) {
-    deleteExhibitionMemoService.deleteExhibitionMemo(TEMP_USER_ID, archiveDisplayId);
+      @PathVariable Long archiveDisplayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    deleteExhibitionMemoService.deleteExhibitionMemo(requireUserId(user), archiveDisplayId);
     return ApiResponseBody.success(null, httpRequest);
   }
 
@@ -69,18 +73,28 @@ public class MemoController implements MemoControllerDocs {
   public ApiResponseBody<MemoResponse> upsertArtworkMemo(
       @PathVariable Long archiveWorkId,
       @RequestBody MemoRequest request,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     MemoResult result =
         upsertArtworkMemoService.upsertArtworkMemo(
-            mapper.toArtworkMemoCommand(archiveWorkId, TEMP_USER_ID, request));
+            mapper.toArtworkMemoCommand(archiveWorkId, requireUserId(user), request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @DeleteMapping("/api/v1/archives/artworks/{archiveWorkId}/memo")
   @Override
   public ApiResponseBody<Void> deleteArtworkMemo(
-      @PathVariable Long archiveWorkId, HttpServletRequest httpRequest) {
-    deleteArtworkMemoService.deleteArtworkMemo(TEMP_USER_ID, archiveWorkId);
+      @PathVariable Long archiveWorkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    deleteArtworkMemoService.deleteArtworkMemo(requireUserId(user), archiveWorkId);
     return ApiResponseBody.success(null, httpRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
