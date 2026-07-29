@@ -1,6 +1,10 @@
 package com.example.demo.domain.user.domain.enums;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public enum University {
   가천길대학("가천길대학", "gachon.ac.kr"),
@@ -442,6 +446,8 @@ public enum University {
 
   private final String schoolName;
   private final String domain;
+  private static final List<University> SEARCH_VALUES =
+      Arrays.stream(values()).sorted(Comparator.comparing(University::getSchoolName)).toList();
 
   University(String schoolName, String domain) {
     this.schoolName = schoolName;
@@ -463,6 +469,28 @@ public enum University {
       }
     }
     throw new IllegalArgumentException("Unknown university domain: " + domain);
+  }
+
+  public static Optional<University> findBySchoolName(String schoolName) {
+    if (schoolName == null) {
+      return Optional.empty();
+    }
+    return SEARCH_VALUES.stream()
+        .filter(university -> university.schoolName.equals(schoolName))
+        .findFirst();
+  }
+
+  public static List<University> searchBySchoolName(String keyword) {
+    if (keyword == null || keyword.trim().isEmpty()) {
+      return List.of();
+    }
+    String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
+    return SEARCH_VALUES.stream()
+        .filter(
+            university ->
+                university.schoolName.toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+        .distinct()
+        .toList();
   }
 
   public static boolean isAllowedDomain(String domain) {

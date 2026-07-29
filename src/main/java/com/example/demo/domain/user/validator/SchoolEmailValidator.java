@@ -16,19 +16,11 @@ public class SchoolEmailValidator {
 
     String domain = extractDomain(email);
 
-    boolean isValid = false;
+    University university =
+        University.findBySchoolName(univName)
+            .orElseThrow(() -> new UserException(UserErrorCode.UNSUPPORTED_UNIVERSITY));
 
-    for (University university : University.values()) {
-
-      if (university.getSchoolName().equals(univName)
-          && university.getDomain().equalsIgnoreCase(domain)) {
-
-        isValid = true;
-        break;
-      }
-    }
-
-    if (!isValid) {
+    if (!university.getDomain().equalsIgnoreCase(domain)) {
       throw new UserException(UserErrorCode.UNSUPPORTED_UNIVERSITY);
     }
   }

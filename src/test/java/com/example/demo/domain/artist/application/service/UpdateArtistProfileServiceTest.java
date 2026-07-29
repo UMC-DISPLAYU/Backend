@@ -19,6 +19,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.validator.SchoolEmailValidator;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -31,9 +32,10 @@ class UpdateArtistProfileServiceTest {
       mock(ArtistProfileRepository.class);
   private final AreaOfActivityRepository areaOfActivityRepository =
       mock(AreaOfActivityRepository.class);
+  private final SchoolEmailValidator schoolEmailValidator = mock(SchoolEmailValidator.class);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository, artistProfileRepository, areaOfActivityRepository);
+          userRepository, artistProfileRepository, areaOfActivityRepository, schoolEmailValidator);
 
   @Test
   void updatesArtistProfileInOneFlow() {
