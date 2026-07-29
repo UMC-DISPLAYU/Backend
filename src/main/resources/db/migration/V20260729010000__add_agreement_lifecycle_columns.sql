@@ -49,4 +49,3 @@ CREATE INDEX idx_agreement_active_effective_order
 
 CREATE INDEX idx_agreement_active_required_effective
     ON Agreement (isActive, isRequired, effectiveDate);
-g
