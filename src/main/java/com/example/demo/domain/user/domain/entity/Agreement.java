@@ -3,6 +3,7 @@ package com.example.demo.domain.user.domain.entity;
 import com.example.demo.domain.user.domain.enums.Type;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,4 +34,19 @@ public class Agreement extends BaseTimeEntity {
 
   @Column(name = "isRequired", nullable = false)
   private boolean isRequired;
+
+  @Column(name = "code")
+  private String code;
+
+  @Column(name = "version")
+  private String version;
+
+  @Column(name = "isActive")
+  private Boolean isActive;
+
+  @Column(name = "effectiveDate")
+  private LocalDate effectiveDate;
+
+  @Column(name = "displayOrder")
+  private Integer displayOrder;
 }

@@ -8,6 +8,15 @@ import org.springframework.stereotype.Component;
 public class AgreementPresentationMapper {
 
   public AgreementResponse toResponse(AgreementResult result) {
-    return new AgreementResponse(result.agreementId(), result.title(), result.required());
+    return new AgreementResponse(
+        result.agreementId(),
+        result.code(),
+        result.title(),
+        result.type(),
+        result.content(),
+        result.required(),
+        result.version(),
+        result.effectiveDate(),
+        result.displayOrder());
   }
 }

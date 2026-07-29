@@ -19,25 +19,19 @@ class AgreementPersistenceAdapterTest {
       new AgreementPersistenceAdapter(agreementJpaRepository);
 
   @Test
-  void findsSignupAgreementsByExactCurrentTitles() {
-    List<Agreement> agreements =
-        List.of(
-            agreement(70L, "위치 기반 서비스 약관", true),
-            agreement(110L, "서비스 이용약관", true),
-            agreement(120L, "개인정보 처리방침", true),
-            agreement(130L, "마케팅 정보 수신 동의", false));
-    when(agreementJpaRepository.findAllByTitleInOrderByIdAsc(anyCollection()))
+  void findsOnlyActiveSignupAgreementCodesInDisplayOrder() {
+    List<Agreement> agreements = List.of(Agreement.builder().id(11L).build());
+    when(agreementJpaRepository.findAllByCodeInAndIsActiveTrueOrderByDisplayOrderAsc(
+            anyCollection()))
         .thenReturn(agreements);
 
     assertThat(agreementPersistenceAdapter.findAllSignupAgreements()).isEqualTo(agreements);
 
-    ArgumentCaptor<Collection<String>> titlesCaptor = ArgumentCaptor.forClass(Collection.class);
-    verify(agreementJpaRepository).findAllByTitleInOrderByIdAsc(titlesCaptor.capture());
-    assertThat(titlesCaptor.getValue())
-        .containsExactlyInAnyOrder("위치 기반 서비스 약관", "서비스 이용약관", "개인정보 처리방침", "마케팅 정보 수신 동의");
-  }
-
-  private static Agreement agreement(Long id, String title, boolean required) {
-    return Agreement.builder().id(id).title(title).isRequired(required).build();
+    ArgumentCaptor<Collection<String>> codesCaptor = ArgumentCaptor.forClass(Collection.class);
+    verify(agreementJpaRepository)
+        .findAllByCodeInAndIsActiveTrueOrderByDisplayOrderAsc(codesCaptor.capture());
+    assertThat(codesCaptor.getValue())
+        .containsExactlyInAnyOrder(
+            "TERMS_OF_SERVICE", "PRIVACY_COLLECTION_USE", "LOCATION_BASED_SERVICE");
   }
 }

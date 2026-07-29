@@ -105,10 +105,11 @@ class AuthControllerTest {
                     {
                       "nickname": "maya01",
                       "agreements": [
-                        {"agreeId": 15, "isAgreed": true},
-                        {"agreeId": 27, "isAgreed": true},
-                        {"agreeId": 42, "isAgreed": false}
-                      ]
+                        {"code": "TERMS_OF_SERVICE", "version": "1.0"},
+                        {"code": "PRIVACY_COLLECTION_USE", "version": "1.0"},
+                        {"code": "LOCATION_BASED_SERVICE", "version": "1.0"}
+                      ],
+                      "isOver14": true
                     }
                     """))
         .andExpect(status().isOk())
@@ -130,6 +131,7 @@ class AuthControllerTest {
     verify(userService).signup(commandCaptor.capture(), eq(socialUserInfo));
     assertThat(commandCaptor.getValue().nickname().value()).isEqualTo("maya01");
     assertThat(commandCaptor.getValue().agreements()).hasSize(3);
+    assertThat(commandCaptor.getValue().isOver14()).isTrue();
   }
 
   @Test
@@ -166,9 +168,10 @@ class AuthControllerTest {
                     {
                       "nickname": "maya01",
                       "agreements": [
-                        {"agreeId": 15, "isAgreed": true},
-                        {"agreeId": 27, "isAgreed": true}
-                      ]
+                        {"code": "TERMS_OF_SERVICE", "version": "1.0"},
+                        {"code": "PRIVACY_COLLECTION_USE", "version": "1.0"}
+                      ],
+                      "isOver14": true
                     }
                     """))
         .andExpect(status().isOk())
@@ -193,7 +196,8 @@ class AuthControllerTest {
                     """
                     {
                       "nickname": "maya01",
-                      "agreements": [{"agreeId": 15, "isAgreed": true}]
+                      "agreements": [{"code": "TERMS_OF_SERVICE", "version": "1.0"}],
+                      "isOver14": true
                     }
                     """))
         .andExpect(status().isUnauthorized())
