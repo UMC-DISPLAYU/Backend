@@ -16,6 +16,7 @@ import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.validator.SchoolEmailValidator;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class UpdateArtistProfileService {
   private final UserRepository userRepository;
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
+  private final SchoolEmailValidator schoolEmailValidator;
 
   @Transactional
   public UpdateArtistProfileResult execute(UpdateArtistProfileCommand command) {
@@ -56,6 +58,8 @@ public class UpdateArtistProfileService {
     String univName = normalize(command.univName());
     if (univName == null) {
       univName = profile.getUnivName();
+    } else {
+      schoolEmailValidator.validate(univName, user.getSchoolEmail());
     }
     validateActivityFields(command.fields());
 

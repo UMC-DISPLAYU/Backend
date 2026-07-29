@@ -81,14 +81,14 @@ class AuthControllerTest {
             .provider(Provider.Google)
             .providerId("google-user-id")
             .name("구글 사용자")
-            .nickname("maya")
+            .nickname("maya01")
             .socialEmail("google@example.com")
             .build();
     SignupResult result = new SignupResult(user, "access-token", "refresh-token");
     SignupResponse.Signup response =
         new SignupResponse.Signup(
             new SignupResponse.UserInfo(
-                1L, "Google", "구글 사용자", "maya", "google@example.com", null, false),
+                1L, "Google", "구글 사용자", "maya01", "google@example.com", null, false),
             "access-token");
     when(tokenProvider.parseSignupToken("signup-token")).thenReturn(socialUserInfo);
     when(userService.signup(ArgumentMatchers.any(SignupCommand.class), eq(socialUserInfo)))
@@ -103,7 +103,7 @@ class AuthControllerTest {
                 .content(
                     """
                     {
-                      "nickname": "maya",
+                      "nickname": "maya01",
                       "agreements": [
                         {"agreeId": 15, "isAgreed": true},
                         {"agreeId": 27, "isAgreed": true},
@@ -128,7 +128,7 @@ class AuthControllerTest {
 
     ArgumentCaptor<SignupCommand> commandCaptor = ArgumentCaptor.forClass(SignupCommand.class);
     verify(userService).signup(commandCaptor.capture(), eq(socialUserInfo));
-    assertThat(commandCaptor.getValue().nickname().value()).isEqualTo("maya");
+    assertThat(commandCaptor.getValue().nickname().value()).isEqualTo("maya01");
     assertThat(commandCaptor.getValue().agreements()).hasSize(3);
   }
 
@@ -142,14 +142,14 @@ class AuthControllerTest {
             .provider(Provider.Google)
             .providerId("google-user-id")
             .name("소셜 사용자")
-            .nickname("maya")
+            .nickname("maya01")
             .socialEmail("google@example.com")
             .build();
     SignupResult result = new SignupResult(user, "access-token", "refresh-token");
     SignupResponse.Signup response =
         new SignupResponse.Signup(
             new SignupResponse.UserInfo(
-                1L, "Google", "소셜 사용자", "maya", "google@example.com", null, false),
+                1L, "Google", "소셜 사용자", "maya01", "google@example.com", null, false),
             "access-token");
     when(tokenProvider.parseSignupToken("signup-token")).thenReturn(socialUserInfo);
     when(userService.signup(ArgumentMatchers.any(SignupCommand.class), eq(socialUserInfo)))
@@ -164,7 +164,7 @@ class AuthControllerTest {
                 .content(
                     """
                     {
-                      "nickname": "maya",
+                      "nickname": "maya01",
                       "agreements": [
                         {"agreeId": 15, "isAgreed": true},
                         {"agreeId": 27, "isAgreed": true}
@@ -192,7 +192,7 @@ class AuthControllerTest {
                 .content(
                     """
                     {
-                      "nickname": "maya",
+                      "nickname": "maya01",
                       "agreements": [{"agreeId": 15, "isAgreed": true}]
                     }
                     """))

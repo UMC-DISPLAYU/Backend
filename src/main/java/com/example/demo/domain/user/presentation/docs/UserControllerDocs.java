@@ -114,7 +114,8 @@ public interface UserControllerDocs {
           """
           로그인한 사용자의 닉네임을 변경합니다.
 
-          - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
+          - 닉네임은 한글, 영문, 숫자로 5~15자여야 합니다.
+          - 공백과 특수문자는 사용할 수 없습니다.
           - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
           """)
   @ApiResponse(
@@ -219,10 +220,11 @@ public interface UserControllerDocs {
       summary = "닉네임 중복 확인",
       description =
           """
-                  로그인한 사용자의 닉네임을 변경합니다.
+                  닉네임의 사용 가능 여부를 확인합니다.
 
-                  - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
-                  - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
+                  - 닉네임은 한글, 영문, 숫자로 5~15자여야 합니다.
+                  - 공백과 특수문자는 사용할 수 없습니다.
+                  - 이미 사용 중인 닉네임은 isAvailable=false를 반환합니다.
                   """)
   @Parameter(name = "nickname", description = "중복 확인할 닉네임", required = true, example = "maya041225")
   ApiResponseBody<NicknameCheckResponse> checkNickname(
