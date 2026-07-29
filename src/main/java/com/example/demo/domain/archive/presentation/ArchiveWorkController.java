@@ -13,9 +13,13 @@ import com.example.demo.domain.archive.presentation.mapper.ArchivePresentationMa
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 public class ArchiveWorkController implements ArchiveWorkControllerDocs {
-
-  // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. 로그인 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
-  private static final Long TEMP_USER_ID = 1L;
 
   private final SaveArchiveWorkService saveArchiveWorkService;
   private final DeleteArchiveWorkService deleteArchiveWorkService;
@@ -55,27 +56,34 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<ArchiveWorkToggleResponse> saveArchiveWork(
-      @PathVariable Long artworkId, HttpServletRequest request) {
+      @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveWorkToggleResult result =
-        saveArchiveWorkService.saveArchiveWork(new SaveArchiveWorkCommand(TEMP_USER_ID, artworkId));
+        saveArchiveWorkService.saveArchiveWork(
+            new SaveArchiveWorkCommand(requireUserId(user), artworkId));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @DeleteMapping("/api/v1/archives/artworks/{artworkId}")
   @Override
   public ApiResponseBody<ArchiveWorkToggleResponse> deleteArchiveWork(
-      @PathVariable Long artworkId, HttpServletRequest request) {
+      @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveWorkToggleResult result =
-        deleteArchiveWorkService.deleteArchiveWork(TEMP_USER_ID, artworkId);
+        deleteArchiveWorkService.deleteArchiveWork(requireUserId(user), artworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
   @GetMapping("/api/v1/archives/artworks/{savedArtworkId}")
   @Override
   public ApiResponseBody<ArchiveWorkResponse> getArchiveWorkDetail(
-      @PathVariable Long savedArtworkId, HttpServletRequest request) {
+      @PathVariable Long savedArtworkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     ArchiveWorkResult result =
-        getArchiveWorkDetailService.getArchiveWorkDetail(TEMP_USER_ID, savedArtworkId);
+        getArchiveWorkDetailService.getArchiveWorkDetail(requireUserId(user), savedArtworkId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -84,9 +92,17 @@ public class ArchiveWorkController implements ArchiveWorkControllerDocs {
   public ApiResponseBody<ArchiveWorkCursorResponse> getArchivedWorks(
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     ArchiveWorkCursorResult result =
-        getArchivedWorksService.getArchivedWorks(TEMP_USER_ID, cursorId, size);
+        getArchivedWorksService.getArchivedWorks(requireUserId(user), cursorId, size);
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
