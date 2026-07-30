@@ -65,13 +65,16 @@ public class DisplayArtworkQueryService {
 
     long likeCount =
         displayArtworkLikeRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId);
+    // 비회원 조회를 허용하므로 requesterUserId가 없으면 사용자별 상태는 모두 false로 둔다.
     boolean isLiked =
-        displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
-            displayArtworkId, requesterUserId);
+        requesterUserId != null
+            && displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
+                displayArtworkId, requesterUserId);
     boolean isSaved =
-        archiveWorkRepository
-            .findByUserIdAndDisplayArtworkId(requesterUserId, displayArtworkId)
-            .isPresent();
+        requesterUserId != null
+            && archiveWorkRepository
+                .findByUserIdAndDisplayArtworkId(requesterUserId, displayArtworkId)
+                .isPresent();
 
     return DisplayArtworkDetailResult.of(
         displayArtwork, artistName, artistUserId, likeCount, isLiked, isSaved);

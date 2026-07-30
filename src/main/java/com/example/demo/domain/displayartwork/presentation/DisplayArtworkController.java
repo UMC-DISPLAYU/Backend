@@ -25,9 +25,13 @@ import com.example.demo.domain.displayartwork.presentation.response.DisplayArtwo
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -35,6 +39,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,9 +55,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @Tag(name = "DisplayArtwork", description = "전시 출품작 API")
 public class DisplayArtworkController {
-
-  // TODO: 인증 붙기 전까지 사용하는 임시 사용자 ID. 로그인 구현되면 인증 정보에서 꺼내오도록 교체해야 함.
-  private static final Long TEMP_USER_ID = 1L;
 
   private final CreateDisplayArtworkService createDisplayArtworkService;
   private final DisplayArtworkQueryService displayArtworkQueryService;
@@ -106,65 +108,96 @@ public class DisplayArtworkController {
 
   @PostMapping("/api/v1/artworks")
   @ResponseStatus(HttpStatus.CREATED)
+  @SecurityRequirement(name = "Authorization")
   @Operation(
       summary = "전시 출품작 등록",
       description = "전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.")
   public ApiResponseBody<DisplayArtworkResponse> createDisplayArtwork(
-      @Valid @RequestBody CreateDisplayArtworkRequest request, HttpServletRequest httpRequest) {
+      @Valid @RequestBody CreateDisplayArtworkRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
     DisplayArtworkResult result =
-        createDisplayArtworkService.createDisplayArtwork(TEMP_USER_ID, request.toCommand());
+        createDisplayArtworkService.createDisplayArtwork(requireUserId(user), request.toCommand());
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @PutMapping("/api/v1/artworks/order")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "전시 출품작 노출 순서 편집", description = "전시 대표자가 드래그 앤 드롭으로 변경한 작품 순서를 저장합니다.")
   public ApiResponseBody<ReorderDisplayArtworksResponse> reorderDisplayArtworks(
-      @Valid @RequestBody ReorderDisplayArtworksRequest request, HttpServletRequest httpRequest) {
+      @Valid @RequestBody ReorderDisplayArtworksRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
     ReorderDisplayArtworksResult result =
-        reorderDisplayArtworksService.reorder(TEMP_USER_ID, request.toCommand());
+        reorderDisplayArtworksService.reorder(requireUserId(user), request.toCommand());
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @GetMapping("/api/v1/artworks/{artworkId}")
-  @Operation(summary = "전시 출품작 상세 조회", description = "작품 소개 탭에 필요한 상세 정보를 조회합니다. 비회원도 조회 가능합니다.")
+  @Operation(
+      summary = "전시 출품작 상세 조회",
+      description =
+          "작품 소개 탭에 필요한 상세 정보를 조회합니다. 비회원도 조회 가능하며, 로그인한 경우에만 isLiked/isSaved가 사용자 기준으로 계산됩니다.")
   public ApiResponseBody<DisplayArtworkDetailResponse> getDisplayArtworkFullDetail(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkDetailResult result =
-        displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, TEMP_USER_ID);
+        displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, optionalUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @DeleteMapping("/api/v1/artworks/{artworkId}")
+  @SecurityRequirement(name = "Authorization")
   @Operation(
       summary = "전시 출품작 삭제",
       description = "전시 대표자는 팀원의 작품도 강제 삭제할 수 있고, 등록자는 본인이 등록한 작품만 삭제할 수 있습니다.")
   public ApiResponseBody<DeleteDisplayArtworkResponse> deleteDisplayArtwork(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
-    DeleteDisplayArtworkResult result = deleteDisplayArtworkService.delete(TEMP_USER_ID, artworkId);
+    DeleteDisplayArtworkResult result =
+        deleteDisplayArtworkService.delete(requireUserId(user), artworkId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @PostMapping("/api/v1/artworks/{artworkId}/like")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "작품 좋아요 등록", description = "전시 출품작에 좋아요를 등록합니다.")
   public ApiResponseBody<DisplayArtworkLikeResponse> likeDisplayArtwork(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkLikeResult result =
         displayArtworkLikeCommandService.like(
-            new DisplayArtworkLikeCommand(artworkId, TEMP_USER_ID));
+            new DisplayArtworkLikeCommand(artworkId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
   @DeleteMapping("/api/v1/artworks/{artworkId}/like")
+  @SecurityRequirement(name = "Authorization")
   @Operation(summary = "작품 좋아요 취소", description = "전시 출품작 좋아요를 취소합니다.")
   public ApiResponseBody<DisplayArtworkLikeResponse> cancelDisplayArtworkLike(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkLikeResult result =
         displayArtworkLikeCommandService.cancel(
-            new DisplayArtworkLikeCommand(artworkId, TEMP_USER_ID));
+            new DisplayArtworkLikeCommand(artworkId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  // 인증이 필수인 API에서 사용한다. SecurityConfig가 모든 요청을 permitAll로 통과시키므로
+  // 토큰이 없거나 유효하지 않으면 AuthUser가 null로 주입될 수 있어 컨트롤러단에서 막는다.
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
+  }
+
+  // 비회원도 호출 가능한 API에서 사용한다. 로그인하지 않았으면 null을 그대로 전달한다.
+  private Long optionalUserId(AuthUser user) {
+    return user == null ? null : user.userId();
   }
 }
