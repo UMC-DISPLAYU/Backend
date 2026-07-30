@@ -34,10 +34,15 @@ import com.example.demo.domain.displaycommunication.presentation.response.Displa
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyListResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -90,13 +95,14 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @PostMapping
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 작성
   public ApiResponseBody<DisplayReviewResponse> createReview(
       @PathVariable Long displayId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateDisplayReviewRequest request,
       HttpServletRequest httpServletRequest) {
-    CreateDisplayReviewCommand command = mapper.toCommand(displayId, userId, request);
+    CreateDisplayReviewCommand command = mapper.toCommand(displayId, requireUserId(user), request);
 
     DisplayReviewResult result = createDisplayReviewService.create(command);
 
@@ -107,15 +113,16 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @PostMapping("/{displayReviewId}/replies")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 답글 작성
   public ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateDisplayReviewReplyRequest request,
       HttpServletRequest httpServletRequest) {
     CreateDisplayReviewReplyCommand command =
-        mapper.toCommand(displayId, displayReviewId, userId, request);
+        mapper.toCommand(displayId, displayReviewId, requireUserId(user), request);
 
     DisplayReviewReplyResult result = createDisplayReviewReplyService.create(command);
 
@@ -126,14 +133,15 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @PostMapping("/{displayReviewId}/like")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 좋아요 등록 및 취소
   public ApiResponseBody<DisplayReviewLikeResponse> reviewLike(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DisplayReviewLikeCommand command =
-        new DisplayReviewLikeCommand(displayId, displayReviewId, userId);
+        new DisplayReviewLikeCommand(displayId, displayReviewId, requireUserId(user));
 
     DisplayReviewLikeResult result = displayReviewLikeService.toggleReviewLike(command);
 
@@ -144,14 +152,15 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @DeleteMapping("/{displayReviewId}")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 삭제
   public ApiResponseBody<DeletedDisplayReviewResponse> deleteReview(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeleteDisplayReviewCommand command =
-        new DeleteDisplayReviewCommand(displayId, displayReviewId, userId);
+        new DeleteDisplayReviewCommand(displayId, displayReviewId, requireUserId(user));
 
     DeletedDisplayReviewResult result = deleteDisplayReviewService.deleteReview(command);
 
@@ -162,16 +171,17 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @DeleteMapping("/{displayReviewId}/reply/{displayReviewReplyId}")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 답글 삭제
   public ApiResponseBody<DeletedDisplayReviewReplyResponse> deleteReviewReply(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
       @PathVariable Long displayReviewReplyId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeleteDisplayReviewReplyCommand command =
         new DeleteDisplayReviewReplyCommand(
-            displayId, displayReviewId, displayReviewReplyId, userId);
+            displayId, displayReviewId, displayReviewReplyId, requireUserId(user));
 
     DeletedDisplayReviewReplyResult result =
         deleteDisplayReviewReplyService.deleteReviewReply(command);
@@ -183,15 +193,17 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @PostMapping("/{displayReviewId}/reply/{displayReviewReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 답글 좋아요 등록 및 취소
   public ApiResponseBody<DisplayReviewReplyLikeResponse> reviewReplyLike(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
       @PathVariable Long displayReviewReplyId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DisplayReviewReplyLikeCommand command =
-        new DisplayReviewReplyLikeCommand(displayId, displayReviewId, displayReviewReplyId, userId);
+        new DisplayReviewReplyLikeCommand(
+            displayId, displayReviewId, displayReviewReplyId, requireUserId(user));
 
     DisplayReviewReplyLikeResult result =
         displayReviewReplyLikeService.toggleReviewReplyLike(command);
@@ -199,5 +211,12 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
     DisplayReviewReplyLikeResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }

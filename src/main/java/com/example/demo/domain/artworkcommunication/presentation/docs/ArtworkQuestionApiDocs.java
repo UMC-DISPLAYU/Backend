@@ -8,9 +8,9 @@ import com.example.demo.domain.artworkcommunication.presentation.response.Artwor
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -212,14 +212,10 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionResponse> createQuestion(
       @Parameter(description = "질문을 등록할 작품 ID", example = "3") Long artworkId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "27")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -329,15 +325,11 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionReplyResponse> createQuestionReply(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변을 등록할 질문 ID", example = "15") Long questionId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "4")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreateArtworkQuestionReplyRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -448,15 +440,11 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "수정할 질문 ID", example = "15") Long questionId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "27")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid UpdateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -539,14 +527,10 @@ public interface ArtworkQuestionApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "삭제할 질문 ID", example = "15") Long questionId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "27")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }
