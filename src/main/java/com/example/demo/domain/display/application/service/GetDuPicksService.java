@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.cache.DisplayCacheNames;
 import com.example.demo.domain.display.application.query.DuPickQuery;
 import com.example.demo.domain.display.application.query.DuPickQueryRepository;
 import com.example.demo.domain.display.application.query.DuPickQueryResult;
@@ -8,6 +9,7 @@ import com.example.demo.domain.display.application.result.DuPickResult.DuPickIte
 import com.example.demo.domain.display.application.result.DuPickResult.PaginationResult;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ public class GetDuPicksService implements GetDuPicksUseCase {
   }
 
   @Override
+  @Cacheable(
+      cacheNames = DisplayCacheNames.DU_PICKS,
+      key = "{@displayListCacheVersion.current(), #query}")
   @Transactional(readOnly = true)
   public DuPickResult getDuPicks(DuPickQuery query) {
     List<DuPickQueryResult> queryResults = queryRepository.findDuPicks(query, query.size() + 1);

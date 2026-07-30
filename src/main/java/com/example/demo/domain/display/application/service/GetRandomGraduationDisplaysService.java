@@ -1,11 +1,13 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.cache.DisplayCacheNames;
 import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult.ExhibitionResult;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import java.time.Clock;
 import java.time.LocalDate;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,9 @@ public class GetRandomGraduationDisplaysService implements GetRandomGraduationDi
   }
 
   @Override
+  @Cacheable(
+      cacheNames = DisplayCacheNames.GRADUATION,
+      key = "{@displayListCacheVersion.current(), T(java.time.LocalDate).now(@clock), #size}")
   @Transactional(readOnly = true)
   public GraduationDisplayResult getRandomGraduationDisplays(int size) {
     LocalDate today = LocalDate.now(clock);
