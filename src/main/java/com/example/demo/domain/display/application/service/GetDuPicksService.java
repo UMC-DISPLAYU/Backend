@@ -23,7 +23,9 @@ public class GetDuPicksService implements GetDuPicksUseCase {
   }
 
   @Override
-  @Cacheable(cacheNames = DisplayCacheNames.DU_PICKS, key = "#query")
+  @Cacheable(
+      cacheNames = DisplayCacheNames.DU_PICKS,
+      key = "{@displayListCacheVersion.current(), #query}")
   @Transactional(readOnly = true)
   public DuPickResult getDuPicks(DuPickQuery query) {
     List<DuPickQueryResult> queryResults = queryRepository.findDuPicks(query, query.size() + 1);

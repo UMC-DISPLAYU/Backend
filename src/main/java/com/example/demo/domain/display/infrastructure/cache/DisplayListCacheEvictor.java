@@ -18,9 +18,11 @@ public class DisplayListCacheEvictor implements DisplayListCacheEvictionPort {
           DisplayCacheNames.CLOSING_SOON_FIRST_PAGE);
 
   private final CacheManager cacheManager;
+  private final DisplayListCacheVersion cacheVersion;
 
-  public DisplayListCacheEvictor(CacheManager cacheManager) {
+  public DisplayListCacheEvictor(CacheManager cacheManager, DisplayListCacheVersion cacheVersion) {
     this.cacheManager = cacheManager;
+    this.cacheVersion = cacheVersion;
   }
 
   @Override
@@ -40,6 +42,7 @@ public class DisplayListCacheEvictor implements DisplayListCacheEvictionPort {
   }
 
   private void evictAll() {
+    cacheVersion.advance();
     DISPLAY_LIST_CACHE_NAMES.stream()
         .map(cacheManager::getCache)
         .forEach(

@@ -17,6 +17,8 @@ import com.example.demo.domain.display.application.query.DuPickQuery;
 import com.example.demo.domain.display.application.query.DuPickQueryRepository;
 import com.example.demo.domain.display.application.query.DuPickQueryResult;
 import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult.ExhibitionResult;
 import com.example.demo.domain.display.application.service.GetClosingSoonDisplaysService;
 import com.example.demo.domain.display.application.service.GetDuPicksService;
 import com.example.demo.domain.display.application.service.GetRandomGraduationDisplaysService;
@@ -24,6 +26,7 @@ import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplay
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
+import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheVersion;
 import com.example.demo.global.config.CacheConfig;
 import java.time.Clock;
 import java.time.Instant;
@@ -31,6 +34,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +54,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
       GetRandomGraduationDisplaysService.class,
       GetDuPicksService.class,
       GetClosingSoonDisplaysService.class,
+      DisplayListCacheVersion.class,
       DisplayListCacheEvictor.class
     })
 class DisplayCacheIntegrationTest {
@@ -134,6 +141,44 @@ class DisplayCacheIntegrationTest {
     assertThat(cacheManager.getCache(DisplayCacheNames.DU_PICKS).get(new DuPickQuery(null, 1)))
         .isNull();
     assertThat(cacheManager.getCache(DisplayCacheNames.CLOSING_SOON_FIRST_PAGE).get(1)).isNull();
+  }
+
+  @Test
+  void displayListCachesIgnoreStaleReadCompletedAfterCommitEviction() throws Exception {
+    CountDownLatch staleReadStarted = new CountDownLatch(1);
+    CountDownLatch commitEvicted = new CountDownLatch(1);
+    AtomicInteger callCount = new AtomicInteger();
+    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(5))
+        .thenAnswer(
+            invocation -> {
+              if (callCount.incrementAndGet() == 1) {
+                staleReadStarted.countDown();
+                assertThat(commitEvicted.await(1, TimeUnit.SECONDS)).isTrue();
+                return List.of(displayQueryResult(1L, LocalDate.of(2026, 7, 20)));
+              }
+              return List.of(displayQueryResult(2L, LocalDate.of(2026, 7, 21)));
+            });
+
+    Thread staleRead = new Thread(() -> graduationDisplaysService.getRandomGraduationDisplays(5));
+    staleRead.start();
+    assertThat(staleReadStarted.await(1, TimeUnit.SECONDS)).isTrue();
+
+    TransactionSynchronizationManager.initSynchronization();
+    try {
+      displayListCacheEvictor.evictAfterCommit();
+      TransactionSynchronizationManager.getSynchronizations().stream()
+          .forEach(TransactionSynchronization::afterCommit);
+    } finally {
+      TransactionSynchronizationManager.clearSynchronization();
+    }
+    commitEvicted.countDown();
+    staleRead.join(1000);
+    assertThat(staleRead.isAlive()).isFalse();
+
+    GraduationDisplayResult result = graduationDisplaysService.getRandomGraduationDisplays(5);
+
+    assertThat(result.exhibitions()).extracting(ExhibitionResult::displayId).containsExactly(2L);
+    verify(graduationDisplayQueryRepository, times(2)).findRandomGraduationDisplays(5);
   }
 
   private void clearCache(String cacheName) {
