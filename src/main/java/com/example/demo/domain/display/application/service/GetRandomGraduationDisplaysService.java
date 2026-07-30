@@ -26,7 +26,7 @@ public class GetRandomGraduationDisplaysService implements GetRandomGraduationDi
   @Override
   @Cacheable(
       cacheNames = DisplayCacheNames.GRADUATION,
-      key = "{@displayListCacheVersion.current(), #size}")
+      key = "{@displayListCacheVersion.current(), T(java.time.LocalDate).now(@clock), #size}")
   @Transactional(readOnly = true)
   public GraduationDisplayResult getRandomGraduationDisplays(int size) {
     LocalDate today = LocalDate.now(clock);

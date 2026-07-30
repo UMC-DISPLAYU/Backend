@@ -31,7 +31,8 @@ public class GetClosingSoonDisplaysService implements GetClosingSoonDisplaysUseC
   @Override
   @Cacheable(
       cacheNames = DisplayCacheNames.CLOSING_SOON_FIRST_PAGE,
-      key = "{@displayListCacheVersion.current(), #query.size()}",
+      key =
+          "{@displayListCacheVersion.current(), T(java.time.LocalDate).now(@clock), #query.size()}",
       condition = "#query.cursor() == null")
   @Transactional(readOnly = true)
   public ClosingSoonDisplayResult getClosingSoonDisplays(ClosingSoonDisplayQuery query) {
