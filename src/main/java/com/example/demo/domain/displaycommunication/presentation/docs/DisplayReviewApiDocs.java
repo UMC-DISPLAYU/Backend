@@ -11,6 +11,7 @@ import com.example.demo.domain.displaycommunication.presentation.response.Displa
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewReplyResponse;
 import com.example.demo.domain.displaycommunication.presentation.response.DisplayReviewResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -209,9 +210,10 @@ public interface DisplayReviewApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DisplayReviewResponse> createReview(
       @Parameter(description = "후기를 작성할 전시 ID", example = "1") Long displayId,
-      @Parameter(description = "후기를 작성하는 사용자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreateDisplayReviewRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -248,11 +250,12 @@ public interface DisplayReviewApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "400", description = "답글 내용 검증 실패")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "전시, 후기 또는 사용자 없음")
   ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "답글을 작성할 후기 ID", example = "1") Long displayReviewId,
-      @Parameter(description = "답글을 작성하는 사용자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreateDisplayReviewReplyRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -286,10 +289,11 @@ public interface DisplayReviewApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "404", description = "전시 후기 또는 사용자 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DisplayReviewLikeResponse> reviewLike(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "좋아요를 누를 후기 ID", example = "1") Long displayReviewId,
-      @Parameter(description = "좋아요를 누르는 사용자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "전시 후기 삭제", description = "작성자가 자신의 전시 후기를 삭제합니다.")
@@ -319,11 +323,12 @@ public interface DisplayReviewApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "403", description = "후기 작성자가 아님")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "전시 후기 또는 사용자 없음")
   ApiResponseBody<DeletedDisplayReviewResponse> deleteReview(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "삭제할 후기 ID", example = "1") Long displayReviewId,
-      @Parameter(description = "후기 작성자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "전시 후기 답글 삭제", description = "작성자가 자신의 전시 후기 답글을 삭제합니다.")
@@ -353,12 +358,13 @@ public interface DisplayReviewApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "403", description = "답글 작성자가 아님")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "전시, 후기, 답글 또는 사용자 없음")
   ApiResponseBody<DeletedDisplayReviewReplyResponse> deleteReviewReply(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "삭제할 답글 ID", example = "1") Long displayReviewReplyId,
-      @Parameter(description = "답글 작성자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "전시 후기 답글 좋아요", description = "전시 후기 답글 좋아요를 등록하거나 취소합니다.")
@@ -391,10 +397,11 @@ public interface DisplayReviewApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "404", description = "전시, 후기, 답글 또는 사용자 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DisplayReviewReplyLikeResponse> reviewReplyLike(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "좋아요를 누를 답글 ID", example = "1") Long displayReviewReplyId,
-      @Parameter(description = "좋아요를 누르는 사용자 ID", required = true, example = "2") Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }
