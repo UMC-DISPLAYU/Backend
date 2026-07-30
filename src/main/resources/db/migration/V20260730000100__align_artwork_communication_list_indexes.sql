@@ -5,7 +5,7 @@ CREATE INDEX `IDX_ARTWORKFEELINGREPLY_LIST`
     ON `ArtworkFeelingReply` (`feelingId`, `deletedAt`, `feelingReplyId`);
 
 CREATE INDEX `IDX_ARTWORKQUESTION_LIST`
-    ON `ArtworkQuestion` (`displayArtworkId`, `deletedAt`, `artQueId`);
+    ON `ArtworkQuestion` (`displayArtworkId`, `deletedAt`, `questionId`);
 
 DROP INDEX `IDX_PERSONALARTWORKFEELINGREPLY_LIST`
     ON `PersonalArtworkFeelingReply`;
