@@ -202,6 +202,36 @@ public interface ArtworkFeelingApiDocs {
                           }
                           """)))
   @ApiResponse(
+      responseCode = "400",
+      description = "감상평 내용 또는 이미지 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Invalid artwork feeling image",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "INVALID_INPUT_VALUE",
+                              "message": "입력값이 올바르지 않습니다.",
+                              "details": [
+                                {
+                                  "field": "images[0].width",
+                                  "message": "0보다 커야 합니다"
+                                }
+                              ]
+                            },
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
       responseCode = "404",
       description = "작품 또는 사용자 없음",
       content =
