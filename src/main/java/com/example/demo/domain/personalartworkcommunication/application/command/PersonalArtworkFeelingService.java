@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult.ImageResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,11 @@ public class PersonalArtworkFeelingService {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkFeelingValidator.validateUserExists(command.userId());
     personalArtworkFeelingValidator.validateContent(command.content());
+    personalArtworkFeelingValidator.validateImages(command.images());
 
     PersonalArtworkFeeling personalArtworkFeeling =
         PersonalArtworkFeeling.create(
-            command.personalArtworkId(), command.userId(), command.content());
+            command.personalArtworkId(), command.userId(), command.content(), command.images());
 
     PersonalArtworkFeeling savedFeeling =
         personalArtworkFeelingRepository.save(personalArtworkFeeling);
@@ -31,6 +33,16 @@ public class PersonalArtworkFeelingService {
         savedFeeling.getPersonalFeelingId(),
         savedFeeling.getUserId(),
         savedFeeling.getContent(),
-        savedFeeling.getCreatedAt());
+        savedFeeling.getCreatedAt(),
+        savedFeeling.getImages().stream()
+            .map(
+                image ->
+                    new ImageResult(
+                        image.getPersonalFeelingImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }

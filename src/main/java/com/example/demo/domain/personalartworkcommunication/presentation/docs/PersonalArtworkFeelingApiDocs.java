@@ -53,6 +53,15 @@ public interface PersonalArtworkFeelingApiDocs {
                                       "nickname": "관람객",
                                       "isCreator": false
                                     },
+                                    "images": [
+                                      {
+                                        "personalFeelingImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/personal-feeling-1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "likeCount": 4,
                                     "replyCount": 1
                                   }
@@ -224,7 +233,16 @@ public interface PersonalArtworkFeelingApiDocs {
                                 "personalFeelingId": 1,
                                 "userId": 1,
                                 "content": "정말 감동적인 작품이에요.",
-                                "createdAt": "2026-07-20T22:20:00"
+                                "createdAt": "2026-07-20T22:20:00",
+                                "images": [
+                                  {
+                                    "personalFeelingImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/personal-feeling-1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,

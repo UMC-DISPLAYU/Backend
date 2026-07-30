@@ -14,9 +14,13 @@ public record PersonalArtworkFeelingListResponse(
       String content,
       LocalDateTime createdAt,
       PersonalArtworkFeelingUserResponse user,
+      List<ImageResponse> images,
       long likeCount,
       long replyCount) {}
 
   public record PersonalArtworkFeelingUserResponse(
       Long userId, String nickname, Boolean isCreator) {}
+
+  public record ImageResponse(
+      Long personalFeelingImageId, String imageUrl, int width, int height, int sortOrder) {}
 }
