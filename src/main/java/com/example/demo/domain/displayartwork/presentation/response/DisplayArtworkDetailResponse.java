@@ -30,5 +30,10 @@ public record DisplayArtworkDetailResponse(
       int height) {}
 
   public record ExhibitionInfoResponse(
-      Long displayId, String exhibitionTitle, String exhibitionPeriod, String exhibitionLocation) {}
+      Long displayId,
+      String exhibitionTitle,
+      String exhibitionThumbnailUrl,
+      String exhibitionOrganizer,
+      String exhibitionPeriod,
+      String exhibitionLocation) {}
 }
