@@ -1,5 +1,7 @@
-package com.example.demo.domain.display.application.cache;
+package com.example.demo.domain.display.infrastructure.cache;
 
+import com.example.demo.domain.display.application.cache.DisplayCacheNames;
+import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import java.util.List;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
@@ -7,7 +9,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
-public class DisplayListCacheEvictor {
+public class DisplayListCacheEvictor implements DisplayListCacheEvictionPort {
 
   private static final List<String> DISPLAY_LIST_CACHE_NAMES =
       List.of(
@@ -21,6 +23,7 @@ public class DisplayListCacheEvictor {
     this.cacheManager = cacheManager;
   }
 
+  @Override
   public void evictAfterCommit() {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
       TransactionSynchronizationManager.registerSynchronization(

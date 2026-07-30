@@ -1,6 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
-import com.example.demo.domain.display.application.cache.DisplayListCacheEvictor;
+import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.CreateDisplayResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
@@ -15,12 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateDisplayService {
 
   private final DisplayRepository displayRepository;
-  private final DisplayListCacheEvictor displayListCacheEvictor;
+  private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
 
   public CreateDisplayService(
-      DisplayRepository displayRepository, DisplayListCacheEvictor displayListCacheEvictor) {
+      DisplayRepository displayRepository,
+      DisplayListCacheEvictionPort displayListCacheEvictionPort) {
     this.displayRepository = displayRepository;
-    this.displayListCacheEvictor = displayListCacheEvictor;
+    this.displayListCacheEvictionPort = displayListCacheEvictionPort;
   }
 
   @Transactional
@@ -48,7 +49,7 @@ public class CreateDisplayService {
             command.exhibitionContentOpen());
 
     Display savedDisplay = displayRepository.save(display);
-    displayListCacheEvictor.evictAfterCommit();
+    displayListCacheEvictionPort.evictAfterCommit();
     return new CreateDisplayResult(savedDisplay.getId());
   }
 }

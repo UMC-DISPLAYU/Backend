@@ -23,6 +23,7 @@ import com.example.demo.domain.display.application.service.GetRandomGraduationDi
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
+import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
 import com.example.demo.global.config.CacheConfig;
 import java.time.Clock;
 import java.time.Instant;
