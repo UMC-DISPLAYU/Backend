@@ -56,6 +56,15 @@ public interface ArtworkFeelingApiDocs {
                                       "nickname": "User1",
                                       "isCreator": false
                                     },
+                                    "images": [
+                                      {
+                                        "feelingImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/feeling-1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "likeCount": 13,
                                     "replyCount": 2
                                   }
@@ -173,7 +182,16 @@ public interface ArtworkFeelingApiDocs {
                                 "feelingId": 1,
                                 "userId": 1,
                                 "content": "정말 감동적인 작품이에요.",
-                                "createdAt": "2026-06-30T22:10:00"
+                                "createdAt": "2026-06-30T22:10:00",
+                                "images": [
+                                  {
+                                    "feelingImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/feeling-1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,

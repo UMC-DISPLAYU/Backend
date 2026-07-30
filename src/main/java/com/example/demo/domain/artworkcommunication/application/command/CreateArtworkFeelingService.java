@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingResult.ImageResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,11 @@ public class CreateArtworkFeelingService {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
     artworkFeelingValidator.validateContent(command.content());
+    artworkFeelingValidator.validateImages(command.images());
 
     ArtworkFeeling artworkFeeling =
-        ArtworkFeeling.create(command.displayArtworkId(), command.userId(), command.content());
+        ArtworkFeeling.create(
+            command.displayArtworkId(), command.userId(), command.content(), command.images());
 
     ArtworkFeeling savedFeeling = artworkFeelingRepository.save(artworkFeeling);
 
@@ -29,6 +32,16 @@ public class CreateArtworkFeelingService {
         savedFeeling.getFeelingId(),
         savedFeeling.getUserId(),
         savedFeeling.getContent(),
-        savedFeeling.getCreatedAt());
+        savedFeeling.getCreatedAt(),
+        savedFeeling.getImages().stream()
+            .map(
+                image ->
+                    new ImageResult(
+                        image.getFeelingImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }
