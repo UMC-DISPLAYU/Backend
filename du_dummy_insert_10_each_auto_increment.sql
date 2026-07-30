@@ -268,6 +268,18 @@ INSERT INTO `ArtworkFeeling` (`content`, `createdAt`, `updatedAt`, `deletedAt`, 
 ('선의 표현이 직관적이었습니다.', '2026-07-01 17:38:00', '2026-07-01 17:38:00', NULL, 9, 10),
 ('체험형 구성이라 몰입감이 있었습니다.', '2026-07-01 17:39:00', '2026-07-01 17:39:00', NULL, 10, 1);
 
+INSERT INTO `ArtworkFeelingImage` (`imageUrl`, `width`, `height`, `sortOrder`, `feelingId`) VALUES
+('https://picsum.photos/id/1015/1200/800', 1200, 800, 0, 1),
+('https://picsum.photos/id/1016/900/1200', 900, 1200, 1, 1),
+('https://picsum.photos/id/1025/1200/900', 1200, 900, 0, 2),
+('https://picsum.photos/id/1035/1000/1000', 1000, 1000, 0, 3),
+('https://picsum.photos/id/1040/1200/800', 1200, 800, 0, 4),
+('https://picsum.photos/id/1050/800/1200', 800, 1200, 0, 5),
+('https://picsum.photos/id/1060/1200/900', 1200, 900, 0, 6),
+('https://picsum.photos/id/1070/1000/750', 1000, 750, 0, 7),
+('https://picsum.photos/id/1080/900/1200', 900, 1200, 0, 8),
+('https://picsum.photos/id/1084/1200/800', 1200, 800, 0, 9);
+
 INSERT INTO `ArtworkFeelingReply` (`content`, `createdAt`, `updatedAt`, `deletedAt`, `feelingId`, `userId`) VALUES
 ('좋은 감상 감사합니다.', '2026-07-01 17:40:00', '2026-07-01 17:40:00', NULL, 1, 1),
 ('도시성을 표현하려고 했습니다.', '2026-07-01 17:41:00', '2026-07-01 17:41:00', NULL, 2, 2),
@@ -304,7 +316,7 @@ INSERT INTO `ArtworkQuestion` (`content`, `isPublic`, `answerStatus`, `createdAt
 ('드로잉 도구가 궁금합니다.', 1, 'WAITING', '2026-07-01 18:18:00', '2026-07-01 18:18:00', NULL, 9, 10),
 ('관람자가 참여하는 방식이 궁금합니다.', 0, 'ANSWERED', '2026-07-01 18:19:00', '2026-07-01 18:19:00', NULL, 10, 1);
 
-INSERT INTO `ArtworkQuestionReply` (`content`, `createdAt`, `updatedAt`, `deletedAt`, `artQueId`, `creatorId`) VALUES
+INSERT INTO `ArtworkQuestionReply` (`content`, `createdAt`, `updatedAt`, `deletedAt`, `questionId`, `creatorId`) VALUES
 ('약 3개월 정도 제작했습니다.', '2026-07-01 18:20:00', '2026-07-01 18:20:00', NULL, 1, 1),
 ('도시의 질감을 표현하기 위해 선택했습니다.', '2026-07-01 18:21:00', '2026-07-01 18:21:00', NULL, 2, 2),
 ('서울 곳곳에서 촬영했습니다.', '2026-07-01 18:22:00', '2026-07-01 18:22:00', NULL, 3, 3),
@@ -478,6 +490,18 @@ INSERT INTO `PersonalArtworkFeeling` (`content`, `createdAt`, `updatedAt`, `dele
 ('타이포그래피의 리듬이 재미있습니다.', '2026-07-01 20:38:00', '2026-07-01 20:38:00', NULL, 2, 1),
 ('빛과 그림자의 대비가 선명합니다.', '2026-07-01 20:39:00', '2026-07-01 20:39:00', NULL, 3, 2),
 ('도자 표면의 질감이 따뜻하게 느껴집니다.', '2026-07-01 20:40:00', '2026-07-01 20:40:00', NULL, 4, 3);
+
+INSERT INTO `PersonalArtworkFeelingImage` (`imageUrl`, `width`, `height`, `sortOrder`, `personalFeelingId`) VALUES
+('https://picsum.photos/id/110/1200/800', 1200, 800, 0, 1),
+('https://picsum.photos/id/111/900/1200', 900, 1200, 1, 1),
+('https://picsum.photos/id/112/1200/900', 1200, 900, 0, 2),
+('https://picsum.photos/id/113/1000/1000', 1000, 1000, 0, 3),
+('https://picsum.photos/id/114/1200/800', 1200, 800, 0, 4),
+('https://picsum.photos/id/115/800/1200', 800, 1200, 0, 5),
+('https://picsum.photos/id/116/1200/900', 1200, 900, 0, 6),
+('https://picsum.photos/id/117/1000/750', 1000, 750, 0, 7),
+('https://picsum.photos/id/118/900/1200', 900, 1200, 0, 8),
+('https://picsum.photos/id/119/1200/800', 1200, 800, 0, 9);
 
 INSERT INTO `PersonalArtworkFeelingReply` (`content`, `createdAt`, `updatedAt`, `deletedAt`, `personalFeelingId`, `userId`) VALUES
 ('색을 여러 번 얇게 쌓아 깊이를 표현했습니다.', '2026-07-01 20:41:00', '2026-07-01 20:41:00', NULL, 1, 1),
