@@ -28,6 +28,14 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
   }
 
   @Override
+  public List<Long> findDisplayIdsByUserIdAndDisplayIdIn(Long userId, List<Long> displayIds) {
+    if (displayIds.isEmpty()) {
+      return List.of();
+    }
+    return jpaRepository.findDisplayIdsByUserIdAndDisplayIdIn(userId, displayIds);
+  }
+
+  @Override
   public List<ArchiveDisplay> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
       Long userId, Long cursorId, int limit) {
     return jpaRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
