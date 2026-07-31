@@ -11,9 +11,9 @@ import com.example.demo.domain.personalartworkcommunication.presentation.respons
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,6 +53,15 @@ public interface PersonalArtworkFeelingApiDocs {
                                       "nickname": "관람객",
                                       "isCreator": false
                                     },
+                                    "images": [
+                                      {
+                                        "personalFeelingImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/personal-feeling-1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "likeCount": 4,
                                     "replyCount": 1
                                   }
@@ -149,16 +158,12 @@ public interface PersonalArtworkFeelingApiDocs {
 
   @Operation(summary = "개인 작품 감상평 답변 등록", description = "개인 작품의 감상평에 답변을 등록합니다.")
   @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
   ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "답변을 등록할 감상평 ID", example = "1") Long personalFeelingId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "1")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreatePersonalArtworkFeelingReplyRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -190,17 +195,13 @@ public interface PersonalArtworkFeelingApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "403", description = "감상평 답변 삭제 권한 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 감상평 또는 감상평 답변 없음")
   ApiResponseBody<DeletedPersonalArtworkFeelingReplyResponse> deleteFeelingReply(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "1") Long personalFeelingId,
       @Parameter(description = "삭제할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "2")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(
@@ -224,7 +225,16 @@ public interface PersonalArtworkFeelingApiDocs {
                                 "personalFeelingId": 1,
                                 "userId": 1,
                                 "content": "정말 감동적인 작품이에요.",
-                                "createdAt": "2026-07-20T22:20:00"
+                                "createdAt": "2026-07-20T22:20:00",
+                                "images": [
+                                  {
+                                    "personalFeelingImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/personal-feeling-1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -236,15 +246,38 @@ public interface PersonalArtworkFeelingApiDocs {
                           """)))
   @ApiResponse(
       responseCode = "400",
-      description = "감상평 내용 검증 실패",
+      description = "감상평 내용 또는 이미지 검증 실패",
       content =
           @Content(
               mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Invalid personal artwork feeling content",
-                      value =
-                          """
+              examples = {
+                @ExampleObject(
+                    name = "Invalid personal artwork feeling image",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": {
+                            "code": "INVALID_INPUT_VALUE",
+                            "message": "입력값이 올바르지 않습니다.",
+                            "details": [
+                              {
+                                "field": "images[0].width",
+                                "message": "0보다 커야 합니다"
+                              }
+                            ]
+                          },
+                          "meta": {
+                            "timestamp": "2026-07-20T22:20:00",
+                            "path": "/api/v1/personal-artworks/1/feelings"
+                          }
+                        }
+                        """),
+                @ExampleObject(
+                    name = "Invalid personal artwork feeling content",
+                    value =
+                        """
                           {
                             "resultType": "FAIL",
                             "success": null,
@@ -263,7 +296,8 @@ public interface PersonalArtworkFeelingApiDocs {
                               "path": "/api/v1/personal-artworks/1/feelings"
                             }
                           }
-                          """)))
+                          """)
+              }))
   @ApiResponse(
       responseCode = "404",
       description = "개인 작품 또는 사용자 없음",
@@ -289,14 +323,10 @@ public interface PersonalArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<PersonalArtworkFeelingResponse> createPersonalFeeling(
       @Parameter(description = "감상평을 작성할 개인 작품 ID", example = "1") Long personalArtworkId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "1")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       @Valid CreatePersonalArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest);
 
@@ -357,15 +387,11 @@ public interface PersonalArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<PersonalArtworkFeelingLikeResponse> feelingLike(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "좋아요 상태를 변경할 감상평 ID", example = "1") Long personalFeelingId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "2")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(
@@ -447,15 +473,11 @@ public interface PersonalArtworkFeelingApiDocs {
                             }
                           }
                           """)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DeletedPersonalArtworkFeelingResponse> deleteFeeling(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "삭제할 개인 작품 감상평 ID", example = "1") Long personalFeelingId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "1")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(
@@ -491,15 +513,11 @@ public interface PersonalArtworkFeelingApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 감상평 또는 감상평 답변 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "1") Long personalFeelingId,
       @Parameter(description = "좋아요를 변경할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
-      @Parameter(
-              name = "X-User-Id",
-              description = "인증 구현 전까지 사용하는 테스트용 사용자 ID",
-              in = ParameterIn.HEADER,
-              example = "2")
-          Long userId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }

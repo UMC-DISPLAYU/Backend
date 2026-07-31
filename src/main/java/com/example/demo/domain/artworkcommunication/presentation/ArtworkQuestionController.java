@@ -12,11 +12,16 @@ import com.example.demo.domain.artworkcommunication.presentation.request.CreateA
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
+import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -48,13 +53,15 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   @Override
   @PostMapping
+  @SecurityRequirement(name = "Authorization")
   // 질문 등록
   public ApiResponseBody<ArtworkQuestionResponse> createQuestion(
       @PathVariable Long artworkId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest) {
-    CreateArtworkQuestionCommand command = mapper.toCommand(artworkId, userId, request);
+    CreateArtworkQuestionCommand command =
+        mapper.toCommand(artworkId, requireUserId(user), request);
 
     ArtworkQuestionResult result = createArtworkQuestionService.createQuestion(command);
 
@@ -65,14 +72,16 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   @Override
   @PostMapping("/{questionId}/reply")
+  @SecurityRequirement(name = "Authorization")
   // 질문 답변 등록
   public ApiResponseBody<ArtworkQuestionReplyResponse> createQuestionReply(
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody CreateArtworkQuestionReplyRequest request,
       HttpServletRequest httpServletRequest) {
-    ArtworkQuestionReplyCommand command = mapper.toCommand(artworkId, questionId, userId, request);
+    ArtworkQuestionReplyCommand command =
+        mapper.toCommand(artworkId, questionId, requireUserId(user), request);
 
     ArtworkQuestionReplyResult result =
         createArtworkQuestionReplyService.createQuestionReply(command);
@@ -84,14 +93,16 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   @Override
   @PatchMapping("/{questionId}")
+  @SecurityRequirement(name = "Authorization")
   // 질문 수정
   public ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       @Valid @RequestBody UpdateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest) {
-    UpdateArtworkQuestionCommand command = mapper.toCommand(artworkId, questionId, userId, request);
+    UpdateArtworkQuestionCommand command =
+        mapper.toCommand(artworkId, questionId, requireUserId(user), request);
 
     ArtworkQuestionResult result = updateArtworkQuestionService.updateQuestion(command);
 
@@ -102,19 +113,27 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   @Override
   @DeleteMapping("/{questionId}")
+  @SecurityRequirement(name = "Authorization")
   // 질문 삭제
   public ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
-      @RequestHeader("X-User-Id") Long userId, // 테스트용
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeleteArtworkQuestionCommand command =
-        new DeleteArtworkQuestionCommand(artworkId, questionId, userId);
+        new DeleteArtworkQuestionCommand(artworkId, questionId, requireUserId(user));
 
     DeletedArtworkQuestionResult result = deleteArtworkQuestionService.deleteQuestion(command);
 
     DeletedArtworkQuestionResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }

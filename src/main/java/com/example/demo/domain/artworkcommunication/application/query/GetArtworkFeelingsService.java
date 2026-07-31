@@ -4,6 +4,7 @@ import com.example.demo.domain.artworkcommunication.application.query.ArtworkFee
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ArtworkFeelingUserResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingListResult.ImageResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository;
@@ -70,6 +71,16 @@ public class GetArtworkFeelingsService {
                         toUserResult(
                             userDisplayResolver.resolve(
                                 feeling.getUserId(), nicknameByUserId, creatorNameByUserId)),
+                        feeling.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getFeelingImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList(),
                         likeCounts.getOrDefault(feeling.getFeelingId(), 0L),
                         replyCounts.getOrDefault(feeling.getFeelingId(), 0L)))
             .toList();
