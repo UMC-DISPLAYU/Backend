@@ -12,7 +12,8 @@ public record SearchDisplayResponse(
       String posterImageUrl,
       LocalDate startedAt,
       LocalDate endedAt,
-      long dayLeft) {}
+      long dayLeft,
+      boolean isBookmarked) {}
 
   public record CursorPaginationResponse(Long nextCursor, int size, boolean hasNext) {}
 }

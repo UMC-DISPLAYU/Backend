@@ -15,7 +15,8 @@ public record DisplayMapResponse(
       String locationName,
       String posterImageUrl,
       BigDecimal latitude,
-      BigDecimal longitude) {}
+      BigDecimal longitude,
+      boolean isBookmarked) {}
 
   public record CursorPaginationResponse(Long nextCursor, int size, boolean hasNext) {}
 }

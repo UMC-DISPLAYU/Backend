@@ -13,5 +13,6 @@ public record GraduationDisplayResponse(List<ExhibitionResponse> exhibitions) {
       String department,
       LocalDate startedAt,
       LocalDate endedAt,
-      long dayLeft) {}
+      long dayLeft,
+      boolean isBookmarked) {}
 }

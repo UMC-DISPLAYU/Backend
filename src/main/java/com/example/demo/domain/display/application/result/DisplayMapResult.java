@@ -15,7 +15,8 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
       String locationName,
       String posterImageUrl,
       BigDecimal latitude,
-      BigDecimal longitude) {
+      BigDecimal longitude,
+      boolean isBookmarked) {
 
     public static MarkerResult from(DisplayMapQueryResult queryResult) {
       return new MarkerResult(
@@ -26,7 +27,21 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           queryResult.locationName(),
           queryResult.posterImageUrl(),
           queryResult.latitude(),
-          queryResult.longitude());
+          queryResult.longitude(),
+          false);
+    }
+
+    public MarkerResult withBookmarked(boolean isBookmarked) {
+      return new MarkerResult(
+          displayId,
+          title,
+          startDate,
+          endDate,
+          locationName,
+          posterImageUrl,
+          latitude,
+          longitude,
+          isBookmarked);
     }
   }
 

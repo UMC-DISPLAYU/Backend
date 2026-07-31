@@ -149,6 +149,7 @@ public class DisplayPresentationMapper {
         result.displayFields(),
         result.region(),
         result.likeCount(),
+        result.isBookmarked(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -180,7 +181,8 @@ public class DisplayPresentationMapper {
         result.department(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -193,7 +195,8 @@ public class DisplayPresentationMapper {
         result.department(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -204,7 +207,8 @@ public class DisplayPresentationMapper {
         result.posterImageUrl(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -216,7 +220,8 @@ public class DisplayPresentationMapper {
         result.locationName(),
         result.posterImageUrl(),
         result.latitude(),
-        result.longitude());
+        result.longitude(),
+        result.isBookmarked());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(

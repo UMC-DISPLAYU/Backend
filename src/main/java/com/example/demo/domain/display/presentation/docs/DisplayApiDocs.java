@@ -147,6 +147,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
+            "isBookmarked": false,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -228,6 +229,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 12,
+            "isBookmarked": false,
             "period": {
               "startDate": "2026-05-29",
               "endDate": "2026-06-06",
@@ -347,7 +349,8 @@ public final class DisplayApiDocs {
                 "locationName": "홍익대학교 현대미술관",
                 "posterImageUrl": "https://cdn.displayu.com/posters/inner_view.png",
                 "latitude": 37.5513,
-                "longitude": 126.9248
+                "longitude": 126.9248,
+                "isBookmarked": true
               }
             ],
             "pagination": {
@@ -380,7 +383,8 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "startedAt": "2026-06-20",
                 "endedAt": "2026-07-15",
-                "dayLeft": 3
+                "dayLeft": 3,
+                "isBookmarked": true
               }
             ],
             "pagination": {
@@ -413,7 +417,8 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "startedAt": "2026-07-10",
                 "endedAt": "2026-07-20",
-                "dayLeft": 8
+                "dayLeft": 8,
+                "isBookmarked": true
               }
             ],
             "pagination": {
@@ -444,7 +449,8 @@ public final class DisplayApiDocs {
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
                 "startedAt": "2026-05-20",
                 "endedAt": "2026-05-28",
-                "dayLeft": 0
+                "dayLeft": 0,
+                "isBookmarked": true
               }
             ]
           }
@@ -511,6 +517,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 143,
+            "isBookmarked": true,
             "period": {
               "startDate": "2026-07-01",
               "endDate": "2026-07-10",
