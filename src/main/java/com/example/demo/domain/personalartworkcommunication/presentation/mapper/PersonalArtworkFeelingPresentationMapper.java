@@ -13,18 +13,21 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling.ImageInfo;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse.ImageResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse.PersonalArtworkFeelingItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingListResponse.PersonalArtworkFeelingUserResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkFeelingResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,7 +45,13 @@ public class PersonalArtworkFeelingPresentationMapper {
 
   public PersonalArtworkFeelingCommand toCommand(
       Long personalArtworkId, Long userId, CreatePersonalArtworkFeelingRequest request) {
-    return new PersonalArtworkFeelingCommand(personalArtworkId, userId, request.content());
+    List<ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(image -> new ImageInfo(image.imageUrl(), image.width(), image.height()))
+                .toList();
+    return new PersonalArtworkFeelingCommand(personalArtworkId, userId, request.content(), images);
   }
 
   public PersonalArtworkFeelingReplyCommand toCommand(
@@ -56,7 +65,20 @@ public class PersonalArtworkFeelingPresentationMapper {
 
   public PersonalArtworkFeelingResponse toResponse(PersonalArtworkFeelingResult result) {
     return new PersonalArtworkFeelingResponse(
-        result.personalFeelingId(), result.userId(), result.content(), result.createdAt());
+        result.personalFeelingId(),
+        result.userId(),
+        result.content(),
+        result.createdAt(),
+        result.images().stream()
+            .map(
+                image ->
+                    new PersonalArtworkFeelingResponse.ImageResponse(
+                        image.personalFeelingImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public DeletedPersonalArtworkFeelingResponse toResponse(
@@ -118,6 +140,16 @@ public class PersonalArtworkFeelingPresentationMapper {
         result.content(),
         result.createdAt(),
         user,
+        result.images().stream()
+            .map(
+                image ->
+                    new ImageResponse(
+                        image.personalFeelingImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList(),
         result.likeCount(),
         result.replyCount());
   }

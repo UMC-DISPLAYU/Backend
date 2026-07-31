@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.application.query;
 
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.ImageResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingUserResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
@@ -89,6 +90,16 @@ public class GetPersonalArtworkFeelingsService {
         feeling.getContent(),
         feeling.getCreatedAt(),
         user,
+        feeling.getImages().stream()
+            .map(
+                image ->
+                    new ImageResult(
+                        image.getPersonalFeelingImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         likeCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L),
         replyCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L));
   }

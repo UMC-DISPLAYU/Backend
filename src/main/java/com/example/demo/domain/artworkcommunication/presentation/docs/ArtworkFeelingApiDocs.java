@@ -56,6 +56,15 @@ public interface ArtworkFeelingApiDocs {
                                       "nickname": "User1",
                                       "isCreator": false
                                     },
+                                    "images": [
+                                      {
+                                        "feelingImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/feeling-1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "likeCount": 13,
                                     "replyCount": 2
                                   }
@@ -173,10 +182,49 @@ public interface ArtworkFeelingApiDocs {
                                 "feelingId": 1,
                                 "userId": 1,
                                 "content": "정말 감동적인 작품이에요.",
-                                "createdAt": "2026-06-30T22:10:00"
+                                "createdAt": "2026-06-30T22:10:00",
+                                "images": [
+                                  {
+                                    "feelingImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/feeling-1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
+                            "meta": {
+                              "timestamp": "2026-06-30T22:10:00",
+                              "path": "/api/v1/artworks/1/feelings"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "감상평 내용 또는 이미지 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Invalid artwork feeling image",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "INVALID_INPUT_VALUE",
+                              "message": "입력값이 올바르지 않습니다.",
+                              "details": [
+                                {
+                                  "field": "images[0].width",
+                                  "message": "0보다 커야 합니다"
+                                }
+                              ]
+                            },
                             "meta": {
                               "timestamp": "2026-06-30T22:10:00",
                               "path": "/api/v1/artworks/1/feelings"
