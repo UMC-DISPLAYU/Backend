@@ -21,6 +21,7 @@ public record DisplayDetailResponse(
     List<String> displayFields,
     String region,
     long likeCount,
+    boolean isBookmarked,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,

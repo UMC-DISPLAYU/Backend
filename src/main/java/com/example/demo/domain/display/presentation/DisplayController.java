@@ -92,6 +92,7 @@ import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
+import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
@@ -154,6 +155,7 @@ public class DisplayController {
   private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
   private final GetDuPicksUseCase getDuPicksUseCase;
   private final SearchDisplaysUseCase searchDisplaysUseCase;
+  private final DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -168,6 +170,7 @@ public class DisplayController {
       GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
       GetDuPicksUseCase getDuPicksUseCase,
       SearchDisplaysUseCase searchDisplaysUseCase,
+      DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
@@ -180,6 +183,7 @@ public class DisplayController {
     this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
     this.getDuPicksUseCase = getDuPicksUseCase;
     this.searchDisplaysUseCase = searchDisplaysUseCase;
+    this.displayBookmarkEnrichmentService = displayBookmarkEnrichmentService;
     this.mapper = mapper;
   }
 
@@ -215,7 +219,9 @@ public class DisplayController {
         createDisplayService
             .createDisplay(mapper.toCommand(createDisplayRequest, requireUserId(user)))
             .displayId();
-    DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
+    DisplayDetailResult result =
+        displayBookmarkEnrichmentService.enrich(
+            getDisplayDetailService.getDisplayDetail(displayId), user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -249,6 +255,7 @@ public class DisplayController {
     DisplayDetailResult result =
         updateDisplayService.updateDisplay(
             mapper.toCommand(updateDisplayRequest, requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -378,8 +385,11 @@ public class DisplayController {
       @Parameter(description = INVITATION_TOKEN_DESCRIPTION, example = INVITATION_TOKEN_EXAMPLE)
           @PathVariable
           String token,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    DisplayDetailResult result = getDisplayByInvitationService.getDisplay(token);
+    DisplayDetailResult result =
+        displayBookmarkEnrichmentService.enrich(
+            getDisplayByInvitationService.getDisplay(token), userIdOrNull(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -394,9 +404,14 @@ public class DisplayController {
               examples =
                   @ExampleObject(name = MAP_SUCCESS_EXAMPLE_NAME, value = MAP_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayMapResponse> getDisplayMap(
-      @Valid @ModelAttribute DisplayMapRequest displayMapRequest, HttpServletRequest request) {
+      @Valid @ModelAttribute DisplayMapRequest displayMapRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(getDisplayMapUseCase.getDisplayMap(displayMapRequest.toQuery())),
+        mapper.toResponse(
+            displayBookmarkEnrichmentService.enrich(
+                getDisplayMapUseCase.getDisplayMap(displayMapRequest.toQuery()),
+                userIdOrNull(user))),
         request);
   }
 
@@ -414,9 +429,13 @@ public class DisplayController {
                       value = SEARCH_SUCCESS_EXAMPLE)))
   public ApiResponseBody<SearchDisplayResponse> searchDisplays(
       @Valid @ModelAttribute SearchDisplayRequest searchDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toResponse(searchDisplaysUseCase.searchDisplays(searchDisplayRequest.toQuery())),
+        mapper.toResponse(
+            displayBookmarkEnrichmentService.enrich(
+                searchDisplaysUseCase.searchDisplays(searchDisplayRequest.toQuery()),
+                userIdOrNull(user))),
         request);
   }
 
@@ -434,11 +453,14 @@ public class DisplayController {
                       value = CLOSING_SOON_SUCCESS_EXAMPLE)))
   public ApiResponseBody<ClosingSoonDisplayResponse> getClosingSoonDisplays(
       @Valid @ModelAttribute ClosingSoonDisplayRequest closingSoonDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
-            getClosingSoonDisplaysUseCase.getClosingSoonDisplays(
-                closingSoonDisplayRequest.toQuery())),
+            displayBookmarkEnrichmentService.enrich(
+                getClosingSoonDisplaysUseCase.getClosingSoonDisplays(
+                    closingSoonDisplayRequest.toQuery()),
+                userIdOrNull(user))),
         request);
   }
 
@@ -456,11 +478,14 @@ public class DisplayController {
                       value = GRADUATION_SUCCESS_EXAMPLE)))
   public ApiResponseBody<GraduationDisplayResponse> getRandomGraduationDisplays(
       @Valid @ModelAttribute GraduationDisplayRequest graduationDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
-            getRandomGraduationDisplaysUseCase.getRandomGraduationDisplays(
-                graduationDisplayRequest.requestedSize())),
+            displayBookmarkEnrichmentService.enrich(
+                getRandomGraduationDisplaysUseCase.getRandomGraduationDisplays(
+                    graduationDisplayRequest.requestedSize()),
+                userIdOrNull(user))),
         request);
   }
 
@@ -498,9 +523,16 @@ public class DisplayController {
       @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    DisplayDetailResult result = getDisplayDetailService.getDisplayDetail(displayId);
+    DisplayDetailResult result =
+        displayBookmarkEnrichmentService.enrich(
+            getDisplayDetailService.getDisplayDetail(displayId), userIdOrNull(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  private Long userIdOrNull(AuthUser user) {
+    return user == null ? null : user.userId();
   }
 
   private Long requireUserId(AuthUser user) {

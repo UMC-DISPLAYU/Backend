@@ -16,7 +16,8 @@ public record ClosingSoonDisplayResult(
       String department,
       LocalDate startedAt,
       LocalDate endedAt,
-      long dayLeft) {
+      long dayLeft,
+      boolean isBookmarked) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -28,7 +29,21 @@ public record ClosingSoonDisplayResult(
           queryResult.department(),
           queryResult.startedAt(),
           queryResult.endedAt(),
-          ChronoUnit.DAYS.between(today, queryResult.endedAt()));
+          ChronoUnit.DAYS.between(today, queryResult.endedAt()),
+          false);
+    }
+
+    public ExhibitionResult withBookmarked(boolean isBookmarked) {
+      return new ExhibitionResult(
+          displayId,
+          title,
+          posterImageUrl,
+          organization,
+          department,
+          startedAt,
+          endedAt,
+          dayLeft,
+          isBookmarked);
     }
   }
 
