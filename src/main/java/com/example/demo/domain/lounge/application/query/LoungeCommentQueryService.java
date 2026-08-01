@@ -96,6 +96,22 @@ public class LoungeCommentQueryService {
     return new LoungeReplyCursorResult(results, nextCursorId, pageSize, hasNext);
   }
 
+  @Transactional(readOnly = true)
+  public LoungeCommentCursorResult getMyComments(Long userId, Long cursorId, int size) {
+    int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    List<LoungeCommentQueryResult> fetched =
+        loungeCommentQueryRepository.findActiveByAuthorCursor(userId, cursorId, pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<LoungeCommentQueryResult> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
+    if (comments.isEmpty()) {
+      return new LoungeCommentCursorResult(List.of(), null, pageSize, false);
+    }
+
+    List<LoungeCommentListResult> results = toResults(comments, userId, true);
+    Long nextCursorId = hasNext ? results.getLast().loungeCommentId() : null;
+    return new LoungeCommentCursorResult(results, nextCursorId, pageSize, hasNext);
+  }
+
   private List<LoungeCommentListResult> toResults(
       List<LoungeCommentQueryResult> comments, Long viewerUserId, boolean includeReplyCount) {
     List<Long> commentIds =

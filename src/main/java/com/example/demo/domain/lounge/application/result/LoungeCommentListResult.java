@@ -7,6 +7,7 @@ import java.util.List;
 
 public record LoungeCommentListResult(
     Long loungeCommentId,
+    Long loungePostId,
     Long parentCommentId,
     String content,
     List<String> imageUrls,
@@ -28,6 +29,7 @@ public record LoungeCommentListResult(
       Long viewerUserId) {
     return new LoungeCommentListResult(
         comment.getId(),
+        comment.getLoungePostId(),
         comment.getParentCommentId(),
         comment.getContent(),
         comment.getImageUrls(),
@@ -51,6 +53,7 @@ public record LoungeCommentListResult(
       Long viewerUserId) {
     return new LoungeCommentListResult(
         comment.loungeCommentId(),
+        comment.loungePostId(),
         comment.parentCommentId(),
         comment.content(),
         imageUrls,

@@ -4,6 +4,7 @@ import com.example.demo.domain.lounge.application.query.LoungeCommentQueryReposi
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult;
 import com.example.demo.domain.lounge.domain.entity.LoungeCommentImage;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
+import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentQueryJpaRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +41,17 @@ public class JpaLoungeCommentQueryRepositoryAdapter implements LoungeCommentQuer
       Long parentCommentId, Long cursorId, int limit) {
     return jpaRepository.findActiveRepliesByCursor(
         parentCommentId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
+  }
+
+  @Override
+  public List<LoungeCommentQueryResult> findActiveByAuthorCursor(
+      Long authorUserId, Long cursorId, int limit) {
+    return jpaRepository.findActiveByAuthorCursor(
+        authorUserId,
+        LoungeCommentStatus.ACTIVE,
+        LoungePostStatus.ACTIVE,
+        cursorId,
+        PageRequest.of(0, limit));
   }
 
   @Override
