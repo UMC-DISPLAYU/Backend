@@ -59,12 +59,8 @@ public class LoungeComment extends SoftDeleteBaseEntity {
     this.parentCommentId =
         parentCommentId == null ? null : requirePositive(parentCommentId, "parentCommentId");
     this.authorUserId = Objects.requireNonNull(authorUserId, "authorUserId must not be null.");
-    changeContent(content);
-    this.status = Objects.requireNonNull(status, "status must not be null.");
-  }
-
-  public void changeContent(String content) {
     this.content = requireNonBlank(content, "content");
+    this.status = Objects.requireNonNull(status, "status must not be null.");
   }
 
   public boolean isReply() {
