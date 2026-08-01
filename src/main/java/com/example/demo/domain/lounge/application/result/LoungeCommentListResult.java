@@ -3,11 +3,13 @@ package com.example.demo.domain.lounge.application.result;
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record LoungeCommentListResult(
     Long loungeCommentId,
     Long parentCommentId,
     String content,
+    List<String> imageUrls,
     String commentStatus,
     WriterView writer,
     long likeCount,
@@ -28,6 +30,7 @@ public record LoungeCommentListResult(
         comment.getId(),
         comment.getParentCommentId(),
         comment.getContent(),
+        comment.getImageUrls(),
         comment.getStatus().name(),
         writer,
         likeCount,
@@ -40,6 +43,7 @@ public record LoungeCommentListResult(
 
   public static LoungeCommentListResult from(
       LoungeCommentQueryResult comment,
+      List<String> imageUrls,
       WriterView writer,
       long likeCount,
       long replyCount,
@@ -49,6 +53,7 @@ public record LoungeCommentListResult(
         comment.loungeCommentId(),
         comment.parentCommentId(),
         comment.content(),
+        imageUrls,
         comment.commentStatus().name(),
         writer,
         likeCount,

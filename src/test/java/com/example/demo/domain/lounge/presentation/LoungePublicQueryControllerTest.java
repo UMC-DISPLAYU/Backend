@@ -59,9 +59,18 @@ class LoungePublicQueryControllerTest {
                 LoungePostCategory.DISPLAY_REVIEW));
     comment =
         commentRepository.saveAndFlush(
-            LoungeComment.createComment(post.getId(), new UserId(102L), "저도 다녀왔어요."));
+            LoungeComment.createComment(
+                post.getId(),
+                new UserId(102L),
+                "저도 다녀왔어요.",
+                List.of("comment-image-1", "comment-image-2")));
     commentRepository.saveAndFlush(
-        LoungeComment.createReply(post.getId(), comment.getId(), new UserId(103L), "저도 같은 생각이에요."));
+        LoungeComment.createReply(
+            post.getId(),
+            comment.getId(),
+            new UserId(103L),
+            "저도 같은 생각이에요.",
+            List.of("reply-image-1", "reply-image-2")));
   }
 
   @Test
@@ -88,6 +97,9 @@ class LoungePublicQueryControllerTest {
     mockMvc
         .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comments[0].imageUrls.length()").value(2))
+        .andExpect(jsonPath("$.success.data.comments[0].imageUrls[0]").value("comment-image-1"))
+        .andExpect(jsonPath("$.success.data.comments[0].imageUrls[1]").value("comment-image-2"))
         .andExpect(jsonPath("$.success.data.comments[0].replyCount").value(1))
         .andExpect(jsonPath("$.success.data.comments[0].isLiked").value(false))
         .andExpect(jsonPath("$.success.data.comments[0].isMyComment").value(false));
@@ -95,9 +107,24 @@ class LoungePublicQueryControllerTest {
     mockMvc
         .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.replies[0].imageUrls.length()").value(2))
+        .andExpect(jsonPath("$.success.data.replies[0].imageUrls[0]").value("reply-image-1"))
+        .andExpect(jsonPath("$.success.data.replies[0].imageUrls[1]").value("reply-image-2"))
         .andExpect(jsonPath("$.success.data.replies[0].replyCount").doesNotExist())
         .andExpect(jsonPath("$.success.data.replies[0].isLiked").value(false))
         .andExpect(jsonPath("$.success.data.replies[0].isMyComment").value(false));
+  }
+
+  @Test
+  void commentWithoutImagesReturnsEmptyArray() throws Exception {
+    commentRepository.saveAndFlush(
+        LoungeComment.createComment(post.getId(), new UserId(104L), "이미지 없는 댓글"));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isArray())
+        .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isEmpty());
   }
 
   @Test
