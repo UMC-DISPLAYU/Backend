@@ -39,6 +39,18 @@ k6를 설치한다.
 brew install k6
 ```
 
+테스트 데이터는 반드시 초기화된 로컬 DB에 생성한다. 프로젝트에 문서화된 DB 접속 환경변수를 설정한 뒤 다음 명령을 한 번만 실행한다.
+
+```bash
+mysql \
+  -h "$DB_HOST" \
+  -P "$DB_PORT" \
+  -u "$DB_USERNAME" \
+  -p \
+  "$DB_NAME" \
+  < docs/lounge-query-load-test-data.sql
+```
+
 상세, 댓글, 답글 조회에 사용할 ID를 확인한다.
 
 ```sql

@@ -83,6 +83,16 @@ export const options = {
     },
 };
 
+const RESPONSE_VALIDATORS = {
+    lounge_posts_first: (data) => Array.isArray(data.posts),
+    lounge_posts_cursor: (data) => Array.isArray(data.posts),
+    lounge_posts_category_cursor: (data) => Array.isArray(data.posts),
+    lounge_post_detail: (data) =>
+        data.loungePostId === Number(LOUNGE_POST_ID),
+    lounge_comments: (data) => Array.isArray(data.comments),
+    lounge_replies: (data) => Array.isArray(data.replies),
+};
+
 function get(path, name) {
     const response = http.get(`${BASE_URL}${path}`, {
         headers: ACCESS_TOKEN
@@ -96,11 +106,20 @@ function get(path, name) {
         tags: { api: name },
     });
 
+    let body;
+    try {
+        body = JSON.parse(response.body);
+    } catch (_) {
+        body = null;
+    }
+
     check(response, {
         [`${name} status is 2xx`]: (result) =>
             result.status >= 200 && result.status < 300,
-        [`${name} has response body`]: (result) =>
-            result.body && result.body.length > 0,
+        [`${name} has expected response data`]: () => {
+            const data = body && body.success && body.success.data;
+            return Boolean(data && RESPONSE_VALIDATORS[name](data));
+        },
     });
 }
 
