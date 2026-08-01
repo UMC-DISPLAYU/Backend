@@ -93,6 +93,7 @@ import com.example.demo.domain.display.application.result.DisplayInvitationDisab
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
+import com.example.demo.domain.display.application.service.GetMyDisplaysService;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
@@ -115,6 +116,7 @@ import com.example.demo.domain.display.presentation.response.DisplayLikeResponse
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
+import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -156,6 +158,7 @@ public class DisplayController {
   private final GetDuPicksUseCase getDuPicksUseCase;
   private final SearchDisplaysUseCase searchDisplaysUseCase;
   private final DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService;
+  private final GetMyDisplaysService getMyDisplaysService;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -171,6 +174,7 @@ public class DisplayController {
       GetDuPicksUseCase getDuPicksUseCase,
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
+      GetMyDisplaysService getMyDisplaysService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
@@ -184,6 +188,7 @@ public class DisplayController {
     this.getDuPicksUseCase = getDuPicksUseCase;
     this.searchDisplaysUseCase = searchDisplaysUseCase;
     this.displayBookmarkEnrichmentService = displayBookmarkEnrichmentService;
+    this.getMyDisplaysService = getMyDisplaysService;
     this.mapper = mapper;
   }
 
@@ -505,6 +510,14 @@ public class DisplayController {
       @Valid @ModelAttribute DuPickRequest duPickRequest, HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(getDuPicksUseCase.getDuPicks(duPickRequest.toQuery())), request);
+  }
+
+  @GetMapping("/api/v1/display/me")
+  @SecurityRequirement(name = "Authorization")
+  public ApiResponseBody<MyDisplayListResponse> getMyDisplays(
+      @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(getMyDisplaysService.getMyDisplays(requireUserId(user))), request);
   }
 
   @GetMapping("/api/v1/display/{displayId}")

@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -312,6 +313,43 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void updateMyDisplayNicknameChangesAcceptedTeamMemberNickname() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display/me/nickname")
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateNicknameRequest(display.getId(), "새 전시 닉네임")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.userId").value(leader.getId()))
+        .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 닉네임"))
+        .andExpect(jsonPath("$.success.data.role").value("TEAM_LEADER"));
+
+    assertThat(
+            teamMemberJpaRepository
+                .findByDisplayIdAndUserIdValueAndAcceptedTrue(display.getId(), leader.getId())
+                .orElseThrow()
+                .getDisplayNickname())
+        .isEqualTo("새 전시 닉네임");
+  }
+
+  @Test
+  void updateMyDisplayNicknameReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/v1/display/me/nickname")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateNicknameRequest(1L, "새 전시 닉네임")))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void getMyInvitationsReturnsPendingInvitationsReceivedByRequester() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -417,6 +455,16 @@ class DisplayMemberInvitationControllerTest {
         }
         """
         .formatted(displayNickname);
+  }
+
+  private static String updateNicknameRequest(Long displayId, String displayNickname) {
+    return """
+        {
+          "displayId": %d,
+          "displayNickname": "%s"
+        }
+        """
+        .formatted(displayId, displayNickname);
   }
 
   private static User user(String nickname) {

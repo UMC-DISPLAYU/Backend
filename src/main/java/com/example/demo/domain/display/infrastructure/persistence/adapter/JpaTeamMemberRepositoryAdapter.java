@@ -3,6 +3,7 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataTeamMemberJpaRepository;
+import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,6 +18,11 @@ public class JpaTeamMemberRepositoryAdapter implements TeamMemberRepository {
   @Override
   public boolean existsAcceptedByDisplayIdAndUserId(Long displayId, Long userId) {
     return jpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(displayId, userId);
+  }
+
+  @Override
+  public Optional<TeamMember> findAcceptedByDisplayIdAndUserId(Long displayId, Long userId) {
+    return jpaRepository.findByDisplayIdAndUserIdValueAndAcceptedTrue(displayId, userId);
   }
 
   @Override
