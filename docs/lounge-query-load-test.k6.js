@@ -89,8 +89,12 @@ const RESPONSE_VALIDATORS = {
     lounge_posts_category_cursor: (data) => Array.isArray(data.posts),
     lounge_post_detail: (data) =>
         data.loungePostId === Number(LOUNGE_POST_ID),
-    lounge_comments: (data) => Array.isArray(data.comments),
-    lounge_replies: (data) => Array.isArray(data.replies),
+    lounge_comments: (data) =>
+        Array.isArray(data.comments) &&
+        data.comments.every((comment) => Array.isArray(comment.imageUrls)),
+    lounge_replies: (data) =>
+        Array.isArray(data.replies) &&
+        data.replies.every((reply) => Array.isArray(reply.imageUrls)),
 };
 
 function get(path, name) {

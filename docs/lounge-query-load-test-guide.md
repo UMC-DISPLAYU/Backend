@@ -25,6 +25,7 @@
 - 게시글 이미지: 약 75,000건
 - 루트 댓글: 약 125,000건
 - 답글: 약 125,000건
+- 댓글 및 답글 이미지: 약 625,000건
 - 게시글 좋아요: 약 75,000건
 - 게시글 스크랩: 약 25,000건
 - 댓글 좋아요: 약 375,000건
@@ -66,6 +67,16 @@ WHERE post.title = 'DU102-PERF-50000'
       SELECT 1
       FROM LoungeComment reply
       WHERE reply.parentCommentId = parent.loungeCommentId
+        AND EXISTS (
+            SELECT 1
+            FROM LoungeCommentImage replyImage
+            WHERE replyImage.loungeCommentId = reply.loungeCommentId
+        )
+  )
+  AND EXISTS (
+      SELECT 1
+      FROM LoungeCommentImage parentImage
+      WHERE parentImage.loungeCommentId = parent.loungeCommentId
   )
 LIMIT 1;
 ```
@@ -149,6 +160,8 @@ k6 run docs/lounge-query-load-test.k6.js
 | p99 | 1초 미만 |
 
 ## 9. 측정 결과
+
+아래 결과는 댓글·답글 이미지 조회 기능 추가 전 측정값이다. 이미지 데이터 생성 후 동일한 프로파일로 재측정하여 갱신한다.
 
 | 구분 | 전체 p95 | 전체 p99 | 실패율 | 처리량 |
 |---|---:|---:|---:|---:|
