@@ -10,6 +10,7 @@ import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.MyDisplayListResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
@@ -25,6 +26,7 @@ import com.example.demo.domain.display.presentation.response.DisplayLikeResponse
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
+import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import org.springframework.stereotype.Component;
 
@@ -119,6 +121,12 @@ public class DisplayPresentationMapper {
             result.pagination().nextCursor(),
             result.pagination().size(),
             result.pagination().hasNext()));
+  }
+
+  public MyDisplayListResponse toResponse(MyDisplayListResult result) {
+    return new MyDisplayListResponse(
+        result.createdDisplays().stream().map(this::toResponse).toList(),
+        result.participatedDisplays().stream().map(this::toResponse).toList());
   }
 
   public DisplayLikeResponse toResponse(DisplayLikeResult result) {
@@ -222,6 +230,20 @@ public class DisplayPresentationMapper {
         result.latitude(),
         result.longitude(),
         result.isBookmarked());
+  }
+
+  private MyDisplayListResponse.MyDisplayResponse toResponse(
+      MyDisplayListResult.MyDisplayResult result) {
+    return new MyDisplayListResponse.MyDisplayResponse(
+        result.displayId(),
+        result.title(),
+        result.isDisplaying(),
+        result.startDate(),
+        result.endDate(),
+        result.school(),
+        result.department(),
+        result.placeName(),
+        result.postImageUrl());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(

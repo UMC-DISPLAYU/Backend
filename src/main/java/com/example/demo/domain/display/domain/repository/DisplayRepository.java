@@ -12,6 +12,10 @@ public interface DisplayRepository {
 
   Optional<Display> findByInvitationToken(String invitationTokenHash);
 
+  List<Display> findCreatedDisplaysByUserId(Long userId);
+
+  List<Display> findParticipatedDisplaysByUserId(Long userId);
+
   List<Display> findAll();
 
   Display save(Display display);
