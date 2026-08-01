@@ -43,6 +43,8 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheVersion;
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.config.CacheConfig;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -95,6 +97,7 @@ class DisplayCacheIntegrationTest {
   @Autowired private UpdateDisplayService updateDisplayService;
   @Autowired private DisplayRepository displayRepository;
   @Autowired private DisplayLikeRepository displayLikeRepository;
+  @Autowired private UserRepository userRepository;
   @Autowired private DisplayListCacheEvictor displayListCacheEvictor;
   @Autowired private CacheManager cacheManager;
   @Autowired private TestClock clock;
@@ -106,7 +109,8 @@ class DisplayCacheIntegrationTest {
         duPickQueryRepository,
         closingSoonDisplayQueryRepository,
         displayRepository,
-        displayLikeRepository);
+        displayLikeRepository,
+        userRepository);
     clearCache(DisplayCacheNames.GRADUATION);
     clearCache(DisplayCacheNames.DU_PICKS);
     clearCache(DisplayCacheNames.CLOSING_SOON_FIRST_PAGE);
@@ -195,6 +199,7 @@ class DisplayCacheIntegrationTest {
   @Test
   void createDisplayEvictsDisplayListCachesAfterCommit() {
     seedDisplayListCaches();
+    when(userRepository.findById(1L)).thenReturn(Optional.of(User.builder().name("팀장").build()));
     when(displayRepository.save(any(Display.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -393,6 +398,11 @@ class DisplayCacheIntegrationTest {
     @Bean
     DisplayLikeRepository displayLikeRepository() {
       return mock(DisplayLikeRepository.class);
+    }
+
+    @Bean
+    UserRepository userRepository() {
+      return mock(UserRepository.class);
     }
 
     @Bean

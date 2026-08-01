@@ -32,6 +32,16 @@ public class JpaDisplayRepositoryAdapter implements DisplayRepository {
   }
 
   @Override
+  public List<Display> findCreatedDisplaysByUserId(Long userId) {
+    return jpaRepository.findCreatedDisplaysByUserId(userId);
+  }
+
+  @Override
+  public List<Display> findParticipatedDisplaysByUserId(Long userId) {
+    return jpaRepository.findParticipatedDisplaysByUserId(userId);
+  }
+
+  @Override
   public List<Display> findAll() {
     return jpaRepository.findAll();
   }

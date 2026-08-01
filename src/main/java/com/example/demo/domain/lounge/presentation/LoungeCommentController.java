@@ -17,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -69,20 +68,6 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
     Long loungeCommentId =
         loungeCommentCommandService.createReply(
             parentCommentId, user.userId(), loungeCommentRequest.toCommand());
-    return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
-        request);
-  }
-
-  @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
-  @Override
-  public ApiResponseBody<LoungeCommentListResponse> updateComment(
-      @PathVariable Long loungeCommentId,
-      @RequestBody LoungeCommentRequest loungeCommentRequest,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest request) {
-    loungeCommentCommandService.updateComment(
-        loungeCommentId, user.userId(), loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
         mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);

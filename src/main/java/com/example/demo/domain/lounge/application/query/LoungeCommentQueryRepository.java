@@ -1,6 +1,7 @@
 package com.example.demo.domain.lounge.application.query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface LoungeCommentQueryRepository {
@@ -11,4 +12,6 @@ public interface LoungeCommentQueryRepository {
 
   List<LoungeCommentQueryResult> findActiveRepliesByCursor(
       Long parentCommentId, Long cursorId, int limit);
+
+  Map<Long, List<String>> findImageUrlsByLoungeCommentIds(List<Long> loungeCommentIds);
 }
