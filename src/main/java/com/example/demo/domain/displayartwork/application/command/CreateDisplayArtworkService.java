@@ -86,12 +86,14 @@ public class CreateDisplayArtworkService {
   }
 
   private void validateTeamMember(Display display, Long requesterUserId) {
+    // 전시를 만든 소유자는 TeamMember로 등록되지 않으므로 소유자 여부도 함께 확인한다.
     boolean isAcceptedTeamMember =
-        display.getTeamMembers().stream()
-            .anyMatch(
-                teamMember ->
-                    teamMember.isAccepted()
-                        && teamMember.getUserId().value().equals(requesterUserId));
+        display.isOwner(requesterUserId)
+            || display.getTeamMembers().stream()
+                .anyMatch(
+                    teamMember ->
+                        teamMember.isAccepted()
+                            && teamMember.getUserId().value().equals(requesterUserId));
     if (!isAcceptedTeamMember) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_DISPLAY_TEAM_MEMBER);
     }
