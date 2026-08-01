@@ -11,6 +11,8 @@ import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResp
 import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostScrapResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -148,5 +150,37 @@ public class LoungePostController implements LoungePostControllerDocs {
     return ApiResponseBody.success(
         mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, viewerUserId)),
         request);
+  }
+
+  @GetMapping("/api/v1/lounge/me/posts")
+  @Override
+  public ApiResponseBody<LoungePostCursorResponse> getMyPosts(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(loungePostQueryService.getMyPosts(requireUserId(user), cursorId, size)),
+        request);
+  }
+
+  @GetMapping("/api/v1/lounge/me/scraps")
+  @Override
+  public ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungePostQueryService.getMyScrappedPosts(requireUserId(user), cursorId, size)),
+        request);
+  }
+
+  private Long requireUserId(AuthUser user) {
+    if (user == null) {
+      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    }
+    return user.userId();
   }
 }
