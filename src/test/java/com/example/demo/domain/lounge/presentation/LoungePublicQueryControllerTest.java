@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,6 +15,7 @@ import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
+import com.example.demo.global.security.TokenProvider;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +45,8 @@ class LoungePublicQueryControllerTest {
   @Autowired private EntityManager entityManager;
 
   @MockitoBean private LoungeWriterRepository writerRepository;
+
+  @MockitoBean private TokenProvider tokenProvider;
 
   private LoungePost post;
   private LoungeComment comment;
@@ -125,6 +130,48 @@ class LoungePublicQueryControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isArray())
         .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isEmpty());
+  }
+
+  @Test
+  void commentCreationReturnsImagesInRequestOrder() throws Exception {
+    when(tokenProvider.getUserId("test-token")).thenReturn(104L);
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", post.getId())
+                .header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "content": "이미지가 있는 댓글",
+                      "imageUrls": ["created-image-1", "created-image-2"]
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.imageUrls.length()").value(2))
+        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("created-image-1"))
+        .andExpect(jsonPath("$.success.data.imageUrls[1]").value("created-image-2"));
+  }
+
+  @Test
+  void commentCreationRejectsMoreThanFiveImages() throws Exception {
+    when(tokenProvider.getUserId("test-token")).thenReturn(104L);
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", post.getId())
+                .header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "content": "이미지가 너무 많은 댓글",
+                      "imageUrls": ["image-1", "image-2", "image-3", "image-4", "image-5", "image-6"]
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
   }
 
   @Test
