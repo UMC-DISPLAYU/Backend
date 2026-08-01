@@ -22,8 +22,11 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -32,8 +35,10 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 class DisplayContentCommandServiceTest {
 
   private final DisplayRepository displayRepository = mock(DisplayRepository.class);
+  private final Clock clock =
+      Clock.fixed(Instant.parse("2026-08-01T15:00:00Z"), ZoneId.of("Asia/Seoul"));
   private final DisplayContentCommandService service =
-      new DisplayContentCommandService(displayRepository);
+      new DisplayContentCommandService(displayRepository, clock);
 
   @Test
   void reorderContentsTranslatesOptimisticLockConflictToBusinessException() {
