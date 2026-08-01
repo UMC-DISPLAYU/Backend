@@ -5,6 +5,7 @@ import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.CascadeType;
@@ -70,6 +71,10 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private Long registeredByUserId;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private DisplayArtworkStatus status;
+
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   @BatchSize(size = 50)
@@ -89,6 +94,34 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       int workSortOrder,
       Long registeredByUserId,
       List<ArtworkImage> images) {
+    return create(
+        display,
+        artworkName,
+        content,
+        type,
+        productionYear,
+        materialMedia,
+        size,
+        point,
+        workSortOrder,
+        registeredByUserId,
+        DisplayArtworkStatus.PUBLISHED,
+        images);
+  }
+
+  public static DisplayArtwork create(
+      Display display,
+      String artworkName,
+      String content,
+      ArtworkType type,
+      int productionYear,
+      String materialMedia,
+      String size,
+      String point,
+      int workSortOrder,
+      Long registeredByUserId,
+      DisplayArtworkStatus status,
+      List<ArtworkImage> images) {
     DisplayArtwork displayArtwork =
         new DisplayArtwork(
             display,
@@ -100,7 +133,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
             size,
             point,
             workSortOrder,
-            registeredByUserId);
+            registeredByUserId,
+            status);
     displayArtwork.replaceImages(images);
     return displayArtwork;
   }
@@ -115,12 +149,14 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       String size,
       String point,
       int workSortOrder,
-      Long registeredByUserId) {
+      Long registeredByUserId,
+      DisplayArtworkStatus status) {
     this.display = Objects.requireNonNull(display, "display must not be null.");
     changeContent(artworkName, content, type, productionYear, materialMedia, size, point);
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
     this.registeredByUserId =
         Objects.requireNonNull(registeredByUserId, "registeredByUserId must not be null.");
+    this.status = Objects.requireNonNull(status, "status must not be null.");
   }
 
   public List<ArtworkImage> getImages() {
@@ -146,6 +182,10 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
 
   public void changeWorkSortOrder(int workSortOrder) {
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
+  }
+
+  public void publish() {
+    this.status = DisplayArtworkStatus.PUBLISHED;
   }
 
   public void addImage(ArtworkImage image) {

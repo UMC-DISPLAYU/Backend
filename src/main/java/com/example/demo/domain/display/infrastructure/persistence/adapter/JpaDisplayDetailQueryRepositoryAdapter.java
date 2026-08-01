@@ -10,6 +10,7 @@ import com.example.demo.domain.display.domain.entity.QDisplayImage;
 import com.example.demo.domain.display.domain.entity.QDisplayInvitation;
 import com.example.demo.domain.display.domain.entity.QDisplayLike;
 import com.example.demo.domain.display.domain.entity.QTeamMember;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -162,7 +163,9 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                 content.height,
                 content.sortOrder)
             .from(content)
-            .where(content.category.id.in(categoryIds))
+            .where(
+                content.category.id.in(categoryIds),
+                content.status.eq(DisplayContentStatus.PUBLISHED))
             .orderBy(content.category.id.asc(), content.sortOrder.asc(), content.id.asc())
             .fetch();
 

@@ -7,6 +7,7 @@ import com.example.demo.domain.display.domain.entity.DisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -160,7 +161,10 @@ public record DisplayDetailResult(
           category.getName(),
           category.getDescription(),
           category.getSortOrder(),
-          category.getContents().stream().map(ContentResult::from).toList());
+          category.getContents().stream()
+              .filter(content -> content.getStatus() == DisplayContentStatus.PUBLISHED)
+              .map(ContentResult::from)
+              .toList());
     }
   }
 

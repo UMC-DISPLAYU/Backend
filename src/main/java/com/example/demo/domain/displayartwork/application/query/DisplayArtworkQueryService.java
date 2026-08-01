@@ -56,6 +56,11 @@ public class DisplayArtworkQueryService {
         displayArtworkRepository
             .findById(displayArtworkId)
             .filter(artwork -> !artwork.isDeleted())
+            .filter(
+                artwork ->
+                    artwork.getStatus()
+                        == com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus
+                            .PUBLISHED)
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
@@ -133,7 +138,7 @@ public class DisplayArtworkQueryService {
         .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     List<DisplayArtwork> artworks =
-        displayArtworkRepository.findAllByDisplayId(displayId).stream()
+        displayArtworkRepository.findPublishedByDisplayId(displayId).stream()
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
