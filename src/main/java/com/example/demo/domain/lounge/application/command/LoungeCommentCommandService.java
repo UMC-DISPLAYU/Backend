@@ -38,7 +38,7 @@ public class LoungeCommentCommandService {
 
     LoungeComment comment =
         LoungeComment.createComment(
-            loungePost.getId(), new UserId(authorUserId), command.content());
+            loungePost.getId(), new UserId(authorUserId), command.content(), command.imageUrls());
 
     LoungeComment savedComment = loungeCommentRepository.save(comment);
     return savedComment.getId();
@@ -57,7 +57,11 @@ public class LoungeCommentCommandService {
 
     LoungeComment reply =
         LoungeComment.createReply(
-            loungePost.getId(), parentComment.getId(), new UserId(authorUserId), command.content());
+            loungePost.getId(),
+            parentComment.getId(),
+            new UserId(authorUserId),
+            command.content(),
+            command.imageUrls());
 
     LoungeComment savedReply = loungeCommentRepository.save(reply);
     return savedReply.getId();
