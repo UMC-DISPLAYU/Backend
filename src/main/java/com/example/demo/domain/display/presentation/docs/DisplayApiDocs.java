@@ -31,6 +31,16 @@ public final class DisplayApiDocs {
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
+  public static final String RESERVATION_SUMMARY = "전시 콘텐츠 공개 예약 수정";
+  public static final String RESERVATION_DESCRIPTION =
+      "전시 팀장 권한을 가진 사용자가 작품 콘텐츠와 전시 콘텐츠의 공개 시점 정책을 수정합니다.";
+  public static final String RESERVATION_REQUEST_DESCRIPTION = "전시 콘텐츠 공개 예약 수정 요청";
+  public static final String RESERVATION_REQUEST_EXAMPLE_NAME =
+      "Display reservation update request";
+  public static final String RESERVATION_SUCCESS_DESCRIPTION = "전시 콘텐츠 공개 예약 수정 성공";
+  public static final String RESERVATION_SUCCESS_EXAMPLE_NAME =
+      "Display reservation update success";
+
   public static final String LIKE_SUMMARY = "전시 좋아요";
   public static final String LIKE_DESCRIPTION = "인증된 사용자가 전시에 좋아요를 추가합니다.";
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
@@ -316,6 +326,64 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
           "path": "/api/v1/display/publish"
+        }
+      }
+      """;
+
+  public static final String RESERVATION_REQUEST_EXAMPLE =
+      """
+      {
+        "artworkContentOpen": "ON_EXHIBITION",
+        "exhibitionContentOpen": "IMMEDIATELY"
+      }
+      """;
+
+  public static final String RESERVATION_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "ownerUserId": 1,
+            "title": "FORM 2026",
+            "subtitle": "중앙대학교 디자인학부 졸업전시",
+            "content": "디자인학부 학생들의...",
+            "location": {
+              "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+              "latitude": 37.0063,
+              "longitude": 127.2267
+            },
+            "qnaAccount": "",
+            "note": "전시장 내 음료 반입 금지",
+            "organization": "중앙대학교",
+            "department": "디자인학부",
+            "displayType": "GRADUATION",
+            "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
+            "likeCount": 0,
+            "isBookmarked": false,
+            "period": {
+              "startDate": "2026-05-28",
+              "endDate": "2026-06-05",
+              "startTime": "10:00:00",
+              "endTime": "18:00:00"
+            },
+            "artworkContentOpen": "ON_EXHIBITION",
+            "exhibitionContentOpen": "IMMEDIATELY",
+            "status": "PUBLISHED",
+            "invitationToken": null,
+            "invitationDisabledAt": null,
+            "images": [],
+            "contentCategories": [],
+            "teamMembers": [],
+            "invitations": []
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-14T02:00:00",
+          "path": "/api/v1/display/12/reservation"
         }
       }
       """;

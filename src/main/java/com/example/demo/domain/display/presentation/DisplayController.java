@@ -74,6 +74,14 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.P
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_EXAMPLE;
@@ -94,6 +102,7 @@ import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
 import com.example.demo.domain.display.application.command.PublishDisplayService;
+import com.example.demo.domain.display.application.command.UpdateDisplayReservationService;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
@@ -118,6 +127,7 @@ import com.example.demo.domain.display.presentation.request.GraduationDisplayReq
 import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayReservationRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
@@ -161,6 +171,7 @@ public class DisplayController {
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
   private final PublishDisplayService publishDisplayService;
+  private final UpdateDisplayReservationService updateDisplayReservationService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
@@ -178,6 +189,7 @@ public class DisplayController {
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
       PublishDisplayService publishDisplayService,
+      UpdateDisplayReservationService updateDisplayReservationService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayByInvitationService getDisplayByInvitationService,
       GetDisplayMapUseCase getDisplayMapUseCase,
@@ -193,6 +205,7 @@ public class DisplayController {
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
     this.publishDisplayService = publishDisplayService;
+    this.updateDisplayReservationService = updateDisplayReservationService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
@@ -306,6 +319,43 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayDetailResult result =
         publishDisplayService.publishDisplay(publishDisplayRequest.toCommand(requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/{displayId}/reservation")
+  @Operation(summary = RESERVATION_SUMMARY, description = RESERVATION_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = RESERVATION_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = RESERVATION_REQUEST_EXAMPLE_NAME,
+                      value = RESERVATION_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = RESERVATION_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = RESERVATION_SUCCESS_EXAMPLE_NAME,
+                      value = RESERVATION_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> updateDisplayReservation(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @Valid @RequestBody UpdateDisplayReservationRequest updateDisplayReservationRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayDetailResult result =
+        updateDisplayReservationService.updateReservation(
+            updateDisplayReservationRequest.toCommand(requireUserId(user), displayId));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
