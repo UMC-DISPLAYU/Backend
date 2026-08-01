@@ -12,6 +12,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -78,6 +79,19 @@ public class GlobalExceptionHandler {
             errorCode.getCode(),
             errorCode.getMessage(),
             new FieldErrorDetail(exception.getParameterName(), "필수 요청 파라미터입니다."));
+    return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  // 같은 경로를 파라미터로 분기하는 API에서, 어떤 분기 조건도 만족하지 못한 요청을 400으로 처리한다.
+  @ExceptionHandler(UnsatisfiedServletRequestParameterException.class)
+  public ResponseEntity<ApiResponseBody<Void>> handleUnsatisfiedServletRequestParameterException(
+      UnsatisfiedServletRequestParameterException exception, HttpServletRequest request) {
+    BaseErrorCode errorCode = GlobalErrorCode.MISSING_REQUIRED_VALUE;
+    ErrorBody error =
+        new ErrorBody(
+            errorCode.getCode(),
+            errorCode.getMessage(),
+            new FieldErrorDetail("parameters", "요청에 필요한 파라미터 조건을 만족하지 않습니다."));
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
 
