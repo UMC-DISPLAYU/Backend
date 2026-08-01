@@ -25,6 +25,7 @@
 - 게시글 이미지: 약 75,000건
 - 루트 댓글: 약 125,000건
 - 답글: 약 125,000건
+- 댓글 및 답글 이미지: 약 625,000건
 - 게시글 좋아요: 약 75,000건
 - 게시글 스크랩: 약 25,000건
 - 댓글 좋아요: 약 375,000건
@@ -66,6 +67,16 @@ WHERE post.title = 'DU102-PERF-50000'
       SELECT 1
       FROM LoungeComment reply
       WHERE reply.parentCommentId = parent.loungeCommentId
+        AND EXISTS (
+            SELECT 1
+            FROM LoungeCommentImage replyImage
+            WHERE replyImage.loungeCommentId = reply.loungeCommentId
+        )
+  )
+  AND EXISTS (
+      SELECT 1
+      FROM LoungeCommentImage parentImage
+      WHERE parentImage.loungeCommentId = parent.loungeCommentId
   )
 LIMIT 1;
 ```
@@ -150,6 +161,8 @@ k6 run docs/lounge-query-load-test.k6.js
 
 ## 9. 측정 결과
 
+아래 결과는 댓글·답글 이미지 조회 기능 추가 전 측정값이다.
+
 | 구분 | 전체 p95 | 전체 p99 | 실패율 | 처리량 |
 |---|---:|---:|---:|---:|
 | 비로그인 baseline | 23.78ms | 29.96ms | 0% | 84.40 req/s |
@@ -167,6 +180,20 @@ k6 run docs/lounge-query-load-test.k6.js
 | 게시글 상세 | 58.67ms |
 | 댓글 목록 | 54.11ms |
 | 답글 목록 | 47.19ms |
+
+댓글·답글 이미지 조회 적용 후 로컬 재측정 결과(2026-08-01):
+
+| 구분 | 전체 p95 | 전체 p99 | 실패율 | 처리량 |
+|---|---:|---:|---:|---:|
+| 비로그인 baseline | 43.95ms | 54.99ms | 0% | 79.19 req/s |
+| 비로그인 stress | 102.89ms | 170.48ms | 0% | 340.85 req/s |
+
+이미지 조회 적용 후 API별 p95:
+
+| 구분 | 댓글 목록 | 답글 목록 |
+|---|---:|---:|
+| 비로그인 baseline | 22.63ms | 21.18ms |
+| 비로그인 stress | 98.03ms | 91.65ms |
 
 ## 10. 실행계획 확인 결과
 
@@ -190,7 +217,7 @@ k6 run docs/lounge-query-load-test.k6.js
 
 ## 11. 결론
 
-최대 VU 150명의 로그인 stress 테스트에서도 모든 threshold를 통과했고 실패가 발생하지 않았다.
+댓글·답글 이미지 조회 적용 후 로컬 비로그인 stress 테스트에서도 최대 VU 150명의 모든 threshold를 통과했고 실패가 발생하지 않았다.
 
 실행계획에서도 테이블 전체 스캔이나 과도한 조회 행이 확인되지 않았다. 따라서 현재 측정 결과만으로는 다음 변경을 적용하지 않는다.
 

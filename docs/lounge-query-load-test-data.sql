@@ -190,6 +190,39 @@ WHERE parent.content LIKE 'DU102-PERF-COMMENT-%'
 
 COMMIT;
 
+-- 댓글과 답글당 이미지 0~5개
+INSERT INTO LoungeCommentImage (
+    imageUrl,
+    sortOrder,
+    createdAt,
+    updatedAt,
+    loungeCommentId
+)
+SELECT
+    CONCAT(
+            'https://example.com/perf/lounge/comment/',
+            comment.loungeCommentId,
+            '/',
+            imageOrder.sortOrder,
+            '.jpg'
+    ),
+    imageOrder.sortOrder,
+    NOW(),
+    NOW(),
+    comment.loungeCommentId
+FROM LoungeComment comment
+         JOIN (
+    SELECT 0 AS sortOrder
+    UNION ALL SELECT 1
+    UNION ALL SELECT 2
+    UNION ALL SELECT 3
+    UNION ALL SELECT 4
+) imageOrder
+              ON imageOrder.sortOrder < MOD(comment.loungeCommentId, 6)
+WHERE comment.content LIKE 'DU102-PERF-%';
+
+COMMIT;
+
 -- 게시글당 좋아요 0~3개
 INSERT INTO LoungePostLike (
     createdAt,
@@ -290,6 +323,16 @@ SELECT
 FROM LoungeComment
 WHERE content LIKE 'DU102-PERF-REPLY-%'
   AND parentCommentId IS NOT NULL
+
+UNION ALL
+
+SELECT
+    'LoungeCommentImage',
+    COUNT(*)
+FROM LoungeCommentImage image
+         JOIN LoungeComment comment
+              ON comment.loungeCommentId = image.loungeCommentId
+WHERE comment.content LIKE 'DU102-PERF-%'
 
 UNION ALL
 
