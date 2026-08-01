@@ -66,6 +66,14 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.M
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_EXAMPLE;
@@ -85,6 +93,7 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.PublishDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
@@ -106,6 +115,7 @@ import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
+import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
@@ -150,6 +160,7 @@ public class DisplayController {
   private final DisplayLikeCommandService displayLikeCommandService;
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
+  private final PublishDisplayService publishDisplayService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
@@ -166,6 +177,7 @@ public class DisplayController {
       DisplayLikeCommandService displayLikeCommandService,
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
+      PublishDisplayService publishDisplayService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayByInvitationService getDisplayByInvitationService,
       GetDisplayMapUseCase getDisplayMapUseCase,
@@ -180,6 +192,7 @@ public class DisplayController {
     this.displayLikeCommandService = displayLikeCommandService;
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
+    this.publishDisplayService = publishDisplayService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
@@ -260,6 +273,39 @@ public class DisplayController {
     DisplayDetailResult result =
         updateDisplayService.updateDisplay(
             mapper.toCommand(updateDisplayRequest, requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/publish")
+  @Operation(summary = PUBLISH_SUMMARY, description = PUBLISH_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = PUBLISH_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = PUBLISH_REQUEST_EXAMPLE_NAME,
+                      value = PUBLISH_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = PUBLISH_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = PUBLISH_SUCCESS_EXAMPLE_NAME,
+                      value = PUBLISH_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> publishDisplay(
+      @Valid @RequestBody PublishDisplayRequest publishDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayDetailResult result =
+        publishDisplayService.publishDisplay(publishDisplayRequest.toCommand(requireUserId(user)));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
