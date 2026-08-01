@@ -35,7 +35,7 @@ public class LoungeCommentImage extends BaseTimeEntity {
 
   protected LoungeCommentImage() {}
 
-  public LoungeCommentImage(LoungeComment loungeComment, String imageUrl, int sortOrder) {
+  LoungeCommentImage(LoungeComment loungeComment, String imageUrl, int sortOrder) {
     this.loungeComment = Objects.requireNonNull(loungeComment, "loungeComment must not be null");
     this.imageUrl = requireValidImageUrl(imageUrl);
     this.sortOrder = requireNonNegative(sortOrder);
