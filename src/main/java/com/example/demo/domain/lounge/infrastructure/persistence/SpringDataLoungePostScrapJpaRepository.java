@@ -1,9 +1,7 @@
 package com.example.demo.domain.lounge.infrastructure.persistence;
 
 import com.example.demo.domain.lounge.domain.entity.LoungePostScrap;
-import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import java.util.List;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -51,21 +49,4 @@ public interface SpringDataLoungePostScrapJpaRepository
       """)
   List<Long> findScrappedLoungePostIds(
       @Param("loungePostIds") List<Long> loungePostIds, @Param("userId") Long userId);
-
-  @Query(
-      """
-      SELECT postScrap
-      FROM LoungePostScrap postScrap, LoungePost post
-      WHERE postScrap.userId.value = :userId
-        AND post.id = postScrap.loungePostId
-        AND post.status = :status
-        AND post.deletedAt IS NULL
-        AND (:cursorId IS NULL OR postScrap.id < :cursorId)
-      ORDER BY postScrap.id DESC
-      """)
-  List<LoungePostScrap> findActiveByUserCursor(
-      @Param("userId") Long userId,
-      @Param("status") LoungePostStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
 }

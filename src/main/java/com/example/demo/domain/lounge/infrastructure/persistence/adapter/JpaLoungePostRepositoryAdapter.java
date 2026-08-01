@@ -4,7 +4,6 @@ import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
-import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
 import java.util.List;
 import java.util.Optional;
@@ -33,17 +32,6 @@ public class JpaLoungePostRepositoryAdapter implements LoungePostRepository {
     }
     return jpaRepository.findActiveByCategoryAndCursor(
         LoungePostStatus.ACTIVE, category, cursorId, pageRequest);
-  }
-
-  @Override
-  public List<LoungePost> findActiveByAuthorCursor(UserId authorUserId, Long cursorId, int limit) {
-    return jpaRepository.findActiveByAuthorCursor(
-        authorUserId.value(), LoungePostStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
-  }
-
-  @Override
-  public List<LoungePost> findAllByIds(List<Long> loungePostIds) {
-    return jpaRepository.findAllById(loungePostIds);
   }
 
   @Override

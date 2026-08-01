@@ -10,8 +10,6 @@ import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeRes
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeMyCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
-import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -148,14 +146,8 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toMyCommentResponse(
-            loungeCommentQueryService.getMyComments(requireUserId(user), cursorId, size)),
+            loungeCommentQueryService.getMyComments(
+                LoungeAuthUser.requireUserId(user), cursorId, size)),
         request);
-  }
-
-  private Long requireUserId(AuthUser user) {
-    if (user == null) {
-      throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
-    }
-    return user.userId();
   }
 }

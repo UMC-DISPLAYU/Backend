@@ -40,20 +40,4 @@ public interface SpringDataLoungePostJpaRepository extends JpaRepository<LoungeP
       @Param("category") LoungePostCategory category,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
-
-  @Query(
-      """
-      SELECT post
-      FROM LoungePost post
-      WHERE post.authorUserId.value = :userId
-        AND post.status = :status
-        AND post.deletedAt IS NULL
-        AND (:cursorId IS NULL OR post.id < :cursorId)
-      ORDER BY post.id DESC
-      """)
-  List<LoungePost> findActiveByAuthorCursor(
-      @Param("userId") Long userId,
-      @Param("status") LoungePostStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
 }

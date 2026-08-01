@@ -14,6 +14,7 @@ import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostScrapJpaRepository;
 import com.example.demo.global.security.TokenProvider;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,6 +80,7 @@ class LoungeMyPostControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.posts.length()").value(1))
         .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(recentMyPost.getId()))
+        .andExpect(jsonPath("$.success.data.posts[0].postImageUrls[0]").value("최근 내 글 이미지"))
         .andExpect(jsonPath("$.success.data.posts[0].isMyPost").value(true))
         .andExpect(jsonPath("$.success.data.nextCursorId").value(recentMyPost.getId()))
         .andExpect(jsonPath("$.success.data.hasNext").value(true));
@@ -133,7 +135,12 @@ class LoungeMyPostControllerTest {
 
   private LoungePost savePost(long userId, String title) {
     return postRepository.saveAndFlush(
-        LoungePost.create(new UserId(userId), title, title + " 내용", LoungePostCategory.WORK_TIP));
+        LoungePost.create(
+            new UserId(userId),
+            title,
+            List.of(title + " 이미지"),
+            title + " 내용",
+            LoungePostCategory.WORK_TIP));
   }
 
   private MockHttpServletRequestBuilder authenticatedGet(String url) {

@@ -1,6 +1,5 @@
 package com.example.demo.domain.lounge.domain.repository;
 
-import com.example.demo.domain.lounge.domain.entity.LoungePostScrap;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,4 @@ public interface LoungePostScrapRepository {
   Map<Long, Long> countByLoungePostIds(List<Long> loungePostIds);
 
   Set<Long> findScrappedLoungePostIds(List<Long> loungePostIds, UserId userId);
-
-  List<LoungePostScrap> findActiveByUserCursor(UserId userId, Long cursorId, int limit);
 }
