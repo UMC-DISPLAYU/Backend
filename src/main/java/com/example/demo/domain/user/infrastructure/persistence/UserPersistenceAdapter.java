@@ -3,7 +3,6 @@ package com.example.demo.domain.user.infrastructure.persistence;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -47,11 +46,5 @@ public class UserPersistenceAdapter implements UserRepository {
   @Override
   public Optional<User> findById(Long userId) {
     return userJpaRepository.findById(userId);
-  }
-
-  @Override
-  public List<User> searchByNickname(String nickname) {
-    return userJpaRepository
-        .findTop20ByNicknameContainingIgnoreCaseAndDeletedAtIsNullOrderByNicknameAscIdAsc(nickname);
   }
 }

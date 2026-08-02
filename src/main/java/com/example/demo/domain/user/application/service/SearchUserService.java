@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.application.service;
 
+import com.example.demo.domain.user.application.query.UserSearchQueryRepository;
 import com.example.demo.domain.user.application.result.UserSearchResult;
-import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.exception.UserErrorCode;
 import com.example.demo.domain.user.exception.UserException;
 import java.util.List;
@@ -13,13 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SearchUserService {
 
-  private final UserRepository userRepository;
+  private static final int SEARCH_LIMIT = 20;
+
+  private final UserSearchQueryRepository userSearchQueryRepository;
 
   @Transactional(readOnly = true)
   public List<UserSearchResult> execute(String nickname) {
     List<UserSearchResult> results =
-        userRepository.searchByNickname(nickname.trim()).stream()
-            .map(user -> new UserSearchResult(user.getId(), user.getName(), user.getNickname()))
+        userSearchQueryRepository.searchByNickname(nickname.trim(), SEARCH_LIMIT).stream()
+            .map(result -> new UserSearchResult(result.userId(), result.name(), result.nickname()))
             .toList();
     if (results.isEmpty()) {
       throw new UserException(UserErrorCode.USER_NICKNAME_NOT_FOUND);

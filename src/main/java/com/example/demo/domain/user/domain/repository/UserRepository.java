@@ -2,7 +2,6 @@ package com.example.demo.domain.user.domain.repository;
 
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.enums.Provider;
-import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -14,8 +13,6 @@ public interface UserRepository {
   Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
   Optional<User> findById(Long userId);
-
-  List<User> searchByNickname(String nickname);
 
   boolean existsBySchoolEmail(String schoolEmail);
 
