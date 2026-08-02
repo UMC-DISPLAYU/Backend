@@ -39,6 +39,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -97,25 +98,29 @@ public class DisplayArtworkController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @GetMapping(value = "/api/v1/artworks", params = "displayId")
+  @GetMapping(
+      value = "/api/v1/artworks",
+      params = {"displayId", "!userId"})
   @Operation(
       summary = "전시 상세 - 작품 탭 목록 조회",
       description = "특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.")
   public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
-      @Parameter(description = "조회할 전시 ID") @RequestParam Long displayId,
+      @Parameter(description = "조회할 전시 ID") @RequestParam @Positive Long displayId,
       HttpServletRequest httpRequest) {
     DisplayArtworkListResult result = displayArtworkQueryService.getArtworksByDisplayId(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @GetMapping(value = "/api/v1/artworks", params = "userId")
+  @GetMapping(
+      value = "/api/v1/artworks",
+      params = {"userId", "!displayId"})
   @Operation(
       summary = "작가 프로필 - 작품 탭 목록 조회",
       description =
           "해당 유저가 참여한 전시 출품작을 등록순(createdAt)으로 조회합니다. "
               + "대표 작가와 공동 작업자를 구분하지 않고 모두 포함하며, 비회원도 조회 가능합니다.")
   public ApiResponseBody<DisplayArtworkByArtistResponse> getArtworksByArtist(
-      @Parameter(description = "조회할 작가(유저) ID") @RequestParam Long userId,
+      @Parameter(description = "조회할 작가(유저) ID") @RequestParam @Positive Long userId,
       HttpServletRequest httpRequest) {
     DisplayArtworkByArtistResult result = displayArtworkQueryService.getArtworksByUserId(userId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
