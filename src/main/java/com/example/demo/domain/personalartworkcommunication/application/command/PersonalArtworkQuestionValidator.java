@@ -1,8 +1,10 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ public class PersonalArtworkQuestionValidator {
 
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
+  private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
     if (!personalArtworkExistenceRepository.existsById(personalArtworkId)) {
@@ -63,6 +66,28 @@ public class PersonalArtworkQuestionValidator {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
         personalArtworkQuestion, personalArtworkId);
+  }
+
+  public PersonalArtworkQuestionReply findActiveReplyForUpdateOrThrow(
+      Long personalQuestionReplyId) {
+    return personalArtworkQuestionReplyRepository
+        .findActiveByIdForUpdate(personalQuestionReplyId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
+  }
+
+  public void validateAccessibleReply(
+      PersonalArtworkQuestionReply reply, Long personalQuestionId, Long userId) {
+    if (!reply.belongsToQuestion(personalQuestionId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND);
+    }
+    if (!reply.isWrittenBy(userId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
+    }
   }
 
   private void validateNotDeleted(PersonalArtworkQuestion personalArtworkQuestion) {

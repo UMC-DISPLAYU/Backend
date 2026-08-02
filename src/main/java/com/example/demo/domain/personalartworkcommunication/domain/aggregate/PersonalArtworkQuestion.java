@@ -76,6 +76,10 @@ public class PersonalArtworkQuestion extends SoftDeleteBaseEntity {
     return this.answerStatus == AnswerStatus.ANSWERED;
   }
 
+  public void markWaiting() {
+    this.answerStatus = AnswerStatus.WAITING;
+  }
+
   public boolean isWrittenBy(Long userId) {
     return this.userId.equals(userId);
   }
