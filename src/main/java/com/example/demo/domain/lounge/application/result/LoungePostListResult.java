@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.result;
 
+import com.example.demo.domain.lounge.application.query.LoungePostQueryResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,5 +36,27 @@ public record LoungePostListResult(
         isLiked,
         loungePost.isAuthoredBy(viewerUserId),
         loungePost.getCreatedAt());
+  }
+
+  public static LoungePostListResult from(
+      LoungePostQueryResult loungePost,
+      List<String> postImageUrls,
+      WriterView writer,
+      long likeCount,
+      long commentCount,
+      boolean isLiked,
+      Long viewerUserId) {
+    return new LoungePostListResult(
+        loungePost.loungePostId(),
+        writer,
+        loungePost.title(),
+        loungePost.content(),
+        postImageUrls,
+        loungePost.category().name(),
+        likeCount,
+        commentCount,
+        isLiked,
+        loungePost.authorUserId().equals(viewerUserId),
+        loungePost.createdAt());
   }
 }

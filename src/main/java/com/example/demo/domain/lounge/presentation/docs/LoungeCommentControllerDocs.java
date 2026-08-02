@@ -4,6 +4,7 @@ import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -64,6 +65,18 @@ public interface LoungeCommentControllerDocs {
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
       @Parameter(description = "한 번에 불러올 답글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      AuthUser user,
+      HttpServletRequest request);
+
+  @Operation(
+      summary = "내가 댓글을 작성한 라운지 게시글 조회",
+      description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글을 중복 없이 조회합니다.")
+  ApiResponseBody<LoungePostCursorResponse> getMyComments(
+      @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
+          Long cursorId,
+      @Parameter(description = "한 번에 불러올 게시글 개수")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
 }

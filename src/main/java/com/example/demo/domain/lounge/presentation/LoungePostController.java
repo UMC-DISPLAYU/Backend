@@ -149,4 +149,31 @@ public class LoungePostController implements LoungePostControllerDocs {
         mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, viewerUserId)),
         request);
   }
+
+  @GetMapping("/api/v1/lounge/me/posts")
+  @Override
+  public ApiResponseBody<LoungePostCursorResponse> getMyPosts(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungePostQueryService.getMyPosts(LoungeAuthUser.requireUserId(user), cursorId, size)),
+        request);
+  }
+
+  @GetMapping("/api/v1/lounge/me/scraps")
+  @Override
+  public ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungePostQueryService.getMyScrappedPosts(
+                LoungeAuthUser.requireUserId(user), cursorId, size)),
+        request);
+  }
 }
