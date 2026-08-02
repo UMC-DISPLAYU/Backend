@@ -52,7 +52,8 @@ public interface LoungeCommentControllerDocs {
 
   @Operation(
       summary = "라운지 댓글 목록 조회",
-      description = "게시글의 댓글 목록을 커서 방식으로 조회합니다. 활성 답글이 남아 있는 삭제된 부모 댓글은 DELETED 상태로 포함합니다.")
+      description =
+          "게시글의 댓글 목록을 커서 방식으로 조회합니다. 활성 답글이 남아 있는 삭제된 부모 댓글은 DELETED 상태로 포함하며 본문과 이미지는 반환하지 않습니다.")
   ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)

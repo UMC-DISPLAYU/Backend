@@ -11,6 +11,7 @@ import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeReposit
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
+import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
@@ -147,6 +148,10 @@ public class LoungeCommentQueryService {
   private LoungeComment getComment(Long loungeCommentId) {
     return loungeCommentRepository
         .findById(loungeCommentId)
+        .filter(
+            comment ->
+                (comment.isActive() && !comment.isDeleted())
+                    || (comment.getStatus() == LoungeCommentStatus.DELETED && comment.isDeleted()))
         .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 }
