@@ -59,7 +59,7 @@ public class LoungeCommentQueryService {
     LoungePost loungePost = getActivePost(loungePostId);
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
     List<LoungeCommentQueryResult> fetched =
-        loungeCommentQueryRepository.findActiveRootByCursor(
+        loungeCommentQueryRepository.findVisibleRootByCursor(
             loungePost.getId(), cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<LoungeCommentQueryResult> comments = hasNext ? fetched.subList(0, pageSize) : fetched;
@@ -75,7 +75,7 @@ public class LoungeCommentQueryService {
   @Transactional(readOnly = true)
   public LoungeReplyCursorResult getReplies(
       Long parentCommentId, Long cursorId, int size, Long viewerUserId) {
-    LoungeComment parentComment = getActiveComment(parentCommentId);
+    LoungeComment parentComment = getComment(parentCommentId);
     getActivePost(parentComment.getLoungePostId());
     if (!parentComment.isRootComment()) {
       throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
@@ -144,11 +144,9 @@ public class LoungeCommentQueryService {
         .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
-  private LoungeComment getActiveComment(Long loungeCommentId) {
+  private LoungeComment getComment(Long loungeCommentId) {
     return loungeCommentRepository
         .findById(loungeCommentId)
-        .filter(comment -> !comment.isDeleted())
-        .filter(LoungeComment::isActive)
         .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 }

@@ -50,7 +50,9 @@ public interface LoungeCommentControllerDocs {
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 목록 조회", description = "게시글의 댓글 목록을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "라운지 댓글 목록 조회",
+      description = "게시글의 댓글 목록을 커서 방식으로 조회합니다. 활성 답글이 남아 있는 삭제된 부모 댓글은 DELETED 상태로 포함합니다.")
   ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
@@ -59,7 +61,9 @@ public interface LoungeCommentControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 답글 목록 조회", description = "댓글의 답글 목록을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "라운지 답글 목록 조회",
+      description = "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있습니다.")
   ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)

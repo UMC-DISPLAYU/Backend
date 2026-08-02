@@ -50,6 +50,7 @@ class LoungePublicQueryControllerTest {
 
   private LoungePost post;
   private LoungeComment comment;
+  private LoungeComment reply;
 
   @BeforeEach
   void setUp() {
@@ -69,13 +70,14 @@ class LoungePublicQueryControllerTest {
                 new UserId(102L),
                 "저도 다녀왔어요.",
                 List.of("comment-image-1", "comment-image-2")));
-    commentRepository.saveAndFlush(
-        LoungeComment.createReply(
-            post.getId(),
-            comment.getId(),
-            new UserId(103L),
-            "저도 같은 생각이에요.",
-            List.of("reply-image-1", "reply-image-2")));
+    reply =
+        commentRepository.saveAndFlush(
+            LoungeComment.createReply(
+                post.getId(),
+                comment.getId(),
+                new UserId(103L),
+                "저도 같은 생각이에요.",
+                List.of("reply-image-1", "reply-image-2")));
   }
 
   @Test
@@ -130,6 +132,46 @@ class LoungePublicQueryControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isArray())
         .andExpect(jsonPath("$.success.data.comments[1].imageUrls").isEmpty());
+  }
+
+  @Test
+  void deletedRootWithActiveReplyRemainsVisibleAndRepliesCanBeFetched() throws Exception {
+    comment.delete();
+    commentRepository.flush();
+    entityManager.clear();
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comments.length()").value(1))
+        .andExpect(jsonPath("$.success.data.comments[0].loungeCommentId").value(comment.getId()))
+        .andExpect(jsonPath("$.success.data.comments[0].commentStatus").value("DELETED"))
+        .andExpect(jsonPath("$.success.data.comments[0].replyCount").value(1));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.replies.length()").value(1))
+        .andExpect(jsonPath("$.success.data.replies[0].loungeCommentId").value(reply.getId()))
+        .andExpect(jsonPath("$.success.data.replies[0].commentStatus").value("ACTIVE"));
+  }
+
+  @Test
+  void deletedRootWithoutActiveReplyAndDeletedReplyAreExcluded() throws Exception {
+    comment.delete();
+    reply.delete();
+    commentRepository.flush();
+    entityManager.clear();
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comments").isEmpty());
+
+    mockMvc
+        .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.replies").isEmpty());
   }
 
   @Test
