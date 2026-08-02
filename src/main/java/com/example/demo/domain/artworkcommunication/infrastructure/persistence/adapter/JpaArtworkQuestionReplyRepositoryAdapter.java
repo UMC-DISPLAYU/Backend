@@ -4,6 +4,7 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkQuestionReplyJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,5 +22,10 @@ public class JpaArtworkQuestionReplyRepositoryAdapter implements ArtworkQuestion
   @Override
   public List<ArtworkQuestionReply> findActiveByQuestionIds(List<Long> questionIds) {
     return artworkQuestionReplyJpaRepository.findActiveByQuestionIds(questionIds);
+  }
+
+  @Override
+  public Optional<ArtworkQuestionReply> findActiveByIdForUpdate(Long questionReplyId) {
+    return artworkQuestionReplyJpaRepository.findActiveByIdForUpdate(questionReplyId);
   }
 }

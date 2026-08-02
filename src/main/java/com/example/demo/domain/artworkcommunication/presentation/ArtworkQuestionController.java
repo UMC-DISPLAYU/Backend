@@ -5,6 +5,7 @@ import com.example.demo.domain.artworkcommunication.application.query.GetArtwork
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
+import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkQuestionApiDocs;
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkQuestionPresentationMapper;
@@ -34,6 +35,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   private final GetArtworkQuestionsService getArtworkQuestionsService;
   private final UpdateArtworkQuestionService updateArtworkQuestionService;
   private final DeleteArtworkQuestionService deleteArtworkQuestionService;
+  private final DeleteArtworkQuestionReplyService deleteArtworkQuestionReplyService;
   private final ArtworkQuestionPresentationMapper mapper;
 
   @Override
@@ -128,6 +130,26 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
     DeletedArtworkQuestionResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @DeleteMapping("/{questionId}/reply/{questionReplyId}")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 답변 삭제
+  public ApiResponseBody<DeletedArtworkQuestionReplyResponse> deleteQuestionReply(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @PathVariable Long questionReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    DeleteArtworkQuestionReplyCommand command =
+        new DeleteArtworkQuestionReplyCommand(
+            artworkId, questionId, questionReplyId, requireUserId(user));
+
+    DeletedArtworkQuestionReplyResult result =
+        deleteArtworkQuestionReplyService.deleteReply(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
 
   private Long requireUserId(AuthUser user) {

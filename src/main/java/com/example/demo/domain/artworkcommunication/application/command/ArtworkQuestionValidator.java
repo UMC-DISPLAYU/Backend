@@ -1,7 +1,9 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
+import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
@@ -18,6 +20,7 @@ public class ArtworkQuestionValidator {
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
 
   public ArtworkQuestion findQuestionOrThrow(Long questionId) {
     return artworkQuestionRepository
@@ -70,6 +73,22 @@ public class ArtworkQuestionValidator {
   public void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
     if (!artworkQuestion.isWrittenBy(userId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
+    }
+  }
+
+  public ArtworkQuestionReply findActiveReplyForUpdateOrThrow(Long questionReplyId) {
+    return artworkQuestionReplyRepository
+        .findActiveByIdForUpdate(questionReplyId)
+        .orElseThrow(
+            () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND));
+  }
+
+  public void validateAccessibleReply(ArtworkQuestionReply reply, Long questionId, Long creatorId) {
+    if (!reply.belongsToQuestion(questionId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND);
+    }
+    if (!reply.isWrittenBy(creatorId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN);
     }
   }
 }

@@ -6,6 +6,7 @@ import com.example.demo.domain.artworkcommunication.presentation.request.UpdateA
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -531,6 +532,44 @@ public interface ArtworkQuestionApiDocs {
   ApiResponseBody<DeletedArtworkQuestionResponse> deleteQuestion(
       @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "삭제할 질문 ID", example = "15") Long questionId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(
+      summary = "작품 Q&A 답변 삭제",
+      description = "답변 작성자가 답변을 soft delete하고 질문을 답변 대기 상태로 되돌립니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 Q&A 답변 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "questionReplyId": 8,
+                                "deletedAt": "2026-08-03T17:00:00"
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-03T17:00:00",
+                              "path": "/api/v1/artworks/3/questions/15/reply/8"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "403", description = "답변 삭제 권한 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(responseCode = "404", description = "작품, 사용자, 질문 또는 답변 없음")
+  ApiResponseBody<DeletedArtworkQuestionReplyResponse> deleteQuestionReply(
+      @Parameter(description = "질문이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "질문 ID", example = "15") Long questionId,
+      @Parameter(description = "삭제할 답변 ID", example = "8") Long questionReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }
