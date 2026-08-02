@@ -18,6 +18,7 @@ import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class LoungePostQueryService {
   private static final int MAX_PAGE_SIZE = 50;
 
   private final LoungePostRepository loungePostRepository;
+  private final LoungePostQueryRepository loungePostQueryRepository;
   private final LoungePostLikeRepository loungePostLikeRepository;
   private final LoungePostScrapRepository loungePostScrapRepository;
   private final LoungeCommentRepository loungeCommentRepository;
@@ -33,11 +35,13 @@ public class LoungePostQueryService {
 
   public LoungePostQueryService(
       LoungePostRepository loungePostRepository,
+      LoungePostQueryRepository loungePostQueryRepository,
       LoungePostLikeRepository loungePostLikeRepository,
       LoungePostScrapRepository loungePostScrapRepository,
       LoungeCommentRepository loungeCommentRepository,
       LoungeWriterRepository loungeWriterRepository) {
     this.loungePostRepository = loungePostRepository;
+    this.loungePostQueryRepository = loungePostQueryRepository;
     this.loungePostLikeRepository = loungePostLikeRepository;
     this.loungePostScrapRepository = loungePostScrapRepository;
     this.loungeCommentRepository = loungeCommentRepository;
@@ -52,6 +56,92 @@ public class LoungePostQueryService {
         loungePostRepository.findActiveByCursor(category, cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<LoungePost> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
+    Long nextCursorId = hasNext ? loungePosts.getLast().getId() : null;
+    return toCursorResult(loungePosts, nextCursorId, pageSize, hasNext, viewerUserId);
+  }
+
+  @Transactional(readOnly = true)
+  public LoungePostCursorResult getMyPosts(Long userId, Long cursorId, int size) {
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveByAuthorCursor(userId, cursorId, limit),
+        size,
+        userId);
+  }
+
+  @Transactional(readOnly = true)
+  public LoungePostCursorResult getMyScrappedPosts(Long userId, Long cursorId, int size) {
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveScrappedByUserCursor(userId, cursorId, limit),
+        size,
+        userId);
+  }
+
+  @Transactional(readOnly = true)
+  public LoungePostCursorResult getMyCommentedPosts(Long userId, Long cursorId, int size) {
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveCommentedByUserCursor(userId, cursorId, limit),
+        size,
+        userId);
+  }
+
+  private LoungePostCursorResult getQueryCursorResult(
+      IntFunction<List<LoungePostQueryResult>> fetcher, int size, Long viewerUserId) {
+    int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    List<LoungePostQueryResult> fetched = fetcher.apply(pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<LoungePostQueryResult> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
+    Long nextCursorId = hasNext ? loungePosts.getLast().cursorId() : null;
+    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, viewerUserId);
+  }
+
+  private LoungePostCursorResult toQueryCursorResult(
+      List<LoungePostQueryResult> loungePosts,
+      Long nextCursorId,
+      int pageSize,
+      boolean hasNext,
+      Long viewerUserId) {
+    if (loungePosts.isEmpty()) {
+      return new LoungePostCursorResult(List.of(), null, pageSize, false);
+    }
+
+    List<Long> loungePostIds =
+        loungePosts.stream().map(LoungePostQueryResult::loungePostId).toList();
+    Map<Long, Long> likeCounts = loungePostLikeRepository.countByLoungePostIds(loungePostIds);
+    Map<Long, Long> commentCounts =
+        loungeCommentRepository.countActiveByLoungePostIds(loungePostIds);
+    Map<Long, List<String>> imageUrlsByPostId =
+        loungePostQueryRepository.findImageUrlsByLoungePostIds(loungePostIds);
+    Set<Long> likedPostIds =
+        loungePostLikeRepository.findLikedLoungePostIds(loungePostIds, new UserId(viewerUserId));
+    Map<Long, LoungeWriter> writers =
+        loungeWriterRepository.findByUserIds(
+            loungePosts.stream().map(LoungePostQueryResult::authorUserId).distinct().toList());
+
+    List<LoungePostListResult> posts =
+        loungePosts.stream()
+            .map(
+                loungePost ->
+                    LoungePostListResult.from(
+                        loungePost,
+                        imageUrlsByPostId.getOrDefault(loungePost.loungePostId(), List.of()),
+                        toWriterView(
+                            writers.getOrDefault(
+                                loungePost.authorUserId(),
+                                LoungeWriter.unknown(loungePost.authorUserId()))),
+                        likeCounts.getOrDefault(loungePost.loungePostId(), 0L),
+                        commentCounts.getOrDefault(loungePost.loungePostId(), 0L),
+                        likedPostIds.contains(loungePost.loungePostId()),
+                        viewerUserId))
+            .toList();
+    return new LoungePostCursorResult(posts, nextCursorId, pageSize, hasNext);
+  }
+
+  private LoungePostCursorResult toCursorResult(
+      List<LoungePost> loungePosts,
+      Long nextCursorId,
+      int pageSize,
+      boolean hasNext,
+      Long viewerUserId) {
     if (loungePosts.isEmpty()) {
       return new LoungePostCursorResult(List.of(), null, pageSize, false);
     }
@@ -85,7 +175,6 @@ public class LoungePostQueryService {
                         likedPostIds.contains(loungePost.getId()),
                         viewerUserId))
             .toList();
-    Long nextCursorId = hasNext ? posts.get(posts.size() - 1).loungePostId() : null;
     return new LoungePostCursorResult(posts, nextCursorId, pageSize, hasNext);
   }
 
