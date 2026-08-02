@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.infrastructure.persistence.adapter;
 import com.example.demo.domain.lounge.application.query.LoungePostQueryRepository;
 import com.example.demo.domain.lounge.application.query.LoungePostQueryResult;
 import com.example.demo.domain.lounge.domain.entity.LoungePostImage;
+import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostQueryJpaRepository;
 import java.util.ArrayList;
@@ -33,6 +34,17 @@ public class JpaLoungePostQueryRepositoryAdapter implements LoungePostQueryRepos
       Long userId, Long cursorId, int limit) {
     return jpaRepository.findActiveScrappedByUserCursor(
         userId, LoungePostStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
+  }
+
+  @Override
+  public List<LoungePostQueryResult> findActiveCommentedByUserCursor(
+      Long userId, Long cursorId, int limit) {
+    return jpaRepository.findActiveCommentedByUserCursor(
+        userId,
+        LoungeCommentStatus.ACTIVE,
+        LoungePostStatus.ACTIVE,
+        cursorId,
+        PageRequest.of(0, limit));
   }
 
   @Override

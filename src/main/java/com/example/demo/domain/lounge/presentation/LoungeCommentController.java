@@ -2,13 +2,14 @@ package com.example.demo.domain.lounge.presentation;
 
 import com.example.demo.domain.lounge.application.command.LoungeCommentCommandService;
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryService;
+import com.example.demo.domain.lounge.application.query.LoungePostQueryService;
 import com.example.demo.domain.lounge.presentation.docs.LoungeCommentControllerDocs;
 import com.example.demo.domain.lounge.presentation.mapper.LoungePresentationMapper;
 import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeMyCommentCursorResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -31,14 +32,17 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   private final LoungeCommentCommandService loungeCommentCommandService;
   private final LoungeCommentQueryService loungeCommentQueryService;
+  private final LoungePostQueryService loungePostQueryService;
   private final LoungePresentationMapper mapper;
 
   public LoungeCommentController(
       LoungeCommentCommandService loungeCommentCommandService,
       LoungeCommentQueryService loungeCommentQueryService,
+      LoungePostQueryService loungePostQueryService,
       LoungePresentationMapper mapper) {
     this.loungeCommentCommandService = loungeCommentCommandService;
     this.loungeCommentQueryService = loungeCommentQueryService;
+    this.loungePostQueryService = loungePostQueryService;
     this.mapper = mapper;
   }
 
@@ -139,14 +143,14 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   @GetMapping("/api/v1/lounge/me/comments")
   @Override
-  public ApiResponseBody<LoungeMyCommentCursorResponse> getMyComments(
+  public ApiResponseBody<LoungePostCursorResponse> getMyComments(
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     return ApiResponseBody.success(
-        mapper.toMyCommentResponse(
-            loungeCommentQueryService.getMyComments(
+        mapper.toResponse(
+            loungePostQueryService.getMyCommentedPosts(
                 LoungeAuthUser.requireUserId(user), cursorId, size)),
         request);
   }

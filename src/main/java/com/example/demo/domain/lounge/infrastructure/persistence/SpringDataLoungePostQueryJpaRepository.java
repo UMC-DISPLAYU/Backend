@@ -3,6 +3,7 @@ package com.example.demo.domain.lounge.infrastructure.persistence;
 import com.example.demo.domain.lounge.application.query.LoungePostQueryResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungePostImage;
+import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +59,35 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
   List<LoungePostQueryResult> findActiveScrappedByUserCursor(
       @Param("userId") Long userId,
       @Param("status") LoungePostStatus status,
+      @Param("cursorId") Long cursorId,
+      Pageable pageable);
+
+  @Query(
+      """
+      SELECT new com.example.demo.domain.lounge.application.query.LoungePostQueryResult(
+        MAX(comment.id),
+        post.id,
+        post.authorUserId.value,
+        post.title,
+        post.content,
+        post.category,
+        post.createdAt
+      )
+      FROM LoungeComment comment, LoungePost post
+      WHERE comment.authorUserId.value = :userId
+        AND comment.status = :commentStatus
+        AND comment.deletedAt IS NULL
+        AND post.id = comment.loungePostId
+        AND post.status = :postStatus
+        AND post.deletedAt IS NULL
+      GROUP BY post.id, post.authorUserId.value, post.title, post.content, post.category, post.createdAt
+      HAVING (:cursorId IS NULL OR MAX(comment.id) < :cursorId)
+      ORDER BY MAX(comment.id) DESC
+      """)
+  List<LoungePostQueryResult> findActiveCommentedByUserCursor(
+      @Param("userId") Long userId,
+      @Param("commentStatus") LoungeCommentStatus commentStatus,
+      @Param("postStatus") LoungePostStatus postStatus,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
 

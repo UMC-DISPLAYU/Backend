@@ -13,8 +13,5 @@ public interface LoungeCommentQueryRepository {
   List<LoungeCommentQueryResult> findActiveRepliesByCursor(
       Long parentCommentId, Long cursorId, int limit);
 
-  List<LoungeCommentQueryResult> findActiveByAuthorCursor(
-      Long authorUserId, Long cursorId, int limit);
-
   Map<Long, List<String>> findImageUrlsByLoungeCommentIds(List<Long> loungeCommentIds);
 }

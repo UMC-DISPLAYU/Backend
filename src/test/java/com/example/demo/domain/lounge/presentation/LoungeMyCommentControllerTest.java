@@ -45,6 +45,7 @@ class LoungeMyCommentControllerTest {
   @MockitoBean private TokenProvider tokenProvider;
 
   private LoungePost activePost;
+  private LoungePost oldPost;
   private LoungeComment rootComment;
   private LoungeComment reply;
 
@@ -53,7 +54,11 @@ class LoungeMyCommentControllerTest {
     when(tokenProvider.getUserId(ACCESS_TOKEN)).thenReturn(USER_ID);
     when(writerRepository.findByUserIds(anyList())).thenReturn(Map.of());
 
-    activePost = savePost("조회할 게시글");
+    oldPost = savePost("예전에 댓글 단 게시글");
+    commentRepository.saveAndFlush(
+        LoungeComment.createComment(oldPost.getId(), new UserId(USER_ID), "예전 내 댓글"));
+
+    activePost = savePost("최근에 댓글 단 게시글");
     rootComment =
         commentRepository.saveAndFlush(
             LoungeComment.createComment(
@@ -69,9 +74,10 @@ class LoungeMyCommentControllerTest {
     commentRepository.saveAndFlush(
         LoungeComment.createComment(activePost.getId(), new UserId(202L), "다른 사용자 댓글"));
 
+    LoungePost deletedCommentPost = savePost("삭제된 댓글만 있는 게시글");
     LoungeComment deletedComment =
         commentRepository.saveAndFlush(
-            LoungeComment.createComment(activePost.getId(), new UserId(USER_ID), "삭제한 댓글"));
+            LoungeComment.createComment(deletedCommentPost.getId(), new UserId(USER_ID), "삭제한 댓글"));
     deletedComment.delete();
 
     LoungePost deletedPost = savePost("삭제된 게시글");
@@ -83,17 +89,16 @@ class LoungeMyCommentControllerTest {
   }
 
   @Test
-  void returnsMyActiveCommentsAndRepliesWithCursor() throws Exception {
+  void returnsCommentedPostsOnceWithLatestCommentCursor() throws Exception {
     mockMvc
         .perform(authenticatedGet("/api/v1/lounge/me/comments").param("size", "1"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.comments.length()").value(1))
-        .andExpect(jsonPath("$.success.data.comments[0].loungeCommentId").value(reply.getId()))
-        .andExpect(jsonPath("$.success.data.comments[0].loungePostId").value(activePost.getId()))
-        .andExpect(
-            jsonPath("$.success.data.comments[0].parentCommentId").value(rootComment.getId()))
-        .andExpect(jsonPath("$.success.data.comments[0].imageUrls[0]").value("reply-image"))
-        .andExpect(jsonPath("$.success.data.comments[0].isMyComment").value(true))
+        .andExpect(jsonPath("$.success.data.comments").doesNotExist())
+        .andExpect(jsonPath("$.success.data.posts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(activePost.getId()))
+        .andExpect(jsonPath("$.success.data.posts[0].title").value("최근에 댓글 단 게시글"))
+        .andExpect(jsonPath("$.success.data.posts[0].postImageUrls[0]").value("최근에 댓글 단 게시글 이미지"))
+        .andExpect(jsonPath("$.success.data.posts[0].isMyPost").value(false))
         .andExpect(jsonPath("$.success.data.nextCursorId").value(reply.getId()))
         .andExpect(jsonPath("$.success.data.hasNext").value(true));
 
@@ -103,12 +108,9 @@ class LoungeMyCommentControllerTest {
                 .param("cursorId", reply.getId().toString())
                 .param("size", "1"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.comments.length()").value(1))
-        .andExpect(
-            jsonPath("$.success.data.comments[0].loungeCommentId").value(rootComment.getId()))
-        .andExpect(jsonPath("$.success.data.comments[0].parentCommentId").doesNotExist())
-        .andExpect(jsonPath("$.success.data.comments[0].imageUrls[0]").value("comment-image"))
-        .andExpect(jsonPath("$.success.data.comments[0].replyCount").value(1))
+        .andExpect(jsonPath("$.success.data.posts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(oldPost.getId()))
+        .andExpect(jsonPath("$.success.data.posts[0].title").value("예전에 댓글 단 게시글"))
         .andExpect(jsonPath("$.success.data.nextCursorId").doesNotExist())
         .andExpect(jsonPath("$.success.data.hasNext").value(false));
   }
@@ -124,7 +126,11 @@ class LoungeMyCommentControllerTest {
   private LoungePost savePost(String title) {
     return postRepository.saveAndFlush(
         LoungePost.create(
-            new UserId(303L), title, title + " 내용", LoungePostCategory.DISPLAY_REVIEW));
+            new UserId(303L),
+            title,
+            List.of(title + " 이미지"),
+            title + " 내용",
+            LoungePostCategory.DISPLAY_REVIEW));
   }
 
   private MockHttpServletRequestBuilder authenticatedGet(String url) {

@@ -81,6 +81,17 @@ public class LoungePostQueryService {
     return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, userId);
   }
 
+  @Transactional(readOnly = true)
+  public LoungePostCursorResult getMyCommentedPosts(Long userId, Long cursorId, int size) {
+    int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    List<LoungePostQueryResult> fetched =
+        loungePostQueryRepository.findActiveCommentedByUserCursor(userId, cursorId, pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<LoungePostQueryResult> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
+    Long nextCursorId = hasNext ? loungePosts.getLast().cursorId() : null;
+    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, userId);
+  }
+
   private LoungePostCursorResult toQueryCursorResult(
       List<LoungePostQueryResult> loungePosts,
       Long nextCursorId,

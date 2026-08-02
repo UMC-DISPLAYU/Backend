@@ -13,8 +13,6 @@ import com.example.demo.domain.lounge.application.result.WriterView;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeMyCommentCursorResponse;
-import com.example.demo.domain.lounge.presentation.response.LoungeMyCommentListResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostDetailResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungePostLikeResponse;
@@ -104,31 +102,6 @@ public class LoungePresentationMapper {
         result.nextCursorId(),
         result.size(),
         result.hasNext());
-  }
-
-  public LoungeMyCommentCursorResponse toMyCommentResponse(LoungeCommentCursorResult result) {
-    return new LoungeMyCommentCursorResponse(
-        result.comments().stream().map(this::toMyCommentResponse).toList(),
-        result.nextCursorId(),
-        result.size(),
-        result.hasNext());
-  }
-
-  private LoungeMyCommentListResponse toMyCommentResponse(LoungeCommentListResult result) {
-    return new LoungeMyCommentListResponse(
-        result.loungeCommentId(),
-        result.loungePostId(),
-        result.parentCommentId(),
-        result.content(),
-        result.imageUrls(),
-        result.commentStatus(),
-        toResponse(result.writer()),
-        result.createdAt(),
-        result.updatedAt(),
-        result.likeCount(),
-        result.replyCount(),
-        result.isLiked(),
-        result.isMyComment());
   }
 
   public LoungeReplyCursorResponse toResponse(LoungeReplyCursorResult result) {

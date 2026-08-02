@@ -4,7 +4,6 @@ import com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.entity.LoungeCommentImage;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
-import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -83,35 +82,6 @@ public interface SpringDataLoungeCommentQueryJpaRepository
   List<LoungeCommentQueryResult> findActiveRepliesByCursor(
       @Param("parentCommentId") Long parentCommentId,
       @Param("status") LoungeCommentStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
-
-  @Query(
-      """
-      SELECT new com.example.demo.domain.lounge.application.query.LoungeCommentQueryResult(
-        comment.id,
-        comment.loungePostId,
-        comment.parentCommentId,
-        comment.authorUserId.value,
-        comment.content,
-        comment.status,
-        comment.createdAt,
-        comment.updatedAt
-      )
-      FROM LoungeComment comment, LoungePost post
-      WHERE comment.authorUserId.value = :authorUserId
-        AND comment.status = :commentStatus
-        AND comment.deletedAt IS NULL
-        AND post.id = comment.loungePostId
-        AND post.status = :postStatus
-        AND post.deletedAt IS NULL
-        AND (:cursorId IS NULL OR comment.id < :cursorId)
-      ORDER BY comment.id DESC
-      """)
-  List<LoungeCommentQueryResult> findActiveByAuthorCursor(
-      @Param("authorUserId") Long authorUserId,
-      @Param("commentStatus") LoungeCommentStatus commentStatus,
-      @Param("postStatus") LoungePostStatus postStatus,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
 

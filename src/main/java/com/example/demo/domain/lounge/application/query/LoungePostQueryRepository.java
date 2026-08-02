@@ -9,5 +9,8 @@ public interface LoungePostQueryRepository {
 
   List<LoungePostQueryResult> findActiveScrappedByUserCursor(Long userId, Long cursorId, int limit);
 
+  List<LoungePostQueryResult> findActiveCommentedByUserCursor(
+      Long userId, Long cursorId, int limit);
+
   Map<Long, List<String>> findImageUrlsByLoungePostIds(List<Long> loungePostIds);
 }
