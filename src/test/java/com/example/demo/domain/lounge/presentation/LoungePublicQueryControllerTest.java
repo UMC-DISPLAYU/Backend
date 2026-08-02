@@ -177,7 +177,7 @@ class LoungePublicQueryControllerTest {
   }
 
   @Test
-  void deletedRootWithoutActiveReplyAndDeletedReplyAreExcluded() throws Exception {
+  void deletedRootWithoutActiveReplyIsExcluded() throws Exception {
     comment.delete();
     reply.delete();
     commentRepository.flush();
@@ -187,6 +187,13 @@ class LoungePublicQueryControllerTest {
         .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", post.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.comments").isEmpty());
+  }
+
+  @Test
+  void deletedReplyUnderActiveRootIsExcludedFromReplies() throws Exception {
+    reply.delete();
+    commentRepository.flush();
+    entityManager.clear();
 
     mockMvc
         .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", comment.getId()))
