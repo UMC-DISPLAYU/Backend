@@ -30,10 +30,14 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST, "INVALID_CO_AUTHOR", "공동 작업자는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
   INVALID_ARTIST_USER_ID(
       HttpStatus.BAD_REQUEST, "INVALID_ARTIST_USER_ID", "대표 작가는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
+  FORBIDDEN_PROXY_ARTWORK_REGISTRATION(
+      HttpStatus.FORBIDDEN,
+      "FORBIDDEN_PROXY_ARTWORK_REGISTRATION",
+      "다른 사람의 작품을 대신 등록하는 것은 전시 대표자만 할 수 있습니다."),
   INVALID_QA_HANDLER(
       HttpStatus.BAD_REQUEST,
       "INVALID_QA_HANDLER",
-      "내부 Q&A 담당자는 대표 작가 또는 계정이 연결된 공동 작업자 중에서만 지정할 수 있습니다.");
+      "내부 Q&A 담당자는 대표 작가, 계정이 연결된 공동 작업자, 또는 전시 대표자 중에서만 지정할 수 있습니다.");
 
   private final HttpStatus status;
   private final String code;
