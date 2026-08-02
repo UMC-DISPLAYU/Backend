@@ -95,6 +95,8 @@ class LoungeMyPostControllerTest {
         .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(oldMyPost.getId()))
         .andExpect(jsonPath("$.success.data.nextCursorId").doesNotExist())
         .andExpect(jsonPath("$.success.data.hasNext").value(false));
+
+    assertPaginationBoundaries("/api/v1/lounge/me/posts");
   }
 
   @Test
@@ -118,6 +120,8 @@ class LoungeMyPostControllerTest {
         .andExpect(jsonPath("$.success.data.posts[0].title").value("예전에 스크랩한 글"))
         .andExpect(jsonPath("$.success.data.nextCursorId").doesNotExist())
         .andExpect(jsonPath("$.success.data.hasNext").value(false));
+
+    assertPaginationBoundaries("/api/v1/lounge/me/scraps");
   }
 
   @Test
@@ -141,6 +145,40 @@ class LoungeMyPostControllerTest {
             List.of(title + " 이미지"),
             title + " 내용",
             LoungePostCategory.WORK_TIP));
+  }
+
+  private void assertPaginationBoundaries(String url) throws Exception {
+    mockMvc
+        .perform(authenticatedGet(url).param("size", "50"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.posts").isArray())
+        .andExpect(jsonPath("$.success.data.size").value(50))
+        .andExpect(jsonPath("$.meta.path").value(url));
+
+    mockMvc
+        .perform(authenticatedGet(url).param("cursorId", "0"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.posts.length()").value(0))
+        .andExpect(jsonPath("$.success.data.nextCursorId").doesNotExist())
+        .andExpect(jsonPath("$.success.data.hasNext").value(false));
+
+    mockMvc
+        .perform(authenticatedGet(url).param("cursorId", "invalid"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("INVALID_TYPE_VALUE"))
+        .andExpect(jsonPath("$.meta.path").value(url));
+
+    for (String invalidSize : List.of("0", "51")) {
+      mockMvc
+          .perform(authenticatedGet(url).param("size", invalidSize))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.resultType").value("FAIL"))
+          .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
+          .andExpect(jsonPath("$.meta.path").value(url));
+    }
   }
 
   private MockHttpServletRequestBuilder authenticatedGet(String url) {

@@ -18,6 +18,7 @@ import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,35 +62,36 @@ public class LoungePostQueryService {
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyPosts(Long userId, Long cursorId, int size) {
-    int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungePostQueryResult> fetched =
-        loungePostQueryRepository.findActiveByAuthorCursor(userId, cursorId, pageSize + 1);
-    boolean hasNext = fetched.size() > pageSize;
-    List<LoungePostQueryResult> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
-    Long nextCursorId = hasNext ? loungePosts.getLast().cursorId() : null;
-    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, userId);
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveByAuthorCursor(userId, cursorId, limit),
+        size,
+        userId);
   }
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyScrappedPosts(Long userId, Long cursorId, int size) {
-    int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungePostQueryResult> fetched =
-        loungePostQueryRepository.findActiveScrappedByUserCursor(userId, cursorId, pageSize + 1);
-    boolean hasNext = fetched.size() > pageSize;
-    List<LoungePostQueryResult> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
-    Long nextCursorId = hasNext ? loungePosts.getLast().cursorId() : null;
-    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, userId);
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveScrappedByUserCursor(userId, cursorId, limit),
+        size,
+        userId);
   }
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyCommentedPosts(Long userId, Long cursorId, int size) {
+    return getQueryCursorResult(
+        limit -> loungePostQueryRepository.findActiveCommentedByUserCursor(userId, cursorId, limit),
+        size,
+        userId);
+  }
+
+  private LoungePostCursorResult getQueryCursorResult(
+      IntFunction<List<LoungePostQueryResult>> fetcher, int size, Long viewerUserId) {
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-    List<LoungePostQueryResult> fetched =
-        loungePostQueryRepository.findActiveCommentedByUserCursor(userId, cursorId, pageSize + 1);
+    List<LoungePostQueryResult> fetched = fetcher.apply(pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<LoungePostQueryResult> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
     Long nextCursorId = hasNext ? loungePosts.getLast().cursorId() : null;
-    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, userId);
+    return toQueryCursorResult(loungePosts, nextCursorId, pageSize, hasNext, viewerUserId);
   }
 
   private LoungePostCursorResult toQueryCursorResult(

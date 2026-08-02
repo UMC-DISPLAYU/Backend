@@ -48,9 +48,9 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
         post.category,
         post.createdAt
       )
-      FROM LoungePostScrap postScrap, LoungePost post
+      FROM LoungePostScrap postScrap
+      JOIN LoungePost post ON post.id = postScrap.loungePostId
       WHERE postScrap.userId.value = :userId
-        AND post.id = postScrap.loungePostId
         AND post.status = :status
         AND post.deletedAt IS NULL
         AND (:cursorId IS NULL OR postScrap.id < :cursorId)
@@ -73,11 +73,11 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
         post.category,
         post.createdAt
       )
-      FROM LoungeComment comment, LoungePost post
+      FROM LoungeComment comment
+      JOIN LoungePost post ON post.id = comment.loungePostId
       WHERE comment.authorUserId.value = :userId
         AND comment.status = :commentStatus
         AND comment.deletedAt IS NULL
-        AND post.id = comment.loungePostId
         AND post.status = :postStatus
         AND post.deletedAt IS NULL
       GROUP BY post.id, post.authorUserId.value, post.title, post.content, post.category, post.createdAt
