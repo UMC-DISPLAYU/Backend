@@ -9,6 +9,7 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkR
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -89,6 +90,9 @@ public class DisplayArtworkPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.artistName(),
         result.artistUserId(),
+        result.qaHandlers().stream()
+            .map(handler -> new QaHandlerResponse(handler.userId(), handler.name()))
+            .toList(),
         toResponse(result.exhibitionInfo()),
         result.likeCount(),
         result.isLiked(),
@@ -133,7 +137,7 @@ public class DisplayArtworkPresentationMapper {
         result.artistName(),
         result.artistUserId(),
         result.coAuthorCount(),
-        result.qaHandlerUserId());
+        result.qaHandlerUserIds());
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {

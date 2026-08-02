@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.application.query;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.QaHandlerResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult.ArtworkItemResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -59,9 +60,15 @@ public class DisplayArtworkQueryService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    Optional<Creator> leader = creatorRepository.findLeaderByDisplayArtworkId(displayArtworkId);
+    List<Creator> creators = creatorRepository.findByDisplayArtworkId(displayArtworkId);
+    Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
     String artistName = leader.map(Creator::getCreatorName).orElse(null);
     Long artistUserId = leader.map(Creator::getUserId).orElse(null);
+    List<QaHandlerResult> qaHandlers =
+        creators.stream()
+            .filter(Creator::isContact)
+            .map(creator -> new QaHandlerResult(creator.getUserId(), creator.getCreatorName()))
+            .toList();
 
     long likeCount =
         displayArtworkLikeRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId);
@@ -77,7 +84,7 @@ public class DisplayArtworkQueryService {
                 .isPresent();
 
     return DisplayArtworkDetailResult.of(
-        displayArtwork, artistName, artistUserId, likeCount, isLiked, isSaved);
+        displayArtwork, artistName, artistUserId, qaHandlers, likeCount, isLiked, isSaved);
   }
 
   private static final DateTimeFormatter FULL_DATE = DateTimeFormatter.ofPattern("yyyy.MM.dd");

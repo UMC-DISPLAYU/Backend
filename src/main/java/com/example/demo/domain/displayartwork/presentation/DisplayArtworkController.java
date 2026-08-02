@@ -111,7 +111,12 @@ public class DisplayArtworkController {
   @SecurityRequirement(name = "Authorization")
   @Operation(
       summary = "전시 출품작 등록",
-      description = "전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.")
+      description =
+          """
+          전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.
+          내부 Q&A 담당자(qaHandlerUserIds)는 최소 1명이 필요하며 여러 명을 지정할 수 있습니다.
+          담당자는 대표 작가, 계정이 연결된 공동 작업자, 전시 대표자 중에서만 지정할 수 있습니다.
+          """)
   public ApiResponseBody<DisplayArtworkResponse> createDisplayArtwork(
       @Valid @RequestBody CreateDisplayArtworkRequest request,
       @AuthenticationPrincipal AuthUser user,

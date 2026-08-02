@@ -80,7 +80,7 @@ public class CreateDisplayArtworkService {
                 command.artistUserId(),
                 command.coAuthorUserIds(),
                 command.coAuthorRawNames(),
-                command.qaHandlerUserId()));
+                command.qaHandlerUserIds()));
 
     return DisplayArtworkResult.of(savedDisplayArtwork, authorSetupResult);
   }

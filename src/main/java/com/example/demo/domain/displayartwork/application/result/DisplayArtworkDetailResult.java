@@ -17,15 +17,19 @@ public record DisplayArtworkDetailResult(
     List<ImageResult> images,
     String artistName,
     Long artistUserId,
+    List<QaHandlerResult> qaHandlers,
     ExhibitionInfoResult exhibitionInfo,
     long likeCount,
     boolean isLiked,
     boolean isSaved) {
 
+  public record QaHandlerResult(Long userId, String name) {}
+
   public static DisplayArtworkDetailResult of(
       DisplayArtwork displayArtwork,
       String artistName,
       Long artistUserId,
+      List<QaHandlerResult> qaHandlers,
       long likeCount,
       boolean isLiked,
       boolean isSaved) {
@@ -41,6 +45,7 @@ public record DisplayArtworkDetailResult(
         displayArtwork.getImages().stream().map(ImageResult::from).toList(),
         artistName,
         artistUserId,
+        qaHandlers,
         ExhibitionInfoResult.from(displayArtwork),
         likeCount,
         isLiked,

@@ -14,10 +14,13 @@ public record DisplayArtworkDetailResponse(
     List<ImageResponse> images,
     String artistName,
     Long artistUserId,
+    List<QaHandlerResponse> qaHandlers,
     ExhibitionInfoResponse exhibitionInfo,
     long likeCount,
     boolean isLiked,
     boolean isSaved) {
+
+  public record QaHandlerResponse(Long userId, String name) {}
 
   public record ImageResponse(
       Long imageId,
