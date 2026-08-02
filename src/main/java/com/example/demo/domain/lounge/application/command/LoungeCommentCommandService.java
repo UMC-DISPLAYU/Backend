@@ -7,6 +7,7 @@ import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentLikeRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungeCommentRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
+import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -48,7 +49,7 @@ public class LoungeCommentCommandService {
   public Long createReply(
       Long parentCommentId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
-    LoungeComment parentComment = getActiveComment(parentCommentId);
+    LoungeComment parentComment = getComment(parentCommentId);
     LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
 
     if (!parentComment.isRootComment()) {
@@ -115,6 +116,16 @@ public class LoungeCommentCommandService {
         .findById(loungeCommentId)
         .filter(comment -> !comment.isDeleted())
         .filter(LoungeComment::isActive)
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
+  }
+
+  private LoungeComment getComment(Long loungeCommentId) {
+    return loungeCommentRepository
+        .findById(loungeCommentId)
+        .filter(
+            comment ->
+                (comment.isActive() && !comment.isDeleted())
+                    || (comment.getStatus() == LoungeCommentStatus.DELETED && comment.isDeleted()))
         .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
   }
 

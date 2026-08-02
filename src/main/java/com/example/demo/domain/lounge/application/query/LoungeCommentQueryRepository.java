@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface LoungeCommentQueryRepository {
   Optional<LoungeCommentQueryResult> findActiveById(Long loungeCommentId);
 
-  List<LoungeCommentQueryResult> findActiveRootByCursor(
+  List<LoungeCommentQueryResult> findVisibleRootByCursor(
       Long loungePostId, Long cursorId, int limit);
 
   List<LoungeCommentQueryResult> findActiveRepliesByCursor(
