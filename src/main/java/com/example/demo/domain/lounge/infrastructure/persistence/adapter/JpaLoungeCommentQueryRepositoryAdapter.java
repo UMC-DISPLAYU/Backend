@@ -29,10 +29,14 @@ public class JpaLoungeCommentQueryRepositoryAdapter implements LoungeCommentQuer
   }
 
   @Override
-  public List<LoungeCommentQueryResult> findActiveRootByCursor(
+  public List<LoungeCommentQueryResult> findVisibleRootByCursor(
       Long loungePostId, Long cursorId, int limit) {
-    return jpaRepository.findActiveRootByCursor(
-        loungePostId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
+    return jpaRepository.findVisibleRootByCursor(
+        loungePostId,
+        LoungeCommentStatus.ACTIVE,
+        LoungeCommentStatus.DELETED,
+        cursorId,
+        PageRequest.of(0, limit));
   }
 
   @Override

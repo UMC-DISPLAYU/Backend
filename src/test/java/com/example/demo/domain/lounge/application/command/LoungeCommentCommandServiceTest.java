@@ -78,6 +78,30 @@ class LoungeCommentCommandServiceTest {
   }
 
   @Test
+  void createsReplyUnderDeletedParentComment() {
+    LoungePost post =
+        new LoungePost(
+            1L,
+            new UserId(1L),
+            "게시글 제목",
+            "게시글 내용",
+            LoungePostCategory.DISPLAY_REVIEW,
+            LoungePostStatus.ACTIVE);
+    LoungeComment parentComment =
+        new LoungeComment(2L, 1L, null, new UserId(2L), "댓글 내용", LoungeCommentStatus.ACTIVE);
+    parentComment.delete();
+    when(commentRepository.findById(2L)).thenReturn(Optional.of(parentComment));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+    when(commentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    service.createReply(2L, 3L, new LoungeCommentContentCommand("답글 내용", List.of()));
+
+    ArgumentCaptor<LoungeComment> captor = ArgumentCaptor.forClass(LoungeComment.class);
+    verify(commentRepository).save(captor.capture());
+    assertThat(captor.getValue().getParentCommentId()).isEqualTo(2L);
+  }
+
+  @Test
   void commentActionsReturnNotFoundWhenPostIsDeleted() {
     LoungePost post =
         LoungePost.create(new UserId(1L), "게시글 제목", "게시글 내용", LoungePostCategory.DISPLAY_REVIEW);

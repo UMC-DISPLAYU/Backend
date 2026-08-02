@@ -49,14 +49,27 @@ public interface SpringDataLoungeCommentQueryJpaRepository
       FROM LoungeComment comment
       WHERE comment.loungePostId = :loungePostId
         AND comment.parentCommentId IS NULL
-        AND comment.status = :status
-        AND comment.deletedAt IS NULL
+        AND (
+          (comment.status = :activeStatus AND comment.deletedAt IS NULL)
+          OR (
+            comment.status = :deletedStatus
+            AND comment.deletedAt IS NOT NULL
+            AND EXISTS (
+              SELECT reply.id
+              FROM LoungeComment reply
+              WHERE reply.parentCommentId = comment.id
+                AND reply.status = :activeStatus
+                AND reply.deletedAt IS NULL
+            )
+          )
+        )
         AND (:cursorId IS NULL OR comment.id > :cursorId)
       ORDER BY comment.id ASC
       """)
-  List<LoungeCommentQueryResult> findActiveRootByCursor(
+  List<LoungeCommentQueryResult> findVisibleRootByCursor(
       @Param("loungePostId") Long loungePostId,
-      @Param("status") LoungeCommentStatus status,
+      @Param("activeStatus") LoungeCommentStatus activeStatus,
+      @Param("deletedStatus") LoungeCommentStatus deletedStatus,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
 
