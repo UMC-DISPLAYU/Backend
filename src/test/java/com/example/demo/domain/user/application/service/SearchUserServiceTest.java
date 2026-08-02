@@ -1,12 +1,15 @@
 package com.example.demo.domain.user.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.exception.UserErrorCode;
+import com.example.demo.domain.user.exception.UserException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +37,14 @@ class SearchUserServiceTest {
   }
 
   @Test
-  void returnsEmptyListWhenNoUserMatches() {
+  void throwsExceptionWhenNoUserMatches() {
     when(userRepository.searchByNickname("unknown")).thenReturn(List.of());
 
-    assertThat(service.execute("unknown")).isEmpty();
+    assertThatThrownBy(() -> service.execute("unknown"))
+        .isInstanceOf(UserException.class)
+        .satisfies(
+            exception ->
+                assertThat(((UserException) exception).errorCode())
+                    .isEqualTo(UserErrorCode.USER_NICKNAME_NOT_FOUND));
   }
 }

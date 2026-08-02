@@ -93,15 +93,16 @@ class UserSearchControllerTest {
   }
 
   @Test
-  void returnsEmptyArrayWhenNoUserMatches() throws Exception {
+  void returnsNotFoundWhenNoUserMatches() throws Exception {
     mockMvc
         .perform(
             get("/api/v1/users/search")
                 .param("nickname", "unknown")
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data").isArray())
-        .andExpect(jsonPath("$.success.data").isEmpty());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("USER_NICKNAME_NOT_FOUND"))
+        .andExpect(jsonPath("$.error.message").value("해당 닉네임을 가진 사용자를 찾을 수 없습니다."));
   }
 
   @Test

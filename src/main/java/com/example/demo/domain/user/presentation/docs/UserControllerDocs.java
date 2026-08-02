@@ -60,6 +60,7 @@ public interface UserControllerDocs {
   @ApiResponse(responseCode = "200", description = "사용자 검색 성공")
   @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")
   @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
+  @ApiResponse(responseCode = "404", description = "해당 닉네임을 가진 사용자 없음")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<List<UserSearchResponse>> searchUsers(
       UserSearchRequest request, AuthUser user, HttpServletRequest httpRequest);
