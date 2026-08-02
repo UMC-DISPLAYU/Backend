@@ -14,7 +14,7 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByProviderAndProviderId(Provider provider, String providerId);
 
-  List<User> findByNicknameContainingIgnoreCaseAndDeletedAtIsNullOrderByNicknameAscIdAsc(
+  List<User> findTop20ByNicknameContainingIgnoreCaseAndDeletedAtIsNullOrderByNicknameAscIdAsc(
       String nickname);
 
   boolean existsBySchoolEmail(String schoolEmail);

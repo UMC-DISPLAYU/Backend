@@ -56,6 +56,7 @@ public interface UserControllerDocs {
           - 작가 인증 여부와 관계없이 조회합니다.
           - 탈퇴한 사용자는 제외합니다.
           - 닉네임 오름차순, 사용자 ID 오름차순으로 정렬합니다.
+          - 검색 결과는 최대 20명까지 반환합니다.
           """)
   @ApiResponse(responseCode = "200", description = "사용자 검색 성공")
   @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")

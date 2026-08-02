@@ -52,6 +52,6 @@ public class UserPersistenceAdapter implements UserRepository {
   @Override
   public List<User> searchByNickname(String nickname) {
     return userJpaRepository
-        .findByNicknameContainingIgnoreCaseAndDeletedAtIsNullOrderByNicknameAscIdAsc(nickname);
+        .findTop20ByNicknameContainingIgnoreCaseAndDeletedAtIsNullOrderByNicknameAscIdAsc(nickname);
   }
 }

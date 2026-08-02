@@ -93,6 +93,23 @@ class UserSearchControllerTest {
   }
 
   @Test
+  void returnsAtMostTwentyUsers() throws Exception {
+    for (int index = 0; index < 21; index++) {
+      saveUser("limited%02d".formatted(index), "사용자 " + index, false, null);
+    }
+
+    mockMvc
+        .perform(
+            get("/api/v1/users/search")
+                .param("nickname", "limited")
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.length()").value(20))
+        .andExpect(jsonPath("$.success.data[0].nickname").value("limited00"))
+        .andExpect(jsonPath("$.success.data[19].nickname").value("limited19"));
+  }
+
+  @Test
   void returnsNotFoundWhenNoUserMatches() throws Exception {
     mockMvc
         .perform(
