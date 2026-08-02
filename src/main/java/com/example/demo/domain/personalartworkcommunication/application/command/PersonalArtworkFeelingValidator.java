@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling.ImageInfo;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
@@ -8,6 +9,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,23 @@ public class PersonalArtworkFeelingValidator {
     }
     if (content.length() > 300) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
+    }
+  }
+
+  public void validateImages(List<ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
     }
   }
 

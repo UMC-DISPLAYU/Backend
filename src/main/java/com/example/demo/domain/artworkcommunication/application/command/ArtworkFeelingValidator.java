@@ -1,12 +1,14 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling.ImageInfo;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,23 @@ public class ArtworkFeelingValidator {
     }
     if (content.length() > 300) {
       throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_CONTENT);
+    }
+  }
+
+  public void validateImages(List<ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
     }
   }
 

@@ -10,6 +10,7 @@ import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.MyDisplayListResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
@@ -25,6 +26,7 @@ import com.example.demo.domain.display.presentation.response.DisplayLikeResponse
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
+import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import org.springframework.stereotype.Component;
 
@@ -121,6 +123,12 @@ public class DisplayPresentationMapper {
             result.pagination().hasNext()));
   }
 
+  public MyDisplayListResponse toResponse(MyDisplayListResult result) {
+    return new MyDisplayListResponse(
+        result.createdDisplays().stream().map(this::toResponse).toList(),
+        result.participatedDisplays().stream().map(this::toResponse).toList());
+  }
+
   public DisplayLikeResponse toResponse(DisplayLikeResult result) {
     return new DisplayLikeResponse(result.displayId(), result.likeCount());
   }
@@ -149,6 +157,7 @@ public class DisplayPresentationMapper {
         result.displayFields(),
         result.region(),
         result.likeCount(),
+        result.isBookmarked(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -180,7 +189,8 @@ public class DisplayPresentationMapper {
         result.department(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -193,7 +203,8 @@ public class DisplayPresentationMapper {
         result.department(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -204,7 +215,8 @@ public class DisplayPresentationMapper {
         result.posterImageUrl(),
         result.startedAt(),
         result.endedAt(),
-        result.dayLeft());
+        result.dayLeft(),
+        result.isBookmarked());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -216,7 +228,22 @@ public class DisplayPresentationMapper {
         result.locationName(),
         result.posterImageUrl(),
         result.latitude(),
-        result.longitude());
+        result.longitude(),
+        result.isBookmarked());
+  }
+
+  private MyDisplayListResponse.MyDisplayResponse toResponse(
+      MyDisplayListResult.MyDisplayResult result) {
+    return new MyDisplayListResponse.MyDisplayResponse(
+        result.displayId(),
+        result.title(),
+        result.isDisplaying(),
+        result.startDate(),
+        result.endDate(),
+        result.school(),
+        result.department(),
+        result.placeName(),
+        result.postImageUrl());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(

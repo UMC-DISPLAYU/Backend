@@ -1,3 +1,7 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
-public record ArtworkFeelingCommand(Long displayArtworkId, Long userId, String content) {}
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling.ImageInfo;
+import java.util.List;
+
+public record ArtworkFeelingCommand(
+    Long displayArtworkId, Long userId, String content, List<ImageInfo> images) {}

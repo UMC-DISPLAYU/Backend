@@ -237,6 +237,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         fields,
         base.get(display.region).name(),
         base.get(displayLike.id.count()),
+        false,
         new DisplayDetailResult.PeriodResult(
             base.get(display.period.startDate),
             base.get(display.period.endDate),

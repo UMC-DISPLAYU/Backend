@@ -26,7 +26,10 @@ public class DeleteDisplayArtworkService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    boolean isTeamLeader = artwork.getDisplay().isTeamLeader(requesterUserId);
+    // 전시를 만든 소유자는 TeamMember(TEAM_LEADER)로 등록되지 않으므로 소유자 여부도 함께 확인한다.
+    boolean isTeamLeader =
+        artwork.getDisplay().isOwner(requesterUserId)
+            || artwork.getDisplay().isTeamLeader(requesterUserId);
     boolean isRegistrant = artwork.getRegisteredByUserId().equals(requesterUserId);
     if (!isTeamLeader && !isRegistrant) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ACTION);

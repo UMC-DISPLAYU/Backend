@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
+import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveDisplayJpaRepository;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
@@ -14,6 +16,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.security.JwtFactory;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -23,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +40,10 @@ class DisplayControllerSearchTest {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;
+
+  @Autowired private SpringDataArchiveDisplayJpaRepository archiveDisplayJpaRepository;
+
+  @Autowired private JwtFactory jwtFactory;
 
   @Autowired private Clock clock;
 
@@ -69,12 +77,32 @@ class DisplayControllerSearchTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(5).toString()))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(5))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").doesNotExist())
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
         .andExpect(jsonPath("$.success.data.pagination.nextCursor", notNullValue()))
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/search"));
+  }
+
+  @Test
+  void searchDisplaysReturnsBookmarkedTrueWhenRequesterArchivedDisplay() throws Exception {
+    LocalDate today = LocalDate.now(clock);
+    Display display =
+        jpaRepository.saveAndFlush(
+            publishedDisplay("디자인 졸업전시", today.minusDays(1), today.plusDays(5)));
+    archiveDisplayJpaRepository.saveAndFlush(ArchiveDisplay.create(display.getId(), 7L));
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .header(HttpHeaders.AUTHORIZATION, bearer(7L))
+                .param("searchWord", "디자인")
+                .param("cursor", "0")
+                .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.exhibitions[0].displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(true));
   }
 
   @Test
@@ -112,5 +140,9 @@ class DisplayControllerSearchTest {
 
   private static BigDecimal bd(String value) {
     return new BigDecimal(value);
+  }
+
+  private String bearer(Long userId) {
+    return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
   }
 }

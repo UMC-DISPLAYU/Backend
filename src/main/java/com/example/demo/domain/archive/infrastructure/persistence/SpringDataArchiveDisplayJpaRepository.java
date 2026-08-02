@@ -16,6 +16,16 @@ public interface SpringDataArchiveDisplayJpaRepository extends JpaRepository<Arc
 
   @Query(
       """
+      SELECT ad.displayId
+      FROM ArchiveDisplay ad
+      WHERE ad.userId = :userId
+        AND ad.displayId IN :displayIds
+      """)
+  List<Long> findDisplayIdsByUserIdAndDisplayIdIn(
+      @Param("userId") Long userId, @Param("displayIds") List<Long> displayIds);
+
+  @Query(
+      """
       SELECT ad
       FROM ArchiveDisplay ad
       WHERE ad.userId = :userId

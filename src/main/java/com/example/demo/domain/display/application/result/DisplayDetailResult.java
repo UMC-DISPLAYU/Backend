@@ -28,6 +28,7 @@ public record DisplayDetailResult(
     List<String> displayFields,
     String region,
     long likeCount,
+    boolean isBookmarked,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -55,6 +56,7 @@ public record DisplayDetailResult(
         display.getFieldSelections().stream().map(FieldResult::from).toList(),
         display.getRegion().name(),
         likeCount,
+        false,
         PeriodResult.from(display),
         display.getArtworkContentOpen().name(),
         display.getExhibitionContentOpen().name(),
@@ -71,6 +73,35 @@ public record DisplayDetailResult(
             .filter(invitation -> !invitation.isDeleted())
             .map(InvitationResult::from)
             .toList());
+  }
+
+  public DisplayDetailResult withBookmarked(boolean isBookmarked) {
+    return new DisplayDetailResult(
+        displayId,
+        ownerUserId,
+        title,
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        displayType,
+        displayFields,
+        region,
+        likeCount,
+        isBookmarked,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen,
+        status,
+        invitationToken,
+        invitationDisabledAt,
+        images,
+        contentCategories,
+        teamMembers,
+        invitations);
   }
 
   public record LocationResult(String placeName, BigDecimal latitude, BigDecimal longitude) {

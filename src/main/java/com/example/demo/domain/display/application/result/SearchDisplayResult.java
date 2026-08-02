@@ -13,7 +13,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       String posterImageUrl,
       LocalDate startedAt,
       LocalDate endedAt,
-      long dayLeft) {
+      long dayLeft,
+      boolean isBookmarked) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
@@ -22,7 +23,13 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           queryResult.posterImageUrl(),
           queryResult.startedAt(),
           queryResult.endedAt(),
-          ChronoUnit.DAYS.between(today, queryResult.endedAt()));
+          ChronoUnit.DAYS.between(today, queryResult.endedAt()),
+          false);
+    }
+
+    public ExhibitionResult withBookmarked(boolean isBookmarked) {
+      return new ExhibitionResult(
+          displayId, title, posterImageUrl, startedAt, endedAt, dayLeft, isBookmarked);
     }
   }
 

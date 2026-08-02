@@ -19,6 +19,7 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT, "PENDING_DISPLAY_INVITATION_EXISTS", "처리 대기 중인 전시 멤버 초대가 이미 존재합니다."),
   DISPLAY_MEMBER_INVITATION_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_MEMBER_INVITATION_NOT_FOUND", "전시 멤버 초대를 찾을 수 없습니다."),
+  DISPLAY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_MEMBER_NOT_FOUND", "전시 멤버를 찾을 수 없습니다."),
   DISPLAY_CONTENT_CATEGORY_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_CONTENT_CATEGORY_NOT_FOUND", "전시 콘텐츠 카테고리를 찾을 수 없습니다."),
   DISPLAY_CONTENT_NOT_FOUND(

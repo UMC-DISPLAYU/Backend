@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.command.InviteDisplayMemberCo
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayMemberListResult;
+import com.example.demo.domain.display.application.result.DisplayMemberResult;
 import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
@@ -57,6 +58,11 @@ public class DisplayMemberInvitationPresentationMapper {
   public DisplayMemberListResponse toResponse(DisplayMemberListResult result) {
     return new DisplayMemberListResponse(
         result.displayId(), result.members().stream().map(this::toResponse).toList());
+  }
+
+  public DisplayMemberListResponse.TeamMemberResponse toResponse(DisplayMemberResult result) {
+    return new DisplayMemberListResponse.TeamMemberResponse(
+        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {

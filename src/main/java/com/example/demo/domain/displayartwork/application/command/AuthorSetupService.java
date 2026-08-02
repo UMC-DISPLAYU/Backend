@@ -52,7 +52,7 @@ public class AuthorSetupService {
 
     Long artistUserId = command.artistUserId();
     if (artistUserId != null) {
-      requireVerifiedTeamMember(
+      requireVerifiedParticipant(
           display, artistUserId, DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID);
     }
 
@@ -107,18 +107,35 @@ public class AuthorSetupService {
   }
 
   private void validateRequester(Display display, Long requesterUserId) {
+    // 전시를 만든 소유자는 TeamMember로 등록되지 않으므로 소유자 여부도 함께 확인한다.
     boolean isAcceptedTeamMember =
-        display.getTeamMembers().stream()
-            .anyMatch(
-                teamMember ->
-                    teamMember.isAccepted()
-                        && teamMember.getUserId().value().equals(requesterUserId));
+        display.isOwner(requesterUserId)
+            || display.getTeamMembers().stream()
+                .anyMatch(
+                    teamMember ->
+                        teamMember.isAccepted()
+                            && teamMember.getUserId().value().equals(requesterUserId));
     if (!isAcceptedTeamMember) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_DISPLAY_TEAM_MEMBER);
     }
     if (!artistVerificationRepository.isVerifiedArtist(requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
     }
+  }
+
+  /**
+   * 전시에 참여할 수 있는 작가 인증 사용자인지 검증한다. 전시 소유자는 TeamMember로 등록되지 않으므로 소유자도 참여자로 인정한다. 팀원 정보(닉네임)가 필요한
+   * 경우에는 {@link #requireVerifiedTeamMember}를 사용한다.
+   */
+  private void requireVerifiedParticipant(
+      Display display, Long userId, DisplayArtworkErrorCode errorCode) {
+    if (display.isOwner(userId)) {
+      if (!artistVerificationRepository.isVerifiedArtist(userId)) {
+        throw new BusinessException(errorCode);
+      }
+      return;
+    }
+    requireVerifiedTeamMember(display, userId, errorCode);
   }
 
   private TeamMember requireVerifiedTeamMember(

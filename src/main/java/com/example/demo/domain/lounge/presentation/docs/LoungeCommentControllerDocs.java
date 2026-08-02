@@ -37,13 +37,6 @@ public interface LoungeCommentControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 수정", description = "작성자가 라운지 댓글 또는 답글을 수정합니다.")
-  ApiResponseBody<LoungeCommentListResponse> updateComment(
-      @PathVariable Long loungeCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
-      AuthUser user,
-      HttpServletRequest request);
-
   @Operation(summary = "라운지 댓글 삭제", description = "작성자가 라운지 댓글 또는 답글을 삭제합니다.")
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);

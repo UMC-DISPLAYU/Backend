@@ -105,6 +105,8 @@ public class LoungeCommentQueryService {
         includeReplyCount
             ? loungeCommentRepository.countActiveRepliesByParentCommentIds(commentIds)
             : Map.of();
+    Map<Long, List<String>> imageUrlsByCommentId =
+        loungeCommentQueryRepository.findImageUrlsByLoungeCommentIds(commentIds);
     Set<Long> likedCommentIds =
         viewerUserId == null
             ? Set.of()
@@ -119,6 +121,7 @@ public class LoungeCommentQueryService {
             comment ->
                 LoungeCommentListResult.from(
                     comment,
+                    imageUrlsByCommentId.getOrDefault(comment.loungeCommentId(), List.of()),
                     toWriterView(
                         writers.getOrDefault(
                             comment.authorUserId(), LoungeWriter.unknown(comment.authorUserId()))),
