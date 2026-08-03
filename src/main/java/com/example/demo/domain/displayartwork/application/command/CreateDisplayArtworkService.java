@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.application.command;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
@@ -134,6 +135,9 @@ public class CreateDisplayArtworkService {
   }
 
   private DisplayArtworkStatus initialArtworkStatus(Display display) {
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      return DisplayArtworkStatus.DRAFT;
+    }
     if (display.getArtworkContentOpen() == ContentOpenPolicy.IMMEDIATELY
         || !display.getPeriod().startDate().isAfter(LocalDate.now(clock))) {
       return DisplayArtworkStatus.PUBLISHED;

@@ -121,6 +121,39 @@ class DisplayContentPublicationServiceTest {
   }
 
   @Test
+  void publishOnExhibitionContentsDoesNotPublishWhenDisplayIsDraft() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 1),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.addContentCategory(
+        new DisplayContentCategory(
+            null,
+            "전시 소개",
+            "전시 소개 이미지입니다.",
+            0,
+            List.of(
+                new DisplayContent(
+                    null,
+                    "https://cdn.displayu.com/display/content-draft.jpg",
+                    1200,
+                    800,
+                    0,
+                    DisplayContentStatus.DRAFT))));
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_006L;
+    insertArtwork(artworkId, savedDisplay.getId(), "초안 전시 작품", DisplayArtworkStatus.DRAFT);
+
+    DisplayContentPublicationResult result = publicationService.publishOnExhibitionContents();
+
+    assertThat(result.displayContentCount()).isZero();
+    assertThat(result.displayArtworkCount()).isZero();
+    assertThat(contentStatus(savedDisplay.getId())).isEqualTo(DisplayContentStatus.DRAFT);
+    assertThat(artworkStatus(artworkId)).isEqualTo(DisplayArtworkStatus.DRAFT);
+  }
+
+  @Test
   void displayDetailReturnsPublishedContentsOnly() {
     Display display =
         display(

@@ -12,6 +12,7 @@ import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.OptimisticLockException;
 import java.time.Clock;
@@ -153,6 +154,9 @@ public class DisplayContentCommandService {
   }
 
   private DisplayContentStatus initialContentStatus(Display display) {
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      return DisplayContentStatus.DRAFT;
+    }
     if (display.getExhibitionContentOpen() == ContentOpenPolicy.IMMEDIATELY
         || !display.getPeriod().startDate().isAfter(LocalDate.now(clock))) {
       return DisplayContentStatus.PUBLISHED;

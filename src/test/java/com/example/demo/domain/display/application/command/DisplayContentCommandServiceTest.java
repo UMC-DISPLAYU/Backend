@@ -13,6 +13,7 @@ import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -39,6 +40,22 @@ class DisplayContentCommandServiceTest {
       Clock.fixed(Instant.parse("2026-08-01T15:00:00Z"), ZoneId.of("Asia/Seoul"));
   private final DisplayContentCommandService service =
       new DisplayContentCommandService(displayRepository, clock);
+
+  @Test
+  void createContentCreatesDraftWhenDisplayIsDraftEvenAfterDisplayStarted() {
+    Display display = display();
+    display.addTeamMember(new TeamMember(1L, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    DisplayContentCategory category =
+        new DisplayContentCategory(1L, "전시 소개", "전시 소개 이미지입니다.", 0, List.of());
+    display.addContentCategory(category);
+    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
+
+    service.createContent(
+        new CreateDisplayContentCommand(
+            2L, 1L, 1L, "https://cdn.displayu.com/display/content.jpg", 1200, 800));
+
+    assertThat(category.getContents().getFirst().getStatus()).isEqualTo(DisplayContentStatus.DRAFT);
+  }
 
   @Test
   void reorderContentsTranslatesOptimisticLockConflictToBusinessException() {
