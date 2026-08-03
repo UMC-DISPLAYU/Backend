@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
@@ -33,6 +34,12 @@ public class PersonalArtworkQuestionPresentationMapper {
   public DeletePersonalArtworkQuestionCommand toCommand(
       Long personalArtworkId, Long personalQuestionId, Long userId) {
     return new DeletePersonalArtworkQuestionCommand(personalArtworkId, personalQuestionId, userId);
+  }
+
+  public DeletePersonalArtworkQuestionReplyCommand toReplyDeleteCommand(
+      Long personalArtworkId, Long personalQuestionId, Long personalQuestionReplyId, Long userId) {
+    return new DeletePersonalArtworkQuestionReplyCommand(
+        personalArtworkId, personalQuestionId, personalQuestionReplyId, userId);
   }
 
   public PersonalArtworkQuestionCommand toCommand(

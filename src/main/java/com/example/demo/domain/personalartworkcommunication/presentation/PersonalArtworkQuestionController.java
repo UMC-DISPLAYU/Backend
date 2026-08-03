@@ -128,7 +128,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DeletePersonalArtworkQuestionReplyCommand command =
-        new DeletePersonalArtworkQuestionReplyCommand(
+        mapper.toReplyDeleteCommand(
             personalArtworkId, personalQuestionId, personalQuestionReplyId, requireUserId(user));
 
     DeletedPersonalArtworkQuestionReplyResult result =

@@ -70,6 +70,7 @@ public class JpaMyArtworkQuestionQueryRepositoryAdapter
               ON artwork.displayArtworkId = question.displayArtworkId
             WHERE question.userId = :userId
               AND question.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
 
             UNION ALL
 
@@ -90,6 +91,7 @@ public class JpaMyArtworkQuestionQueryRepositoryAdapter
               ON artwork.personalArtworkId = question.personalArtworkId
             WHERE question.userId = :userId
               AND question.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
         ) items
         """
             + cursorCondition

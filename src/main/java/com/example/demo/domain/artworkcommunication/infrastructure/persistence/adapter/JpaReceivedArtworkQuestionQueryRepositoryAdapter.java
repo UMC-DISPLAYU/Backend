@@ -80,6 +80,7 @@ public class JpaReceivedArtworkQuestionQueryRepositoryAdapter
               ON questioner.userId = question.userId
             WHERE question.answerStatus = :answerStatus
               AND question.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
 
             UNION ALL
 
@@ -105,6 +106,7 @@ public class JpaReceivedArtworkQuestionQueryRepositoryAdapter
               ON questioner.userId = question.userId
             WHERE question.answerStatus = :answerStatus
               AND question.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
         ) items
         """
             + cursorCondition

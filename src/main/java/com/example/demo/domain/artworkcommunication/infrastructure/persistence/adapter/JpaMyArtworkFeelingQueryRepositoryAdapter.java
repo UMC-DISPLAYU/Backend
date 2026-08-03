@@ -53,6 +53,7 @@ public class JpaMyArtworkFeelingQueryRepositoryAdapter implements MyArtworkFeeli
               ON artwork.displayArtworkId = feeling.displayArtworkId
             WHERE feeling.userId = :userId
               AND feeling.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
 
             UNION ALL
 
@@ -69,6 +70,7 @@ public class JpaMyArtworkFeelingQueryRepositoryAdapter implements MyArtworkFeeli
               ON artwork.personalArtworkId = feeling.personalArtworkId
             WHERE feeling.userId = :userId
               AND feeling.deletedAt IS NULL
+              AND artwork.deletedAt IS NULL
         ) items
         """
             + cursorCondition

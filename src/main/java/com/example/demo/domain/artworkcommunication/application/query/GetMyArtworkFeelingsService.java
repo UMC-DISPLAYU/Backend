@@ -2,8 +2,6 @@ package com.example.demo.domain.artworkcommunication.application.query;
 
 import com.example.demo.domain.artworkcommunication.application.result.MyArtworkFeelingListResult;
 import com.example.demo.domain.artworkcommunication.application.result.MyArtworkFeelingListResult.MyArtworkFeelingItemResult;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,9 +40,6 @@ public class GetMyArtworkFeelingsService {
   }
 
   private String encodeCursor(MyArtworkFeelingQueryItem item) {
-    String value = item.createdAt() + "|" + item.sourceOrder() + "|" + item.itemId();
-    return Base64.getUrlEncoder()
-        .withoutPadding()
-        .encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    return ArtworkCursorCodec.encode(item.createdAt(), item.sourceOrder(), item.itemId());
   }
 }
