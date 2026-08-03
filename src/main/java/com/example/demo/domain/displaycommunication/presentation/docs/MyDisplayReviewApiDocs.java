@@ -55,7 +55,31 @@ public interface MyDisplayReviewApiDocs {
                             }
                           }
                           """)))
-  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 필요",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "My display review unauthorized",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "UNAUTHORIZED",
+                              "message": "인증이 필요합니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-03T18:00:00",
+                              "path": "/api/v1/display/reviews/me"
+                            }
+                          }
+                          """)))
   ApiResponseBody<MyDisplayReviewListResponse> getMyReviews(
       @Parameter(hidden = true) AuthUser user,
       @Parameter(description = "마지막으로 조회한 후기 ID", example = "20") @Positive Long cursorId,

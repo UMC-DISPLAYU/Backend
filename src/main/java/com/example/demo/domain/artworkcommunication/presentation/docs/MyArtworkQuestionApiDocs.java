@@ -72,7 +72,31 @@ public interface MyArtworkQuestionApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "400", description = "유효하지 않은 커서 또는 페이지 크기")
-  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 필요",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "My artwork question unauthorized",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "UNAUTHORIZED",
+                              "message": "인증이 필요합니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-03T18:00:00",
+                              "path": "/api/v1/artworks/questions/me"
+                            }
+                          }
+                          """)))
   ApiResponseBody<MyArtworkQuestionListResponse> getMyQuestions(
       @Parameter(hidden = true) AuthUser user,
       @Parameter(description = "이전 응답의 nextCursor. 첫 요청이면 전달하지 않음") @RequestParam(required = false)

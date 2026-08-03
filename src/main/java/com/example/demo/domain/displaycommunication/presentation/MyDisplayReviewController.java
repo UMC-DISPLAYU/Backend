@@ -1,6 +1,5 @@
 package com.example.demo.domain.displaycommunication.presentation;
 
-import com.example.demo.domain.displaycommunication.application.query.GetMyDisplayReviewsQuery;
 import com.example.demo.domain.displaycommunication.application.query.GetMyDisplayReviewsService;
 import com.example.demo.domain.displaycommunication.application.result.MyDisplayReviewListResult;
 import com.example.demo.domain.displaycommunication.presentation.docs.MyDisplayReviewApiDocs;
@@ -40,7 +39,7 @@ public class MyDisplayReviewController implements MyDisplayReviewApiDocs {
       HttpServletRequest httpServletRequest) {
     MyDisplayReviewListResult result =
         getMyDisplayReviewsService.getMyReviews(
-            new GetMyDisplayReviewsQuery(requireUserId(user), cursorId, size));
+            mapper.toQuery(requireUserId(user), cursorId, size));
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
 

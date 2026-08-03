@@ -64,7 +64,31 @@ public interface ReceivedArtworkQuestionApiDocs {
                           }
                           """)))
   @ApiResponse(responseCode = "400", description = "유효하지 않은 답변 상태, 커서 또는 페이지 크기")
-  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 필요",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Received artwork question unauthorized",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "UNAUTHORIZED",
+                              "message": "인증이 필요합니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-03T18:00:00",
+                              "path": "/api/v1/artworks/questions/received"
+                            }
+                          }
+                          """)))
   ApiResponseBody<ReceivedArtworkQuestionListResponse> getReceivedQuestions(
       @Parameter(hidden = true) AuthUser user,
       @Parameter(description = "조회할 답변 상태", example = "WAITING", required = true) @RequestParam
