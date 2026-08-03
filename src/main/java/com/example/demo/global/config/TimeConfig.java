@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class TimeConfig {
 
   @Bean
-  public Clock clock() {
+  public Clock systemDefault() {
     return Clock.system(ZoneId.of("Asia/Seoul"));
   }
 }
