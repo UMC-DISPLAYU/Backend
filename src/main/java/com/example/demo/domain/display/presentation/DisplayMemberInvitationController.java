@@ -122,6 +122,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
+  @Override
   @GetMapping("/display-invitations")
   public ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {

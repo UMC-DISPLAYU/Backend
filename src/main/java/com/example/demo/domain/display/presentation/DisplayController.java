@@ -25,6 +25,17 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.D
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_FORBIDDEN_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_FORBIDDEN_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_MEMBER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_UNAUTHORIZED_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_UNAUTHORIZED_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
@@ -236,9 +247,50 @@ public class DisplayController {
   }
 
   @DeleteMapping("/api/v1/display/{displayId}/exit")
+  @Operation(summary = EXIT_SUMMARY, description = EXIT_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = EXIT_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = EXIT_SUCCESS_EXAMPLE_NAME, value = EXIT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_UNAUTHORIZED_EXAMPLE_NAME,
+                      value = EXIT_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "전시 팀장 나가기 제한",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_FORBIDDEN_EXAMPLE_NAME,
+                      value = EXIT_FORBIDDEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "전시 멤버를 찾을 수 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME,
+                      value = EXIT_MEMBER_NOT_FOUND_EXAMPLE)))
   public ApiResponseBody<Void> exitDisplay(
-      @PathVariable Long displayId,
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     exitDisplayService.exit(displayId, requireUserId(user));
