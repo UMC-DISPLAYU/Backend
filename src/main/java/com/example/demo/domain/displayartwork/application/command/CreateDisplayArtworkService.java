@@ -2,6 +2,8 @@ package com.example.demo.domain.displayartwork.application.command;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
@@ -9,7 +11,10 @@ import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.global.error.BusinessException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -24,16 +29,19 @@ public class CreateDisplayArtworkService {
   private final DisplayArtworkRepository displayArtworkRepository;
   private final ArtistVerificationRepository artistVerificationRepository;
   private final AuthorSetupService authorSetupService;
+  private final Clock clock;
 
   public CreateDisplayArtworkService(
       DisplayRepository displayRepository,
       DisplayArtworkRepository displayArtworkRepository,
       ArtistVerificationRepository artistVerificationRepository,
-      AuthorSetupService authorSetupService) {
+      AuthorSetupService authorSetupService,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.artistVerificationRepository = artistVerificationRepository;
     this.authorSetupService = authorSetupService;
+    this.clock = clock;
   }
 
   @Transactional
@@ -67,6 +75,7 @@ public class CreateDisplayArtworkService {
             command.point(),
             nextWorkSortOrder,
             requesterUserId,
+            initialArtworkStatus(display),
             toImages(command.images()));
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
@@ -123,5 +132,16 @@ public class CreateDisplayArtworkService {
                     image.width(),
                     image.height()))
         .toList();
+  }
+
+  private DisplayArtworkStatus initialArtworkStatus(Display display) {
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      return DisplayArtworkStatus.DRAFT;
+    }
+    if (display.getArtworkContentOpen() == ContentOpenPolicy.IMMEDIATELY
+        || !display.getPeriod().startDate().isAfter(LocalDate.now(clock))) {
+      return DisplayArtworkStatus.PUBLISHED;
+    }
+    return DisplayArtworkStatus.DRAFT;
   }
 }

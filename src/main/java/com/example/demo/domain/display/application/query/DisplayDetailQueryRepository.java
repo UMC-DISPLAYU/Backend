@@ -5,5 +5,5 @@ import java.util.Optional;
 
 public interface DisplayDetailQueryRepository {
 
-  Optional<DisplayDetailResult> findDisplayDetail(Long displayId);
+  Optional<DisplayDetailResult> findDisplayDetail(Long displayId, Long requesterUserId);
 }
