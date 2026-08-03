@@ -49,6 +49,7 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       WHERE artwork.display.id = :displayId
         AND artwork.deletedAt IS NULL
         AND artwork.status = com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus.PUBLISHED
+        AND artwork.display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
       """)
   List<DisplayArtwork> findPublishedByDisplayId(@Param("displayId") Long displayId);
 

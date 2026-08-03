@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.query;
 
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult.ArtworkItemResult;
@@ -16,6 +17,7 @@ import com.example.demo.domain.displayartwork.domain.repository.CreatorRepositor
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkLikeRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.global.error.BusinessException;
 import java.time.format.DateTimeFormatter;
@@ -56,11 +58,8 @@ public class DisplayArtworkQueryService {
         displayArtworkRepository
             .findById(displayArtworkId)
             .filter(artwork -> !artwork.isDeleted())
-            .filter(
-                artwork ->
-                    artwork.getStatus()
-                        == com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus
-                            .PUBLISHED)
+            .filter(artwork -> artwork.getStatus() == DisplayArtworkStatus.PUBLISHED)
+            .filter(artwork -> artwork.getDisplay().getStatus() == DisplayStatus.PUBLISHED)
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 

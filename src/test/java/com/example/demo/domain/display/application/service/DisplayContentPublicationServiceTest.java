@@ -186,6 +186,26 @@ class DisplayContentPublicationServiceTest {
         .hasMessageContaining(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND.getMessage());
   }
 
+  @Test
+  void displayArtworkQueriesRejectPublishedArtworkWhenDisplayIsDraft() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 1),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_005L;
+    insertArtwork(artworkId, savedDisplay.getId(), "전시 미공개 작품", DisplayArtworkStatus.PUBLISHED);
+
+    var listResult = displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId());
+
+    assertThat(listResult.artworks()).isEmpty();
+    assertThatThrownBy(
+            () -> displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, null))
+        .isInstanceOf(BusinessException.class)
+        .hasMessageContaining(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND.getMessage());
+  }
+
   private static Display display(
       LocalDate startDate,
       ContentOpenPolicy artworkContentOpen,
