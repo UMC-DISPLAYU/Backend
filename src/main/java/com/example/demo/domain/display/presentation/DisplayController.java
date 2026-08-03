@@ -66,6 +66,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.M
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE;
@@ -609,6 +614,17 @@ public class DisplayController {
   }
 
   @GetMapping("/api/v1/display/me")
+  @Operation(summary = MY_DISPLAY_SUMMARY, description = MY_DISPLAY_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = MY_DISPLAY_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = MY_DISPLAY_SUCCESS_EXAMPLE_NAME,
+                      value = MY_DISPLAY_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   public ApiResponseBody<MyDisplayListResponse> getMyDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {

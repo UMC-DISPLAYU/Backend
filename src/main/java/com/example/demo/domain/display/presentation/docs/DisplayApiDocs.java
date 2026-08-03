@@ -108,6 +108,12 @@ public final class DisplayApiDocs {
   public static final String DU_PICKS_SUCCESS_DESCRIPTION = "DU Picks 조회 성공";
   public static final String DU_PICKS_SUCCESS_EXAMPLE_NAME = "DU Picks success";
 
+  public static final String MY_DISPLAY_SUMMARY = "내 전시 목록 조회";
+  public static final String MY_DISPLAY_DESCRIPTION =
+      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안 상태의 전시도 포함합니다.";
+  public static final String MY_DISPLAY_SUCCESS_DESCRIPTION = "내 전시 목록 조회 성공";
+  public static final String MY_DISPLAY_SUCCESS_EXAMPLE_NAME = "My display success";
+
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
@@ -622,6 +628,48 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
           "path": "/api/v1/display/du-picks"
+        }
+      }
+      """;
+
+  public static final String MY_DISPLAY_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "createdDisplays": [
+              {
+                "displayId": 1,
+                "title": "내가 만든 전시",
+                "isDisplaying": true,
+                "startDate": "2026-08-01",
+                "endDate": "2026-08-07",
+                "school": "디유대학교",
+                "department": "디자인학부",
+                "placeName": "디유 갤러리",
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+              }
+            ],
+            "participatedDisplays": [
+              {
+                "displayId": 2,
+                "title": "내가 참여한 전시",
+                "isDisplaying": false,
+                "startDate": "2026-07-20",
+                "endDate": "2026-07-31",
+                "school": "디유대학교",
+                "department": "디자인학부",
+                "placeName": "디유 갤러리",
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T18:30:00",
+          "path": "/api/v1/display/me"
         }
       }
       """;
