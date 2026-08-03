@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation.docs;
 
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
+import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
@@ -37,6 +38,11 @@ public interface DisplayMemberInvitationControllerDocs {
   @Operation(summary = "전시 멤버 목록 조회", description = "해당 전시의 수락된 전시 멤버 목록을 조회합니다.")
   ApiResponseBody<DisplayMemberListResponse> getMembers(
       Long displayId, HttpServletRequest httpRequest);
+
+  @Operation(summary = "내 전시 닉네임 수정", description = "현재 로그인 사용자의 특정 전시 내 닉네임을 수정합니다.")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
+      UpdateMyDisplayNicknameRequest request, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "내 전시 멤버 초대 목록 조회",

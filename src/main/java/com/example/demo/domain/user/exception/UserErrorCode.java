@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum UserErrorCode implements BaseErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
+  USER_NICKNAME_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "USER_NICKNAME_NOT_FOUND", "해당 닉네임을 가진 사용자를 찾을 수 없습니다."),
   ALREADY_WITHDRAWN_USER(HttpStatus.CONFLICT, "ALREADY_WITHDRAWN_USER", "이미 탈퇴한 사용자입니다."),
   DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "DUPLICATE_NICKNAME", "이미 사용 중인 닉네임입니다."),
   NICKNAME_CHANGE_NOT_ALLOWED(

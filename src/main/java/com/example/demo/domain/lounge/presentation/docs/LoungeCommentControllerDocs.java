@@ -4,11 +4,15 @@ import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,13 +41,6 @@ public interface LoungeCommentControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 수정", description = "작성자가 라운지 댓글 또는 답글을 수정합니다.")
-  ApiResponseBody<LoungeCommentListResponse> updateComment(
-      @PathVariable Long loungeCommentId,
-      @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
-      AuthUser user,
-      HttpServletRequest request);
-
   @Operation(summary = "라운지 댓글 삭제", description = "작성자가 라운지 댓글 또는 답글을 삭제합니다.")
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
@@ -56,7 +53,62 @@ public interface LoungeCommentControllerDocs {
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 목록 조회", description = "게시글의 댓글 목록을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "라운지 댓글 목록 조회",
+      description =
+          """
+          게시글의 댓글 목록을 커서 방식으로 조회합니다.
+          ACTIVE 상태이면서 삭제되지 않은 부모 댓글을 반환합니다.
+          DELETED 상태인 부모 댓글은 활성 답글이 남아 있을 때만 반환하며, commentStatus는 DELETED, content는 빈 문자열, imageUrls는 빈 배열입니다.
+          HIDDEN 상태인 부모 댓글과 활성 답글이 없는 삭제된 부모 댓글은 반환하지 않습니다.
+          """)
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Deleted parent comment with active replies",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "comments": [
+                                  {
+                                    "loungeCommentId": 10,
+                                    "parentCommentId": null,
+                                    "content": "",
+                                    "imageUrls": [],
+                                    "commentStatus": "DELETED",
+                                    "writer": {
+                                      "userId": 2,
+                                      "nickname": "사용자",
+                                      "profileImageUrl": null
+                                    },
+                                    "createdAt": "2026-08-01T12:00:00",
+                                    "updatedAt": "2026-08-02T12:00:00",
+                                    "likeCount": 0,
+                                    "replyCount": 1,
+                                    "isLiked": false,
+                                    "isMyComment": false
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 10,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-02T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/comments"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
@@ -65,12 +117,26 @@ public interface LoungeCommentControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 답글 목록 조회", description = "댓글의 답글 목록을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "라운지 답글 목록 조회",
+      description = "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있습니다.")
   ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
       @Parameter(description = "한 번에 불러올 답글 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      AuthUser user,
+      HttpServletRequest request);
+
+  @Operation(
+      summary = "내가 댓글을 작성한 라운지 게시글 조회",
+      description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글을 중복 없이 조회합니다.")
+  ApiResponseBody<LoungePostCursorResponse> getMyComments(
+      @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
+          Long cursorId,
+      @Parameter(description = "한 번에 불러올 게시글 개수")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
 }

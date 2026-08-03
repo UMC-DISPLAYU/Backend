@@ -24,10 +24,12 @@ import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileR
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
 import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
+import com.example.demo.domain.user.presentation.request.UserSearchRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
+import com.example.demo.domain.user.presentation.response.UserSearchResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,9 +40,31 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface UserControllerDocs {
+
+  @Operation(
+      summary = "닉네임 기반 사용자 검색",
+      description =
+          """
+          닉네임에 검색어가 포함된 활성 사용자를 조회합니다.
+
+          - 검색어의 앞뒤 공백은 제거합니다.
+          - 영문 검색은 대소문자를 구분하지 않습니다.
+          - 작가 인증 여부와 관계없이 조회합니다.
+          - 탈퇴한 사용자는 제외합니다.
+          - 닉네임 오름차순, 사용자 ID 오름차순으로 정렬합니다.
+          - 검색 결과는 최대 20명까지 반환합니다.
+          """)
+  @ApiResponse(responseCode = "200", description = "사용자 검색 성공")
+  @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")
+  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
+  @ApiResponse(responseCode = "404", description = "해당 닉네임을 가진 사용자 없음")
+  @SecurityRequirement(name = "Authorization")
+  ApiResponseBody<List<UserSearchResponse>> searchUsers(
+      UserSearchRequest request, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 사용자 정보 조회", description = "로그인한 사용자의 기본 정보를 조회합니다.")
   @ApiResponse(

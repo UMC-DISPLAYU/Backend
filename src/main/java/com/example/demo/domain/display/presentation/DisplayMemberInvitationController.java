@@ -8,10 +8,12 @@ import com.example.demo.domain.display.application.service.GetDisplayMembersServ
 import com.example.demo.domain.display.application.service.GetMyDisplayInvitationsService;
 import com.example.demo.domain.display.application.service.InviteDisplayMemberService;
 import com.example.demo.domain.display.application.service.RejectDisplayInvitationService;
+import com.example.demo.domain.display.application.service.UpdateMyDisplayNicknameService;
 import com.example.demo.domain.display.presentation.docs.DisplayMemberInvitationControllerDocs;
 import com.example.demo.domain.display.presentation.mapper.DisplayMemberInvitationPresentationMapper;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
+import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,6 +47,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   private final RejectDisplayInvitationService rejectDisplayInvitationService;
   private final GetDisplayMembersService getDisplayMembersService;
   private final GetMyDisplayInvitationsService getMyDisplayInvitationsService;
+  private final UpdateMyDisplayNicknameService updateMyDisplayNicknameService;
   private final DisplayMemberInvitationPresentationMapper mapper;
 
   @Override
@@ -91,6 +95,18 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
       @PathVariable Long displayId, HttpServletRequest httpRequest) {
     DisplayMemberListResult result = getDisplayMembersService.getMembers(displayId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @Override
+  @PatchMapping("/display/me/nickname")
+  public ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
+      @Valid @RequestBody UpdateMyDisplayNicknameRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            updateMyDisplayNicknameService.updateNickname(request.toCommand(requireUserId(user)))),
+        httpRequest);
   }
 
   @Override

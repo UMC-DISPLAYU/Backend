@@ -2,12 +2,14 @@ package com.example.demo.domain.lounge.presentation;
 
 import com.example.demo.domain.lounge.application.command.LoungeCommentCommandService;
 import com.example.demo.domain.lounge.application.query.LoungeCommentQueryService;
+import com.example.demo.domain.lounge.application.query.LoungePostQueryService;
 import com.example.demo.domain.lounge.presentation.docs.LoungeCommentControllerDocs;
 import com.example.demo.domain.lounge.presentation.mapper.LoungePresentationMapper;
 import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
+import com.example.demo.domain.lounge.presentation.response.LoungePostCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeReplyCursorResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -17,7 +19,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,14 +32,17 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
 
   private final LoungeCommentCommandService loungeCommentCommandService;
   private final LoungeCommentQueryService loungeCommentQueryService;
+  private final LoungePostQueryService loungePostQueryService;
   private final LoungePresentationMapper mapper;
 
   public LoungeCommentController(
       LoungeCommentCommandService loungeCommentCommandService,
       LoungeCommentQueryService loungeCommentQueryService,
+      LoungePostQueryService loungePostQueryService,
       LoungePresentationMapper mapper) {
     this.loungeCommentCommandService = loungeCommentCommandService;
     this.loungeCommentQueryService = loungeCommentQueryService;
+    this.loungePostQueryService = loungePostQueryService;
     this.mapper = mapper;
   }
 
@@ -69,20 +73,6 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
     Long loungeCommentId =
         loungeCommentCommandService.createReply(
             parentCommentId, user.userId(), loungeCommentRequest.toCommand());
-    return ApiResponseBody.success(
-        mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
-        request);
-  }
-
-  @PatchMapping("/api/v1/lounge/comments/{loungeCommentId}")
-  @Override
-  public ApiResponseBody<LoungeCommentListResponse> updateComment(
-      @PathVariable Long loungeCommentId,
-      @RequestBody LoungeCommentRequest loungeCommentRequest,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest request) {
-    loungeCommentCommandService.updateComment(
-        loungeCommentId, user.userId(), loungeCommentRequest.toCommand());
     return ApiResponseBody.success(
         mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);
@@ -148,6 +138,20 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
     return ApiResponseBody.success(
         mapper.toResponse(
             loungeCommentQueryService.getReplies(parentCommentId, cursorId, size, viewerUserId)),
+        request);
+  }
+
+  @GetMapping("/api/v1/lounge/me/comments")
+  @Override
+  public ApiResponseBody<LoungePostCursorResponse> getMyComments(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            loungePostQueryService.getMyCommentedPosts(
+                LoungeAuthUser.requireUserId(user), cursorId, size)),
         request);
   }
 }

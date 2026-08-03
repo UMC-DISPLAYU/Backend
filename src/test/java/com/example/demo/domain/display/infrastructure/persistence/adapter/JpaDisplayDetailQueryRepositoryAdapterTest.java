@@ -80,7 +80,7 @@ class JpaDisplayDetailQueryRepositoryAdapterTest {
     displayLikeJpaRepository.saveAndFlush(DisplayLike.create(savedDisplay.getId(), new UserId(5L)));
 
     DisplayDetailResult result =
-        queryRepository.findDisplayDetail(savedDisplay.getId()).orElseThrow();
+        queryRepository.findDisplayDetail(savedDisplay.getId(), null).orElseThrow();
 
     assertThat(result.displayId()).isEqualTo(savedDisplay.getId());
     assertThat(result.ownerUserId()).isEqualTo(1L);
@@ -108,7 +108,7 @@ class JpaDisplayDetailQueryRepositoryAdapterTest {
 
   @Test
   void findDisplayDetailReturnsEmptyWhenDisplayDoesNotExist() {
-    assertThat(queryRepository.findDisplayDetail(999L)).isEmpty();
+    assertThat(queryRepository.findDisplayDetail(999L, null)).isEmpty();
   }
 
   private static Display display() {

@@ -40,6 +40,11 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   }
 
   @Override
+  public List<DisplayArtwork> findPublishedByDisplayId(Long displayId) {
+    return jpaRepository.findPublishedByDisplayId(displayId);
+  }
+
+  @Override
   public List<DisplayArtwork> findAllByParticipantUserId(Long userId) {
     return jpaRepository.findAllByParticipantUserId(userId);
   }

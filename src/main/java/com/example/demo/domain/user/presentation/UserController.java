@@ -15,6 +15,7 @@ import com.example.demo.domain.user.application.result.UpdateMyProfileResult;
 import com.example.demo.domain.user.application.service.ChangeNicknameService;
 import com.example.demo.domain.user.application.service.GetMyUserService;
 import com.example.demo.domain.user.application.service.ResendSchoolEmailVerificationService;
+import com.example.demo.domain.user.application.service.SearchUserService;
 import com.example.demo.domain.user.application.service.SendSchoolEmailVerificationService;
 import com.example.demo.domain.user.application.service.UpdateMyProfileService;
 import com.example.demo.domain.user.application.service.UserService;
@@ -25,16 +26,19 @@ import com.example.demo.domain.user.presentation.docs.UserControllerDocs;
 import com.example.demo.domain.user.presentation.mapper.UserPresentationMapper;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
 import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
+import com.example.demo.domain.user.presentation.request.UserSearchRequest;
 import com.example.demo.domain.user.presentation.response.ChangeNicknameResponse;
 import com.example.demo.domain.user.presentation.response.MyUserResponse;
 import com.example.demo.domain.user.presentation.response.NicknameCheckResponse;
 import com.example.demo.domain.user.presentation.response.UpdateMyProfileResponse;
+import com.example.demo.domain.user.presentation.response.UserSearchResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,6 +64,7 @@ public class UserController implements UserControllerDocs {
   private final UpdateMyProfileService updateMyProfileService;
   private final GetArtistProfileService getArtistProfileService;
   private final UpdateArtistProfileService updateArtistProfileService;
+  private final SearchUserService searchUserService;
   private final UserPresentationMapper userPresentationMapper;
   private final ArtistProfileMapper artistProfileMapper;
 
@@ -144,6 +149,20 @@ public class UserController implements UserControllerDocs {
     boolean isAvailable = userService.isNicknameAvailable(nickname);
 
     return ApiResponseBody.success(new NicknameCheckResponse(nickname, isAvailable), httpRequest);
+  }
+
+  @Override
+  @GetMapping("/search")
+  public ApiResponseBody<List<UserSearchResponse>> searchUsers(
+      @Valid UserSearchRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    requireUserId(user);
+    List<UserSearchResponse> response =
+        searchUserService.execute(request.normalizedNickname()).stream()
+            .map(userPresentationMapper::toResponse)
+            .toList();
+    return ApiResponseBody.success(response, httpRequest);
   }
 
   private Long requireUserId(AuthUser user) {

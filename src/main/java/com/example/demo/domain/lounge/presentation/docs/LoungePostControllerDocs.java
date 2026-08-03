@@ -72,4 +72,24 @@ public interface LoungePostControllerDocs {
   @Operation(summary = "라운지 게시글 상세 조회", description = "라운지 게시글 상세 정보를 조회합니다.")
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
+
+  @Operation(summary = "내 라운지 게시글 조회", description = "로그인 사용자가 작성한 게시글을 조회합니다.")
+  ApiResponseBody<LoungePostCursorResponse> getMyPosts(
+      @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
+          Long cursorId,
+      @Parameter(description = "한 번에 불러올 게시글 개수")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      AuthUser user,
+      HttpServletRequest request);
+
+  @Operation(summary = "내 라운지 스크랩 조회", description = "로그인 사용자가 스크랩한 게시글을 조회합니다.")
+  ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
+      @Parameter(description = "마지막으로 조회한 스크랩 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
+          Long cursorId,
+      @Parameter(description = "한 번에 불러올 게시글 개수")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      AuthUser user,
+      HttpServletRequest request);
 }

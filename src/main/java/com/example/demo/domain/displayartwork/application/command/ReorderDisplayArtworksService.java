@@ -39,7 +39,7 @@ public class ReorderDisplayArtworksService {
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
-    if (!display.isTeamLeader(requesterUserId)) {
+    if (!display.isOwner(requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
     }
 

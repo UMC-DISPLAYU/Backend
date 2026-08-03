@@ -1,7 +1,9 @@
 package com.example.demo.domain.displayartwork.application.query;
 
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -17,6 +19,7 @@ import com.example.demo.domain.displayartwork.domain.repository.CreatorRepositor
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkLikeRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.global.error.BusinessException;
 import java.time.format.DateTimeFormatter;
@@ -59,6 +62,11 @@ public class DisplayArtworkQueryService {
             .filter(artwork -> !artwork.isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
+    if (!canViewDraft(displayArtwork.getDisplay(), requesterUserId)
+        && (displayArtwork.getStatus() != DisplayArtworkStatus.PUBLISHED
+            || displayArtwork.getDisplay().getStatus() != DisplayStatus.PUBLISHED)) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND);
+    }
 
     Optional<Creator> leader = creatorRepository.findLeaderByDisplayArtworkId(displayArtworkId);
     String artistName = leader.map(Creator::getCreatorName).orElse(null);
@@ -128,13 +136,14 @@ public class DisplayArtworkQueryService {
   }
 
   @Transactional(readOnly = true)
-  public DisplayArtworkListResult getArtworksByDisplayId(Long displayId) {
-    displayRepository
-        .findById(displayId)
-        .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
+  public DisplayArtworkListResult getArtworksByDisplayId(Long displayId, Long requesterUserId) {
+    var display =
+        displayRepository
+            .findById(displayId)
+            .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     List<DisplayArtwork> artworks =
-        displayArtworkRepository.findAllByDisplayId(displayId).stream()
+        findVisibleArtworks(display, requesterUserId).stream()
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
@@ -149,7 +158,9 @@ public class DisplayArtworkQueryService {
     return new DisplayArtworkListResult(items);
   }
 
-  /** 작가 프로필 - 작품 탭. 대표 작가/공동 작업자 구분 없이 해당 유저가 참여한 출품작을 등록순으로 조회한다. */
+  /**
+   * 작가 프로필 - 작품 탭. 대표 작가/공동 작업자 구분 없이 해당 유저가 참여한 출품작을 등록순으로 조회한다. 공개 프로필이므로 공개된 전시의 공개된 작품만 노출한다.
+   */
   @Transactional(readOnly = true)
   public DisplayArtworkByArtistResult getArtworksByUserId(Long userId) {
     List<DisplayArtwork> artworks = displayArtworkRepository.findAllByParticipantUserId(userId);
@@ -187,6 +198,21 @@ public class DisplayArtworkQueryService {
             display.getTitle(),
             formattedPeriod,
             display.getLocation().placeName()));
+  }
+
+  private List<DisplayArtwork> findVisibleArtworks(Display display, Long requesterUserId) {
+    if (canViewDraft(display, requesterUserId)) {
+      return displayArtworkRepository.findAllByDisplayId(display.getId());
+    }
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND);
+    }
+    return displayArtworkRepository.findPublishedByDisplayId(display.getId());
+  }
+
+  private boolean canViewDraft(Display display, Long requesterUserId) {
+    return requesterUserId != null
+        && (display.isOwner(requesterUserId) || display.hasAcceptedTeamMember(requesterUserId));
   }
 
   private ArtworkItemResult toItem(
