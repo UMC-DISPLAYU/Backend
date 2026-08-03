@@ -60,7 +60,7 @@ class CreateDisplayArtworkServiceTest {
     when(displayArtworkRepository.save(any(DisplayArtwork.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(authorSetupService.setup(any(Long.class), any(AuthorSetupCommand.class)))
-        .thenReturn(new AuthorSetupResult(null, "작가", 1L, 0, 1L));
+        .thenReturn(new AuthorSetupResult(null, "작가", 1L, 0, List.of(1L)));
     ArgumentCaptor<DisplayArtwork> artworkCaptor = ArgumentCaptor.forClass(DisplayArtwork.class);
 
     service.createDisplayArtwork(1L, command());
@@ -116,7 +116,7 @@ class CreateDisplayArtworkServiceTest {
         1L,
         List.of(),
         List.of(),
-        1L);
+        List.of(1L));
   }
 
   private static BigDecimal bd(String value) {
