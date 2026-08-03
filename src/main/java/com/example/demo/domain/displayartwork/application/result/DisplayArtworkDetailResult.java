@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.result;
 
+import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import java.time.format.DateTimeFormatter;
@@ -71,7 +72,12 @@ public record DisplayArtworkDetailResult(
   }
 
   public record ExhibitionInfoResult(
-      Long displayId, String exhibitionTitle, String exhibitionPeriod, String exhibitionLocation) {
+      Long displayId,
+      String exhibitionTitle,
+      String exhibitionThumbnailUrl,
+      String exhibitionOrganizer,
+      String exhibitionPeriod,
+      String exhibitionLocation) {
 
     private static final DateTimeFormatter FULL_DATE = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private static final DateTimeFormatter SHORT_DATE = DateTimeFormatter.ofPattern("MM.dd");
@@ -83,7 +89,17 @@ public record DisplayArtworkDetailResult(
           "%s - %s"
               .formatted(period.startDate().format(FULL_DATE), period.endDate().format(SHORT_DATE));
       return new ExhibitionInfoResult(
-          display.getId(), display.getTitle(), formattedPeriod, display.getLocation().placeName());
+          display.getId(),
+          display.getTitle(),
+          display.getPosterImageUrl(),
+          organizerOf(display),
+          formattedPeriod,
+          display.getLocation().placeName());
+    }
+
+    // 프론트에서 그대로 노출하는 값이므로 "주최기관 부제" 형태로 합쳐서 전달한다.
+    private static String organizerOf(Display display) {
+      return "%s %s".formatted(display.getOrganization(), display.getSubtitle());
     }
   }
 }

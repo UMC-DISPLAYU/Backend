@@ -142,6 +142,8 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkDetailResponse.ExhibitionInfoResponse(
         result.displayId(),
         result.exhibitionTitle(),
+        result.exhibitionThumbnailUrl(),
+        result.exhibitionOrganizer(),
         result.exhibitionPeriod(),
         result.exhibitionLocation());
   }
