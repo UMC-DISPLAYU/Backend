@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
@@ -454,8 +455,13 @@ public class Display extends BaseTimeEntity {
   }
 
   public DisplayContent createContent(Long categoryId, String imageUrl, int width, int height) {
+    return createContent(categoryId, imageUrl, width, height, DisplayContentStatus.PUBLISHED);
+  }
+
+  public DisplayContent createContent(
+      Long categoryId, String imageUrl, int width, int height, DisplayContentStatus status) {
     DisplayContentCategory category = findContentCategory(categoryId);
-    return category.createContent(imageUrl, width, height);
+    return category.createContent(imageUrl, width, height, status);
   }
 
   public DisplayContent changeContent(

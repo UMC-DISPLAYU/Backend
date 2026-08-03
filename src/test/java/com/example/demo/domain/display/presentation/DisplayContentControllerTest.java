@@ -262,6 +262,33 @@ class DisplayContentControllerTest {
   }
 
   @Test
+  void updateContentSucceedsWhenRequesterIsAcceptedTeamMemberOnDraftDisplay() throws Exception {
+    Display display = displayWithCategory();
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
+    Long contentId = category.getContents().getFirst().getId();
+
+    mockMvc
+        .perform(
+            patch(
+                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    savedDisplay.getId(),
+                    category.getId(),
+                    contentId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    contentRequest(
+                        "https://cdn.displayu.com/display/content-updated.jpg", 1600, 1000)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.contentId").value(contentId))
+        .andExpect(
+            jsonPath("$.success.data.imageUrl")
+                .value("https://cdn.displayu.com/display/content-updated.jpg"));
+  }
+
+  @Test
   void updateContentReturnsUnauthorizedWithoutAuthentication() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
@@ -282,6 +309,30 @@ class DisplayContentControllerTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void deleteContentSucceedsWhenRequesterIsAcceptedTeamMemberOnDraftDisplay() throws Exception {
+    Display display = displayWithCategory();
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
+    Long contentId = category.getContents().getFirst().getId();
+
+    mockMvc
+        .perform(
+            delete(
+                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    savedDisplay.getId(),
+                    category.getId(),
+                    contentId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(savedDisplay.getId()))
+        .andExpect(jsonPath("$.success.data.categoryId").value(category.getId()))
+        .andExpect(jsonPath("$.success.data.contentId").value(contentId));
+
+    assertThat(category.getContents()).isEmpty();
   }
 
   @Test

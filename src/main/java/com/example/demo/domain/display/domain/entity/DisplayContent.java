@@ -1,8 +1,11 @@
 package com.example.demo.domain.display.domain.entity;
 
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,12 +41,22 @@ public class DisplayContent extends BaseTimeEntity {
   @Column(name = "contentsSortOrder", nullable = false)
   private int sortOrder;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private DisplayContentStatus status;
+
   protected DisplayContent() {}
 
   public DisplayContent(Long id, String imageUrl, int width, int height, int sortOrder) {
+    this(id, imageUrl, width, height, sortOrder, DisplayContentStatus.PUBLISHED);
+  }
+
+  public DisplayContent(
+      Long id, String imageUrl, int width, int height, int sortOrder, DisplayContentStatus status) {
     this.id = id;
     changeImageInfo(imageUrl, width, height);
     changeSortOrder(sortOrder);
+    this.status = Objects.requireNonNull(status, "status must not be null.");
   }
 
   public void assignCategory(DisplayContentCategory category) {
@@ -58,6 +71,10 @@ public class DisplayContent extends BaseTimeEntity {
     this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
     this.width = requirePositive(width, "width");
     this.height = requirePositive(height, "height");
+  }
+
+  public void publish() {
+    this.status = DisplayContentStatus.PUBLISHED;
   }
 
   private static String requireNonBlank(String value, String fieldName) {
