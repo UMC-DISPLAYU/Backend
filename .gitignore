@@ -36,6 +36,7 @@ logs/
 
 # Local verification artifacts
 .playwright-mcp/
+verification-screenshots/
 *.png
 
 # SSH private keys

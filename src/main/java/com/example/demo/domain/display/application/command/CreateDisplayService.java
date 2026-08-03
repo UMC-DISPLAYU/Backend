@@ -9,10 +9,6 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
-import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +18,12 @@ public class CreateDisplayService {
 
   private final DisplayRepository displayRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
-  private final UserRepository userRepository;
 
   public CreateDisplayService(
       DisplayRepository displayRepository,
-      DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      UserRepository userRepository) {
+      DisplayListCacheEvictionPort displayListCacheEvictionPort) {
     this.displayRepository = displayRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
-    this.userRepository = userRepository;
   }
 
   @Transactional
@@ -60,20 +53,12 @@ public class CreateDisplayService {
         new TeamMember(
             null,
             new UserId(command.ownerUserId()),
-            leaderName(command.ownerUserId()),
+            command.displayNickname(),
             TeamMemberRole.TEAM_LEADER,
             true));
 
     Display savedDisplay = displayRepository.save(display);
     displayListCacheEvictionPort.evictAfterCommit();
     return new CreateDisplayResult(savedDisplay.getId());
-  }
-
-  private String leaderName(Long ownerUserId) {
-    User user =
-        userRepository
-            .findById(ownerUserId)
-            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-    return user.getName();
   }
 }

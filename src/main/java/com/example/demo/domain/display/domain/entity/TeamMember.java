@@ -16,18 +16,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.Getter;
 
 @Getter
 @Entity
-@Table(
-    name = "TeamMember",
-    uniqueConstraints =
-        @UniqueConstraint(
-            name = "UQ_TEAMMEMBER_DISPLAY_USER",
-            columnNames = {"displayId", "userId"}))
+@Table(name = "TeamMember")
 public class TeamMember {
 
   @Id
@@ -52,6 +47,8 @@ public class TeamMember {
 
   @Column(name = "isAccepted", nullable = false)
   private boolean accepted;
+
+  private LocalDateTime deletedAt;
 
   protected TeamMember() {}
 
@@ -82,6 +79,16 @@ public class TeamMember {
 
   public void reject() {
     this.accepted = false;
+  }
+
+  public void softDelete(LocalDateTime deletedAt) {
+    if (this.deletedAt == null) {
+      this.deletedAt = Objects.requireNonNull(deletedAt, "deletedAt must not be null.");
+    }
+  }
+
+  public boolean isDeleted() {
+    return deletedAt != null;
   }
 
   private static String requireNonBlank(String value, String fieldName) {

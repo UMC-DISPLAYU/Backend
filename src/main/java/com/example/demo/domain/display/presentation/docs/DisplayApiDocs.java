@@ -121,6 +121,16 @@ public final class DisplayApiDocs {
   public static final String DETAIL_DISPLAY_ID_DESCRIPTION = "전시 ID";
   public static final String DETAIL_DISPLAY_ID_EXAMPLE = "1";
 
+  public static final String EXIT_SUMMARY = "전시 멤버 나가기";
+  public static final String EXIT_DESCRIPTION =
+      "인증된 사용자가 특정 전시에서 나갑니다. 수락된 활성 전시 멤버만 나갈 수 있으며, TEAM_LEADER는 이 API로 나갈 수 없습니다. "
+          + "나가기는 TeamMember.deletedAt을 기록하는 soft delete 방식으로 처리합니다.";
+  public static final String EXIT_SUCCESS_DESCRIPTION = "전시 멤버 나가기 성공";
+  public static final String EXIT_SUCCESS_EXAMPLE_NAME = "Display exit success";
+  public static final String EXIT_UNAUTHORIZED_EXAMPLE_NAME = "Display exit unauthorized";
+  public static final String EXIT_FORBIDDEN_EXAMPLE_NAME = "Display exit forbidden";
+  public static final String EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME = "Display member not found";
+
   public static final String CREATE_REQUEST_EXAMPLE =
       """
       {
@@ -132,7 +142,8 @@ public final class DisplayApiDocs {
         "region": "SEOUL",
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부",
-        "hostOrganizationName": null,
+        "qnaAccount": "@displayu",
+        "displayNickname": "전시 리더",
         "subtitle": "중앙대학교 디자인학부 졸업전시",
         "description": "디자인학부 학생들의...",
         "startDate": "2026-05-28",
@@ -163,7 +174,7 @@ public final class DisplayApiDocs {
               "latitude": 37.0063,
               "longitude": 127.2267
             },
-            "qnaAccount": "",
+            "qnaAccount": "@displayu",
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -194,7 +205,15 @@ public final class DisplayApiDocs {
               }
             ],
             "contentCategories": [],
-            "teamMembers": [],
+            "teamMembers": [
+              {
+                "teamMemberId": 1,
+                "userId": 1,
+                "displayNickname": "전시 리더",
+                "role": "TEAM_LEADER",
+                "accepted": true
+              }
+            ],
             "invitations": []
           }
         },
@@ -202,6 +221,72 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String EXIT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_FORBIDDEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "접근 권한이 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_UNAUTHORIZED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "인증이 필요합니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_MEMBER_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "DISPLAY_MEMBER_NOT_FOUND",
+          "message": "전시 멤버를 찾을 수 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
         }
       }
       """;

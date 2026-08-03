@@ -9,5 +9,7 @@ public interface TeamMemberRepository {
 
   Optional<TeamMember> findAcceptedByDisplayIdAndUserId(Long displayId, Long userId);
 
+  Optional<TeamMember> findActiveAcceptedByDisplayIdAndUserId(Long displayId, Long userId);
+
   TeamMember save(TeamMember teamMember);
 }

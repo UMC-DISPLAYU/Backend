@@ -17,9 +17,10 @@ public record CreateDisplayRequest(
     @NotNull Type type,
     @NotEmpty List<Field> fields,
     @NotNull Region region,
-    String schoolOrOrganization,
+    @NotBlank String schoolOrOrganization,
     String departmentOrClub,
-    String hostOrganizationName,
+    @NotBlank String qnaAccount,
+    @NotBlank String displayNickname,
     String subtitle,
     String description,
     @NotNull LocalDate startDate,
@@ -32,16 +33,8 @@ public record CreateDisplayRequest(
     @NotBlank String roadAddress,
     String precautions) {
 
-  @AssertTrue(message = "GRADUATION, TASK 타입은 schoolOrOrganization이 필수입니다.") public boolean isSchoolOrOrganizationValid() {
-    return !requiresSchoolInfo() || hasText(schoolOrOrganization);
-  }
-
   @AssertTrue(message = "GRADUATION, TASK 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {
     return !requiresSchoolInfo() || hasText(departmentOrClub);
-  }
-
-  @AssertTrue(message = "CLUB, JOINT, ETC 타입은 hostOrganizationName이 필수입니다.") public boolean isHostOrganizationNameValid() {
-    return requiresSchoolInfo() || hasText(hostOrganizationName);
   }
 
   @AssertTrue(message = "region은 ALL이 될 수 없습니다.") public boolean isRegionValid() {

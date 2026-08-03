@@ -203,7 +203,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                 teamMember.role.stringValue(),
                 teamMember.accepted))
         .from(teamMember)
-        .where(teamMember.display.id.eq(displayId))
+        .where(teamMember.display.id.eq(displayId), teamMember.deletedAt.isNull())
         .orderBy(teamMember.id.asc())
         .fetch();
   }
