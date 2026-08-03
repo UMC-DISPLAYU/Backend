@@ -251,10 +251,16 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
-  void getMembersReturnsAcceptedDisplayMembersWhenRequesterIsTeamMember() throws Exception {
+  void getMembersReturnsNonDeletedDisplayMembersWithUserState() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
-    User member = userJpaRepository.save(user("member"));
+    User member = user("member");
+    member.verifyAuthor("member@school.ac.kr", "중앙대학교");
+    userJpaRepository.save(member);
     User pending = userJpaRepository.save(user("pending"));
+    User withdrawn = user("withdrawn");
+    withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
+    userJpaRepository.save(withdrawn);
+    User exited = userJpaRepository.save(user("exited"));
     Display display = displayWithLeader(leader);
     display.addTeamMember(
         new TeamMember(
@@ -266,6 +272,18 @@ class DisplayMemberInvitationControllerTest {
             pending.getNickname(),
             TeamMemberRole.TEAM_MEM,
             false));
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(withdrawn.getId()),
+            withdrawn.getNickname(),
+            TeamMemberRole.TEAM_MEM,
+            true));
+    TeamMember exitedMember =
+        new TeamMember(
+            null, new UserId(exited.getId()), exited.getNickname(), TeamMemberRole.TEAM_MEM, true);
+    exitedMember.softDelete(LocalDateTime.of(2026, 7, 24, 12, 0));
+    display.addTeamMember(exitedMember);
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
@@ -275,11 +293,19 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.members.length()").value(2))
+        .andExpect(jsonPath("$.success.data.members.length()").value(4))
         .andExpect(jsonPath("$.success.data.members[0].userId").value(leader.getId()))
         .andExpect(jsonPath("$.success.data.members[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.members[1].userId").value(member.getId()))
-        .andExpect(jsonPath("$.success.data.members[1].role").value("TEAM_MEM"));
+        .andExpect(jsonPath("$.success.data.members[1].loggedIn").value(true))
+        .andExpect(jsonPath("$.success.data.members[1].artistVerified").value(true))
+        .andExpect(jsonPath("$.success.data.members[1].accepted").value(true))
+        .andExpect(jsonPath("$.success.data.members[1].role").value("TEAM_MEM"))
+        .andExpect(jsonPath("$.success.data.members[2].userId").value(pending.getId()))
+        .andExpect(jsonPath("$.success.data.members[2].accepted").value(false))
+        .andExpect(jsonPath("$.success.data.members[3].userId").value(withdrawn.getId()))
+        .andExpect(jsonPath("$.success.data.members[3].loggedIn").value(false))
+        .andExpect(jsonPath("$.success.data.members[3].artistVerified").value(false));
   }
 
   @Test

@@ -62,7 +62,13 @@ public class DisplayMemberInvitationPresentationMapper {
 
   public DisplayMemberListResponse.TeamMemberResponse toResponse(DisplayMemberResult result) {
     return new DisplayMemberListResponse.TeamMemberResponse(
-        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
+        result.teamMemberId(),
+        result.userId(),
+        result.displayNickname(),
+        result.loggedIn(),
+        result.artistVerified(),
+        result.accepted(),
+        result.role());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -73,7 +79,13 @@ public class DisplayMemberInvitationPresentationMapper {
   private DisplayMemberListResponse.TeamMemberResponse toResponse(
       DisplayMemberListResult.TeamMemberResult result) {
     return new DisplayMemberListResponse.TeamMemberResponse(
-        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
+        result.teamMemberId(),
+        result.userId(),
+        result.displayNickname(),
+        result.loggedIn(),
+        result.artistVerified(),
+        result.accepted(),
+        result.role());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(
