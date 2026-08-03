@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -8,6 +9,7 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkP
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
@@ -55,6 +57,33 @@ public class DisplayArtworkPresentationMapper {
   private DisplayArtworkPreviewResponse.ExhibitionInfoResponse toResponse(
       DisplayArtworkPreviewResult.ExhibitionInfoResult result) {
     return new DisplayArtworkPreviewResponse.ExhibitionInfoResponse(
+        result.displayId(),
+        result.exhibitionTitle(),
+        result.exhibitionPeriod(),
+        result.exhibitionLocation());
+  }
+
+  public DisplayArtworkByArtistResponse toResponse(DisplayArtworkByArtistResult result) {
+    return new DisplayArtworkByArtistResponse(
+        result.artworks().stream().map(this::toResponse).toList());
+  }
+
+  private DisplayArtworkByArtistResponse.ArtworkCardResponse toResponse(
+      DisplayArtworkByArtistResult.ArtworkCardResult result) {
+    return new DisplayArtworkByArtistResponse.ArtworkCardResponse(
+        result.artworkId(),
+        result.artworkName(),
+        result.artistName(),
+        result.artworkImageUrl(),
+        result.imageWidth(),
+        result.imageHeight(),
+        result.createdAt(),
+        toResponse(result.exhibitionInfo()));
+  }
+
+  private DisplayArtworkByArtistResponse.ExhibitionInfoResponse toResponse(
+      DisplayArtworkByArtistResult.ExhibitionInfoResult result) {
+    return new DisplayArtworkByArtistResponse.ExhibitionInfoResponse(
         result.displayId(),
         result.exhibitionTitle(),
         result.exhibitionPeriod(),
@@ -117,6 +146,8 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkDetailResponse.ExhibitionInfoResponse(
         result.displayId(),
         result.exhibitionTitle(),
+        result.exhibitionThumbnailUrl(),
+        result.exhibitionOrganizer(),
         result.exhibitionPeriod(),
         result.exhibitionLocation());
   }

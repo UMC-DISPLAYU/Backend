@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -101,5 +102,42 @@ class DisplayArtworkControllerTest {
                     """))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void getArtworksByArtistReturnsEmptyListWhenUserHasNoArtwork() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/artworks").param("userId", "999999"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.artworks").isArray())
+        .andExpect(jsonPath("$.success.data.artworks").isEmpty());
+  }
+
+  @Test
+  void getArtworksReturnsBadRequestWhenNoFilterParameterGiven() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/artworks"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("MISSING_REQUIRED_VALUE"));
+  }
+
+  @Test
+  void getArtworksReturnsBadRequestWhenBothFilterParametersGiven() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/artworks").param("displayId", "1").param("userId", "1"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("MISSING_REQUIRED_VALUE"));
+  }
+
+  @Test
+  void getArtworksByArtistReturnsBadRequestWhenUserIdIsNotPositive() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/artworks").param("userId", "-1"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
   }
 }

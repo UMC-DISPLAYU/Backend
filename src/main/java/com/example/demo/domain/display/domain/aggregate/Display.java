@@ -277,6 +277,16 @@ public class Display extends BaseTimeEntity {
     return Collections.unmodifiableList(images);
   }
 
+  // 전시 대표(포스터) 이미지 URL을 반환한다. 등록된 MAIN 이미지가 없으면 null이다.
+  public String getPosterImageUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN)
+        .filter(image -> !image.isDeleted())
+        .map(DisplayImage::getImageUrl)
+        .findFirst()
+        .orElse(null);
+  }
+
   // 소개 콘텐츠 카테고리 목록을 읽기 전용으로 반환한다.
   public List<DisplayContentCategory> getContentCategories() {
     return Collections.unmodifiableList(contentCategories);
