@@ -477,6 +477,75 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void getInvitationDisplaysReturnsPendingInvitedDisplaysByRequester() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    User otherInvitee = userJpaRepository.save(user("otherInvitee"));
+    Display pendingDisplay = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    invite(pendingDisplay.getId(), leader.getId(), invitee.getId());
+    invite(pendingDisplay.getId(), leader.getId(), otherInvitee.getId());
+
+    Display acceptedDisplay = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long acceptedInvitationId = invite(acceptedDisplay.getId(), leader.getId(), invitee.getId());
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", acceptedInvitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
+        .andExpect(status().isOk());
+
+    Display rejectedDisplay = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long rejectedInvitationId = invite(rejectedDisplay.getId(), leader.getId(), invitee.getId());
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/reject", rejectedInvitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk());
+
+    Display deletedInvitationDisplay = displayWithLeader(leader);
+    deletedInvitationDisplay.addInvitation(
+        new DisplayInvitation(
+            null,
+            new UserId(leader.getId()),
+            new UserId(invitee.getId()),
+            DisplayInvitationStatus.PENDING,
+            LocalDateTime.of(2026, 7, 21, 10, 0),
+            null,
+            LocalDateTime.of(2026, 7, 21, 11, 0)));
+    displayJpaRepository.saveAndFlush(deletedInvitationDisplay);
+
+    mockMvc
+        .perform(
+            get("/api/v1/display-invitations")
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.exhibitions.length()").value(1))
+        .andExpect(
+            jsonPath("$.success.data.exhibitions[0].displayId").value(pendingDisplay.getId()))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].title").value("FORM 2026"))
+        .andExpect(
+            jsonPath("$.success.data.exhibitions[0].posterImageUrl")
+                .value("https://cdn.displayu.com/posters/main.png"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].organization").value("organization"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].department").value("department"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].startedAt").value("2026-05-28"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].endedAt").value("2026-06-05"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(-47))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false));
+  }
+
+  @Test
+  void getInvitationDisplaysReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/display-invitations"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void getMyInvitationsDoesNotReturnAcceptedInvitation() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
