@@ -1,6 +1,5 @@
 package com.example.demo.domain.display.presentation;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-class DisplayControllerUpdateTest {
+class DisplayControllerReservationTest {
 
   @Autowired private MockMvc mockMvc;
 
@@ -44,102 +43,85 @@ class DisplayControllerUpdateTest {
   @Autowired private JwtFactory jwtFactory;
 
   @Test
-  void getDraftDisplayDetailSucceedsWhenRequesterIsAcceptedTeamMember() throws Exception {
+  void updateDisplayReservationUpdatesOpenPoliciesWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithTeamMembers();
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
         .perform(
-            get("/api/v1/display/{displayId}", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
-        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.status").value("DRAFT"));
-  }
-
-  @Test
-  void updateDisplayUpdatesOptionalFieldsWhenRequesterIsTeamLeader() throws Exception {
-    Display display = displayWithTeamMembers();
-    displayJpaRepository.saveAndFlush(display);
-
-    mockMvc
-        .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/display/{displayId}/reservation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(display.getId())))
+                .content(reservationRequest()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.title").value("FORM 2026 (수정본)"))
-        .andExpect(jsonPath("$.success.data.subtitle").value("변경된 전시 부제목입니다."))
-        .andExpect(jsonPath("$.success.data.content").value("변경된 전시 소개글입니다."))
-        .andExpect(jsonPath("$.success.data.note").value("물품 보관소를 운영하지 않습니다."))
-        .andExpect(jsonPath("$.success.data.location.placeName").value("중앙대학교 301관 갤러리 3층 전시장"))
-        .andExpect(jsonPath("$.success.data.displayType").value("GRADUATION"))
-        .andExpect(jsonPath("$.success.data.displayFields[0]").value("DESIGN"))
-        .andExpect(jsonPath("$.success.data.displayFields[1]").value("VIDEO"))
-        .andExpect(jsonPath("$.success.data.period.startDate").value("2026-05-29"))
-        .andExpect(jsonPath("$.success.data.period.endDate").value("2026-06-06"))
-        .andExpect(jsonPath("$.success.data.period.startTime").value("09:00:00"))
-        .andExpect(jsonPath("$.success.data.period.endTime").value("19:00:00"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+        .andExpect(jsonPath("$.success.data.artworkContentOpen").value("ON_EXHIBITION"))
+        .andExpect(jsonPath("$.success.data.exhibitionContentOpen").value("IMMEDIATELY"))
+        .andExpect(
+            jsonPath("$.meta.path")
+                .value("/api/v1/display/%d/reservation".formatted(display.getId())));
   }
 
   @Test
-  void updateDisplayReturnsForbiddenWhenRequesterIsNotTeamLeader() throws Exception {
+  void updateDisplayReservationReturnsForbiddenWhenRequesterIsNotTeamLeader() throws Exception {
     Display display = displayWithTeamMembers();
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
         .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/display/{displayId}/reservation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(display.getId())))
+                .content(reservationRequest()))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
   @Test
-  void updateDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+  void updateDisplayReservationReturnsUnauthorizedWithoutAuthentication() throws Exception {
     Display display = displayWithTeamMembers();
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
         .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/display/{displayId}/reservation", display.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(display.getId())))
+                .content(reservationRequest()))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
-  private static String updateRequest(Long displayId) {
+  @Test
+  void updateDisplayReservationReturnsBadRequestWhenOpenPolicyIsMissing() throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/reservation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "artworkContentOpen": "ON_EXHIBITION"
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  private static String reservationRequest() {
     return """
         {
-          "displayId": %d,
-          "title": "FORM 2026 (수정본)",
-          "posterImageUrl": "https://cdn.displayu.com/posters/updated.png",
-          "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
-          "schoolOrOrganization": "중앙대학교",
-          "departmentOrClub": "디자인학부 시각디자인",
-          "hostOrganizationName": null,
-          "subtitle": "변경된 전시 부제목입니다.",
-          "description": "변경된 전시 소개글입니다.",
-          "startDate": "2026-05-29",
-          "endDate": "2026-06-06",
-          "openTime": "09:00",
-          "closeTime": "19:00",
-          "placeName": "중앙대학교 301관 갤러리 3층 전시장",
-          "precautions": "물품 보관소를 운영하지 않습니다."
+          "artworkContentOpen": "ON_EXHIBITION",
+          "exhibitionContentOpen": "IMMEDIATELY"
         }
-        """
-        .formatted(displayId);
+        """;
   }
 
   private static Display displayWithTeamMembers() {

@@ -101,8 +101,10 @@ public class DisplayArtworkController {
       description = "특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.")
   public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
       @Parameter(description = "조회할 전시 ID") @RequestParam Long displayId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
-    DisplayArtworkListResult result = displayArtworkQueryService.getArtworksByDisplayId(displayId);
+    DisplayArtworkListResult result =
+        displayArtworkQueryService.getArtworksByDisplayId(displayId, optionalUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

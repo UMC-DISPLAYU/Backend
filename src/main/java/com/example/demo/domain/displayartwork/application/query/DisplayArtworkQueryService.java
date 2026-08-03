@@ -1,7 +1,9 @@
 package com.example.demo.domain.displayartwork.application.query;
 
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.QaHandlerResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -17,6 +19,7 @@ import com.example.demo.domain.displayartwork.domain.repository.CreatorRepositor
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkLikeRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.global.error.BusinessException;
 import java.time.format.DateTimeFormatter;
@@ -59,6 +62,11 @@ public class DisplayArtworkQueryService {
             .filter(artwork -> !artwork.isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
+    if (!canViewDraft(displayArtwork.getDisplay(), requesterUserId)
+        && (displayArtwork.getStatus() != DisplayArtworkStatus.PUBLISHED
+            || displayArtwork.getDisplay().getStatus() != DisplayStatus.PUBLISHED)) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND);
+    }
 
     List<Creator> creators = creatorRepository.findByDisplayArtworkId(displayArtworkId);
     Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
@@ -134,13 +142,14 @@ public class DisplayArtworkQueryService {
   }
 
   @Transactional(readOnly = true)
-  public DisplayArtworkListResult getArtworksByDisplayId(Long displayId) {
-    displayRepository
-        .findById(displayId)
-        .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
+  public DisplayArtworkListResult getArtworksByDisplayId(Long displayId, Long requesterUserId) {
+    var display =
+        displayRepository
+            .findById(displayId)
+            .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     List<DisplayArtwork> artworks =
-        displayArtworkRepository.findAllByDisplayId(displayId).stream()
+        findVisibleArtworks(display, requesterUserId).stream()
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
@@ -153,6 +162,21 @@ public class DisplayArtworkQueryService {
     List<ArtworkItemResult> items =
         artworks.stream().map(artwork -> toItem(artwork, artistNamesByArtworkId)).toList();
     return new DisplayArtworkListResult(items);
+  }
+
+  private List<DisplayArtwork> findVisibleArtworks(Display display, Long requesterUserId) {
+    if (canViewDraft(display, requesterUserId)) {
+      return displayArtworkRepository.findAllByDisplayId(display.getId());
+    }
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND);
+    }
+    return displayArtworkRepository.findPublishedByDisplayId(display.getId());
+  }
+
+  private boolean canViewDraft(Display display, Long requesterUserId) {
+    return requesterUserId != null
+        && (display.isOwner(requesterUserId) || display.hasAcceptedTeamMember(requesterUserId));
   }
 
   private ArtworkItemResult toItem(

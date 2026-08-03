@@ -40,6 +40,11 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   }
 
   @Override
+  public List<DisplayArtwork> findPublishedByDisplayId(Long displayId) {
+    return jpaRepository.findPublishedByDisplayId(displayId);
+  }
+
+  @Override
   public List<DisplayArtwork> findPreview(
       PreviewFilterType type, ArtworkType field, String school, int page, int size) {
     boolean requireGraduation = type == PreviewFilterType.GRADUATION;
