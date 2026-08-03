@@ -11,6 +11,7 @@ import com.example.demo.domain.display.domain.entity.QDisplayInvitation;
 import com.example.demo.domain.display.domain.entity.QDisplayLike;
 import com.example.demo.domain.display.domain.entity.QTeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -42,7 +43,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
   }
 
   @Override
-  public Optional<DisplayDetailResult> findDisplayDetail(Long displayId) {
+  public Optional<DisplayDetailResult> findDisplayDetail(Long displayId, Long requesterUserId) {
     Tuple base = fetchBase(displayId);
     if (base == null) {
       return Optional.empty();
@@ -50,9 +51,13 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
 
     List<DisplayDetailResult.ImageResult> images = fetchImages(displayId);
     List<String> fields = fetchFields(displayId);
-    List<DisplayDetailResult.ContentCategoryResult> contentCategories =
-        fetchContentCategories(displayId);
     List<DisplayDetailResult.TeamMemberResult> teamMembers = fetchTeamMembers(displayId);
+    boolean canViewDraft = canViewDraft(base, teamMembers, requesterUserId);
+    if (!canViewDraft && base.get(display.status) != DisplayStatus.PUBLISHED) {
+      return Optional.empty();
+    }
+    List<DisplayDetailResult.ContentCategoryResult> contentCategories =
+        fetchContentCategories(displayId, canViewDraft);
     List<DisplayDetailResult.InvitationResult> invitations = fetchInvitations(displayId);
 
     return Optional.of(toResult(base, fields, images, contentCategories, teamMembers, invitations));
@@ -119,7 +124,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         .fetch();
   }
 
-  private List<DisplayDetailResult.ContentCategoryResult> fetchContentCategories(Long displayId) {
+  private List<DisplayDetailResult.ContentCategoryResult> fetchContentCategories(
+      Long displayId, boolean includeDraft) {
     List<Tuple> categories =
         queryFactory
             .select(
@@ -133,7 +139,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             .fetch();
 
     Map<Long, List<DisplayDetailResult.ContentResult>> contentsByCategoryId =
-        fetchContents(categories.stream().map(tuple -> tuple.get(contentCategory.id)).toList());
+        fetchContents(
+            categories.stream().map(tuple -> tuple.get(contentCategory.id)).toList(), includeDraft);
 
     return categories.stream()
         .map(
@@ -148,7 +155,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         .toList();
   }
 
-  private Map<Long, List<DisplayDetailResult.ContentResult>> fetchContents(List<Long> categoryIds) {
+  private Map<Long, List<DisplayDetailResult.ContentResult>> fetchContents(
+      List<Long> categoryIds, boolean includeDraft) {
     if (categoryIds.isEmpty()) {
       return Collections.emptyMap();
     }
@@ -165,7 +173,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             .from(content)
             .where(
                 content.category.id.in(categoryIds),
-                content.status.eq(DisplayContentStatus.PUBLISHED))
+                includeDraft ? null : content.status.eq(DisplayContentStatus.PUBLISHED))
             .orderBy(content.category.id.asc(), content.sortOrder.asc(), content.id.asc())
             .fetch();
 
@@ -213,6 +221,18 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         .where(invitation.display.id.eq(displayId), invitation.deletedAt.isNull())
         .orderBy(invitation.createdAt.asc(), invitation.id.asc())
         .fetch();
+  }
+
+  private boolean canViewDraft(
+      Tuple base, List<DisplayDetailResult.TeamMemberResult> teamMembers, Long requesterUserId) {
+    if (requesterUserId == null) {
+      return false;
+    }
+    Long ownerUserId = base.get(display.ownerUserId.value);
+    return requesterUserId.equals(ownerUserId)
+        || teamMembers.stream()
+            .anyMatch(
+                teamMember -> teamMember.accepted() && requesterUserId.equals(teamMember.userId()));
   }
 
   private DisplayDetailResult toResult(

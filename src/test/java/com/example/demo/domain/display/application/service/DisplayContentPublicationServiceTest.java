@@ -184,12 +184,53 @@ class DisplayContentPublicationServiceTest {
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
 
-    var result = getDisplayDetailService.getDisplayDetail(savedDisplay.getId());
+    var result = getDisplayDetailService.getDisplayDetail(savedDisplay.getId(), null);
 
     assertThat(result.contentCategories()).hasSize(1);
     assertThat(result.contentCategories().getFirst().contents()).hasSize(1);
     assertThat(result.contentCategories().getFirst().contents().getFirst().imageUrl())
         .isEqualTo("https://cdn.displayu.com/display/content-published.jpg");
+  }
+
+  @Test
+  void displayDetailIncludesDraftContentsForDisplayOwner() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 1),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.publish();
+    display.addContentCategory(
+        new DisplayContentCategory(
+            null,
+            "전시 소개",
+            "전시 소개 이미지입니다.",
+            0,
+            List.of(
+                new DisplayContent(
+                    null,
+                    "https://cdn.displayu.com/display/content-published.jpg",
+                    1200,
+                    800,
+                    0,
+                    DisplayContentStatus.PUBLISHED),
+                new DisplayContent(
+                    null,
+                    "https://cdn.displayu.com/display/content-draft.jpg",
+                    1200,
+                    800,
+                    1,
+                    DisplayContentStatus.DRAFT))));
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+
+    var result = getDisplayDetailService.getDisplayDetail(savedDisplay.getId(), 1L);
+
+    assertThat(result.contentCategories()).hasSize(1);
+    assertThat(result.contentCategories().getFirst().contents())
+        .extracting(content -> content.imageUrl())
+        .containsExactly(
+            "https://cdn.displayu.com/display/content-published.jpg",
+            "https://cdn.displayu.com/display/content-draft.jpg");
   }
 
   @Test
@@ -207,7 +248,7 @@ class DisplayContentPublicationServiceTest {
         publishedArtworkId, savedDisplay.getId(), "공개 작품", DisplayArtworkStatus.PUBLISHED);
     insertArtwork(draftArtworkId, savedDisplay.getId(), "초안 작품", DisplayArtworkStatus.DRAFT);
 
-    var listResult = displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId());
+    var listResult = displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId(), null);
 
     assertThat(listResult.artworks()).hasSize(1);
     assertThat(listResult.artworks().getFirst().artworkId()).isEqualTo(publishedArtworkId);
@@ -230,13 +271,33 @@ class DisplayContentPublicationServiceTest {
     Long artworkId = 10_005L;
     insertArtwork(artworkId, savedDisplay.getId(), "전시 미공개 작품", DisplayArtworkStatus.PUBLISHED);
 
-    var listResult = displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId());
-
-    assertThat(listResult.artworks()).isEmpty();
+    assertThatThrownBy(
+            () -> displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId(), null))
+        .isInstanceOf(BusinessException.class)
+        .hasMessageContaining(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND.getMessage());
     assertThatThrownBy(
             () -> displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, null))
         .isInstanceOf(BusinessException.class)
         .hasMessageContaining(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND.getMessage());
+  }
+
+  @Test
+  void displayArtworkQueriesIncludeDraftArtworksForDisplayOwner() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 1),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_006L;
+    insertArtwork(artworkId, savedDisplay.getId(), "초안 작품", DisplayArtworkStatus.DRAFT);
+
+    var listResult = displayArtworkQueryService.getArtworksByDisplayId(savedDisplay.getId(), 1L);
+    var detailResult = displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, 1L);
+
+    assertThat(listResult.artworks()).hasSize(1);
+    assertThat(listResult.artworks().getFirst().artworkId()).isEqualTo(artworkId);
+    assertThat(detailResult.artworkId()).isEqualTo(artworkId);
   }
 
   private static Display display(

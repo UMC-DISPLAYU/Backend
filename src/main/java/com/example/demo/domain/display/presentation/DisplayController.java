@@ -257,7 +257,7 @@ public class DisplayController {
             .displayId();
     DisplayDetailResult result =
         displayBookmarkEnrichmentService.enrich(
-            getDisplayDetailService.getDisplayDetail(displayId), user.userId());
+            getDisplayDetailService.getDisplayDetail(displayId, user.userId()), user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -652,7 +652,8 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayDetailResult result =
         displayBookmarkEnrichmentService.enrich(
-            getDisplayDetailService.getDisplayDetail(displayId), userIdOrNull(user));
+            getDisplayDetailService.getDisplayDetail(displayId, userIdOrNull(user)),
+            userIdOrNull(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

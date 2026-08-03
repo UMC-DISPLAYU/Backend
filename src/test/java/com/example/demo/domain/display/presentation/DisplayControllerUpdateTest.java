@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +42,21 @@ class DisplayControllerUpdateTest {
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
   @Autowired private JwtFactory jwtFactory;
+
+  @Test
+  void getDraftDisplayDetailSucceedsWhenRequesterIsAcceptedTeamMember() throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.status").value("DRAFT"));
+  }
 
   @Test
   void updateDisplayUpdatesOptionalFieldsWhenRequesterIsTeamLeader() throws Exception {
