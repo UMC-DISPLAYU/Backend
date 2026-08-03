@@ -25,6 +25,17 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.D
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DU_PICKS_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_FORBIDDEN_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_FORBIDDEN_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_MEMBER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_UNAUTHORIZED_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.EXIT_UNAUTHORIZED_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
@@ -66,6 +77,27 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.M
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MAP_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.SEARCH_SUCCESS_EXAMPLE;
@@ -85,6 +117,8 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.PublishDisplayService;
+import com.example.demo.domain.display.application.command.UpdateDisplayReservationService;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
@@ -93,6 +127,7 @@ import com.example.demo.domain.display.application.result.DisplayInvitationDisab
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
+import com.example.demo.domain.display.application.service.ExitDisplayService;
 import com.example.demo.domain.display.application.service.GetMyDisplaysService;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
@@ -106,8 +141,10 @@ import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
+import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayReservationRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
@@ -133,6 +170,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -150,6 +188,8 @@ public class DisplayController {
   private final DisplayLikeCommandService displayLikeCommandService;
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
+  private final PublishDisplayService publishDisplayService;
+  private final UpdateDisplayReservationService updateDisplayReservationService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
@@ -159,6 +199,7 @@ public class DisplayController {
   private final SearchDisplaysUseCase searchDisplaysUseCase;
   private final DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService;
   private final GetMyDisplaysService getMyDisplaysService;
+  private final ExitDisplayService exitDisplayService;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -166,6 +207,8 @@ public class DisplayController {
       DisplayLikeCommandService displayLikeCommandService,
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
+      PublishDisplayService publishDisplayService,
+      UpdateDisplayReservationService updateDisplayReservationService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayByInvitationService getDisplayByInvitationService,
       GetDisplayMapUseCase getDisplayMapUseCase,
@@ -175,11 +218,14 @@ public class DisplayController {
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
       GetMyDisplaysService getMyDisplaysService,
+      ExitDisplayService exitDisplayService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
+    this.publishDisplayService = publishDisplayService;
+    this.updateDisplayReservationService = updateDisplayReservationService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
@@ -189,6 +235,7 @@ public class DisplayController {
     this.searchDisplaysUseCase = searchDisplaysUseCase;
     this.displayBookmarkEnrichmentService = displayBookmarkEnrichmentService;
     this.getMyDisplaysService = getMyDisplaysService;
+    this.exitDisplayService = exitDisplayService;
     this.mapper = mapper;
   }
 
@@ -226,8 +273,59 @@ public class DisplayController {
             .displayId();
     DisplayDetailResult result =
         displayBookmarkEnrichmentService.enrich(
-            getDisplayDetailService.getDisplayDetail(displayId), user.userId());
+            getDisplayDetailService.getDisplayDetail(displayId, user.userId()), user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @DeleteMapping("/api/v1/display/{displayId}/exit")
+  @Operation(summary = EXIT_SUMMARY, description = EXIT_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = EXIT_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = EXIT_SUCCESS_EXAMPLE_NAME, value = EXIT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_UNAUTHORIZED_EXAMPLE_NAME,
+                      value = EXIT_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "전시 팀장 나가기 제한",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_FORBIDDEN_EXAMPLE_NAME,
+                      value = EXIT_FORBIDDEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "전시 멤버를 찾을 수 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME,
+                      value = EXIT_MEMBER_NOT_FOUND_EXAMPLE)))
+  public ApiResponseBody<Void> exitDisplay(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    exitDisplayService.exit(displayId, requireUserId(user));
+    return ApiResponseBody.success(null, request);
   }
 
   @PatchMapping("/api/v1/display")
@@ -260,6 +358,76 @@ public class DisplayController {
     DisplayDetailResult result =
         updateDisplayService.updateDisplay(
             mapper.toCommand(updateDisplayRequest, requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/publish")
+  @Operation(summary = PUBLISH_SUMMARY, description = PUBLISH_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = PUBLISH_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = PUBLISH_REQUEST_EXAMPLE_NAME,
+                      value = PUBLISH_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = PUBLISH_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = PUBLISH_SUCCESS_EXAMPLE_NAME,
+                      value = PUBLISH_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> publishDisplay(
+      @Valid @RequestBody PublishDisplayRequest publishDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayDetailResult result =
+        publishDisplayService.publishDisplay(publishDisplayRequest.toCommand(requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/{displayId}/reservation")
+  @Operation(summary = RESERVATION_SUMMARY, description = RESERVATION_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = RESERVATION_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = RESERVATION_REQUEST_EXAMPLE_NAME,
+                      value = RESERVATION_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = RESERVATION_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = RESERVATION_SUCCESS_EXAMPLE_NAME,
+                      value = RESERVATION_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> updateDisplayReservation(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @Valid @RequestBody UpdateDisplayReservationRequest updateDisplayReservationRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayDetailResult result =
+        updateDisplayReservationService.updateReservation(
+            updateDisplayReservationRequest.toCommand(requireUserId(user), displayId));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
@@ -513,6 +681,17 @@ public class DisplayController {
   }
 
   @GetMapping("/api/v1/display/me")
+  @Operation(summary = MY_DISPLAY_SUMMARY, description = MY_DISPLAY_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      description = MY_DISPLAY_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = MY_DISPLAY_SUCCESS_EXAMPLE_NAME,
+                      value = MY_DISPLAY_SUCCESS_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   public ApiResponseBody<MyDisplayListResponse> getMyDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {
@@ -540,7 +719,8 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayDetailResult result =
         displayBookmarkEnrichmentService.enrich(
-            getDisplayDetailService.getDisplayDetail(displayId), userIdOrNull(user));
+            getDisplayDetailService.getDisplayDetail(displayId, userIdOrNull(user)),
+            userIdOrNull(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

@@ -9,6 +9,7 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
+import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,14 +27,17 @@ public class AuthorSetupService {
   private final DisplayArtworkRepository displayArtworkRepository;
   private final CreatorRepository creatorRepository;
   private final ArtistVerificationRepository artistVerificationRepository;
+  private final UserNicknameRepository userNicknameRepository;
 
   public AuthorSetupService(
       DisplayArtworkRepository displayArtworkRepository,
       CreatorRepository creatorRepository,
-      ArtistVerificationRepository artistVerificationRepository) {
+      ArtistVerificationRepository artistVerificationRepository,
+      UserNicknameRepository userNicknameRepository) {
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.artistVerificationRepository = artistVerificationRepository;
+    this.userNicknameRepository = userNicknameRepository;
   }
 
   @Transactional
@@ -56,19 +60,32 @@ public class AuthorSetupService {
           display, artistUserId, DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID);
     }
 
+    // 대리 등록(대표 작가가 본인이 아닌 경우)은 전시 대표자만 할 수 있다.
+    if (!Objects.equals(artistUserId, requesterUserId)
+        && !isDisplayLeader(display, requesterUserId)) {
+      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
+    }
+
+    // 계정 없는 작가를 대리 등록하면 artistUserId가 null이므로 공동 작업자 중복 검사에서 제외한다.
     List<Long> coAuthorUserIds = command.coAuthorUserIds();
-    if (coAuthorUserIds.contains(artistUserId)
+    if ((artistUserId != null && coAuthorUserIds.contains(artistUserId))
         || new HashSet<>(coAuthorUserIds).size() != coAuthorUserIds.size()) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_CO_AUTHOR);
     }
     Map<Long, String> coAuthorNames = resolveCoAuthorNames(display, coAuthorUserIds);
 
-    Set<Long> qaHandlerCandidates = new HashSet<>(coAuthorUserIds);
+    // 작가(대표 작가/공동 작업자)는 Q&A 담당자가 될 수 있고,
+    // 전시 대표자는 해당 작품의 작가인지와 무관하게 Q&A 담당자가 될 수 있다.
+    // 계정이 없는 작가를 대리 등록하는 경우 후보가 대표자뿐인 상황도 정상이다.
+    Set<Long> artistUserIds = new HashSet<>(coAuthorUserIds);
     if (artistUserId != null) {
-      qaHandlerCandidates.add(artistUserId);
+      artistUserIds.add(artistUserId);
     }
-    if (!qaHandlerCandidates.contains(command.qaHandlerUserId())) {
-      throw new BusinessException(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
+    List<Long> qaHandlerUserIds = command.qaHandlerUserIds().stream().distinct().toList();
+    for (Long qaHandlerUserId : qaHandlerUserIds) {
+      if (!artistUserIds.contains(qaHandlerUserId) && !isDisplayLeader(display, qaHandlerUserId)) {
+        throw new BusinessException(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
+      }
     }
 
     creatorRepository.deleteAllByDisplayArtworkId(command.artworkId());
@@ -78,7 +95,7 @@ public class AuthorSetupService {
         new Creator(
             null,
             command.artistName(),
-            command.qaHandlerUserId().equals(artistUserId),
+            qaHandlerUserIds.contains(artistUserId),
             true,
             artistUserId,
             command.artworkId()));
@@ -87,7 +104,7 @@ public class AuthorSetupService {
           new Creator(
               null,
               coAuthorNames.get(coAuthorUserId),
-              command.qaHandlerUserId().equals(coAuthorUserId),
+              qaHandlerUserIds.contains(coAuthorUserId),
               false,
               coAuthorUserId,
               command.artworkId()));
@@ -95,15 +112,41 @@ public class AuthorSetupService {
     for (String rawName : command.coAuthorRawNames()) {
       creators.add(new Creator(null, rawName, false, false, null, command.artworkId()));
     }
+    // Q&A 답변 권한과 답변자 표기는 모두 Creator를 근거로 하므로, 작가가 아닌 전시 대표자를
+    // 담당자로 지정한 경우에도 Creator를 남겨야 실제로 답변할 수 있다.
+    for (Long qaHandlerUserId : qaHandlerUserIds) {
+      if (!artistUserIds.contains(qaHandlerUserId)) {
+        creators.add(
+            new Creator(
+                null,
+                resolveDisplayLeaderName(display, qaHandlerUserId),
+                true,
+                false,
+                qaHandlerUserId,
+                command.artworkId()));
+      }
+    }
     creatorRepository.saveAll(creators);
 
     int coAuthorCount = coAuthorUserIds.size() + command.coAuthorRawNames().size();
     return new AuthorSetupResult(
-        command.artworkId(),
-        command.artistName(),
-        artistUserId,
-        coAuthorCount,
-        command.qaHandlerUserId());
+        command.artworkId(), command.artistName(), artistUserId, coAuthorCount, qaHandlerUserIds);
+  }
+
+  /** 작가가 아닌 전시 대표자를 Creator로 남길 때 사용할 이름을 찾는다. */
+  private String resolveDisplayLeaderName(Display display, Long userId) {
+    return display.getTeamMembers().stream()
+        .filter(TeamMember::isAccepted)
+        .filter(teamMember -> teamMember.getUserId().value().equals(userId))
+        .map(TeamMember::getDisplayNickname)
+        .findFirst()
+        .or(() -> userNicknameRepository.findNicknameById(userId))
+        .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.INVALID_QA_HANDLER));
+  }
+
+  /** 전시 대표자(전시 생성자 또는 수락된 팀장)인지 판별한다. */
+  private boolean isDisplayLeader(Display display, Long userId) {
+    return display.isOwner(userId) || display.isTeamLeader(userId);
   }
 
   private void validateRequester(Display display, Long requesterUserId) {

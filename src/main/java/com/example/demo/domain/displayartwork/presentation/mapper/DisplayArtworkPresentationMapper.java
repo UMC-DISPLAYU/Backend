@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -8,7 +9,9 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkP
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -60,6 +63,33 @@ public class DisplayArtworkPresentationMapper {
         result.exhibitionLocation());
   }
 
+  public DisplayArtworkByArtistResponse toResponse(DisplayArtworkByArtistResult result) {
+    return new DisplayArtworkByArtistResponse(
+        result.artworks().stream().map(this::toResponse).toList());
+  }
+
+  private DisplayArtworkByArtistResponse.ArtworkCardResponse toResponse(
+      DisplayArtworkByArtistResult.ArtworkCardResult result) {
+    return new DisplayArtworkByArtistResponse.ArtworkCardResponse(
+        result.artworkId(),
+        result.artworkName(),
+        result.artistName(),
+        result.artworkImageUrl(),
+        result.imageWidth(),
+        result.imageHeight(),
+        result.createdAt(),
+        toResponse(result.exhibitionInfo()));
+  }
+
+  private DisplayArtworkByArtistResponse.ExhibitionInfoResponse toResponse(
+      DisplayArtworkByArtistResult.ExhibitionInfoResult result) {
+    return new DisplayArtworkByArtistResponse.ExhibitionInfoResponse(
+        result.displayId(),
+        result.exhibitionTitle(),
+        result.exhibitionPeriod(),
+        result.exhibitionLocation());
+  }
+
   public DisplayArtworkListResponse toResponse(DisplayArtworkListResult result) {
     return new DisplayArtworkListResponse(
         result.artworks().stream().map(this::toResponse).toList());
@@ -89,6 +119,9 @@ public class DisplayArtworkPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.artistName(),
         result.artistUserId(),
+        result.qaHandlers().stream()
+            .map(handler -> new QaHandlerResponse(handler.userId(), handler.name()))
+            .toList(),
         toResponse(result.exhibitionInfo()),
         result.likeCount(),
         result.isLiked(),
@@ -113,6 +146,8 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkDetailResponse.ExhibitionInfoResponse(
         result.displayId(),
         result.exhibitionTitle(),
+        result.exhibitionThumbnailUrl(),
+        result.exhibitionOrganizer(),
         result.exhibitionPeriod(),
         result.exhibitionLocation());
   }
@@ -133,7 +168,7 @@ public class DisplayArtworkPresentationMapper {
         result.artistName(),
         result.artistUserId(),
         result.coAuthorCount(),
-        result.qaHandlerUserId());
+        result.qaHandlerUserIds());
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {

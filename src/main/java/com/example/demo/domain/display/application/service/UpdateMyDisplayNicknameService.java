@@ -5,6 +5,8 @@ import com.example.demo.domain.display.application.result.DisplayMemberResult;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateMyDisplayNicknameService {
 
   private final TeamMemberRepository teamMemberRepository;
+  private final UserRepository userRepository;
 
-  public UpdateMyDisplayNicknameService(TeamMemberRepository teamMemberRepository) {
+  public UpdateMyDisplayNicknameService(
+      TeamMemberRepository teamMemberRepository, UserRepository userRepository) {
     this.teamMemberRepository = teamMemberRepository;
+    this.userRepository = userRepository;
   }
 
   @Transactional
@@ -29,6 +34,7 @@ public class UpdateMyDisplayNicknameService {
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_NOT_FOUND));
 
     teamMember.changeDisplayNickname(command.displayNickname());
-    return DisplayMemberResult.from(teamMember);
+    User user = userRepository.findById(command.userId()).orElse(null);
+    return DisplayMemberResult.from(teamMember, user);
   }
 }

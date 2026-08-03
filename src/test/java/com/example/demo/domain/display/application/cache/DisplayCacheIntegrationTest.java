@@ -311,6 +311,7 @@ class DisplayCacheIntegrationTest {
         "유의사항",
         "중앙대학교",
         "디자인학부",
+        "전시 리더",
         DisplayType.GRADUATION,
         List.of(DisplayField.DESIGN),
         DisplayRegion.SEOUL,

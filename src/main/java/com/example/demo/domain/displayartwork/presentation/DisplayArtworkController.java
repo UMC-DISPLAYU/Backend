@@ -7,6 +7,7 @@ import com.example.demo.domain.displayartwork.application.command.DisplayArtwork
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -19,6 +20,7 @@ import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtwork
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
@@ -37,6 +39,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -95,14 +98,33 @@ public class DisplayArtworkController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @GetMapping("/api/v1/artworks")
+  @GetMapping(
+      value = "/api/v1/artworks",
+      params = {"displayId", "!userId"})
   @Operation(
       summary = "전시 상세 - 작품 탭 목록 조회",
       description = "특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.")
   public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
-      @Parameter(description = "조회할 전시 ID") @RequestParam Long displayId,
+      @Parameter(description = "조회할 전시 ID") @RequestParam @Positive Long displayId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
-    DisplayArtworkListResult result = displayArtworkQueryService.getArtworksByDisplayId(displayId);
+    DisplayArtworkListResult result =
+        displayArtworkQueryService.getArtworksByDisplayId(displayId, optionalUserId(user));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @GetMapping(
+      value = "/api/v1/artworks",
+      params = {"userId", "!displayId"})
+  @Operation(
+      summary = "작가 프로필 - 작품 탭 목록 조회",
+      description =
+          "해당 유저가 참여한 전시 출품작을 등록순(createdAt)으로 조회합니다. "
+              + "대표 작가와 공동 작업자를 구분하지 않고 모두 포함하며, 비회원도 조회 가능합니다.")
+  public ApiResponseBody<DisplayArtworkByArtistResponse> getArtworksByArtist(
+      @Parameter(description = "조회할 작가(유저) ID") @RequestParam @Positive Long userId,
+      HttpServletRequest httpRequest) {
+    DisplayArtworkByArtistResult result = displayArtworkQueryService.getArtworksByUserId(userId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
@@ -111,7 +133,12 @@ public class DisplayArtworkController {
   @SecurityRequirement(name = "Authorization")
   @Operation(
       summary = "전시 출품작 등록",
-      description = "전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.")
+      description =
+          """
+          전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.
+          내부 Q&A 담당자(qaHandlerUserIds)는 최소 1명이 필요하며 여러 명을 지정할 수 있습니다.
+          담당자는 대표 작가, 계정이 연결된 공동 작업자, 전시 대표자 중에서만 지정할 수 있습니다.
+          """)
   public ApiResponseBody<DisplayArtworkResponse> createDisplayArtwork(
       @Valid @RequestBody CreateDisplayArtworkRequest request,
       @AuthenticationPrincipal AuthUser user,

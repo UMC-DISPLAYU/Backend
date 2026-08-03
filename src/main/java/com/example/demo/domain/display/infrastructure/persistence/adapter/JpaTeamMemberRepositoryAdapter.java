@@ -17,12 +17,19 @@ public class JpaTeamMemberRepositoryAdapter implements TeamMemberRepository {
 
   @Override
   public boolean existsAcceptedByDisplayIdAndUserId(Long displayId, Long userId) {
-    return jpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(displayId, userId);
+    return jpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+        displayId, userId);
   }
 
   @Override
   public Optional<TeamMember> findAcceptedByDisplayIdAndUserId(Long displayId, Long userId) {
-    return jpaRepository.findByDisplayIdAndUserIdValueAndAcceptedTrue(displayId, userId);
+    return findActiveAcceptedByDisplayIdAndUserId(displayId, userId);
+  }
+
+  @Override
+  public Optional<TeamMember> findActiveAcceptedByDisplayIdAndUserId(Long displayId, Long userId) {
+    return jpaRepository.findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+        displayId, userId);
   }
 
   @Override

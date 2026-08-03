@@ -4,6 +4,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkQuestionReplyJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -25,5 +26,11 @@ public class JpaPersonalArtworkQuestionReplyRepositoryAdapter
       List<Long> personalQuestionIds) {
     return repository.findByPersonalQuestionIdInAndDeletedAtIsNullOrderByCreatedAtAsc(
         personalQuestionIds);
+  }
+
+  @Override
+  public Optional<PersonalArtworkQuestionReply> findActiveByIdForUpdate(
+      Long personalQuestionReplyId) {
+    return repository.findActiveByIdForUpdate(personalQuestionReplyId);
   }
 }

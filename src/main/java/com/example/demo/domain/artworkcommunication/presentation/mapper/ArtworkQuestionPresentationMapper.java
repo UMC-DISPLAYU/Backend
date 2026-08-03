@@ -7,6 +7,7 @@ import com.example.demo.domain.artworkcommunication.application.query.GetArtwork
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
+import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
@@ -14,6 +15,7 @@ import com.example.demo.domain.artworkcommunication.presentation.request.UpdateA
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,10 @@ public class ArtworkQuestionPresentationMapper {
 
   public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
     return new DeletedArtworkQuestionResponse(result.questionId(), result.deletedAt());
+  }
+
+  public DeletedArtworkQuestionReplyResponse toResponse(DeletedArtworkQuestionReplyResult result) {
+    return new DeletedArtworkQuestionReplyResponse(result.questionReplyId(), result.deletedAt());
   }
 
   public ArtworkQuestionReplyResponse toResponse(ArtworkQuestionReplyResult result) {

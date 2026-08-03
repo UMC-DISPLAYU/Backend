@@ -8,4 +8,4 @@ public record AuthorSetupCommand(
     Long artistUserId,
     List<Long> coAuthorUserIds,
     List<String> coAuthorRawNames,
-    Long qaHandlerUserId) {}
+    List<Long> qaHandlerUserIds) {}

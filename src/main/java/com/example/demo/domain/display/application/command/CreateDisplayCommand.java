@@ -23,6 +23,7 @@ public record CreateDisplayCommand(
     String note,
     String organization,
     String department,
+    String displayNickname,
     DisplayType displayType,
     List<DisplayField> displayFields,
     DisplayRegion region,

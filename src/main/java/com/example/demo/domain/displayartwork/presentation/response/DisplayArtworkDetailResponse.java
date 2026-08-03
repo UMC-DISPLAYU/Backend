@@ -14,10 +14,13 @@ public record DisplayArtworkDetailResponse(
     List<ImageResponse> images,
     String artistName,
     Long artistUserId,
+    List<QaHandlerResponse> qaHandlers,
     ExhibitionInfoResponse exhibitionInfo,
     long likeCount,
     boolean isLiked,
     boolean isSaved) {
+
+  public record QaHandlerResponse(Long userId, String name) {}
 
   public record ImageResponse(
       Long imageId,
@@ -30,5 +33,10 @@ public record DisplayArtworkDetailResponse(
       int height) {}
 
   public record ExhibitionInfoResponse(
-      Long displayId, String exhibitionTitle, String exhibitionPeriod, String exhibitionLocation) {}
+      Long displayId,
+      String exhibitionTitle,
+      String exhibitionThumbnailUrl,
+      String exhibitionOrganizer,
+      String exhibitionPeriod,
+      String exhibitionLocation) {}
 }

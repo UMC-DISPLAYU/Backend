@@ -1,0 +1,8 @@
+ALTER TABLE `PersonalArtworkQuestionReply`
+    DROP INDEX `UK_PERSONALARTWORKQUESTIONREPLY_QUESTION`,
+    ADD COLUMN `activePersonalQuestionId` BIGINT
+        GENERATED ALWAYS AS (
+            CASE WHEN `deletedAt` IS NULL THEN `personalQuestionId` ELSE NULL END
+        ) STORED,
+    ADD CONSTRAINT `UK_PERSONALARTWORKQUESTIONREPLY_ACTIVE_QUESTION`
+        UNIQUE (`activePersonalQuestionId`);

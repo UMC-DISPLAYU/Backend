@@ -5,10 +5,15 @@ import com.example.demo.domain.display.presentation.request.InviteDisplayMemberR
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -35,9 +40,24 @@ public interface DisplayMemberInvitationControllerDocs {
   ApiResponseBody<DisplayMemberInvitationResponse> reject(
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
-  @Operation(summary = "전시 멤버 목록 조회", description = "해당 전시의 수락된 전시 멤버 목록을 조회합니다.")
+  @Operation(
+      summary = "전시 멤버 목록 조회",
+      description =
+          "해당 전시의 삭제되지 않은 전시 멤버 목록을 조회합니다. 수락된 멤버와 초대 대기 중인 멤버를 함께 반환하며, "
+              + "각 멤버의 로그인 가능 상태와 작가 인증 여부를 포함합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 멤버 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display members success",
+                      value = DISPLAY_MEMBERS_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberListResponse> getMembers(
-      Long displayId, HttpServletRequest httpRequest);
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      HttpServletRequest httpRequest);
 
   @Operation(summary = "내 전시 닉네임 수정", description = "현재 로그인 사용자의 특정 전시 내 닉네임을 수정합니다.")
   @SecurityRequirement(name = "Authorization")
@@ -50,4 +70,112 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       AuthUser user, HttpServletRequest httpRequest);
+
+  @Operation(
+      summary = "내가 받은 전시 초대 조회",
+      description =
+          "현재 로그인 사용자가 받은 처리 대기 중인 전시 초대를 전시 카드 형태로 조회합니다. " + "수락/거절/삭제된 초대와 다른 사용자의 초대는 제외합니다.")
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내가 받은 전시 초대 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display invitation displays success",
+                      value = DISPLAY_INVITATION_DISPLAYS_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "Unauthorized", value = UNAUTHORIZED_EXAMPLE)))
+  ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
+      AuthUser user, HttpServletRequest httpRequest);
+
+  String DISPLAY_MEMBERS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 1,
+            "members": [
+              {
+                "teamMemberId": 1,
+                "userId": 10,
+                "displayNickname": "도현",
+                "loggedIn": true,
+                "artistVerified": true,
+                "accepted": true,
+                "role": "TEAM_LEADER"
+              },
+              {
+                "teamMemberId": 2,
+                "userId": 11,
+                "displayNickname": "민지",
+                "loggedIn": true,
+                "artistVerified": false,
+                "accepted": false,
+                "role": "TEAM_MEM"
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/members"
+        }
+      }
+      """;
+
+  String DISPLAY_INVITATION_DISPLAYS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "exhibitions": [
+              {
+                "displayId": 1,
+                "title": "FORM 2026",
+                "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+                "organization": "중앙대학교",
+                "department": "디자인학부",
+                "startedAt": "2026-05-28",
+                "endedAt": "2026-06-05",
+                "dayLeft": 3,
+                "isBookmarked": false
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display-invitations"
+        }
+      }
+      """;
+
+  String UNAUTHORIZED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "인증이 필요합니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display-invitations"
+        }
+      }
+      """;
 }
