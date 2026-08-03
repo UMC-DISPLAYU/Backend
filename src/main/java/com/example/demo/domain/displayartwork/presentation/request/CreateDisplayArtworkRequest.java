@@ -26,7 +26,7 @@ public record CreateDisplayArtworkRequest(
     @NotBlank String artistName,
     Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
-    @NotNull Long qaHandlerUserId) {
+    @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
 
   public CreateDisplayArtworkCommand toCommand() {
     return new CreateDisplayArtworkCommand(
@@ -43,7 +43,7 @@ public record CreateDisplayArtworkRequest(
         artistUserId,
         coAuthors.userIds(),
         coAuthors.rawNames(),
-        qaHandlerUserId);
+        qaHandlerUserIds);
   }
 
   public record ImageRequest(

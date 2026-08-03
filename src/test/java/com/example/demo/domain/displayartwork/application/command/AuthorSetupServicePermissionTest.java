@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
+import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.global.error.BusinessException;
@@ -49,10 +51,14 @@ class AuthorSetupServicePermissionTest {
   private final CreatorRepository creatorRepository = mock(CreatorRepository.class);
   private final ArtistVerificationRepository artistVerificationRepository =
       mock(ArtistVerificationRepository.class);
+  private final UserNicknameRepository userNicknameRepository = mock(UserNicknameRepository.class);
 
   private final AuthorSetupService service =
       new AuthorSetupService(
-          displayArtworkRepository, creatorRepository, artistVerificationRepository);
+          displayArtworkRepository,
+          creatorRepository,
+          artistVerificationRepository,
+          userNicknameRepository);
 
   @Test
   void 전시_대표자는_계정이_없는_작가의_작품을_대리_등록하고_본인을_QA_담당자로_지정할_수_있다() {
@@ -61,11 +67,14 @@ class AuthorSetupServicePermissionTest {
 
     service.setup(LEADER, command(null, "고상준", List.of(), List.of("공동작업자"), LEADER));
 
+    // 대표 작가가 계정이 없으므로, Q&A 담당자인 대표자가 Creator로 함께 저장돼야 답변할 수 있다.
     assertThat(savedCreators())
-        .extracting(Creator::getCreatorName, Creator::isLeader, Creator::getUserId)
+        .extracting(
+            Creator::getCreatorName, Creator::isLeader, Creator::isContact, Creator::getUserId)
         .containsExactly(
-            org.assertj.core.groups.Tuple.tuple("고상준", true, null),
-            org.assertj.core.groups.Tuple.tuple("공동작업자", false, null));
+            tuple("고상준", true, false, null),
+            tuple("공동작업자", false, false, null),
+            tuple("대표자", false, true, LEADER));
   }
 
   @Test
@@ -103,7 +112,7 @@ class AuthorSetupServicePermissionTest {
 
     assertThat(savedCreators())
         .extracting(Creator::getUserId, Creator::isLeader, Creator::isContact)
-        .containsExactly(org.assertj.core.groups.Tuple.tuple(MEMBER, true, true));
+        .containsExactly(tuple(MEMBER, true, true));
   }
 
   @Test
@@ -149,7 +158,12 @@ class AuthorSetupServicePermissionTest {
       List<String> coAuthorRawNames,
       Long qaHandlerUserId) {
     return new AuthorSetupCommand(
-        ARTWORK_ID, artistName, artistUserId, coAuthorUserIds, coAuthorRawNames, qaHandlerUserId);
+        ARTWORK_ID,
+        artistName,
+        artistUserId,
+        coAuthorUserIds,
+        coAuthorRawNames,
+        List.of(qaHandlerUserId));
   }
 
   private static DisplayArtwork artwork() {
