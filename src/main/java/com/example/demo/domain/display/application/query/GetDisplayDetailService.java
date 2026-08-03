@@ -16,9 +16,9 @@ public class GetDisplayDetailService {
   }
 
   @Transactional(readOnly = true)
-  public DisplayDetailResult getDisplayDetail(Long displayId) {
+  public DisplayDetailResult getDisplayDetail(Long displayId, Long requesterUserId) {
     return displayDetailQueryRepository
-        .findDisplayDetail(displayId)
+        .findDisplayDetail(displayId, requesterUserId)
         .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
   }
 }
