@@ -36,4 +36,12 @@ public class PersonalArtworkQuestionReply extends SoftDeleteBaseEntity {
       Long personalQuestionId, Long userId, String content) {
     return new PersonalArtworkQuestionReply(null, content, userId, personalQuestionId);
   }
+
+  public boolean belongsToQuestion(Long personalQuestionId) {
+    return this.personalQuestionId.equals(personalQuestionId);
+  }
+
+  public boolean isWrittenBy(Long userId) {
+    return this.userId.equals(userId);
+  }
 }

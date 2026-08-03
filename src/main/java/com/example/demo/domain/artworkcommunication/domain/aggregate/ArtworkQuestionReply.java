@@ -40,4 +40,12 @@ public class ArtworkQuestionReply extends SoftDeleteBaseEntity {
   public static ArtworkQuestionReply create(Long questionId, String content, Long creatorId) {
     return new ArtworkQuestionReply(null, content, questionId, creatorId);
   }
+
+  public boolean belongsToQuestion(Long questionId) {
+    return this.questionId.equals(questionId);
+  }
+
+  public boolean isWrittenBy(Long creatorId) {
+    return this.creatorId.equals(creatorId);
+  }
 }

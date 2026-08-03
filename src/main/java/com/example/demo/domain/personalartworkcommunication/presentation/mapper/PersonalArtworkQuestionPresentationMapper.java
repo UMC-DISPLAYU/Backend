@@ -1,9 +1,11 @@
 package com.example.demo.domain.personalartworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
+import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
@@ -12,6 +14,7 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
@@ -31,6 +34,12 @@ public class PersonalArtworkQuestionPresentationMapper {
   public DeletePersonalArtworkQuestionCommand toCommand(
       Long personalArtworkId, Long personalQuestionId, Long userId) {
     return new DeletePersonalArtworkQuestionCommand(personalArtworkId, personalQuestionId, userId);
+  }
+
+  public DeletePersonalArtworkQuestionReplyCommand toReplyDeleteCommand(
+      Long personalArtworkId, Long personalQuestionId, Long personalQuestionReplyId, Long userId) {
+    return new DeletePersonalArtworkQuestionReplyCommand(
+        personalArtworkId, personalQuestionId, personalQuestionReplyId, userId);
   }
 
   public PersonalArtworkQuestionCommand toCommand(
@@ -65,6 +74,12 @@ public class PersonalArtworkQuestionPresentationMapper {
       DeletedPersonalArtworkQuestionResult result) {
     return new DeletedPersonalArtworkQuestionResponse(
         result.personalQuestionId(), result.deletedAt());
+  }
+
+  public DeletedPersonalArtworkQuestionReplyResponse toResponse(
+      DeletedPersonalArtworkQuestionReplyResult result) {
+    return new DeletedPersonalArtworkQuestionReplyResponse(
+        result.personalQuestionReplyId(), result.deletedAt());
   }
 
   public PersonalArtworkQuestionReplyResponse toResponse(

@@ -70,6 +70,10 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
     this.answerStatus = AnswerStatus.ANSWERED;
   }
 
+  public void markWaiting() {
+    this.answerStatus = AnswerStatus.WAITING;
+  }
+
   public boolean isAnswered() {
     return AnswerStatus.ANSWERED.equals(this.answerStatus);
   }
