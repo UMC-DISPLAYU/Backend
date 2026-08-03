@@ -62,8 +62,9 @@ public class AuthorSetupService {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
     }
 
+    // 계정 없는 작가를 대리 등록하면 artistUserId가 null이므로 공동 작업자 중복 검사에서 제외한다.
     List<Long> coAuthorUserIds = command.coAuthorUserIds();
-    if (coAuthorUserIds.contains(artistUserId)
+    if ((artistUserId != null && coAuthorUserIds.contains(artistUserId))
         || new HashSet<>(coAuthorUserIds).size() != coAuthorUserIds.size()) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_CO_AUTHOR);
     }
