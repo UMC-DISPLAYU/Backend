@@ -10,8 +10,13 @@ import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.OptimisticLockException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -22,9 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DisplayContentCommandService {
 
   private final DisplayRepository displayRepository;
+  private final Clock clock;
 
-  public DisplayContentCommandService(DisplayRepository displayRepository) {
+  public DisplayContentCommandService(DisplayRepository displayRepository, Clock clock) {
     this.displayRepository = displayRepository;
+    this.clock = clock;
   }
 
   @Transactional
@@ -72,7 +79,11 @@ public class DisplayContentCommandService {
     validateContentEditor(display, command.userId());
     DisplayContent content =
         display.createContent(
-            command.categoryId(), command.imageUrl(), command.width(), command.height());
+            command.categoryId(),
+            command.imageUrl(),
+            command.width(),
+            command.height(),
+            initialContentStatus(display));
     displayRepository.flush();
 
     return DisplayContentResult.from(content);
@@ -140,5 +151,16 @@ public class DisplayContentCommandService {
     if (!display.hasAcceptedTeamMember(userId)) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED);
     }
+  }
+
+  private DisplayContentStatus initialContentStatus(Display display) {
+    if (display.getStatus() != DisplayStatus.PUBLISHED) {
+      return DisplayContentStatus.DRAFT;
+    }
+    if (display.getExhibitionContentOpen() == ContentOpenPolicy.IMMEDIATELY
+        || !display.getPeriod().startDate().isAfter(LocalDate.now(clock))) {
+      return DisplayContentStatus.PUBLISHED;
+    }
+    return DisplayContentStatus.DRAFT;
   }
 }

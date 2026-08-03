@@ -39,8 +39,7 @@ public class ReorderDisplayArtworksService {
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
-    // 전시를 만든 소유자는 TeamMember(TEAM_LEADER)로 등록되지 않으므로 소유자 여부도 함께 확인한다.
-    if (!display.isOwner(requesterUserId) && !display.isTeamLeader(requesterUserId)) {
+    if (!display.isOwner(requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
     }
 
