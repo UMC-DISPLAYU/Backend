@@ -411,7 +411,9 @@ class DisplayMemberInvitationControllerTest {
 
   @Test
   void updateMyDisplayNicknameChangesAcceptedTeamMemberNickname() throws Exception {
-    User leader = userJpaRepository.save(user("leader"));
+    User leader = user("leader");
+    leader.verifyAuthor("leader@school.ac.kr", "중앙대학교");
+    userJpaRepository.save(leader);
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
 
     mockMvc
@@ -424,6 +426,9 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.userId").value(leader.getId()))
         .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 닉네임"))
+        .andExpect(jsonPath("$.success.data.loggedIn").value(true))
+        .andExpect(jsonPath("$.success.data.artistVerified").value(true))
+        .andExpect(jsonPath("$.success.data.accepted").value(true))
         .andExpect(jsonPath("$.success.data.role").value("TEAM_LEADER"));
 
     assertThat(
