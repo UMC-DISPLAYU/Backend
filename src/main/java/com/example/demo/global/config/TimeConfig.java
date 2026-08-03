@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TimeConfig {
 
-  @Bean
-  public Clock systemDefault() {
+  @Bean(name = {"clock", "systemDefault"})
+  public Clock clock() {
     return Clock.system(ZoneId.of("Asia/Seoul"));
   }
 }
