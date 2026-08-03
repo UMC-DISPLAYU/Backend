@@ -579,6 +579,7 @@ public class Display extends BaseTimeEntity {
         .anyMatch(
             teamMember ->
                 teamMember.isAccepted()
+                    && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId)
                     && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
   }
@@ -586,7 +587,10 @@ public class Display extends BaseTimeEntity {
   public boolean hasAcceptedTeamMember(Long userId) {
     return teamMembers.stream()
         .anyMatch(
-            teamMember -> teamMember.isAccepted() && teamMember.getUserId().value().equals(userId));
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId));
   }
 
   public boolean hasPendingInvitation(Long inviteeUserId) {
@@ -631,7 +635,10 @@ public class Display extends BaseTimeEntity {
   public boolean hasTeamMember(Long userId) {
     return teamMembers.stream()
         .anyMatch(
-            teamMember -> teamMember.getUserId().value().equals(userId) && teamMember.isAccepted());
+            teamMember ->
+                teamMember.getUserId().value().equals(userId)
+                    && teamMember.isAccepted()
+                    && !teamMember.isDeleted());
   }
 
   private static <T> void addAll(java.util.function.Consumer<T> target, List<T> source) {

@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -173,8 +174,9 @@ class DisplayMemberInvitationControllerTest {
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.ACCEPTED);
     assertThat(
-            teamMemberJpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(
-                display.getId(), invitee.getId()))
+            teamMemberJpaRepository
+                .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                    display.getId(), invitee.getId()))
         .isTrue();
     Display savedDisplay = displayJpaRepository.findById(display.getId()).orElseThrow();
     assertThat(savedDisplay.getTeamMembers())
@@ -233,8 +235,9 @@ class DisplayMemberInvitationControllerTest {
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.REJECTED);
     assertThat(
-            teamMemberJpaRepository.existsByDisplayIdAndUserIdValueAndAcceptedTrue(
-                display.getId(), invitee.getId()))
+            teamMemberJpaRepository
+                .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                    display.getId(), invitee.getId()))
         .isFalse();
   }
 
@@ -313,6 +316,74 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void exitDisplaySoftDeletesAcceptedNonLeaderTeamMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User member = userJpaRepository.save(user("member"));
+    Display display = displayWithLeader(leader);
+    display.addTeamMember(
+        new TeamMember(
+            null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}/exit", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(member.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data").doesNotExist());
+
+    TeamMember exitedMember =
+        teamMemberJpaRepository.findAll().stream()
+            .filter(teamMember -> teamMember.getDisplay().getId().equals(display.getId()))
+            .filter(teamMember -> teamMember.getUserId().value().equals(member.getId()))
+            .findFirst()
+            .orElseThrow();
+    assertThat(exitedMember.getDeletedAt()).isEqualTo(LocalDateTime.of(2026, 7, 22, 18, 0));
+    assertThat(
+            teamMemberJpaRepository
+                .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                    display.getId(), member.getId()))
+        .isFalse();
+  }
+
+  @Test
+  void exitDisplayReturnsForbiddenWhenRequesterIsTeamLeader() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}/exit", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  void exitDisplayReturnsDisplayMemberNotFoundWhenRequesterIsNotMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User other = userJpaRepository.save(user("other"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}/exit", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_MEMBER_NOT_FOUND"));
+  }
+
+  @Test
+  void exitDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(delete("/api/v1/display/{displayId}/exit", 1L))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
   void updateMyDisplayNicknameChangesAcceptedTeamMemberNickname() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
@@ -331,7 +402,8 @@ class DisplayMemberInvitationControllerTest {
 
     assertThat(
             teamMemberJpaRepository
-                .findByDisplayIdAndUserIdValueAndAcceptedTrue(display.getId(), leader.getId())
+                .findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                    display.getId(), leader.getId())
                 .orElseThrow()
                 .getDisplayNickname())
         .isEqualTo("새 전시 닉네임");

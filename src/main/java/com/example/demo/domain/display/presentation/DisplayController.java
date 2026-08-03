@@ -93,6 +93,7 @@ import com.example.demo.domain.display.application.result.DisplayInvitationDisab
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
+import com.example.demo.domain.display.application.service.ExitDisplayService;
 import com.example.demo.domain.display.application.service.GetMyDisplaysService;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
@@ -133,6 +134,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -159,6 +161,7 @@ public class DisplayController {
   private final SearchDisplaysUseCase searchDisplaysUseCase;
   private final DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService;
   private final GetMyDisplaysService getMyDisplaysService;
+  private final ExitDisplayService exitDisplayService;
   private final DisplayPresentationMapper mapper;
 
   public DisplayController(
@@ -175,6 +178,7 @@ public class DisplayController {
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
       GetMyDisplaysService getMyDisplaysService,
+      ExitDisplayService exitDisplayService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
@@ -189,6 +193,7 @@ public class DisplayController {
     this.searchDisplaysUseCase = searchDisplaysUseCase;
     this.displayBookmarkEnrichmentService = displayBookmarkEnrichmentService;
     this.getMyDisplaysService = getMyDisplaysService;
+    this.exitDisplayService = exitDisplayService;
     this.mapper = mapper;
   }
 
@@ -228,6 +233,16 @@ public class DisplayController {
         displayBookmarkEnrichmentService.enrich(
             getDisplayDetailService.getDisplayDetail(displayId), user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @DeleteMapping("/api/v1/display/{displayId}/exit")
+  @SecurityRequirement(name = "Authorization")
+  public ApiResponseBody<Void> exitDisplay(
+      @PathVariable Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    exitDisplayService.exit(displayId, requireUserId(user));
+    return ApiResponseBody.success(null, request);
   }
 
   @PatchMapping("/api/v1/display")

@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataTeamMemberJpaRepository extends JpaRepository<TeamMember, Long> {
 
-  boolean existsByDisplayIdAndUserIdValueAndAcceptedTrue(Long displayId, Long userId);
+  boolean existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+      Long displayId, Long userId);
 
-  Optional<TeamMember> findByDisplayIdAndUserIdValueAndAcceptedTrue(Long displayId, Long userId);
+  Optional<TeamMember> findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+      Long displayId, Long userId);
 }
