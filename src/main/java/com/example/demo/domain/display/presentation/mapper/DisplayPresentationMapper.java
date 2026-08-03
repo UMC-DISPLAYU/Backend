@@ -44,10 +44,11 @@ public class DisplayPresentationMapper {
         request.latitude(),
         request.longitude(),
         request.roadAddress(),
-        "",
+        request.qnaAccount(),
         request.precautions(),
         organization(request),
         department(request),
+        request.displayNickname(),
         toDisplayType(request.type()),
         request.fields().stream().map(this::toDisplayField).toList(),
         toDisplayRegion(request.region()),
@@ -300,9 +301,7 @@ public class DisplayPresentationMapper {
   }
 
   private String organization(CreateDisplayRequest request) {
-    return requiresSchoolInfo(request.type())
-        ? request.schoolOrOrganization()
-        : request.hostOrganizationName();
+    return request.schoolOrOrganization();
   }
 
   private String department(CreateDisplayRequest request) {
