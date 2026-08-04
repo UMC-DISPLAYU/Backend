@@ -2,6 +2,7 @@ package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.*;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsService;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
@@ -36,6 +37,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   private final UpdateArtworkQuestionService updateArtworkQuestionService;
   private final DeleteArtworkQuestionService deleteArtworkQuestionService;
   private final DeleteArtworkQuestionReplyService deleteArtworkQuestionReplyService;
+  private final ArtworkQuestionLikeService artworkQuestionLikeService;
   private final ArtworkQuestionPresentationMapper mapper;
 
   @Override
@@ -150,6 +152,23 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
     DeletedArtworkQuestionReplyResult result =
         deleteArtworkQuestionReplyService.deleteReply(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{questionId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 좋아요 등록 및 취소
+  public ApiResponseBody<ArtworkQuestionLikeResponse> questionLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionLikeCommand command =
+        new ArtworkQuestionLikeCommand(artworkId, questionId, requireUserId(user));
+
+    ArtworkQuestionLikeResult result = artworkQuestionLikeService.toggleQuestionLike(command);
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }

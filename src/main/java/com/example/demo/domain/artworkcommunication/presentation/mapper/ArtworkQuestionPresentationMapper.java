@@ -4,6 +4,7 @@ import com.example.demo.domain.artworkcommunication.application.command.ArtworkQ
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsQuery;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
@@ -12,6 +13,7 @@ import com.example.demo.domain.artworkcommunication.application.result.DeletedAr
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
@@ -78,6 +80,15 @@ public class ArtworkQuestionPresentationMapper {
         result.nextCursorId(),
         result.size(),
         result.hasNext());
+  }
+
+  public ArtworkQuestionLikeResponse toResponse(ArtworkQuestionLikeResult result) {
+    return new ArtworkQuestionLikeResponse(
+        result.questionId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
   }
 
   private ArtworkQuestionListResponse.ArtworkQuestionItemResponse toQuestionItemResponse(

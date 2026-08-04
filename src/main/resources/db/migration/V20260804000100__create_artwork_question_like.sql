@@ -1,0 +1,20 @@
+CREATE TABLE `ArtworkQuestionLike`
+(
+    `questionLikeId` BIGINT NOT NULL AUTO_INCREMENT,
+    `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deletedAt` DATETIME NULL,
+    `questionId` BIGINT NOT NULL,
+    `userId` BIGINT NOT NULL,
+    CONSTRAINT `PK_ARTWORKQUESTIONLIKE`
+        PRIMARY KEY (`questionLikeId`),
+    CONSTRAINT `UK_ARTWORKQUESTIONLIKE_QUESTION_USER`
+        UNIQUE (`questionId`, `userId`),
+    CONSTRAINT `FK_ARTWORKQUESTIONLIKE_QUESTION`
+        FOREIGN KEY (`questionId`) REFERENCES `ArtworkQuestion` (`questionId`),
+    CONSTRAINT `FK_ARTWORKQUESTIONLIKE_USER`
+        FOREIGN KEY (`userId`) REFERENCES `User` (`userId`)
+);
+
+CREATE INDEX `IDX_ARTWORKQUESTIONLIKE_QUESTION`
+    ON `ArtworkQuestionLike` (`questionId`, `deletedAt`);
