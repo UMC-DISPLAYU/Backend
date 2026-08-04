@@ -2,7 +2,6 @@ package com.example.demo.domain.artworkcommunication.presentation.docs;
 
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingReplyLikeResponse;
@@ -11,7 +10,6 @@ import com.example.demo.domain.artworkcommunication.presentation.response.Artwor
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkFeelingResponse;
-import com.example.demo.domain.artworkcommunication.presentation.response.UpdatedArtworkFeelingResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -418,92 +416,6 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
       @Parameter(description = "삭제할 감상평 답변 ID", example = "8") Long feelingReplyId,
       @Parameter(hidden = true) AuthUser user,
-      HttpServletRequest httpServletRequest);
-
-  @Operation(summary = "작품 감상평 수정", description = "사용자가 본인이 작성한 작품 감상평 내용을 수정합니다.")
-  @ApiResponse(
-      responseCode = "200",
-      description = "작품 감상평 수정 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Artwork feeling update success",
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "feelingId": 1,
-                                "content": "다시 보니 색감이 더 인상적이었어요.",
-                                "updatedAt": "2026-06-30T22:20:00"
-                              }
-                            },
-                            "error": null,
-                            "meta": {
-                              "timestamp": "2026-06-30T22:20:00",
-                              "path": "/api/v1/artworks/1/feelings/1"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "403",
-      description = "감상평 수정 권한 없음",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Artwork feeling forbidden",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "ARTWORK_FEELING_FORBIDDEN",
-                              "message": "감상평에 대한 권한이 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-06-30T22:20:00",
-                              "path": "/api/v1/artworks/1/feelings/1"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "작품, 사용자 또는 감상평 없음",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Artwork feeling not found",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "FEELING_NOT_FOUND",
-                              "message": "감상평을 찾을 수 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-06-30T22:20:00",
-                              "path": "/api/v1/artworks/1/feelings/1"
-                            }
-                          }
-                          """)))
-  @ApiResponse(responseCode = "401", description = "인증 필요")
-  ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
-      @Parameter(description = "감상평이 속한 작품 ID", example = "1") Long artworkId,
-      @Parameter(description = "수정할 감상평 ID", example = "1") Long feelingId,
-      @Parameter(hidden = true) AuthUser user,
-      @Valid UpdateArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 삭제", description = "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다.")

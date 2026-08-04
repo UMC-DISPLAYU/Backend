@@ -2,14 +2,12 @@ package com.example.demo.domain.artworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkFeelingReplyCommand;
-import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkFeelingCommand;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingRepliesQuery;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsQuery;
 import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling.ImageInfo;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingItemResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkFeelingListResponse.ArtworkFeelingUserResponse;
@@ -40,11 +38,6 @@ public class ArtworkFeelingPresentationMapper {
     return new GetArtworkFeelingRepliesQuery(artworkId, feelingId, cursorId);
   }
 
-  public UpdateArtworkFeelingCommand toCommand(
-      Long artworkId, Long feelingId, Long userId, UpdateArtworkFeelingRequest request) {
-    return new UpdateArtworkFeelingCommand(artworkId, feelingId, userId, request.content());
-  }
-
   public ArtworkFeelingReplyCommand toCommand(
       Long artworkId, Long feelingId, Long userId, CreateArtworkFeelingReplyRequest request) {
     return new ArtworkFeelingReplyCommand(artworkId, feelingId, userId, request.content());
@@ -66,11 +59,6 @@ public class ArtworkFeelingPresentationMapper {
                         image.height(),
                         image.sortOrder()))
             .toList());
-  }
-
-  public UpdatedArtworkFeelingResponse toResponse(UpdatedArtworkFeelingResult result) {
-    return new UpdatedArtworkFeelingResponse(
-        result.feelingId(), result.content(), result.updatedAt());
   }
 
   public DeletedArtworkFeelingResponse toResponse(DeletedArtworkFeelingResult result) {
