@@ -28,6 +28,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface LoungeCommentControllerDocs {
 
   @Operation(summary = "라운지 댓글 생성", description = "라운지 게시글에 댓글을 생성합니다.")
+  @ApiResponse(
+      responseCode = "201",
+      description = "라운지 댓글 생성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "댓글 생성 성공", value = COMMENT_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -35,6 +42,13 @@ public interface LoungeCommentControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 답글 생성", description = "라운지 댓글에 답글을 생성합니다.")
+  @ApiResponse(
+      responseCode = "201",
+      description = "라운지 답글 생성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "답글 생성 성공", value = REPLY_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -42,14 +56,36 @@ public interface LoungeCommentControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 삭제", description = "작성자가 라운지 댓글 또는 답글을 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "댓글 삭제 성공", value = VOID_SUCCESS_EXAMPLE)))
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 좋아요", description = "라운지 댓글 또는 답글에 좋아요를 추가합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 좋아요 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "댓글 좋아요 성공", value = COMMENT_LIKE_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungeCommentLikeResponse> likeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 좋아요 취소", description = "라운지 댓글 또는 답글 좋아요를 취소합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 좋아요 취소 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "댓글 좋아요 취소 성공", value = COMMENT_UNLIKE_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
@@ -120,6 +156,13 @@ public interface LoungeCommentControllerDocs {
   @Operation(
       summary = "라운지 답글 목록 조회",
       description = "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 답글 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "답글 목록 조회 성공", value = REPLY_LIST_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
@@ -131,6 +174,16 @@ public interface LoungeCommentControllerDocs {
   @Operation(
       summary = "내가 댓글을 작성한 라운지 게시글 조회",
       description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글을 중복 없이 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내가 댓글을 작성한 라운지 게시글 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "내 댓글 게시글 조회 성공",
+                      value = MY_COMMENT_POSTS_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostCursorResponse> getMyComments(
       @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -139,4 +192,176 @@ public interface LoungeCommentControllerDocs {
           @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
+
+  String COMMENT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungeCommentId": 10,
+            "parentCommentId": null,
+            "content": "좋은 글 감사합니다.",
+            "imageUrls": ["https://cdn.displayu.com/lounge/comment-1.png"],
+            "commentStatus": "ACTIVE",
+            "writer": {
+              "userId": 1,
+              "nickname": "maya01",
+              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+            },
+            "createdAt": "2026-08-04T09:00:00",
+            "updatedAt": "2026-08-04T09:00:00",
+            "likeCount": 0,
+            "replyCount": 0,
+            "isLiked": false,
+            "isMyComment": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/comments" }
+      }
+      """;
+
+  String REPLY_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungeCommentId": 11,
+            "parentCommentId": 10,
+            "content": "답글입니다.",
+            "imageUrls": [],
+            "commentStatus": "ACTIVE",
+            "writer": {
+              "userId": 1,
+              "nickname": "maya01",
+              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+            },
+            "createdAt": "2026-08-04T09:00:00",
+            "updatedAt": "2026-08-04T09:00:00",
+            "likeCount": 0,
+            "replyCount": 0,
+            "isLiked": false,
+            "isMyComment": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/replies" }
+      }
+      """;
+
+  String COMMENT_LIKE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungeCommentId": 10,
+            "isLiked": true,
+            "likeCount": 1
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/likes" }
+      }
+      """;
+
+  String COMMENT_UNLIKE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungeCommentId": 10,
+            "isLiked": false,
+            "likeCount": 0
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/likes" }
+      }
+      """;
+
+  String REPLY_LIST_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "replies": [
+              {
+                "loungeCommentId": 11,
+                "parentCommentId": 10,
+                "content": "답글입니다.",
+                "imageUrls": [],
+                "commentStatus": "ACTIVE",
+                "writer": {
+                  "userId": 1,
+                  "nickname": "maya01",
+                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+                },
+                "createdAt": "2026-08-04T09:00:00",
+                "updatedAt": "2026-08-04T09:00:00",
+                "likeCount": 0,
+                "isLiked": false,
+                "isMyComment": true
+              }
+            ],
+            "nextCursorId": null,
+            "size": 10,
+            "hasNext": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/replies" }
+      }
+      """;
+
+  String MY_COMMENT_POSTS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "posts": [
+              {
+                "loungePostId": 1,
+                "category": "REVIEW",
+                "title": "전시 후기 공유합니다",
+                "content": "작품 배치가 인상적이었습니다.",
+                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
+                "writer": {
+                  "userId": 1,
+                  "nickname": "maya01",
+                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+                },
+                "createdAt": "2026-08-04T09:00:00",
+                "commentCount": 2,
+                "likeCount": 5,
+                "isLiked": true,
+                "isMyPost": true
+              }
+            ],
+            "nextCursorId": null,
+            "size": 10,
+            "hasNext": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/comments" }
+      }
+      """;
+
+  String VOID_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10" }
+      }
+      """;
 }

@@ -17,7 +17,7 @@ public record CreateDisplayArtworkRequest(
     @NotNull @Positive Long displayId,
     @NotBlank String artworkName,
     @NotBlank String content,
-    @NotNull ArtworkType type,
+    @NotNull Field type,
     @NotNull @Min(1000) int productionYear,
     @NotBlank String materialMedia,
     @NotBlank String size,
@@ -33,7 +33,7 @@ public record CreateDisplayArtworkRequest(
         displayId,
         artworkName,
         content,
-        type,
+        toArtworkType(type),
         productionYear,
         materialMedia,
         size,
@@ -44,6 +44,34 @@ public record CreateDisplayArtworkRequest(
         coAuthors.userIds(),
         coAuthors.rawNames(),
         qaHandlerUserIds);
+  }
+
+  private static ArtworkType toArtworkType(Field field) {
+    return switch (field) {
+      case PAINTING -> ArtworkType.PAINTING;
+      case DESIGN -> ArtworkType.DESIGN;
+      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
+      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
+      case MEDIA -> ArtworkType.MEDIA;
+      case CRAFT -> ArtworkType.CRAFT;
+      case SCULPTURE -> ArtworkType.SCULPTURE;
+      case FASHION -> ArtworkType.FASHION;
+      case COMPLEX -> ArtworkType.COMPLEX;
+      case ETC -> ArtworkType.ETC;
+    };
+  }
+
+  public enum Field {
+    PAINTING,
+    DESIGN,
+    PHOTOGRAPHY,
+    ARCHITECTURE,
+    MEDIA,
+    CRAFT,
+    SCULPTURE,
+    FASHION,
+    COMPLEX,
+    ETC
   }
 
   public record ImageRequest(
