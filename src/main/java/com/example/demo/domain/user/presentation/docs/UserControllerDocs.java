@@ -11,6 +11,7 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTI
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;
@@ -251,6 +252,13 @@ public interface UserControllerDocs {
                   - 이미 사용 중인 닉네임은 isAvailable=false를 반환합니다.
                   """)
   @Parameter(name = "nickname", description = "중복 확인할 닉네임", required = true, example = "maya041225")
+  @ApiResponse(
+      responseCode = "200",
+      description = "닉네임 중복 확인 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용 가능", value = NICKNAME_CHECK_SUCCESS_EXAMPLE)))
   ApiResponseBody<NicknameCheckResponse> checkNickname(
       String nickname, HttpServletRequest httpRequest);
 }
