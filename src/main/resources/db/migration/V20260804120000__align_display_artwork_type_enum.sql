@@ -1,3 +1,21 @@
+ALTER TABLE DisplayArtwork
+    MODIFY COLUMN type enum (
+        'PAINTING',
+        'DESIGN',
+        'PHOTOGRAPHY',
+        'ARCHITECTURE',
+        'VIDEO',
+        'MEDIA',
+        'CRAFTS',
+        'CRAFT',
+        'SCULPTURE',
+        'FASHION',
+        'ILLUSTRATION',
+        'COMPLEX',
+        'OTHERS',
+        'ETC'
+    ) NOT NULL COMMENT 'PAINTING, DESIGN, PHOTOGRAPHY, ARCHITECTURE, MEDIA, CRAFT, SCULPTURE, FASHION, COMPLEX, ETC';
+
 UPDATE DisplayArtwork
 SET type = 'MEDIA'
 WHERE type = 'VIDEO';
