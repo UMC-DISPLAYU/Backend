@@ -10,8 +10,8 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTI
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTIST_PROFILE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;

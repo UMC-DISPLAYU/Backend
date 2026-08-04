@@ -180,7 +180,10 @@ public interface LoungeCommentControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "내 댓글 게시글 조회 성공", value = MY_COMMENT_POSTS_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      name = "내 댓글 게시글 조회 성공",
+                      value = MY_COMMENT_POSTS_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostCursorResponse> getMyComments(
       @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,

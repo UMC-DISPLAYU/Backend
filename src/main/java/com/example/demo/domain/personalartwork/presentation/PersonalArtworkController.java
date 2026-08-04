@@ -69,7 +69,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Create personal artwork success", value = ARTWORK_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Create personal artwork success",
+                      value = ARTWORK_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkResponse> createPersonalArtwork(
       @Valid @RequestBody PersonalArtworkRequest personalArtworkRequest,
       @AuthenticationPrincipal AuthUser user,
@@ -93,7 +95,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Personal artwork list success", value = ARTWORK_LIST_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Personal artwork list success",
+                      value = ARTWORK_LIST_SUCCESS_EXAMPLE)))
   public ApiResponseBody<List<PersonalArtworkSummaryResponse>> getPersonalArtworks(
       @Parameter(description = "조회할 작가 프로필의 유저 ID", example = "1") @RequestParam Long userId,
       HttpServletRequest request) {
@@ -112,7 +116,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Personal artwork detail success", value = ARTWORK_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Personal artwork detail success",
+                      value = ARTWORK_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkResponse> getPersonalArtworkDetail(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @AuthenticationPrincipal AuthUser user,
@@ -133,7 +139,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Update personal artwork success", value = ARTWORK_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Update personal artwork success",
+                      value = ARTWORK_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkResponse> updatePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @Valid @RequestBody PersonalArtworkRequest personalArtworkRequest,
@@ -156,7 +164,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Delete personal artwork success", value = VOID_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Delete personal artwork success",
+                      value = VOID_SUCCESS_EXAMPLE)))
   public ApiResponseBody<Void> deletePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @AuthenticationPrincipal AuthUser user,
@@ -175,7 +185,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Like personal artwork success", value = LIKE_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Like personal artwork success",
+                      value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkLikeResponse> likePersonalArtwork(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @AuthenticationPrincipal AuthUser user,
@@ -196,7 +208,9 @@ public class PersonalArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Cancel personal artwork like success", value = UNLIKE_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Cancel personal artwork like success",
+                      value = UNLIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkLikeResponse> cancelPersonalArtworkLike(
       @Parameter(description = "개인 작품 ID", example = "1") @PathVariable Long personalArtworkId,
       @AuthenticationPrincipal AuthUser user,

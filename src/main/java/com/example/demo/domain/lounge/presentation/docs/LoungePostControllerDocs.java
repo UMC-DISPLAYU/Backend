@@ -83,7 +83,8 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 좋아요 취소 성공", value = POST_UNLIKE_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(name = "게시글 좋아요 취소 성공", value = POST_UNLIKE_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -136,7 +137,8 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 상세 조회 성공", value = POST_DETAIL_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(name = "게시글 상세 조회 성공", value = POST_DETAIL_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 

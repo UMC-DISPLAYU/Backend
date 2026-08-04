@@ -28,7 +28,9 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Display invitation created", value = INVITATION_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Display invitation created",
+                      value = INVITATION_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> invite(
       Long displayId,
       InviteDisplayMemberRequest request,
@@ -44,7 +46,9 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Display invitation accepted", value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Display invitation accepted",
+                      value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
       Long invitationId,
       AcceptDisplayInvitationRequest request,
@@ -60,7 +64,9 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Display invitation rejected", value = INVITATION_REJECT_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Display invitation rejected",
+                      value = INVITATION_REJECT_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> reject(
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
@@ -92,7 +98,9 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Display nickname updated", value = DISPLAY_NICKNAME_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Display nickname updated",
+                      value = DISPLAY_NICKNAME_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
       UpdateMyDisplayNicknameRequest request, AuthUser user, HttpServletRequest httpRequest);
 
@@ -107,7 +115,9 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "My display invitations success", value = MY_INVITATIONS_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "My display invitations success",
+                      value = MY_INVITATIONS_SUCCESS_EXAMPLE)))
   ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       AuthUser user, HttpServletRequest httpRequest);
 

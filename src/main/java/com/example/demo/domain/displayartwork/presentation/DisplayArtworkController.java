@@ -121,7 +121,9 @@ public class DisplayArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Display artworks success", value = DISPLAY_ARTWORKS_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Display artworks success",
+                      value = DISPLAY_ARTWORKS_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
       @Parameter(description = "조회할 전시 ID") @RequestParam @Positive Long displayId,
       @AuthenticationPrincipal AuthUser user,
@@ -146,7 +148,9 @@ public class DisplayArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Artist artworks success", value = ARTIST_ARTWORKS_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Artist artworks success",
+                      value = ARTIST_ARTWORKS_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkByArtistResponse> getArtworksByArtist(
       @Parameter(description = "조회할 작가(유저) ID") @RequestParam @Positive Long userId,
       HttpServletRequest httpRequest) {
@@ -192,7 +196,9 @@ public class DisplayArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Reorder artworks success", value = REORDER_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Reorder artworks success",
+                      value = REORDER_SUCCESS_EXAMPLE)))
   public ApiResponseBody<ReorderDisplayArtworksResponse> reorderDisplayArtworks(
       @Valid @RequestBody ReorderDisplayArtworksRequest request,
       @AuthenticationPrincipal AuthUser user,
@@ -214,7 +220,9 @@ public class DisplayArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Artwork detail success", value = ARTWORK_DETAIL_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Artwork detail success",
+                      value = ARTWORK_DETAIL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkDetailResponse> getDisplayArtworkFullDetail(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
       @AuthenticationPrincipal AuthUser user,
@@ -255,7 +263,8 @@ public class DisplayArtworkController {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "Like artwork success", value = LIKE_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(name = "Like artwork success", value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkLikeResponse> likeDisplayArtwork(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
       @AuthenticationPrincipal AuthUser user,
@@ -276,7 +285,9 @@ public class DisplayArtworkController {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "Cancel artwork like success", value = UNLIKE_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      name = "Cancel artwork like success",
+                      value = UNLIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkLikeResponse> cancelDisplayArtworkLike(
       @Parameter(description = "전시 출품작 ID", example = "1") @PathVariable Long artworkId,
       @AuthenticationPrincipal AuthUser user,
