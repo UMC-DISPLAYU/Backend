@@ -11,7 +11,6 @@ import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkQue
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkQuestionPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -33,7 +32,6 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   private final CreateArtworkQuestionService createArtworkQuestionService;
   private final CreateArtworkQuestionReplyService createArtworkQuestionReplyService;
   private final GetArtworkQuestionsService getArtworkQuestionsService;
-  private final UpdateArtworkQuestionService updateArtworkQuestionService;
   private final DeleteArtworkQuestionService deleteArtworkQuestionService;
   private final DeleteArtworkQuestionReplyService deleteArtworkQuestionReplyService;
   private final ArtworkQuestionPresentationMapper mapper;
@@ -89,26 +87,6 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
         createArtworkQuestionReplyService.createQuestionReply(command);
 
     ArtworkQuestionReplyResponse response = mapper.toResponse(result);
-
-    return ApiResponseBody.success(response, httpServletRequest);
-  }
-
-  @Override
-  @PatchMapping("/{questionId}")
-  @SecurityRequirement(name = "Authorization")
-  // 질문 수정
-  public ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
-      @PathVariable Long artworkId,
-      @PathVariable Long questionId,
-      @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody UpdateArtworkQuestionRequest request,
-      HttpServletRequest httpServletRequest) {
-    UpdateArtworkQuestionCommand command =
-        mapper.toCommand(artworkId, questionId, requireUserId(user), request);
-
-    ArtworkQuestionResult result = updateArtworkQuestionService.updateQuestion(command);
-
-    ArtworkQuestionResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }
