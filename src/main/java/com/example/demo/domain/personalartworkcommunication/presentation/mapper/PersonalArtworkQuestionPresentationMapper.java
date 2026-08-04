@@ -27,8 +27,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonalArtworkQuestionPresentationMapper {
 
-  public GetPersonalArtworkQuestionsQuery toQuery(Long personalArtworkId, Long cursorId) {
-    return new GetPersonalArtworkQuestionsQuery(personalArtworkId, cursorId);
+  public GetPersonalArtworkQuestionsQuery toQuery(
+      Long personalArtworkId, Long cursorId, Long userId) {
+    return new GetPersonalArtworkQuestionsQuery(personalArtworkId, cursorId, userId);
   }
 
   public DeletePersonalArtworkQuestionCommand toCommand(
@@ -105,7 +106,10 @@ public class PersonalArtworkQuestionPresentationMapper {
   private PersonalArtworkQuestionItemResponse toQuestionItemResponse(
       PersonalArtworkQuestionItemResult result) {
     PersonalArtworkQuestionUserResponse user =
-        new PersonalArtworkQuestionUserResponse(result.user().userId(), result.user().nickname());
+        result.user() == null
+            ? null
+            : new PersonalArtworkQuestionUserResponse(
+                result.user().userId(), result.user().nickname());
     PersonalArtworkQuestionReplyItemResponse reply =
         result.reply() == null ? null : toQuestionReplyItemResponse(result.reply());
 
@@ -113,6 +117,8 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.personalQuestionId(),
         result.content(),
         result.isPublic(),
+        result.accessible(),
+        result.canReply(),
         result.answerStatus(),
         result.createdAt(),
         user,

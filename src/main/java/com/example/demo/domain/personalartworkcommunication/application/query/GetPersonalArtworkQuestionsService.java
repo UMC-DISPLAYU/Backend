@@ -68,7 +68,8 @@ public class GetPersonalArtworkQuestionsService {
                         question,
                         replyByQuestionId.get(question.getPersonalQuestionId()),
                         nicknameByUserId,
-                        ownerUserId))
+                        ownerUserId,
+                        query.userId()))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).personalQuestionId() : null;
@@ -102,7 +103,26 @@ public class GetPersonalArtworkQuestionsService {
       PersonalArtworkQuestion question,
       PersonalArtworkQuestionReply reply,
       Map<Long, String> nicknameByUserId,
-      Long ownerUserId) {
+      Long ownerUserId,
+      Long userId) {
+    boolean isOwner = ownerUserId.equals(userId);
+    boolean accessible =
+        Boolean.TRUE.equals(question.getIsPublic()) || question.isWrittenBy(userId) || isOwner;
+    boolean canReply = accessible && isOwner && !question.isAnswered();
+
+    if (!accessible) {
+      return new PersonalArtworkQuestionItemResult(
+          question.getPersonalQuestionId(),
+          null,
+          question.getIsPublic(),
+          false,
+          false,
+          question.getAnswerStatus(),
+          question.getCreatedAt(),
+          null,
+          null);
+    }
+
     PersonalArtworkQuestionUserResult user =
         new PersonalArtworkQuestionUserResult(
             question.getUserId(), findNicknameOrThrow(nicknameByUserId, question.getUserId()));
@@ -114,6 +134,8 @@ public class GetPersonalArtworkQuestionsService {
         question.getPersonalQuestionId(),
         question.getContent(),
         question.getIsPublic(),
+        true,
+        canReply,
         question.getAnswerStatus(),
         question.getCreatedAt(),
         user,

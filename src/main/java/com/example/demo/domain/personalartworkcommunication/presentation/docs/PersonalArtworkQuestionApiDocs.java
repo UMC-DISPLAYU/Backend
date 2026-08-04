@@ -22,7 +22,19 @@ import jakarta.validation.constraints.Positive;
 @Tag(name = "Personal Artwork Question", description = "개인 작품 Q&A API")
 public interface PersonalArtworkQuestionApiDocs {
 
-  @Operation(summary = "개인 작품 질문 및 답변 목록 조회", description = "개인 작품에 등록된 질문과 답변을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "개인 작품 질문 및 답변 목록 조회",
+      description =
+          """
+          비회원도 호출할 수 있으며, 로그인한 경우 Authorization 헤더를 선택적으로 전달합니다.
+
+          공개 질문은 모든 요청자에게 질문과 답변 전체를 제공합니다.
+          비공개 질문은 질문 작성자 또는 개인 작품 소유자에게만 전체 내용을 제공합니다.
+          권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
+
+          accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
+          """)
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 질문 및 답변 목록 조회 성공",
@@ -43,6 +55,8 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "personalQuestionId": 1,
                                     "content": "색을 몇 번 겹쳐 칠했나요?",
                                     "isPublic": true,
+                                    "accessible": true,
+                                    "canReply": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
                                     "user": {
@@ -57,6 +71,17 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00"
                                     }
+                                  },
+                                  {
+                                    "personalQuestionId": 2,
+                                    "content": null,
+                                    "isPublic": false,
+                                    "accessible": false,
+                                    "canReply": false,
+                                    "answerStatus": "WAITING",
+                                    "createdAt": "2026-07-23T17:15:00",
+                                    "user": null,
+                                    "reply": null
                                   }
                                 ],
                                 "nextCursorId": 3,
@@ -99,6 +124,7 @@ public interface PersonalArtworkQuestionApiDocs {
   ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
       @Parameter(description = "질문을 조회할 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID", example = "3") @Positive Long cursorId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "개인 작품 Q&A 답변 등록", description = "개인 작품 소유자가 해당 작품에 등록된 질문에 답변합니다.")

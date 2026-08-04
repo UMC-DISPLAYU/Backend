@@ -46,10 +46,11 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
   public ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
       @PathVariable Long personalArtworkId,
       @RequestParam(required = false) @Positive Long cursorId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionListResult result =
         getPersonalArtworkQuestionsService.getQuestions(
-            mapper.toQuery(personalArtworkId, cursorId));
+            mapper.toQuery(personalArtworkId, cursorId, user == null ? null : user.userId()));
 
     PersonalArtworkQuestionListResponse response = mapper.toResponse(result);
 

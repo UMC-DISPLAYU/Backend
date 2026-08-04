@@ -14,6 +14,8 @@ public record PersonalArtworkQuestionListResult(
       Long personalQuestionId,
       String content,
       Boolean isPublic,
+      boolean accessible,
+      boolean canReply,
       AnswerStatus answerStatus,
       LocalDateTime createdAt,
       PersonalArtworkQuestionUserResult user,
