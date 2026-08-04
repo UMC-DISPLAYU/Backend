@@ -24,7 +24,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Artwork Question", description = "작품 Q&A 질문 API")
 public interface ArtworkQuestionApiDocs {
 
-  @Operation(summary = "작품 Q&A 질문 목록 조회", description = "작품 방명록 Q&A 탭에서 공개 질문 목록과 작가 답변을 조회합니다.")
+  @Operation(
+      summary = "작품 Q&A 질문 목록 조회",
+      description =
+          """
+          비회원도 호출할 수 있으며, 로그인한 경우에만 Authorization 헤더를 선택적으로 전달합니다.
+
+          공개 질문은 모든 요청자에게 질문과 답변 전체를 제공합니다.
+          비공개 질문은 질문 작성자 또는 해당 작품의 참여 작가에게만 전체 내용을 제공합니다.
+          권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
+
+          accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          canReply는 로그인 사용자가 현재 질문에 답변을 등록할 수 있는지를 나타내며,
+          해당 작품의 isContact=true 담당 작가이고 질문 상태가 WAITING일 때만 true입니다.
+          일반 참여 작가는 비공개 질문을 조회할 수 있지만 답변을 등록할 수 없습니다.
+          """)
   @ApiResponse(
       responseCode = "200",
       description = "작품 Q&A 질문 목록 조회 성공",
@@ -45,6 +59,8 @@ public interface ArtworkQuestionApiDocs {
                                     "questionId": 1,
                                     "content": "이 작품에서 사용한 재료가 궁금해요.",
                                     "isPublic": true,
+                                    "accessible": true,
+                                    "canReply": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-06-30T22:10:00",
                                     "user": {
@@ -58,6 +74,17 @@ public interface ArtworkQuestionApiDocs {
                                       "content": "캔버스에 유화를 사용했어요.",
                                       "createdAt": "2026-06-30T22:10:00"
                                     }
+                                  },
+                                  {
+                                    "questionId": 2,
+                                    "content": null,
+                                    "isPublic": false,
+                                    "accessible": false,
+                                    "canReply": false,
+                                    "answerStatus": "WAITING",
+                                    "createdAt": "2026-06-30T22:15:00",
+                                    "user": null,
+                                    "reply": null
                                   }
                                 ],
                                 "nextCursorId": null,
@@ -102,6 +129,7 @@ public interface ArtworkQuestionApiDocs {
       @Parameter(description = "마지막으로 조회한 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(

@@ -10,6 +10,8 @@ public record ArtworkQuestionListResponse(
       Long questionId,
       String content,
       Boolean isPublic,
+      boolean accessible,
+      boolean canReply,
       String answerStatus,
       LocalDateTime createdAt,
       ArtworkQuestionUserResponse user,

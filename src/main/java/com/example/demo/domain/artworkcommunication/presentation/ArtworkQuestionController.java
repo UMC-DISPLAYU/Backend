@@ -44,9 +44,11 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   public ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @PathVariable Long artworkId,
       @RequestParam(required = false) @Positive Long cursorId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkQuestionListResult result =
-        getArtworkQuestionsService.getQuestions(mapper.toQuery(artworkId, cursorId));
+        getArtworkQuestionsService.getQuestions(
+            mapper.toQuery(artworkId, cursorId, user == null ? null : user.userId()));
 
     ArtworkQuestionListResponse response = mapper.toResponse(result);
 

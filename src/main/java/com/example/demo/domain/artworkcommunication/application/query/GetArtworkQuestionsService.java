@@ -40,6 +40,19 @@ public class GetArtworkQuestionsService {
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
 
+    boolean isParticipant =
+        query.userId() != null
+            && creatorExistenceRepository
+                .findCreatorNameByDisplayArtworkIdAndUserId(
+                    query.displayArtworkId(), query.userId())
+                .isPresent();
+    boolean isContact =
+        query.userId() != null
+            && creatorExistenceRepository
+                .findContactCreatorByDisplayArtworkIdAndUserId(
+                    query.displayArtworkId(), query.userId())
+                .isPresent();
+
     List<ArtworkQuestion> fetched =
         artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(
             query.displayArtworkId(), query.cursorId(), PAGE_SIZE + 1);
@@ -64,7 +77,10 @@ public class GetArtworkQuestionsService {
                         question,
                         repliesByQuestionId.getOrDefault(question.getQuestionId(), List.of()),
                         nicknameByUserId,
-                        creatorNameById))
+                        creatorNameById,
+                        query.userId(),
+                        isParticipant,
+                        isContact))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).questionId() : null;
@@ -83,7 +99,29 @@ public class GetArtworkQuestionsService {
       ArtworkQuestion question,
       List<ArtworkQuestionReply> replies,
       Map<Long, String> nicknameByUserId,
-      Map<Long, String> creatorNameById) {
+      Map<Long, String> creatorNameById,
+      Long userId,
+      boolean isParticipant,
+      boolean isContact) {
+    boolean accessible =
+        Boolean.TRUE.equals(question.getIsPublic())
+            || question.isWrittenBy(userId)
+            || isParticipant;
+    boolean canReply = accessible && isContact && !question.isAnswered();
+
+    if (!accessible) {
+      return new ArtworkQuestionItemResult(
+          question.getQuestionId(),
+          null,
+          question.getIsPublic(),
+          false,
+          false,
+          question.getAnswerStatus().name(),
+          question.getCreatedAt(),
+          null,
+          null);
+    }
+
     ArtworkQuestionUserResult user =
         new ArtworkQuestionUserResult(
             question.getUserId(), getNicknameOrThrow(nicknameByUserId, question.getUserId()));
@@ -98,6 +136,8 @@ public class GetArtworkQuestionsService {
         question.getQuestionId(),
         question.getContent(),
         question.getIsPublic(),
+        true,
+        canReply,
         question.getAnswerStatus().name(),
         question.getCreatedAt(),
         user,
