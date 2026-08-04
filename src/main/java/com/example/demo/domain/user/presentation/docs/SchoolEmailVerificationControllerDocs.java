@@ -101,7 +101,7 @@ public interface SchoolEmailVerificationControllerDocs {
           "data": null
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/school-email-verifications" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/send" }
       }
       """;
 
@@ -113,7 +113,7 @@ public interface SchoolEmailVerificationControllerDocs {
           "data": null
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/school-email-verifications/resend" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/resend" }
       }
       """;
 
@@ -128,7 +128,7 @@ public interface SchoolEmailVerificationControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/school-email-verifications/confirm" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/confirm" }
       }
       """;
 }

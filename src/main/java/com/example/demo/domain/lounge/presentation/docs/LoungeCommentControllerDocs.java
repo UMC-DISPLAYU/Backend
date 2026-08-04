@@ -29,7 +29,7 @@ public interface LoungeCommentControllerDocs {
 
   @Operation(summary = "라운지 댓글 생성", description = "라운지 게시글에 댓글을 생성합니다.")
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "201",
       description = "라운지 댓글 생성 성공",
       content =
           @Content(
@@ -43,7 +43,7 @@ public interface LoungeCommentControllerDocs {
 
   @Operation(summary = "라운지 답글 생성", description = "라운지 댓글에 답글을 생성합니다.")
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "201",
       description = "라운지 답글 생성 성공",
       content =
           @Content(
@@ -263,7 +263,7 @@ public interface LoungeCommentControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/like" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/likes" }
       }
       """;
 
@@ -279,7 +279,7 @@ public interface LoungeCommentControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/like" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/10/likes" }
       }
       """;
 
@@ -349,7 +349,7 @@ public interface LoungeCommentControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/comments/me/posts" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/comments" }
       }
       """;
 

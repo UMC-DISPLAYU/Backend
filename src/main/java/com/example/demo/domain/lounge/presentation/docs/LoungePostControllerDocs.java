@@ -29,12 +29,12 @@ public interface LoungePostControllerDocs {
 
   @Operation(summary = "라운지 게시글 생성", description = "라운지 게시글을 생성합니다.")
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "201",
       description = "라운지 게시글 생성 성공",
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 생성 성공", value = POST_DETAIL_SUCCESS_EXAMPLE)))
+              examples = @ExampleObject(name = "게시글 생성 성공", value = CREATE_POST_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostDetailResponse> createPost(
       @Valid @RequestBody LoungePostRequest loungePostRequest,
       AuthUser user,
@@ -47,7 +47,7 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 수정 성공", value = POST_DETAIL_SUCCESS_EXAMPLE)))
+              examples = @ExampleObject(name = "게시글 수정 성공", value = UPDATE_POST_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostDetailResponse> updatePost(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungePostRequest loungePostRequest,
@@ -149,7 +149,7 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "내 게시글 조회 성공", value = POST_LIST_SUCCESS_EXAMPLE)))
+              examples = @ExampleObject(name = "내 게시글 조회 성공", value = MY_POSTS_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostCursorResponse> getMyPosts(
       @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -166,7 +166,8 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "내 스크랩 조회 성공", value = POST_LIST_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(name = "내 스크랩 조회 성공", value = MY_SCRAPPED_POSTS_SUCCESS_EXAMPLE)))
   ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
       @Parameter(description = "마지막으로 조회한 스크랩 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -204,6 +205,68 @@ public interface LoungePostControllerDocs {
         },
         "error": null,
         "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1" }
+      }
+      """;
+
+  String CREATE_POST_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungePostId": 1,
+            "title": "전시 후기 공유합니다",
+            "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
+            "content": "작품 배치가 인상적이었습니다.",
+            "category": "REVIEW",
+            "postStatus": "ACTIVE",
+            "writer": {
+              "userId": 1,
+              "nickname": "maya01",
+              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+            },
+            "createdAt": "2026-08-04T09:00:00",
+            "updatedAt": "2026-08-04T09:00:00",
+            "commentCount": 0,
+            "likeCount": 0,
+            "isLiked": false,
+            "isScrapped": false,
+            "isMyPost": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts" }
+      }
+      """;
+
+  String UPDATE_POST_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "loungePostId": 1,
+            "title": "수정된 전시 후기입니다",
+            "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
+            "content": "수정된 후기 내용입니다.",
+            "category": "REVIEW",
+            "postStatus": "ACTIVE",
+            "writer": {
+              "userId": 1,
+              "nickname": "maya01",
+              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+            },
+            "createdAt": "2026-08-04T09:00:00",
+            "updatedAt": "2026-08-04T10:00:00",
+            "commentCount": 2,
+            "likeCount": 5,
+            "isLiked": true,
+            "isScrapped": false,
+            "isMyPost": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T10:00:00", "path": "/api/v1/lounge/posts/1" }
       }
       """;
 
@@ -254,7 +317,7 @@ public interface LoungePostControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/like" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/likes" }
       }
       """;
 
@@ -270,7 +333,7 @@ public interface LoungePostControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/like" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/likes" }
       }
       """;
 
@@ -286,7 +349,7 @@ public interface LoungePostControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scrap" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scraps" }
       }
       """;
 
@@ -302,7 +365,77 @@ public interface LoungePostControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scrap" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scraps" }
+      }
+      """;
+
+  String MY_POSTS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "posts": [
+              {
+                "loungePostId": 1,
+                "category": "REVIEW",
+                "title": "전시 후기 공유합니다",
+                "content": "작품 배치가 인상적이었습니다.",
+                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
+                "writer": {
+                  "userId": 1,
+                  "nickname": "maya01",
+                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+                },
+                "createdAt": "2026-08-04T09:00:00",
+                "commentCount": 2,
+                "likeCount": 5,
+                "isLiked": true,
+                "isMyPost": true
+              }
+            ],
+            "nextCursorId": null,
+            "size": 10,
+            "hasNext": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/posts" }
+      }
+      """;
+
+  String MY_SCRAPPED_POSTS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "posts": [
+              {
+                "loungePostId": 1,
+                "category": "REVIEW",
+                "title": "전시 후기 공유합니다",
+                "content": "작품 배치가 인상적이었습니다.",
+                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
+                "writer": {
+                  "userId": 1,
+                  "nickname": "maya01",
+                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
+                },
+                "createdAt": "2026-08-04T09:00:00",
+                "commentCount": 2,
+                "likeCount": 5,
+                "isLiked": true,
+                "isMyPost": false
+              }
+            ],
+            "nextCursorId": null,
+            "size": 10,
+            "hasNext": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/scraps" }
       }
       """;
 

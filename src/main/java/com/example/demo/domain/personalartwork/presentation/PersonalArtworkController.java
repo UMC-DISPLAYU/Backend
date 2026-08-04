@@ -71,7 +71,7 @@ public class PersonalArtworkController {
               examples =
                   @ExampleObject(
                       name = "Create personal artwork success",
-                      value = ARTWORK_SUCCESS_EXAMPLE)))
+                      value = CREATE_ARTWORK_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PersonalArtworkResponse> createPersonalArtwork(
       @Valid @RequestBody PersonalArtworkRequest personalArtworkRequest,
       @AuthenticationPrincipal AuthUser user,
@@ -262,6 +262,41 @@ public class PersonalArtworkController {
         },
         "error": null,
         "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/personal-artworks/1" }
+      }
+      """;
+
+  private static final String CREATE_ARTWORK_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "personalArtworkId": 1,
+            "userId": 1,
+            "artworkName": "작은 정원",
+            "content": "개인 작업으로 제작한 설치 작품입니다.",
+            "type": "COMPLEX",
+            "productionYear": 2026,
+            "materialMedia": "Mixed media",
+            "size": "100 x 100 x 150 cm",
+            "point": "빛과 그림자의 변화",
+            "createdAt": "2026-08-04T09:00:00",
+            "images": [
+              {
+                "imageId": 1,
+                "imageUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
+                "isThumbnail": true,
+                "imageType": "MAIN",
+                "sortOrder": 1,
+                "caption": "대표 이미지",
+                "width": 1200,
+                "height": 1600
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/personal-artworks" }
       }
       """;
 

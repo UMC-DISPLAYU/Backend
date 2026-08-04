@@ -25,7 +25,7 @@ public interface ArchiveWorkControllerDocs {
   @Operation(summary = "작품 저장", description = "작품을 개인 아카이브에 저장합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "201",
       description = "작품 저장 성공",
       content =
           @Content(
