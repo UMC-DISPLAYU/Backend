@@ -103,13 +103,18 @@ public class PersonalArtworkQuestionValidator {
 
   public void validateAccessibleReply(
       PersonalArtworkQuestionReply reply, Long personalQuestionId, Long userId) {
-    if (!reply.belongsToQuestion(personalQuestionId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND);
-    }
+    validateReplyBelongsToQuestion(reply, personalQuestionId);
     if (!reply.isWrittenBy(userId)) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
+    }
+  }
+
+  public void validateReplyBelongsToQuestion(
+      PersonalArtworkQuestionReply reply, Long personalQuestionId) {
+    if (!reply.belongsToQuestion(personalQuestionId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND);
     }
   }
 

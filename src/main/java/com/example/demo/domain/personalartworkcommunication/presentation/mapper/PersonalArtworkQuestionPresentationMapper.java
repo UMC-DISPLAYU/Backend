@@ -11,6 +11,7 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
@@ -22,6 +23,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.respons
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionUserResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
@@ -108,6 +110,16 @@ public class PersonalArtworkQuestionPresentationMapper {
   public PersonalArtworkQuestionLikeResponse toResponse(PersonalArtworkQuestionLikeResult result) {
     return new PersonalArtworkQuestionLikeResponse(
         result.personalQuestionId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
+
+  public PersonalArtworkQuestionReplyLikeResponse toResponse(
+      PersonalArtworkQuestionReplyLikeResult result) {
+    return new PersonalArtworkQuestionReplyLikeResponse(
+        result.personalQuestionReplyId(),
         result.liked(),
         result.likeCount(),
         result.createdAt(),

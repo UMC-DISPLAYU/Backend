@@ -6,6 +6,7 @@ import com.example.demo.domain.personalartworkcommunication.application.result.D
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.docs.PersonalArtworkQuestionApiDocs;
@@ -16,6 +17,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.respons
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.error.BusinessException;
@@ -41,6 +43,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
   private final PersonalArtworkQuestionReplyService personalArtworkQuestionReplyService;
   private final GetPersonalArtworkQuestionsService getPersonalArtworkQuestionsService;
   private final PersonalArtworkQuestionLikeService personalArtworkQuestionLikeService;
+  private final PersonalArtworkQuestionReplyLikeService personalArtworkQuestionReplyLikeService;
   private final PersonalArtworkQuestionPresentationMapper mapper;
 
   @Override
@@ -156,6 +159,26 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
 
     PersonalArtworkQuestionLikeResult result =
         personalArtworkQuestionLikeService.toggleQuestionLike(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{personalQuestionId}/reply/{personalQuestionReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 개인 작품 질문 답변 좋아요 등록 및 취소
+  public ApiResponseBody<PersonalArtworkQuestionReplyLikeResponse> questionReplyLike(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalQuestionId,
+      @PathVariable Long personalQuestionReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkQuestionReplyLikeCommand command =
+        new PersonalArtworkQuestionReplyLikeCommand(
+            personalArtworkId, personalQuestionId, personalQuestionReplyId, requireUserId(user));
+
+    PersonalArtworkQuestionReplyLikeResult result =
+        personalArtworkQuestionReplyLikeService.toggleReplyLike(command);
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
