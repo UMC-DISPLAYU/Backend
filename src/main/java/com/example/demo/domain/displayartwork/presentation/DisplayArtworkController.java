@@ -113,7 +113,17 @@ public class DisplayArtworkController {
       params = {"displayId", "!userId"})
   @Operation(
       summary = "전시 상세 - 작품 탭 목록 조회",
-      description = "특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.")
+      description =
+          """
+          특정 전시(displayId)에 등록된 작품 전체를 전시 내 순서(workSortOrder)대로 조회합니다. 비회원도 조회 가능합니다.
+
+          이 경로는 displayId와 userId 중 **정확히 하나만** 받습니다.
+          - `?displayId={displayId}` : 전시 상세의 작품 탭 (이 API)
+          - `?userId={userId}` : 작가 프로필의 작품 탭 (아래 별도 설명 참고)
+
+          둘 다 넣거나 둘 다 빼면 400을 반환합니다.
+          Swagger UI에서는 두 API가 한 항목으로 합쳐져 보이므로, 사용할 파라미터 하나만 채우고 나머지는 비워두세요.
+          """)
   @ApiResponse(
       responseCode = "200",
       description = "전시별 작품 목록 조회 성공",
@@ -125,7 +135,9 @@ public class DisplayArtworkController {
                       name = "Display artworks success",
                       value = DISPLAY_ARTWORKS_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkListResponse> getArtworksByDisplay(
-      @Parameter(description = "조회할 전시 ID") @RequestParam @Positive Long displayId,
+      @Parameter(description = "조회할 전시 ID (userId와 함께 쓸 수 없음)")
+          @RequestParam(required = false)
+          @Positive Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkListResult result =
@@ -139,8 +151,12 @@ public class DisplayArtworkController {
   @Operation(
       summary = "작가 프로필 - 작품 탭 목록 조회",
       description =
-          "해당 유저가 참여한 전시 출품작을 등록순(createdAt)으로 조회합니다. "
-              + "대표 작가와 공동 작업자를 구분하지 않고 모두 포함하며, 비회원도 조회 가능합니다.")
+          """
+          해당 유저가 참여한 전시 출품작을 등록순(createdAt)으로 조회합니다.
+          대표 작가와 공동 작업자를 구분하지 않고 모두 포함하며, 비회원도 조회 가능합니다.
+
+          `?userId={userId}` 만 넣어서 호출합니다. displayId와 함께 쓸 수 없습니다.
+          """)
   @ApiResponse(
       responseCode = "200",
       description = "작가별 작품 목록 조회 성공",
@@ -152,7 +168,9 @@ public class DisplayArtworkController {
                       name = "Artist artworks success",
                       value = ARTIST_ARTWORKS_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayArtworkByArtistResponse> getArtworksByArtist(
-      @Parameter(description = "조회할 작가(유저) ID") @RequestParam @Positive Long userId,
+      @Parameter(description = "조회할 작가(유저) ID (displayId와 함께 쓸 수 없음)")
+          @RequestParam(required = false)
+          @Positive Long userId,
       HttpServletRequest httpRequest) {
     DisplayArtworkByArtistResult result = displayArtworkQueryService.getArtworksByUserId(userId);
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
