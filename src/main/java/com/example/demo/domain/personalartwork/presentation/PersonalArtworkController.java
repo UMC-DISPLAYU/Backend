@@ -226,7 +226,7 @@ public class PersonalArtworkController {
             "userId": 1,
             "artworkName": "작은 정원",
             "content": "개인 작업으로 제작한 설치 작품입니다.",
-            "type": "INSTALLATION",
+            "type": "COMPLEX",
             "productionYear": 2026,
             "materialMedia": "Mixed media",
             "size": "100 x 100 x 150 cm",
@@ -261,7 +261,7 @@ public class PersonalArtworkController {
               "personalArtworkId": 1,
               "artworkName": "작은 정원",
               "thumbnailUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
-              "type": "INSTALLATION",
+              "type": "COMPLEX",
               "createdAt": "2026-08-04T09:00:00"
             }
           ]

@@ -27,3 +27,33 @@ ALTER TABLE DisplayArtwork
         'COMPLEX',
         'ETC'
     ) NOT NULL COMMENT 'PAINTING, DESIGN, PHOTOGRAPHY, ARCHITECTURE, MEDIA, CRAFT, SCULPTURE, FASHION, COMPLEX, ETC';
+
+UPDATE PersonalArtwork
+SET type = 'MEDIA'
+WHERE type = 'VIDEO';
+
+UPDATE PersonalArtwork
+SET type = 'CRAFT'
+WHERE type = 'CRAFTS';
+
+UPDATE PersonalArtwork
+SET type = 'ETC'
+WHERE type = 'ILLUSTRATION';
+
+UPDATE PersonalArtwork
+SET type = 'ETC'
+WHERE type = 'OTHERS';
+
+ALTER TABLE PersonalArtwork
+    MODIFY COLUMN type enum (
+        'PAINTING',
+        'DESIGN',
+        'PHOTOGRAPHY',
+        'ARCHITECTURE',
+        'MEDIA',
+        'CRAFT',
+        'SCULPTURE',
+        'FASHION',
+        'COMPLEX',
+        'ETC'
+    ) NOT NULL COMMENT 'PAINTING, DESIGN, PHOTOGRAPHY, ARCHITECTURE, MEDIA, CRAFT, SCULPTURE, FASHION, COMPLEX, ETC';
