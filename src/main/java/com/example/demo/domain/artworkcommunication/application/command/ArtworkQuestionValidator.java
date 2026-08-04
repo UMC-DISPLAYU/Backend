@@ -103,11 +103,15 @@ public class ArtworkQuestionValidator {
   }
 
   public void validateAccessibleReply(ArtworkQuestionReply reply, Long questionId, Long creatorId) {
-    if (!reply.belongsToQuestion(questionId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND);
-    }
+    validateReplyTarget(reply, questionId);
     if (!reply.isWrittenBy(creatorId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN);
+    }
+  }
+
+  public void validateReplyTarget(ArtworkQuestionReply reply, Long questionId) {
+    if (!reply.belongsToQuestion(questionId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND);
     }
   }
 }

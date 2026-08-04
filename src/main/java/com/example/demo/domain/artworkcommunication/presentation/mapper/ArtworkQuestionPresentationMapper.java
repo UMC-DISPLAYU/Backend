@@ -6,6 +6,7 @@ import com.example.demo.domain.artworkcommunication.application.command.UpdateAr
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsQuery;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionReplyResult;
@@ -15,6 +16,7 @@ import com.example.demo.domain.artworkcommunication.presentation.request.CreateA
 import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
+import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionReplyResponse;
@@ -85,6 +87,15 @@ public class ArtworkQuestionPresentationMapper {
   public ArtworkQuestionLikeResponse toResponse(ArtworkQuestionLikeResult result) {
     return new ArtworkQuestionLikeResponse(
         result.questionId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
+
+  public ArtworkQuestionReplyLikeResponse toResponse(ArtworkQuestionReplyLikeResult result) {
+    return new ArtworkQuestionReplyLikeResponse(
+        result.questionReplyId(),
         result.liked(),
         result.likeCount(),
         result.createdAt(),
