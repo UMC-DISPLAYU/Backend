@@ -8,7 +8,6 @@ import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFee
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkFeelingPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   private final CreateArtworkFeelingService createArtworkFeelingService;
-  private final UpdateArtworkFeelingService updateArtworkFeelingService;
   private final DeleteArtworkFeelingService deleteArtworkFeelingService;
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
   private final DeleteArtworkFeelingReplyService deleteArtworkFeelingReplyService;
@@ -125,26 +123,6 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     DeletedArtworkFeelingReplyResult result = deleteArtworkFeelingReplyService.deleteReply(command);
 
     DeletedArtworkFeelingReplyResponse response = mapper.toResponse(result);
-
-    return ApiResponseBody.success(response, httpServletRequest);
-  }
-
-  @Override
-  @PatchMapping("/{feelingId}")
-  @SecurityRequirement(name = "Authorization")
-  // 감상평 수정
-  public ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
-      @PathVariable Long artworkId,
-      @PathVariable Long feelingId,
-      @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody UpdateArtworkFeelingRequest request,
-      HttpServletRequest httpServletRequest) {
-    UpdateArtworkFeelingCommand command =
-        mapper.toCommand(artworkId, feelingId, requireUserId(user), request);
-
-    UpdatedArtworkFeelingResult result = updateArtworkFeelingService.updateFeeling(command);
-
-    UpdatedArtworkFeelingResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }

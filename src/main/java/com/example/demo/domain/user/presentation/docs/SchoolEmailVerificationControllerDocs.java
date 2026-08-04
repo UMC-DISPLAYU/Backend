@@ -7,6 +7,9 @@ import com.example.demo.domain.user.presentation.response.SchoolEmailVerificatio
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +34,13 @@ public interface SchoolEmailVerificationControllerDocs {
                               인증번호 확인 완료 후 작가 인증이 완료됩니다.
                               """)
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "학교 이메일 인증번호 발송 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "발송 성공", value = SEND_SUCCESS_EXAMPLE)))
   ApiResponseBody<Void> send(
       SchoolEmailVerificationRequest request, AuthUser user, HttpServletRequest httpRequest)
       throws IOException;
@@ -49,6 +59,13 @@ public interface SchoolEmailVerificationControllerDocs {
                               인증번호 확인 완료 후 작가 인증이 완료됩니다.
                               """)
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "학교 이메일 인증번호 재발송 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "재발송 성공", value = RESEND_SUCCESS_EXAMPLE)))
   ApiResponseBody<Void> resend(
       ResendSchoolEmailVerificationRequest request, AuthUser user, HttpServletRequest httpRequest);
 
@@ -66,6 +83,52 @@ public interface SchoolEmailVerificationControllerDocs {
                               인증 완료 후 작가 인증 기능을 사용할 수 있습니다.
                               """)
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "학교 이메일 인증번호 확인 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 성공", value = CONFIRM_SUCCESS_EXAMPLE)))
   ApiResponseBody<SchoolEmailVerificationConfirmResponse> confirm(
       VerifySchoolEmailRequest request, AuthUser user, HttpServletRequest httpRequest);
+
+  String SEND_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/send" }
+      }
+      """;
+
+  String RESEND_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/resend" }
+      }
+      """;
+
+  String CONFIRM_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "schoolEmail": "maya@duksung.ac.kr",
+            "isVerified": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/confirm" }
+      }
+      """;
 }

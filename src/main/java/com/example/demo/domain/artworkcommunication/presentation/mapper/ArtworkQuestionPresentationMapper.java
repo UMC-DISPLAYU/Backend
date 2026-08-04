@@ -2,7 +2,6 @@ package com.example.demo.domain.artworkcommunication.presentation.mapper;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionReplyCommand;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionCommand;
-import com.example.demo.domain.artworkcommunication.application.command.UpdateArtworkQuestionCommand;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsQuery;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
@@ -13,7 +12,6 @@ import com.example.demo.domain.artworkcommunication.application.result.DeletedAr
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionLikeResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionListResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionReplyLikeResponse;
@@ -30,12 +28,6 @@ public class ArtworkQuestionPresentationMapper {
       Long artworkId, Long userId, CreateArtworkQuestionRequest request) {
     return new CreateArtworkQuestionCommand(
         artworkId, userId, request.content(), request.isPublic());
-  }
-
-  public UpdateArtworkQuestionCommand toCommand(
-      Long artworkId, Long questionId, Long userId, UpdateArtworkQuestionRequest request) {
-    return new UpdateArtworkQuestionCommand(
-        artworkId, questionId, userId, request.content(), request.isPublic());
   }
 
   public ArtworkQuestionReplyCommand toCommand(
