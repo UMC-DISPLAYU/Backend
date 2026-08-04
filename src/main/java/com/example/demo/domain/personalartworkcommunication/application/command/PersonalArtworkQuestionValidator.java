@@ -63,7 +63,7 @@ public class PersonalArtworkQuestionValidator {
     validateWriter(personalArtworkQuestion, userId);
   }
 
-  public void validateReplyTarget(
+  public void validateQuestionTarget(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
@@ -81,7 +81,7 @@ public class PersonalArtworkQuestionValidator {
 
   public void validateLikePermission(
       PersonalArtworkQuestion question, Long personalArtworkId, Long userId) {
-    if (Boolean.TRUE.equals(question.getIsPublic())
+    if (question.isPublicQuestion()
         || question.isWrittenBy(userId)
         || personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
       return;

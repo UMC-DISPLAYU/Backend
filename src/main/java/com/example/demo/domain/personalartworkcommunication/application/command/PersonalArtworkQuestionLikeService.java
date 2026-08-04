@@ -26,7 +26,7 @@ public class PersonalArtworkQuestionLikeService {
     PersonalArtworkQuestion question =
         personalArtworkQuestionValidator.findActiveQuestionForUpdateOrThrow(
             command.personalQuestionId());
-    personalArtworkQuestionValidator.validateReplyTarget(question, command.personalArtworkId());
+    personalArtworkQuestionValidator.validateQuestionTarget(question, command.personalArtworkId());
     personalArtworkQuestionValidator.validateLikePermission(
         question, command.personalArtworkId(), command.userId());
 
@@ -41,7 +41,7 @@ public class PersonalArtworkQuestionLikeService {
     return new PersonalArtworkQuestionLikeResult(
         snapshot.personalQuestionId(),
         snapshot.liked(),
-        Math.toIntExact(snapshot.likeCount()),
+        snapshot.likeCount(),
         snapshot.createdAt(),
         snapshot.deletedAt());
   }

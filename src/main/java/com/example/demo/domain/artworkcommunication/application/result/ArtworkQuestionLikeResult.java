@@ -5,6 +5,6 @@ import java.time.LocalDateTime;
 public record ArtworkQuestionLikeResult(
     Long questionId,
     Boolean liked,
-    Integer likeCount,
+    Long likeCount,
     LocalDateTime createdAt,
     LocalDateTime deletedAt) {}

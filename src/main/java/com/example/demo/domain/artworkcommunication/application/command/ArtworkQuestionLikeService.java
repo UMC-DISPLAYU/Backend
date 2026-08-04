@@ -37,7 +37,7 @@ public class ArtworkQuestionLikeService {
     return new ArtworkQuestionLikeResult(
         snapshot.questionId(),
         snapshot.liked(),
-        Math.toIntExact(snapshot.likeCount()),
+        snapshot.likeCount(),
         snapshot.createdAt(),
         snapshot.deletedAt());
   }

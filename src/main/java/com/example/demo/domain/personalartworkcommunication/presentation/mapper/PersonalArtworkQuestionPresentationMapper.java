@@ -3,7 +3,9 @@ package com.example.demo.domain.personalartworkcommunication.presentation.mapper
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
@@ -63,6 +65,17 @@ public class PersonalArtworkQuestionPresentationMapper {
       CreatePersonalArtworkQuestionReplyRequest request) {
     return new PersonalArtworkQuestionReplyCommand(
         personalArtworkId, personalQuestionId, userId, request.content());
+  }
+
+  public PersonalArtworkQuestionLikeCommand toLikeCommand(
+      Long personalArtworkId, Long personalQuestionId, Long userId) {
+    return new PersonalArtworkQuestionLikeCommand(personalArtworkId, personalQuestionId, userId);
+  }
+
+  public PersonalArtworkQuestionReplyLikeCommand toReplyLikeCommand(
+      Long personalArtworkId, Long personalQuestionId, Long personalQuestionReplyId, Long userId) {
+    return new PersonalArtworkQuestionReplyLikeCommand(
+        personalArtworkId, personalQuestionId, personalQuestionReplyId, userId);
   }
 
   public PersonalArtworkQuestionResponse toResponse(PersonalArtworkQuestionResult result) {

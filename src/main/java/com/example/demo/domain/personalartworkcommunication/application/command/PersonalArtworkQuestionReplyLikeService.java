@@ -26,7 +26,7 @@ public class PersonalArtworkQuestionReplyLikeService {
 
     PersonalArtworkQuestion question =
         validator.findActiveQuestionForUpdateOrThrow(command.personalQuestionId());
-    validator.validateReplyTarget(question, command.personalArtworkId());
+    validator.validateQuestionTarget(question, command.personalArtworkId());
     validator.validateLikePermission(question, command.personalArtworkId(), command.userId());
 
     PersonalArtworkQuestionReply reply =
@@ -44,7 +44,7 @@ public class PersonalArtworkQuestionReplyLikeService {
     return new PersonalArtworkQuestionReplyLikeResult(
         snapshot.personalQuestionReplyId(),
         snapshot.liked(),
-        Math.toIntExact(snapshot.likeCount()),
+        snapshot.likeCount(),
         snapshot.createdAt(),
         snapshot.deletedAt());
   }

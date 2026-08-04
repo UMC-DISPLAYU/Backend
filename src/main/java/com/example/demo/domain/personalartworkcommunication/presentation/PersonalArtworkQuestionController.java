@@ -154,8 +154,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionLikeCommand command =
-        new PersonalArtworkQuestionLikeCommand(
-            personalArtworkId, personalQuestionId, requireUserId(user));
+        mapper.toLikeCommand(personalArtworkId, personalQuestionId, requireUserId(user));
 
     PersonalArtworkQuestionLikeResult result =
         personalArtworkQuestionLikeService.toggleQuestionLike(command);
@@ -174,7 +173,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionReplyLikeCommand command =
-        new PersonalArtworkQuestionReplyLikeCommand(
+        mapper.toReplyLikeCommand(
             personalArtworkId, personalQuestionId, personalQuestionReplyId, requireUserId(user));
 
     PersonalArtworkQuestionReplyLikeResult result =
