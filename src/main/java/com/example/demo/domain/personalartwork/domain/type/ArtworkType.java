@@ -5,10 +5,10 @@ public enum ArtworkType {
   DESIGN,
   PHOTOGRAPHY,
   ARCHITECTURE,
-  VIDEO,
-  CRAFTS,
+  MEDIA,
+  CRAFT,
   SCULPTURE,
   FASHION,
-  ILLUSTRATION,
-  OTHERS
+  COMPLEX,
+  ETC
 }
