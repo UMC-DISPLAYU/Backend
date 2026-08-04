@@ -33,6 +33,11 @@ public class JpaPersonalArtworkQuestionRepositoryAdapter
   }
 
   @Override
+  public Optional<PersonalArtworkQuestion> findActiveByIdForUpdate(Long personalQuestionId) {
+    return personalArtworkQuestionJpaRepository.findActiveByIdForUpdate(personalQuestionId);
+  }
+
+  @Override
   public List<PersonalArtworkQuestion> findActiveByPersonalArtworkIdWithCursor(
       Long personalArtworkId, Long cursorId, int limit) {
     return personalArtworkQuestionJpaRepository.findActiveByPersonalArtworkIdWithCursor(

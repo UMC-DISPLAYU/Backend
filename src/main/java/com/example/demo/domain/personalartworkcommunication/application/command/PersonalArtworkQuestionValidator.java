@@ -5,6 +5,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class PersonalArtworkQuestionValidator {
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
+  private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
     if (!personalArtworkExistenceRepository.existsById(personalArtworkId)) {
@@ -66,6 +68,27 @@ public class PersonalArtworkQuestionValidator {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
         personalArtworkQuestion, personalArtworkId);
+  }
+
+  public PersonalArtworkQuestion findActiveQuestionForUpdateOrThrow(Long personalQuestionId) {
+    return personalArtworkQuestionRepository
+        .findActiveByIdForUpdate(personalQuestionId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
+  }
+
+  public void validateLikePermission(
+      PersonalArtworkQuestion question, Long personalArtworkId, Long userId) {
+    if (Boolean.TRUE.equals(question.getIsPublic())
+        || question.isWrittenBy(userId)
+        || personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
+      return;
+    }
+
+    throw new BusinessException(
+        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
   }
 
   public PersonalArtworkQuestionReply findActiveReplyForUpdateOrThrow(

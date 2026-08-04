@@ -7,6 +7,7 @@ import com.example.demo.domain.personalartworkcommunication.application.command.
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
@@ -16,6 +17,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.request
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
@@ -101,6 +103,15 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.nextCursorId(),
         result.size(),
         result.hasNext());
+  }
+
+  public PersonalArtworkQuestionLikeResponse toResponse(PersonalArtworkQuestionLikeResult result) {
+    return new PersonalArtworkQuestionLikeResponse(
+        result.personalQuestionId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
   }
 
   private PersonalArtworkQuestionItemResponse toQuestionItemResponse(
