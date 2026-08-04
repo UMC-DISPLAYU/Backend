@@ -40,6 +40,9 @@ public interface ArtworkQuestionApiDocs {
           canReply는 로그인 사용자가 현재 질문에 답변을 등록할 수 있는지를 나타내며,
           해당 작품의 isContact=true 담당 작가이고 질문 상태가 WAITING일 때만 true입니다.
           일반 참여 작가는 비공개 질문을 조회할 수 있지만 답변을 등록할 수 없습니다.
+          likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
+          답변 좋아요 API 호출에 필요한 답변 ID는 reply.questionReplyId로 제공합니다.
+          접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
   @ApiResponse(
       responseCode = "200",
@@ -63,6 +66,7 @@ public interface ArtworkQuestionApiDocs {
                                     "isPublic": true,
                                     "accessible": true,
                                     "canReply": false,
+                                    "likeCount": 12,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-06-30T22:10:00",
                                     "user": {
@@ -70,11 +74,13 @@ public interface ArtworkQuestionApiDocs {
                                       "nickname": "User1"
                                     },
                                     "reply": {
+                                      "questionReplyId": 8,
                                       "creatorId": 4,
                                       "creatorName": "고상준",
                                       "isCreator": true,
                                       "content": "캔버스에 유화를 사용했어요.",
-                                      "createdAt": "2026-06-30T22:10:00"
+                                      "createdAt": "2026-06-30T22:10:00",
+                                      "likeCount": 4
                                     }
                                   },
                                   {
@@ -83,6 +89,7 @@ public interface ArtworkQuestionApiDocs {
                                     "isPublic": false,
                                     "accessible": false,
                                     "canReply": false,
+                                    "likeCount": null,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-06-30T22:15:00",
                                     "user": null,

@@ -110,6 +110,7 @@ public class ArtworkQuestionPresentationMapper {
         result.isPublic(),
         result.accessible(),
         result.canReply(),
+        result.likeCount(),
         result.answerStatus(),
         result.createdAt(),
         result.user() == null
@@ -126,10 +127,12 @@ public class ArtworkQuestionPresentationMapper {
     }
 
     return new ArtworkQuestionListResponse.ArtworkQuestionReplyItemResponse(
+        result.questionReplyId(),
         result.creatorId(),
         result.creatorName(),
         result.isCreator(),
         result.content(),
-        result.createdAt());
+        result.createdAt(),
+        result.likeCount());
   }
 }

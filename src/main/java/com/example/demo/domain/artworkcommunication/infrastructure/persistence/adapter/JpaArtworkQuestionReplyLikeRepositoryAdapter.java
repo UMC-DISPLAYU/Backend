@@ -4,7 +4,10 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository.ArtworkQuestionReplyLikeSnapshot;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkQuestionReplyLikeJpaRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -36,5 +39,15 @@ public class JpaArtworkQuestionReplyLikeRepositoryAdapter
         likeCount,
         questionReplyLike.getCreatedAt(),
         questionReplyLike.getDeletedAt());
+  }
+
+  @Override
+  public Map<Long, Long> countByQuestionReplyIds(List<Long> questionReplyIds) {
+    if (questionReplyIds.isEmpty()) {
+      return Map.of();
+    }
+
+    return artworkQuestionReplyLikeJpaRepository.countByQuestionReplyIds(questionReplyIds).stream()
+        .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
   }
 }
