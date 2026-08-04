@@ -34,7 +34,41 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 생성 성공", value = CREATE_POST_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "title": "졸업전시 관람 후기",
+                                "postImageUrls": ["https://example.com/lounge/posts/1.jpg"],
+                                "content": "졸업전시 관람 후기를 공유합니다.",
+                                "category": "DISPLAY_REVIEW",
+                                "postStatus": "ACTIVE",
+                                "writer": {
+                                  "userId": 1,
+                                  "nickname": "전시러버",
+                                  "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                },
+                                "createdAt": "2026-08-04T12:00:00",
+                                "updatedAt": "2026-08-04T12:00:00",
+                                "commentCount": 0,
+                                "likeCount": 0,
+                                "isLiked": false,
+                                "isScrapped": false,
+                                "isMyPost": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostDetailResponse> createPost(
       @Valid @RequestBody LoungePostRequest loungePostRequest,
       AuthUser user,
@@ -47,7 +81,41 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 수정 성공", value = UPDATE_POST_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "title": "수정된 졸업전시 관람 후기",
+                                "postImageUrls": ["https://example.com/lounge/posts/1-updated.jpg"],
+                                "content": "수정된 졸업전시 관람 후기를 공유합니다.",
+                                "category": "DISPLAY_REVIEW",
+                                "postStatus": "ACTIVE",
+                                "writer": {
+                                  "userId": 1,
+                                  "nickname": "전시러버",
+                                  "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                },
+                                "createdAt": "2026-08-04T12:00:00",
+                                "updatedAt": "2026-08-04T13:00:00",
+                                "commentCount": 2,
+                                "likeCount": 3,
+                                "isLiked": false,
+                                "isScrapped": false,
+                                "isMyPost": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T13:00:00",
+                              "path": "/api/v1/lounge/posts/1"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostDetailResponse> updatePost(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungePostRequest loungePostRequest,
@@ -61,7 +129,22 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 삭제 성공", value = VOID_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": null
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1"
+                            }
+                          }
+                          """)))
   ApiResponseBody<Void> deletePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -72,7 +155,26 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 좋아요 성공", value = POST_LIKE_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "isLiked": true,
+                                "likeCount": 13
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/likes"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostLikeResponse> likePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -84,7 +186,25 @@ public interface LoungePostControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "게시글 좋아요 취소 성공", value = POST_UNLIKE_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "isLiked": false,
+                                "likeCount": 12
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/likes"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -95,7 +215,26 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 스크랩 성공", value = POST_SCRAP_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "isScrapped": true,
+                                "scrapCount": 7
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/scraps"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostScrapResponse> scrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -107,7 +246,25 @@ public interface LoungePostControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "게시글 스크랩 취소 성공", value = POST_UNSCRAP_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "isScrapped": false,
+                                "scrapCount": 6
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/scraps"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -118,7 +275,45 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "게시글 목록 조회 성공", value = POST_LIST_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "posts": [
+                                  {
+                                    "loungePostId": 10,
+                                    "category": "DISPLAY_REVIEW",
+                                    "title": "졸업전시 관람 후기",
+                                    "content": "졸업전시 관람 후기를 공유합니다.",
+                                    "postImageUrls": ["https://example.com/lounge/posts/10.jpg"],
+                                    "writer": {
+                                      "userId": 1,
+                                      "nickname": "전시러버",
+                                      "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                    },
+                                    "createdAt": "2026-08-04T12:00:00",
+                                    "commentCount": 4,
+                                    "likeCount": 12,
+                                    "isLiked": true,
+                                    "isMyPost": false
+                                  }
+                                ],
+                                "nextCursorId": 10,
+                                "size": 10,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostCursorResponse> getPosts(
       @Parameter(description = "라운지 게시글 카테고리. 없으면 전체 조회") @RequestParam(required = false)
           LoungePostCategory category,
@@ -138,7 +333,40 @@ public interface LoungePostControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "게시글 상세 조회 성공", value = POST_DETAIL_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungePostId": 1,
+                                "title": "졸업전시 관람 후기",
+                                "postImageUrls": ["https://example.com/lounge/posts/1.jpg"],
+                                "content": "졸업전시 관람 후기를 공유합니다.",
+                                "category": "DISPLAY_REVIEW",
+                                "postStatus": "ACTIVE",
+                                "writer": {
+                                  "userId": 1,
+                                  "nickname": "전시러버",
+                                  "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                },
+                                "createdAt": "2026-08-04T12:00:00",
+                                "updatedAt": "2026-08-04T12:00:00",
+                                "commentCount": 4,
+                                "likeCount": 12,
+                                "isLiked": true,
+                                "isScrapped": true,
+                                "isMyPost": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -149,7 +377,45 @@ public interface LoungePostControllerDocs {
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "내 게시글 조회 성공", value = MY_POSTS_SUCCESS_EXAMPLE)))
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "posts": [
+                                  {
+                                    "loungePostId": 10,
+                                    "category": "WORK_TIP",
+                                    "title": "작업 팁을 공유합니다",
+                                    "content": "전시 준비 과정에서 알게 된 팁입니다.",
+                                    "postImageUrls": [],
+                                    "writer": {
+                                      "userId": 1,
+                                      "nickname": "전시러버",
+                                      "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                    },
+                                    "createdAt": "2026-08-04T12:00:00",
+                                    "commentCount": 2,
+                                    "likeCount": 5,
+                                    "isLiked": false,
+                                    "isMyPost": true
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 10,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/me/posts"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostCursorResponse> getMyPosts(
       @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -167,7 +433,44 @@ public interface LoungePostControllerDocs {
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = "내 스크랩 조회 성공", value = MY_SCRAPPED_POSTS_SUCCESS_EXAMPLE)))
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "posts": [
+                                  {
+                                    "loungePostId": 8,
+                                    "category": "COLLABORATION",
+                                    "title": "협업 전시 팀원을 구합니다",
+                                    "content": "영상 작업에 함께할 팀원을 찾고 있습니다.",
+                                    "postImageUrls": ["https://example.com/lounge/posts/8.jpg"],
+                                    "writer": {
+                                      "userId": 2,
+                                      "nickname": "영상작가",
+                                      "profileImageUrl": null
+                                    },
+                                    "createdAt": "2026-08-03T12:00:00",
+                                    "commentCount": 3,
+                                    "likeCount": 9,
+                                    "isLiked": false,
+                                    "isMyPost": false
+                                  }
+                                ],
+                                "nextCursorId": 15,
+                                "size": 10,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/me/scraps"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
       @Parameter(description = "마지막으로 조회한 스크랩 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -176,278 +479,4 @@ public interface LoungePostControllerDocs {
           @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
-
-  String POST_DETAIL_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "title": "전시 후기 공유합니다",
-            "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-            "content": "작품 배치가 인상적이었습니다.",
-            "category": "REVIEW",
-            "postStatus": "ACTIVE",
-            "writer": {
-              "userId": 1,
-              "nickname": "maya01",
-              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-            },
-            "createdAt": "2026-08-04T09:00:00",
-            "updatedAt": "2026-08-04T09:00:00",
-            "commentCount": 2,
-            "likeCount": 5,
-            "isLiked": true,
-            "isScrapped": false,
-            "isMyPost": true
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1" }
-      }
-      """;
-
-  String CREATE_POST_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "title": "전시 후기 공유합니다",
-            "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-            "content": "작품 배치가 인상적이었습니다.",
-            "category": "REVIEW",
-            "postStatus": "ACTIVE",
-            "writer": {
-              "userId": 1,
-              "nickname": "maya01",
-              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-            },
-            "createdAt": "2026-08-04T09:00:00",
-            "updatedAt": "2026-08-04T09:00:00",
-            "commentCount": 0,
-            "likeCount": 0,
-            "isLiked": false,
-            "isScrapped": false,
-            "isMyPost": true
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts" }
-      }
-      """;
-
-  String UPDATE_POST_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "title": "수정된 전시 후기입니다",
-            "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-            "content": "수정된 후기 내용입니다.",
-            "category": "REVIEW",
-            "postStatus": "ACTIVE",
-            "writer": {
-              "userId": 1,
-              "nickname": "maya01",
-              "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-            },
-            "createdAt": "2026-08-04T09:00:00",
-            "updatedAt": "2026-08-04T10:00:00",
-            "commentCount": 2,
-            "likeCount": 5,
-            "isLiked": true,
-            "isScrapped": false,
-            "isMyPost": true
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T10:00:00", "path": "/api/v1/lounge/posts/1" }
-      }
-      """;
-
-  String POST_LIST_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "posts": [
-              {
-                "loungePostId": 1,
-                "category": "REVIEW",
-                "title": "전시 후기 공유합니다",
-                "content": "작품 배치가 인상적이었습니다.",
-                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-                "writer": {
-                  "userId": 1,
-                  "nickname": "maya01",
-                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-                },
-                "createdAt": "2026-08-04T09:00:00",
-                "commentCount": 2,
-                "likeCount": 5,
-                "isLiked": true,
-                "isMyPost": true
-              }
-            ],
-            "nextCursorId": null,
-            "size": 10,
-            "hasNext": false
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts" }
-      }
-      """;
-
-  String POST_LIKE_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "isLiked": true,
-            "likeCount": 5
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/likes" }
-      }
-      """;
-
-  String POST_UNLIKE_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "isLiked": false,
-            "likeCount": 4
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/likes" }
-      }
-      """;
-
-  String POST_SCRAP_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "isScrapped": true,
-            "scrapCount": 3
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scraps" }
-      }
-      """;
-
-  String POST_UNSCRAP_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "loungePostId": 1,
-            "isScrapped": false,
-            "scrapCount": 2
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1/scraps" }
-      }
-      """;
-
-  String MY_POSTS_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "posts": [
-              {
-                "loungePostId": 1,
-                "category": "REVIEW",
-                "title": "전시 후기 공유합니다",
-                "content": "작품 배치가 인상적이었습니다.",
-                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-                "writer": {
-                  "userId": 1,
-                  "nickname": "maya01",
-                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-                },
-                "createdAt": "2026-08-04T09:00:00",
-                "commentCount": 2,
-                "likeCount": 5,
-                "isLiked": true,
-                "isMyPost": true
-              }
-            ],
-            "nextCursorId": null,
-            "size": 10,
-            "hasNext": false
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/posts" }
-      }
-      """;
-
-  String MY_SCRAPPED_POSTS_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "posts": [
-              {
-                "loungePostId": 1,
-                "category": "REVIEW",
-                "title": "전시 후기 공유합니다",
-                "content": "작품 배치가 인상적이었습니다.",
-                "postImageUrls": ["https://cdn.displayu.com/lounge/post-1.png"],
-                "writer": {
-                  "userId": 1,
-                  "nickname": "maya01",
-                  "profileImageUrl": "https://cdn.displayu.com/profile/maya.png"
-                },
-                "createdAt": "2026-08-04T09:00:00",
-                "commentCount": 2,
-                "likeCount": 5,
-                "isLiked": true,
-                "isMyPost": false
-              }
-            ],
-            "nextCursorId": null,
-            "size": 10,
-            "hasNext": false
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/me/scraps" }
-      }
-      """;
-
-  String VOID_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": null
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/lounge/posts/1" }
-      }
-      """;
 }
