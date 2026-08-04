@@ -36,6 +36,8 @@ public interface PersonalArtworkQuestionApiDocs {
 
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
+          likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
+          접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
   @ApiResponse(
       responseCode = "200",
@@ -59,6 +61,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "isPublic": true,
                                     "accessible": true,
                                     "canReply": false,
+                                    "likeCount": 12,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
                                     "user": {
@@ -71,7 +74,8 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "nickname": "작품소유자",
                                       "isCreator": true,
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
-                                      "createdAt": "2026-07-23T17:10:00"
+                                      "createdAt": "2026-07-23T17:10:00",
+                                      "likeCount": 4
                                     }
                                   },
                                   {
@@ -80,6 +84,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "isPublic": false,
                                     "accessible": false,
                                     "canReply": false,
+                                    "likeCount": null,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-07-23T17:15:00",
                                     "user": null,

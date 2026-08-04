@@ -1,6 +1,7 @@
 package com.example.demo.domain.personalartworkcommunication.infrastructure.persistence;
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionLike;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,4 +29,15 @@ public interface PersonalArtworkQuestionLikeJpaRepository
       Long personalQuestionId, Long userId);
 
   long countByPersonalQuestionIdAndDeletedAtIsNull(Long personalQuestionId);
+
+  @Query(
+      """
+      SELECT questionLike.personalQuestionId, COUNT(questionLike)
+      FROM PersonalArtworkQuestionLike questionLike
+      WHERE questionLike.personalQuestionId IN :personalQuestionIds
+        AND questionLike.deletedAt IS NULL
+      GROUP BY questionLike.personalQuestionId
+      """)
+  List<Object[]> countByPersonalQuestionIds(
+      @Param("personalQuestionIds") List<Long> personalQuestionIds);
 }

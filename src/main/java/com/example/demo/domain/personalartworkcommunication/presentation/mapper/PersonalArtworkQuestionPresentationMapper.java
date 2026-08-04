@@ -142,6 +142,7 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.isPublic(),
         result.accessible(),
         result.canReply(),
+        result.likeCount(),
         result.answerStatus(),
         result.createdAt(),
         user,
@@ -156,6 +157,7 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.nickname(),
         result.isCreator(),
         result.content(),
-        result.createdAt());
+        result.createdAt(),
+        result.likeCount());
   }
 }
