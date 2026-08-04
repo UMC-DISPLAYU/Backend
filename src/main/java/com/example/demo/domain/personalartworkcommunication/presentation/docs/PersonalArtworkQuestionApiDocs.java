@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Personal Artwork Question", description = "개인 작품 Q&A API")
 public interface PersonalArtworkQuestionApiDocs {
@@ -130,7 +131,9 @@ public interface PersonalArtworkQuestionApiDocs {
                           """)))
   ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
       @Parameter(description = "질문을 조회할 개인 작품 ID", example = "1") Long personalArtworkId,
-      @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID", example = "3") @Positive Long cursorId,
+      @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
+          @RequestParam(required = false)
+          @Positive Long cursorId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
