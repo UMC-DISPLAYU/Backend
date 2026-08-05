@@ -28,6 +28,25 @@ public class ArtworkQuestionValidator {
         .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
   }
 
+  public ArtworkQuestion findActiveQuestionForUpdateOrThrow(Long questionId) {
+    return artworkQuestionRepository
+        .findActiveByIdForUpdate(questionId)
+        .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
+  }
+
+  public void validateLikePermission(
+      ArtworkQuestion artworkQuestion, Long displayArtworkId, Long userId) {
+    if (Boolean.TRUE.equals(artworkQuestion.getIsPublic())
+        || artworkQuestion.isWrittenBy(userId)
+        || creatorExistenceRepository
+            .findCreatorNameByDisplayArtworkIdAndUserId(displayArtworkId, userId)
+            .isPresent()) {
+      return;
+    }
+
+    throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
+  }
+
   public void validateDisplayArtworkExists(Long displayArtworkId) {
     if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
@@ -84,11 +103,15 @@ public class ArtworkQuestionValidator {
   }
 
   public void validateAccessibleReply(ArtworkQuestionReply reply, Long questionId, Long creatorId) {
-    if (!reply.belongsToQuestion(questionId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND);
-    }
+    validateReplyTarget(reply, questionId);
     if (!reply.isWrittenBy(creatorId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN);
+    }
+  }
+
+  public void validateReplyTarget(ArtworkQuestionReply reply, Long questionId) {
+    if (!reply.belongsToQuestion(questionId)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND);
     }
   }
 }
