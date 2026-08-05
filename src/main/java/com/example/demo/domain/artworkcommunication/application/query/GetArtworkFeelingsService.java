@@ -43,7 +43,7 @@ public class GetArtworkFeelingsService {
 
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<ArtworkFeeling> fetched =
-        artworkFeelingRepository.findActiveByDisplayArtworkIdWithCursor(
+        artworkFeelingRepository.findByDisplayArtworkIdWithCursorIncludingDeleted(
             query.displayArtworkId(), query.cursorId(), pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<ArtworkFeeling> feelings = hasNext ? fetched.subList(0, pageSize) : fetched;
@@ -73,6 +73,7 @@ public class GetArtworkFeelingsService {
                         feeling.getFeelingId(),
                         feeling.getContent(),
                         feeling.getCreatedAt(),
+                        feeling.isDeleted(),
                         toUserResult(
                             userDisplayResolver.resolve(
                                 feeling.getUserId(), nicknameByUserId, creatorNameByUserId)),

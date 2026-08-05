@@ -43,7 +43,7 @@ public class GetArtworkFeelingRepliesService {
             .findById(query.feelingId())
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-    artworkFeelingValidator.validateReplyTarget(feeling, query.displayArtworkId());
+    artworkFeelingValidator.validateReplyListTarget(feeling, query.displayArtworkId());
 
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<ArtworkFeelingReply> fetched =

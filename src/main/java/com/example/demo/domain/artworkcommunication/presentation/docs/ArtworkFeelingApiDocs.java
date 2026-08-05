@@ -31,7 +31,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 목록 조회",
       description =
-          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
+          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -52,6 +52,7 @@ public interface ArtworkFeelingApiDocs {
                                     "feelingId": 1,
                                     "content": "정말 감동적인 작품이에요.",
                                     "createdAt": "2026-06-30T22:10:00",
+                                    "isDeleted": false,
                                     "user": {
                                       "userId": 1,
                                       "nickname": "User1",
@@ -121,7 +122,8 @@ public interface ArtworkFeelingApiDocs {
 
   @Operation(
       summary = "작품 감상평 답변 목록 조회",
-      description = "감상평의 답변 목록을 조회합니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
+      description =
+          "감상평의 삭제되지 않은 답변 목록을 조회합니다. 원본 감상평이 삭제된 경우에도 답변은 유지되고 조회할 수 있습니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "감상평 답변 목록 조회 성공",
@@ -433,7 +435,10 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 삭제", description = "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다.")
+  @Operation(
+      summary = "작품 감상평 삭제",
+      description =
+          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 감상평은 isDeleted=true 상태로 목록에 유지되며 기존 답변은 삭제되지 않습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 삭제 성공",
