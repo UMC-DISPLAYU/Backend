@@ -30,6 +30,7 @@ class ArtworkEditPermissionTest {
   private static final Long ARTIST = 2L;
   private static final Long CO_AUTHOR = 3L;
   private static final Long OTHER_MEMBER = 4L;
+  private static final Long NON_OWNER_TEAM_LEADER = 5L;
 
   private final CreatorRepository creatorRepository = mock(CreatorRepository.class);
   private final ArtworkEditPermission permission = new ArtworkEditPermission(creatorRepository);
@@ -53,6 +54,14 @@ class ArtworkEditPermissionTest {
     givenCreators(creator("작가", ARTIST, true), creator("공동작업자", CO_AUTHOR, false));
 
     assertThat(permission.canEdit(display(), ARTWORK_ID, CO_AUTHOR)).isTrue();
+  }
+
+  @Test
+  void 소유자가_아닌_팀장도_수정할_수_있다() {
+    // 소유자와 팀장이 같은 사람이면 isOwner에서 통과해버려, isTeamLeader 분기가 검증되지 않는다.
+    givenCreators(creator("작가", ARTIST, true));
+
+    assertThat(permission.canEdit(display(), ARTWORK_ID, NON_OWNER_TEAM_LEADER)).isTrue();
   }
 
   @Test
@@ -123,6 +132,9 @@ class ArtworkEditPermissionTest {
         new TeamMember(13L, new UserId(CO_AUTHOR), "공동작업자", TeamMemberRole.TEAM_MEM, true));
     display.addTeamMember(
         new TeamMember(14L, new UserId(OTHER_MEMBER), "다른 팀원", TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(
+        new TeamMember(
+            15L, new UserId(NON_OWNER_TEAM_LEADER), "위임 팀장", TeamMemberRole.TEAM_LEADER, true));
     return display;
   }
 }

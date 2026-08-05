@@ -1,5 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
+import com.example.demo.domain.displayartwork.application.command.ArtworkImageCommand;
+import com.example.demo.domain.displayartwork.application.command.UpdateDisplayArtworkCommand;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
@@ -9,6 +11,7 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkL
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
+import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
@@ -218,5 +221,35 @@ public class DisplayArtworkPresentationMapper {
                         coAuthor.userId(), coAuthor.name()))
             .toList(),
         result.qaHandlerUserIds());
+  }
+
+  public UpdateDisplayArtworkCommand toCommand(
+      Long artworkId, UpdateDisplayArtworkRequest request) {
+    return new UpdateDisplayArtworkCommand(
+        artworkId,
+        request.artworkName(),
+        request.content(),
+        request.type(),
+        request.productionYear(),
+        request.materialMedia(),
+        request.size(),
+        request.point(),
+        request.images().stream().map(this::toCommand).toList(),
+        request.artistName(),
+        request.artistUserId(),
+        request.coAuthors().userIds(),
+        request.coAuthors().rawNames(),
+        request.qaHandlerUserIds());
+  }
+
+  private ArtworkImageCommand toCommand(UpdateDisplayArtworkRequest.ImageRequest image) {
+    return new ArtworkImageCommand(
+        image.imageUrl(),
+        image.isThumbnail(),
+        image.imageType(),
+        image.sortOrder(),
+        image.caption(),
+        image.width(),
+        image.height());
   }
 }

@@ -46,8 +46,8 @@ public class AuthorSetupService {
   }
 
   /**
-   * 수정 시 작가 정보를 다시 저장한다. 수정 권한은 {@link ArtworkEditPermission}에서 이미 검증하므로, 등록 단계의 대리 등록 제한(대표자만 가능)은
-   * 적용하지 않는다.
+   * 수정 시 작가 정보를 다시 저장한다. 수정 권한은 {@link ArtworkEditPermission}에서 이미 검증하므로, 등록 단계에만 해당하는 제한(요청자 작가
+   * 인증, 대리 등록은 대표자만)은 적용하지 않는다.
    */
   @Transactional
   public AuthorSetupResult setupForUpdate(Long requesterUserId, AuthorSetupCommand command) {
@@ -55,7 +55,7 @@ public class AuthorSetupService {
   }
 
   private AuthorSetupResult apply(
-      Long requesterUserId, AuthorSetupCommand command, boolean enforceProxyRule) {
+      Long requesterUserId, AuthorSetupCommand command, boolean isRegistration) {
     Objects.requireNonNull(command, "command must not be null.");
 
     DisplayArtwork artwork =
@@ -66,7 +66,7 @@ public class AuthorSetupService {
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
     Display display = artwork.getDisplay();
 
-    validateRequester(display, requesterUserId);
+    validateRequester(display, requesterUserId, isRegistration);
 
     Long artistUserId = command.artistUserId();
     if (artistUserId != null) {
@@ -75,7 +75,7 @@ public class AuthorSetupService {
     }
 
     // 대리 등록(대표 작가가 본인이 아닌 경우)은 전시 대표자만 할 수 있다.
-    if (enforceProxyRule
+    if (isRegistration
         && !Objects.equals(artistUserId, requesterUserId)
         && !isDisplayLeader(display, requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
@@ -164,19 +164,18 @@ public class AuthorSetupService {
     return display.isOwner(userId) || display.isTeamLeader(userId);
   }
 
-  private void validateRequester(Display display, Long requesterUserId) {
+  private void validateRequester(
+      Display display, Long requesterUserId, boolean requireVerifiedRequester) {
     // 전시를 만든 소유자는 TeamMember로 등록되지 않으므로 소유자 여부도 함께 확인한다.
     boolean isAcceptedTeamMember =
-        display.isOwner(requesterUserId)
-            || display.getTeamMembers().stream()
-                .anyMatch(
-                    teamMember ->
-                        teamMember.isAccepted()
-                            && teamMember.getUserId().value().equals(requesterUserId));
+        display.isOwner(requesterUserId) || display.hasAcceptedTeamMember(requesterUserId);
     if (!isAcceptedTeamMember) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_DISPLAY_TEAM_MEMBER);
     }
-    if (!artistVerificationRepository.isVerifiedArtist(requesterUserId)) {
+    // 작가 인증은 작품을 새로 등록할 때 필요한 조건이다. 이미 등록된 작품을 관리하는 수정 경로에서는
+    // 요구하지 않는다. 인증 없이도 전시 대표자가 될 수 있어, 요구하면 대표자가 수정하지 못한다.
+    if (requireVerifiedRequester
+        && !artistVerificationRepository.isVerifiedArtist(requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
     }
   }

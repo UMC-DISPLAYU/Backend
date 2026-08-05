@@ -1,7 +1,5 @@
 package com.example.demo.domain.displayartwork.presentation.request;
 
-import com.example.demo.domain.displayartwork.application.command.ArtworkImageCommand;
-import com.example.demo.domain.displayartwork.application.command.UpdateDisplayArtworkCommand;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import jakarta.validation.Valid;
@@ -27,24 +25,6 @@ public record UpdateDisplayArtworkRequest(
     @Valid @NotNull CoAuthorsRequest coAuthors,
     @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
 
-  public UpdateDisplayArtworkCommand toCommand(Long artworkId) {
-    return new UpdateDisplayArtworkCommand(
-        artworkId,
-        artworkName,
-        content,
-        type,
-        productionYear,
-        materialMedia,
-        size,
-        point,
-        images.stream().map(ImageRequest::toCommand).toList(),
-        artistName,
-        artistUserId,
-        coAuthors.userIds(),
-        coAuthors.rawNames(),
-        qaHandlerUserIds);
-  }
-
   public record ImageRequest(
       @NotBlank String imageUrl,
       boolean isThumbnail,
@@ -52,13 +32,7 @@ public record UpdateDisplayArtworkRequest(
       @PositiveOrZero int sortOrder,
       String caption,
       @Positive int width,
-      @Positive int height) {
-
-    private ArtworkImageCommand toCommand() {
-      return new ArtworkImageCommand(
-          imageUrl, isThumbnail, imageType, sortOrder, caption, width, height);
-    }
-  }
+      @Positive int height) {}
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
 

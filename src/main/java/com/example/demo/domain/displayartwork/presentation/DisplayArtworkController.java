@@ -295,7 +295,8 @@ public class DisplayArtworkController {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkResult result =
-        updateDisplayArtworkService.update(requireUserId(user), request.toCommand(artworkId));
+        updateDisplayArtworkService.update(
+            requireUserId(user), mapper.toCommand(artworkId, request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
