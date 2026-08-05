@@ -38,7 +38,8 @@ public class GetDisplayReviewRepliesService {
   public DisplayReviewReplyListResult getReplies(GetDisplayReviewRepliesQuery query) {
     int pageSize = pagingPolicy.normalize(query.size());
     DisplayReviewAccess access = displayReviewValidator.findDisplayAccessOrThrow(query.displayId());
-    DisplayReview review = displayReviewValidator.findReviewOrThrow(query.displayReviewId());
+    DisplayReview review =
+        displayReviewValidator.findReviewIncludingDeletedOrThrow(query.displayReviewId());
     displayReviewValidator.validateReviewTarget(review, query.displayId());
 
     List<DisplayReviewReply> fetched =

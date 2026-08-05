@@ -27,11 +27,6 @@ public class JpaDisplayReviewReplyRepositoryAdapter implements DisplayReviewRepl
   }
 
   @Override
-  public void softDeleteAllByDisplayReviewId(Long displayReviewId) {
-    repository.softDeleteAllByDisplayReviewId(displayReviewId);
-  }
-
-  @Override
   public List<DisplayReviewReply> findActiveByDisplayReviewIdWithCursor(
       Long displayReviewId, Long cursorId, int limit) {
     return repository.findActiveByDisplayReviewIdWithCursor(

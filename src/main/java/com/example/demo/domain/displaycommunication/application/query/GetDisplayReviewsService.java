@@ -38,7 +38,7 @@ public class GetDisplayReviewsService {
     displayReviewValidator.findDisplayAccessOrThrow(query.displayId());
 
     List<DisplayReview> fetched =
-        displayReviewRepository.findActiveByDisplayIdWithCursor(
+        displayReviewRepository.findByDisplayIdWithCursor(
             query.displayId(), query.cursorId(), pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<DisplayReview> reviews = hasNext ? fetched.subList(0, pageSize) : fetched;
@@ -92,6 +92,7 @@ public class GetDisplayReviewsService {
         review.getDisplayReviewId(),
         review.getContent(),
         review.getCreatedAt(),
+        review.isDeleted(),
         toUserResult(users, review.getUserId()),
         images,
         reviewLikeCounts.getOrDefault(review.getDisplayReviewId(), 0L),

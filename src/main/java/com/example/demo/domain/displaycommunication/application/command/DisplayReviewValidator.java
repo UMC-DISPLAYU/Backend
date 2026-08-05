@@ -62,16 +62,18 @@ public class DisplayReviewValidator {
   }
 
   public DisplayReview findReviewOrThrow(Long displayReviewId) {
-    DisplayReview displayReview =
-        displayReviewRepository
-            .findById(displayReviewId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
+    DisplayReview displayReview = findReviewIncludingDeletedOrThrow(displayReviewId);
     if (displayReview.isDeleted()) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);
     }
     return displayReview;
+  }
+
+  public DisplayReview findReviewIncludingDeletedOrThrow(Long displayReviewId) {
+    return displayReviewRepository
+        .findById(displayReviewId)
+        .orElseThrow(
+            () -> new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
   }
 
   public void validateReviewTarget(DisplayReview displayReview, Long displayId) {
