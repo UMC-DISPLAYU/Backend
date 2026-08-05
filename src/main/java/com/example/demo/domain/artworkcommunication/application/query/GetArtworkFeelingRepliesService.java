@@ -13,6 +13,7 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFee
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class GetArtworkFeelingRepliesService {
                 replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(ArtworkFeelingReply::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
     Map<Long, String> creatorNameByUserId =
         creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(
             query.displayArtworkId(), userIds);
@@ -79,7 +80,7 @@ public class GetArtworkFeelingRepliesService {
                         reply.getCreatedAt(),
                         toUserResult(
                             userDisplayResolver.resolve(
-                                reply.getUserId(), nicknameByUserId, creatorNameByUserId)),
+                                reply.getUserId(), userProfileById, creatorNameByUserId)),
                         likeCounts.getOrDefault(reply.getFeelingReplyId(), 0L),
                         likedReplyIds.contains(reply.getFeelingReplyId())))
             .toList();
@@ -89,6 +90,7 @@ public class GetArtworkFeelingRepliesService {
   }
 
   private ArtworkFeelingReplyUserResult toUserResult(UserDisplayInfo user) {
-    return new ArtworkFeelingReplyUserResult(user.userId(), user.nickname(), user.isCreator());
+    return new ArtworkFeelingReplyUserResult(
+        user.userId(), user.nickname(), user.profileImageUrl(), user.isCreator());
   }
 }

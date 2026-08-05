@@ -18,7 +18,8 @@ public record ArtworkFeelingListResponse(
       boolean isLiked,
       long replyCount) {}
 
-  public record ArtworkFeelingUserResponse(Long userId, String nickname, Boolean isCreator) {}
+  public record ArtworkFeelingUserResponse(
+      Long userId, String nickname, String profileImageUrl, Boolean isCreator) {}
 
   public record ImageResponse(
       Long feelingImageId, String imageUrl, int width, int height, int sortOrder) {}

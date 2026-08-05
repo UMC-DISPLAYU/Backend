@@ -13,6 +13,7 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFee
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class GetArtworkFeelingsService {
     Map<Long, Long> replyCounts = artworkFeelingReplyRepository.countActiveByFeelingIds(feelingIds);
     Set<Long> userIds =
         feelings.stream().map(ArtworkFeeling::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
     Map<Long, String> creatorNameByUserId =
         creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(
             query.displayArtworkId(), userIds);
@@ -77,7 +78,7 @@ public class GetArtworkFeelingsService {
                         query.viewerUserId() != null && feeling.isWrittenBy(query.viewerUserId()),
                         toUserResult(
                             userDisplayResolver.resolve(
-                                feeling.getUserId(), nicknameByUserId, creatorNameByUserId)),
+                                feeling.getUserId(), userProfileById, creatorNameByUserId)),
                         feeling.getImages().stream()
                             .map(
                                 image ->
@@ -98,6 +99,7 @@ public class GetArtworkFeelingsService {
   }
 
   private ArtworkFeelingUserResult toUserResult(UserDisplayInfo user) {
-    return new ArtworkFeelingUserResult(user.userId(), user.nickname(), user.isCreator());
+    return new ArtworkFeelingUserResult(
+        user.userId(), user.nickname(), user.profileImageUrl(), user.isCreator());
   }
 }

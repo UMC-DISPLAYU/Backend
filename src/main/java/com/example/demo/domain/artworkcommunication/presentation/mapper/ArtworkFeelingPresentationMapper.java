@@ -100,6 +100,7 @@ public class ArtworkFeelingPresentationMapper {
                         new ArtworkFeelingReplyListResponse.ArtworkFeelingReplyUserResponse(
                             reply.user().userId(),
                             reply.user().nickname(),
+                            reply.user().profileImageUrl(),
                             reply.user().isCreator()),
                         reply.likeCount(),
                         reply.isLiked()))
@@ -118,7 +119,10 @@ public class ArtworkFeelingPresentationMapper {
         result.isDeleted(),
         result.isMine(),
         new ArtworkFeelingUserResponse(
-            result.user().userId(), result.user().nickname(), result.user().isCreator()),
+            result.user().userId(),
+            result.user().nickname(),
+            result.user().profileImageUrl(),
+            result.user().isCreator()),
         result.images().stream()
             .map(
                 image ->
