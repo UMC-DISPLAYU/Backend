@@ -11,6 +11,7 @@ public record ArtworkFeelingListResponse(
       String content,
       LocalDateTime createdAt,
       boolean isDeleted,
+      boolean isMine,
       ArtworkFeelingUserResponse user,
       List<ImageResponse> images,
       long likeCount,

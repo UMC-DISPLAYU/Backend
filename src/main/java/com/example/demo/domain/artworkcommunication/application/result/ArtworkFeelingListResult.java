@@ -11,6 +11,7 @@ public record ArtworkFeelingListResult(
       String content,
       LocalDateTime createdAt,
       boolean isDeleted,
+      boolean isMine,
       ArtworkFeelingUserResult user,
       List<ImageResult> images,
       long likeCount,

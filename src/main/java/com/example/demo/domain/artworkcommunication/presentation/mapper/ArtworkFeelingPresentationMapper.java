@@ -116,6 +116,7 @@ public class ArtworkFeelingPresentationMapper {
         result.content(),
         result.createdAt(),
         result.isDeleted(),
+        result.isMine(),
         new ArtworkFeelingUserResponse(
             result.user().userId(), result.user().nickname(), result.user().isCreator()),
         result.images().stream()

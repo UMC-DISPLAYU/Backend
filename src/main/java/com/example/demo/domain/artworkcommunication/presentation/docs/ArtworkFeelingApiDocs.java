@@ -31,7 +31,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 목록 조회",
       description =
-          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
+          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -53,6 +53,7 @@ public interface ArtworkFeelingApiDocs {
                                     "content": "정말 감동적인 작품이에요.",
                                     "createdAt": "2026-06-30T22:10:00",
                                     "isDeleted": false,
+                                    "isMine": true,
                                     "user": {
                                       "userId": 1,
                                       "nickname": "User1",

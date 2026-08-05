@@ -74,6 +74,7 @@ public class GetArtworkFeelingsService {
                         feeling.getContent(),
                         feeling.getCreatedAt(),
                         feeling.isDeleted(),
+                        query.viewerUserId() != null && feeling.isWrittenBy(query.viewerUserId()),
                         toUserResult(
                             userDisplayResolver.resolve(
                                 feeling.getUserId(), nicknameByUserId, creatorNameByUserId)),
