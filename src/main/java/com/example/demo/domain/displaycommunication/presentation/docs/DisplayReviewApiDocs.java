@@ -26,7 +26,11 @@ public interface DisplayReviewApiDocs {
 
   @Operation(
       summary = "전시 후기 목록 조회",
-      description = "전시 후기와 답글을 최신순 커서 페이지네이션으로 조회합니다. 비회원도 조회할 수 있습니다.")
+      description =
+          """
+          전시 후기를 최신순 커서 페이지네이션으로 조회합니다. 삭제된 후기도 목록에 유지되며 isDeleted가 true로 반환됩니다.
+          로그인한 사용자는 각 후기의 좋아요 여부(isLiked)와 본인 작성 여부(isMine)를 확인할 수 있고, 비회원 조회 시 두 값은 false입니다.
+          """)
   @ApiResponse(responseCode = "200", description = "전시 후기 목록 조회 성공")
   @ApiResponse(responseCode = "404", description = "전시 없음")
   ApiResponseBody<DisplayReviewListResponse> getReviews(
@@ -38,7 +42,11 @@ public interface DisplayReviewApiDocs {
 
   @Operation(
       summary = "전시 후기 답글 목록 조회",
-      description = "특정 후기의 답글을 등록순 커서 페이지네이션으로 조회합니다. 비회원도 조회할 수 있습니다.")
+      description =
+          """
+          특정 후기의 삭제되지 않은 답글을 등록순 커서 페이지네이션으로 조회하며, 답글에 첨부된 이미지도 함께 반환합니다.
+          원본 후기가 삭제된 경우에도 답글을 조회할 수 있습니다. 로그인한 사용자의 답글 좋아요 여부는 isLiked로 반환되고, 비회원 조회 시 false입니다.
+          """)
   @ApiResponse(responseCode = "200", description = "전시 후기 답글 목록 조회 성공")
   @ApiResponse(responseCode = "404", description = "전시 또는 후기 없음")
   ApiResponseBody<DisplayReviewReplyListResponse> getReviewReplies(
@@ -49,7 +57,9 @@ public interface DisplayReviewApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다.")
+  @Operation(
+      summary = "전시 후기 작성",
+      description = "사용자가 전시에 대한 후기를 작성합니다. 본문은 공백이 아닌 1자 이상 300자 이하이며, 이미지는 최대 5장까지 첨부할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 작성 성공",
@@ -219,7 +229,9 @@ public interface DisplayReviewApiDocs {
       @Valid CreateDisplayReviewRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 답글 작성", description = "전시 후기에 답글을 작성합니다.")
+  @Operation(
+      summary = "전시 후기 답글 작성",
+      description = "전시 후기에 답글을 작성합니다. 본문은 공백이 아닌 300자 이하이며, 이미지는 최대 5장까지 첨부할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 답글 작성 성공",
@@ -307,7 +319,10 @@ public interface DisplayReviewApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 삭제", description = "작성자가 자신의 전시 후기를 삭제합니다.")
+  @Operation(
+      summary = "전시 후기 삭제",
+      description =
+          "작성자가 자신의 전시 후기를 삭제합니다. 삭제된 후기는 목록에 isDeleted=true로 유지되며, 해당 후기의 답글은 삭제되지 않습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 삭제 성공",
