@@ -241,7 +241,16 @@ public interface DisplayReviewApiDocs {
                                 "displayReviewId": 1,
                                 "userId": 2,
                                 "nickname": "달의작업실",
-                                "isTeamMember": true
+                                "isTeamMember": true,
+                                "images": [
+                                  {
+                                    "displayReviewReplyImageId": 1,
+                                    "imageUrl": "https://cdn.displayu.com/review-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 800,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -251,7 +260,7 @@ public interface DisplayReviewApiDocs {
                             }
                           }
                           """)))
-  @ApiResponse(responseCode = "400", description = "답글 내용 검증 실패")
+  @ApiResponse(responseCode = "400", description = "답글 내용 또는 이미지 검증 실패")
   @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "전시, 후기 또는 사용자 없음")
   ApiResponseBody<DisplayReviewReplyResponse> createReviewReply(

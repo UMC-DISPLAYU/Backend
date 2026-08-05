@@ -2,6 +2,7 @@ package com.example.demo.domain.displaycommunication.application.query;
 
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewValidator;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.ImageResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.ReplyItemResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.UserResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
@@ -76,7 +77,17 @@ public class GetDisplayReviewRepliesService {
                         access.ownerUserId().equals(reply.getUserId())
                             || teamMemberUserIds.contains(reply.getUserId()),
                         likeCounts.getOrDefault(reply.getDisplayReviewReplyId(), 0L),
-                        likedReplyIds.contains(reply.getDisplayReviewReplyId())))
+                        likedReplyIds.contains(reply.getDisplayReviewReplyId()),
+                        reply.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getDisplayReviewReplyImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList()))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).displayReviewReplyId() : null;

@@ -14,6 +14,10 @@ public enum DisplayCommunicationErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_REVIEW_REPLY_CONTENT", "후기 답글 내용을 입력해주세요."),
   INVALID_DISPLAY_REVIEW_IMAGES(
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_REVIEW_IMAGES", "전시 후기 이미지는 최대 5장까지 등록할 수 있습니다."),
+  INVALID_DISPLAY_REVIEW_REPLY_IMAGES(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_DISPLAY_REVIEW_REPLY_IMAGES",
+      "전시 후기 답글 이미지는 최대 5장까지 등록할 수 있습니다."),
   DISPLAY_REVIEW_NOT_WRITABLE(
       HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_NOT_WRITABLE", "진행 중인 공개 전시에만 후기를 작성할 수 있습니다."),
   DISPLAY_REVIEW_FORBIDDEN(

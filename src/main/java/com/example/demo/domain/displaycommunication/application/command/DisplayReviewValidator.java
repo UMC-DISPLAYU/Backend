@@ -142,6 +142,25 @@ public class DisplayReviewValidator {
     }
   }
 
+  public void validateReplyImages(List<DisplayReviewReply.ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(
+          DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(
+          DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_IMAGES);
+    }
+  }
+
   public void validateImages(List<ImageInfo> images) {
     if (images == null || images.size() > 5) {
       throw new BusinessException(DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_IMAGES);

@@ -13,7 +13,11 @@ public record DisplayReviewReplyListResult(
       UserResult user,
       boolean isTeamMember,
       long likeCount,
-      boolean isLiked) {}
+      boolean isLiked,
+      List<ImageResult> images) {}
 
   public record UserResult(Long userId, String nickname, String profileImageUrl) {}
+
+  public record ImageResult(
+      Long displayReviewReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
 }

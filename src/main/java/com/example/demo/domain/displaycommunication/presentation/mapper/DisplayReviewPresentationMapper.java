@@ -13,6 +13,7 @@ import com.example.demo.domain.displaycommunication.application.result.DisplayRe
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
+import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
@@ -46,8 +47,17 @@ public class DisplayReviewPresentationMapper {
 
   public CreateDisplayReviewReplyCommand toCommand(
       Long displayId, Long displayReviewId, Long userId, CreateDisplayReviewReplyRequest request) {
+    List<DisplayReviewReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new DisplayReviewReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
     return new CreateDisplayReviewReplyCommand(
-        displayId, displayReviewId, userId, request.content());
+        displayId, displayReviewId, userId, request.content(), images);
   }
 
   public GetDisplayReviewsQuery toQuery(
@@ -88,7 +98,17 @@ public class DisplayReviewPresentationMapper {
         result.displayReviewId(),
         result.userId(),
         result.nickname(),
-        result.isTeamMember());
+        result.isTeamMember(),
+        result.images().stream()
+            .map(
+                image ->
+                    new DisplayReviewReplyResponse.ImageResponse(
+                        image.displayReviewReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public DeletedDisplayReviewResponse toResponse(DeletedDisplayReviewResult result) {
@@ -164,7 +184,17 @@ public class DisplayReviewPresentationMapper {
                             reply.user().profileImageUrl()),
                         reply.isTeamMember(),
                         reply.likeCount(),
-                        reply.isLiked()))
+                        reply.isLiked(),
+                        reply.images().stream()
+                            .map(
+                                image ->
+                                    new DisplayReviewReplyListResponse.ImageResponse(
+                                        image.displayReviewReplyImageId(),
+                                        image.imageUrl(),
+                                        image.width(),
+                                        image.height(),
+                                        image.sortOrder()))
+                            .toList()))
             .toList(),
         result.nextCursorId(),
         result.size(),
