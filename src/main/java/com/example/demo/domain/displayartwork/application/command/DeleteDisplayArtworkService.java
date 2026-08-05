@@ -12,9 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteDisplayArtworkService {
 
   private final DisplayArtworkRepository displayArtworkRepository;
+  private final ArtworkEditPermission artworkEditPermission;
 
-  public DeleteDisplayArtworkService(DisplayArtworkRepository displayArtworkRepository) {
+  public DeleteDisplayArtworkService(
+      DisplayArtworkRepository displayArtworkRepository,
+      ArtworkEditPermission artworkEditPermission) {
     this.displayArtworkRepository = displayArtworkRepository;
+    this.artworkEditPermission = artworkEditPermission;
   }
 
   @Transactional
@@ -26,12 +30,8 @@ public class DeleteDisplayArtworkService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    // 전시를 만든 소유자는 TeamMember(TEAM_LEADER)로 등록되지 않으므로 소유자 여부도 함께 확인한다.
-    boolean isTeamLeader =
-        artwork.getDisplay().isOwner(requesterUserId)
-            || artwork.getDisplay().isTeamLeader(requesterUserId);
-    boolean isRegistrant = artwork.getRegisteredByUserId().equals(requesterUserId);
-    if (!isTeamLeader && !isRegistrant) {
+    // 전시 대표자, 작품의 작가, 공동 작업자만 삭제할 수 있다.
+    if (!artworkEditPermission.canEdit(artwork.getDisplay(), artworkId, requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ACTION);
     }
 

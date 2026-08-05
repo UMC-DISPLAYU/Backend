@@ -42,6 +42,20 @@ public class AuthorSetupService {
 
   @Transactional
   public AuthorSetupResult setup(Long requesterUserId, AuthorSetupCommand command) {
+    return apply(requesterUserId, command, true);
+  }
+
+  /**
+   * 수정 시 작가 정보를 다시 저장한다. 수정 권한은 {@link ArtworkEditPermission}에서 이미 검증하므로, 등록 단계의 대리 등록 제한(대표자만 가능)은
+   * 적용하지 않는다.
+   */
+  @Transactional
+  public AuthorSetupResult setupForUpdate(Long requesterUserId, AuthorSetupCommand command) {
+    return apply(requesterUserId, command, false);
+  }
+
+  private AuthorSetupResult apply(
+      Long requesterUserId, AuthorSetupCommand command, boolean enforceProxyRule) {
     Objects.requireNonNull(command, "command must not be null.");
 
     DisplayArtwork artwork =
@@ -61,7 +75,8 @@ public class AuthorSetupService {
     }
 
     // 대리 등록(대표 작가가 본인이 아닌 경우)은 전시 대표자만 할 수 있다.
-    if (!Objects.equals(artistUserId, requesterUserId)
+    if (enforceProxyRule
+        && !Objects.equals(artistUserId, requesterUserId)
         && !isDisplayLeader(display, requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
     }

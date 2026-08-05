@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.presentation.mapper;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkEditResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -12,6 +13,7 @@ import com.example.demo.domain.displayartwork.presentation.response.DeleteDispla
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkEditResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -181,5 +183,40 @@ public class DisplayArtworkPresentationMapper {
         result.caption(),
         result.width(),
         result.height());
+  }
+
+  public DisplayArtworkEditResponse toResponse(DisplayArtworkEditResult result) {
+    return new DisplayArtworkEditResponse(
+        result.artworkId(),
+        result.displayId(),
+        result.artworkName(),
+        result.content(),
+        result.type(),
+        result.productionYear(),
+        result.materialMedia(),
+        result.size(),
+        result.point(),
+        result.images().stream()
+            .map(
+                image ->
+                    new DisplayArtworkEditResponse.ImageResponse(
+                        image.imageId(),
+                        image.imageUrl(),
+                        image.isThumbnail(),
+                        image.imageType(),
+                        image.sortOrder(),
+                        image.caption(),
+                        image.width(),
+                        image.height()))
+            .toList(),
+        result.artistName(),
+        result.artistUserId(),
+        result.coAuthors().stream()
+            .map(
+                coAuthor ->
+                    new DisplayArtworkEditResponse.CoAuthorResponse(
+                        coAuthor.userId(), coAuthor.name()))
+            .toList(),
+        result.qaHandlerUserIds());
   }
 }

@@ -5,10 +5,12 @@ import com.example.demo.domain.displayartwork.application.command.DeleteDisplayA
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommandService;
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
+import com.example.demo.domain.displayartwork.application.command.UpdateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkEditResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkLikeResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -19,9 +21,11 @@ import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.domain.displayartwork.presentation.mapper.DisplayArtworkPresentationMapper;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
+import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkEditResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkListResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
@@ -49,6 +53,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -67,6 +72,7 @@ public class DisplayArtworkController {
   private final DisplayArtworkLikeCommandService displayArtworkLikeCommandService;
   private final ReorderDisplayArtworksService reorderDisplayArtworksService;
   private final DeleteDisplayArtworkService deleteDisplayArtworkService;
+  private final UpdateDisplayArtworkService updateDisplayArtworkService;
   private final DisplayArtworkPresentationMapper mapper;
 
   public DisplayArtworkController(
@@ -75,12 +81,14 @@ public class DisplayArtworkController {
       DisplayArtworkLikeCommandService displayArtworkLikeCommandService,
       ReorderDisplayArtworksService reorderDisplayArtworksService,
       DeleteDisplayArtworkService deleteDisplayArtworkService,
+      UpdateDisplayArtworkService updateDisplayArtworkService,
       DisplayArtworkPresentationMapper mapper) {
     this.createDisplayArtworkService = createDisplayArtworkService;
     this.displayArtworkQueryService = displayArtworkQueryService;
     this.displayArtworkLikeCommandService = displayArtworkLikeCommandService;
     this.reorderDisplayArtworksService = reorderDisplayArtworksService;
     this.deleteDisplayArtworkService = deleteDisplayArtworkService;
+    this.updateDisplayArtworkService = updateDisplayArtworkService;
     this.mapper = mapper;
   }
 
@@ -247,6 +255,47 @@ public class DisplayArtworkController {
       HttpServletRequest httpRequest) {
     DisplayArtworkDetailResult result =
         displayArtworkQueryService.getDisplayArtworkFullDetail(artworkId, optionalUserId(user));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @GetMapping("/api/v1/artworks/{artworkId}/edit")
+  @SecurityRequirement(name = "Authorization")
+  @Operation(
+      summary = "전시 출품작 수정 화면 조회",
+      description =
+          """
+          수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위한 전체 필드를 조회합니다.
+          관람객용 상세 조회와 달리 공동 작업자 목록과 Q&A 담당자 ID를 포함합니다.
+          전시 대표자, 작품의 작가, 공동 작업자만 조회할 수 있습니다.
+          """)
+  public ApiResponseBody<DisplayArtworkEditResponse> getDisplayArtworkForEdit(
+      @Parameter(description = "조회할 작품 ID") @PathVariable @Positive Long artworkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    DisplayArtworkEditResult result =
+        displayArtworkQueryService.getArtworkForEdit(artworkId, requireUserId(user));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @PatchMapping("/api/v1/artworks/{artworkId}")
+  @SecurityRequirement(name = "Authorization")
+  @Operation(
+      summary = "전시 출품작 수정",
+      description =
+          """
+          작품 정보, 이미지, 작가 정보(대표 작가/공동 작업자/Q&A 담당자)를 수정합니다.
+          전시 대표자, 작품의 작가, 공동 작업자만 수정할 수 있습니다.
+
+          이미지는 화면에서 최종적으로 남은 목록을 그대로 보내면 그 상태로 저장됩니다.
+          작품 이미지(ARTWORK) 최소 1장이 필요합니다.
+          """)
+  public ApiResponseBody<DisplayArtworkResponse> updateDisplayArtwork(
+      @Parameter(description = "수정할 작품 ID") @PathVariable @Positive Long artworkId,
+      @Valid @RequestBody UpdateDisplayArtworkRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    DisplayArtworkResult result =
+        updateDisplayArtworkService.update(requireUserId(user), request.toCommand(artworkId));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
