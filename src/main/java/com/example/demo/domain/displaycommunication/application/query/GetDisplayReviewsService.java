@@ -63,7 +63,13 @@ public class GetDisplayReviewsService {
         reviews.stream()
             .map(
                 review ->
-                    toReviewItem(review, users, reviewLikeCounts, likedReviewIds, replyCounts))
+                    toReviewItem(
+                        review,
+                        query.viewerUserId(),
+                        users,
+                        reviewLikeCounts,
+                        likedReviewIds,
+                        replyCounts))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).displayReviewId() : null;
@@ -72,6 +78,7 @@ public class GetDisplayReviewsService {
 
   private DisplayReviewItemResult toReviewItem(
       DisplayReview review,
+      Long viewerUserId,
       Map<Long, UserInfo> users,
       Map<Long, Long> reviewLikeCounts,
       Set<Long> likedReviewIds,
@@ -93,6 +100,7 @@ public class GetDisplayReviewsService {
         review.getContent(),
         review.getCreatedAt(),
         review.isDeleted(),
+        viewerUserId != null && viewerUserId.equals(review.getUserId()),
         toUserResult(users, review.getUserId()),
         images,
         reviewLikeCounts.getOrDefault(review.getDisplayReviewId(), 0L),

@@ -147,6 +147,7 @@ public class DisplayReviewPresentationMapper {
                         review.content(),
                         review.createdAt(),
                         review.isDeleted(),
+                        review.isMine(),
                         new UserResponse(
                             review.user().userId(),
                             review.user().nickname(),

@@ -11,6 +11,7 @@ public record DisplayReviewListResult(
       String content,
       LocalDateTime createdAt,
       boolean isDeleted,
+      boolean isMine,
       UserResult user,
       List<ImageResult> images,
       long likeCount,
