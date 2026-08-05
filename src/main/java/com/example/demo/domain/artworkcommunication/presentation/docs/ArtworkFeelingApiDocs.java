@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -28,7 +30,8 @@ public interface ArtworkFeelingApiDocs {
 
   @Operation(
       summary = "작품 감상평 목록 조회",
-      description = "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
+      description =
+          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -64,11 +67,12 @@ public interface ArtworkFeelingApiDocs {
                                       }
                                     ],
                                     "likeCount": 13,
+                                    "isLiked": true,
                                     "replyCount": 2
                                   }
                                 ],
                                 "nextCursorId": 3,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": true
                               }
                             },
@@ -109,9 +113,15 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(description = "마지막으로 조회한 감상평 ID. 첫 요청이면 전달하지 않음", example = "10")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 감상평 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 답변 목록 조회", description = "감상평의 답변 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
+  @Operation(
+      summary = "작품 감상평 답변 목록 조회",
+      description = "감상평의 답변 목록을 조회합니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "감상평 답변 목록 조회 성공",
@@ -137,11 +147,12 @@ public interface ArtworkFeelingApiDocs {
                                       "nickname": "고상준",
                                       "isCreator": true
                                     },
-                                    "likeCount": 3
+                                    "likeCount": 3,
+                                    "isLiked": true
                                   }
                                 ],
                                 "nextCursorId": null,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": false
                               }
                             },
@@ -159,6 +170,10 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(description = "마지막으로 조회한 답변 ID. 첫 요청이면 전달하지 않음", example = "8")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 답글 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "작품 감상평 작성", description = "로그인 사용자가 감상평을 작성합니다. 해당 작품의 작가도 작성할 수 있습니다.")

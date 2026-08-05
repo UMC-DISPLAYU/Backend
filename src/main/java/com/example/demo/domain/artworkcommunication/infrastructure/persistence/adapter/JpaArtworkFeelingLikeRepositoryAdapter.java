@@ -7,6 +7,7 @@ import com.example.demo.domain.artworkcommunication.infrastructure.persistence.A
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -41,5 +42,10 @@ public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLik
   public Map<Long, Long> countByFeelingIds(List<Long> feelingIds) {
     return artworkFeelingLikeJpaRepository.countByFeelingIds(feelingIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+  }
+
+  @Override
+  public Set<Long> findLikedFeelingIds(List<Long> feelingIds, Long userId) {
+    return Set.copyOf(artworkFeelingLikeJpaRepository.findLikedFeelingIds(feelingIds, userId));
   }
 }

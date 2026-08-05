@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GetArtworkFeelingsService {
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final ArtworkFeelingRepository artworkFeelingRepository;
@@ -41,17 +41,22 @@ public class GetArtworkFeelingsService {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
     }
 
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<ArtworkFeeling> fetched =
         artworkFeelingRepository.findActiveByDisplayArtworkIdWithCursor(
-            query.displayArtworkId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<ArtworkFeeling> feelings = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+            query.displayArtworkId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<ArtworkFeeling> feelings = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (feelings.isEmpty()) {
-      return new ArtworkFeelingListResult(List.of(), null, PAGE_SIZE, false);
+      return new ArtworkFeelingListResult(List.of(), null, pageSize, false);
     }
 
     List<Long> feelingIds = feelings.stream().map(ArtworkFeeling::getFeelingId).toList();
     Map<Long, Long> likeCounts = artworkFeelingLikeRepository.countByFeelingIds(feelingIds);
+    Set<Long> likedFeelingIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : artworkFeelingLikeRepository.findLikedFeelingIds(feelingIds, query.viewerUserId());
     Map<Long, Long> replyCounts = artworkFeelingReplyRepository.countActiveByFeelingIds(feelingIds);
     Set<Long> userIds =
         feelings.stream().map(ArtworkFeeling::getUserId).collect(Collectors.toSet());
@@ -82,11 +87,12 @@ public class GetArtworkFeelingsService {
                                         image.getSortOrder()))
                             .toList(),
                         likeCounts.getOrDefault(feeling.getFeelingId(), 0L),
+                        likedFeelingIds.contains(feeling.getFeelingId()),
                         replyCounts.getOrDefault(feeling.getFeelingId(), 0L)))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).feelingId() : null;
-    return new ArtworkFeelingListResult(items, nextCursorId, PAGE_SIZE, hasNext);
+    return new ArtworkFeelingListResult(items, nextCursorId, pageSize, hasNext);
   }
 
   private ArtworkFeelingUserResult toUserResult(UserDisplayInfo user) {

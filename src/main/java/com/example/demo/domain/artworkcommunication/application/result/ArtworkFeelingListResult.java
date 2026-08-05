@@ -13,6 +13,7 @@ public record ArtworkFeelingListResult(
       ArtworkFeelingUserResult user,
       List<ImageResult> images,
       long likeCount,
+      boolean isLiked,
       long replyCount) {}
 
   public record ArtworkFeelingUserResult(Long userId, String nickname, Boolean isCreator) {}
