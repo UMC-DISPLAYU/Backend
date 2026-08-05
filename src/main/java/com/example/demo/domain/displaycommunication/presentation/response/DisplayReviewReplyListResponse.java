@@ -12,7 +12,8 @@ public record DisplayReviewReplyListResponse(
       LocalDateTime createdAt,
       UserResponse user,
       boolean isTeamMember,
-      long likeCount) {}
+      long likeCount,
+      boolean isLiked) {}
 
   public record UserResponse(Long userId, String nickname, String profileImageUrl) {}
 }

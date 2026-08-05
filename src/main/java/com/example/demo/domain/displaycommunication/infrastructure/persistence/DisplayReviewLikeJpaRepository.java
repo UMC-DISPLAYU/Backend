@@ -48,4 +48,15 @@ public interface DisplayReviewLikeJpaRepository extends JpaRepository<DisplayRev
       GROUP BY reviewLike.displayReviewId
       """)
   List<Object[]> countByDisplayReviewIds(@Param("displayReviewIds") List<Long> displayReviewIds);
+
+  @Query(
+      """
+      SELECT reviewLike.displayReviewId
+      FROM DisplayReviewLike reviewLike
+      WHERE reviewLike.displayReviewId IN :displayReviewIds
+        AND reviewLike.userId = :userId
+        AND reviewLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedDisplayReviewIds(
+      @Param("displayReviewIds") List<Long> displayReviewIds, @Param("userId") Long userId);
 }

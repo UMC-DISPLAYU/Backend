@@ -50,13 +50,15 @@ public class DisplayReviewPresentationMapper {
         displayId, displayReviewId, userId, request.content());
   }
 
-  public GetDisplayReviewsQuery toQuery(Long displayId, Long cursorId, int size) {
-    return new GetDisplayReviewsQuery(displayId, cursorId, size);
+  public GetDisplayReviewsQuery toQuery(
+      Long displayId, Long cursorId, int size, Long viewerUserId) {
+    return new GetDisplayReviewsQuery(displayId, cursorId, size, viewerUserId);
   }
 
   public GetDisplayReviewRepliesQuery toReplyQuery(
-      Long displayId, Long displayReviewId, Long cursorId, int size) {
-    return new GetDisplayReviewRepliesQuery(displayId, displayReviewId, cursorId, size);
+      Long displayId, Long displayReviewId, Long cursorId, int size, Long viewerUserId) {
+    return new GetDisplayReviewRepliesQuery(
+        displayId, displayReviewId, cursorId, size, viewerUserId);
   }
 
   public DisplayReviewResponse toResponse(DisplayReviewResult result) {
@@ -139,6 +141,7 @@ public class DisplayReviewPresentationMapper {
                                         image.sortOrder()))
                             .toList(),
                         review.likeCount(),
+                        review.isLiked(),
                         review.replyCount()))
             .toList(),
         result.nextCursorId(),
@@ -160,7 +163,8 @@ public class DisplayReviewPresentationMapper {
                             reply.user().nickname(),
                             reply.user().profileImageUrl()),
                         reply.isTeamMember(),
-                        reply.likeCount()))
+                        reply.likeCount(),
+                        reply.isLiked()))
             .toList(),
         result.nextCursorId(),
         result.size(),

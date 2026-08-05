@@ -33,6 +33,7 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "마지막으로 조회한 후기 ID", example = "20") Long cursorId,
       @Parameter(description = "조회 개수(최대 50)", example = "10") int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(
@@ -45,6 +46,7 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "마지막으로 조회한 답글 ID", example = "20") Long cursorId,
       @Parameter(description = "조회 개수(최대 50)", example = "10") int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
   @Operation(summary = "전시 후기 작성", description = "사용자가 전시에 대한 후기를 작성합니다.")

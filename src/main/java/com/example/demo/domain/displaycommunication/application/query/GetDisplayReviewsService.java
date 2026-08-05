@@ -49,6 +49,11 @@ public class GetDisplayReviewsService {
     List<Long> reviewIds = reviews.stream().map(DisplayReview::getDisplayReviewId).toList();
     Map<Long, Long> reviewLikeCounts =
         displayReviewLikeRepository.countByDisplayReviewIds(reviewIds);
+    Set<Long> likedReviewIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : displayReviewLikeRepository.findLikedDisplayReviewIds(
+                reviewIds, query.viewerUserId());
     Map<Long, Long> replyCounts =
         displayReviewReplyRepository.countActiveByDisplayReviewIds(reviewIds);
     Set<Long> userIds = reviews.stream().map(DisplayReview::getUserId).collect(Collectors.toSet());
@@ -56,7 +61,9 @@ public class GetDisplayReviewsService {
 
     List<DisplayReviewItemResult> items =
         reviews.stream()
-            .map(review -> toReviewItem(review, users, reviewLikeCounts, replyCounts))
+            .map(
+                review ->
+                    toReviewItem(review, users, reviewLikeCounts, likedReviewIds, replyCounts))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).displayReviewId() : null;
@@ -67,6 +74,7 @@ public class GetDisplayReviewsService {
       DisplayReview review,
       Map<Long, UserInfo> users,
       Map<Long, Long> reviewLikeCounts,
+      Set<Long> likedReviewIds,
       Map<Long, Long> replyCounts) {
     List<ImageResult> images =
         review.getImages().stream()
@@ -87,6 +95,7 @@ public class GetDisplayReviewsService {
         toUserResult(users, review.getUserId()),
         images,
         reviewLikeCounts.getOrDefault(review.getDisplayReviewId(), 0L),
+        likedReviewIds.contains(review.getDisplayReviewId()),
         replyCounts.getOrDefault(review.getDisplayReviewId(), 0L));
   }
 

@@ -53,6 +53,11 @@ public class GetDisplayReviewRepliesService {
         replies.stream().map(DisplayReviewReply::getDisplayReviewReplyId).toList();
     Map<Long, Long> likeCounts =
         displayReviewReplyLikeRepository.countByDisplayReviewReplyIds(replyIds);
+    Set<Long> likedReplyIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : displayReviewReplyLikeRepository.findLikedDisplayReviewReplyIds(
+                replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(DisplayReviewReply::getUserId).collect(Collectors.toSet());
     Map<Long, UserInfo> users = userExistenceRepository.findUsersByIds(userIds);
@@ -70,7 +75,8 @@ public class GetDisplayReviewRepliesService {
                         toUserResult(users, reply.getUserId()),
                         access.ownerUserId().equals(reply.getUserId())
                             || teamMemberUserIds.contains(reply.getUserId()),
-                        likeCounts.getOrDefault(reply.getDisplayReviewReplyId(), 0L)))
+                        likeCounts.getOrDefault(reply.getDisplayReviewReplyId(), 0L),
+                        likedReplyIds.contains(reply.getDisplayReviewReplyId())))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).displayReviewReplyId() : null;
