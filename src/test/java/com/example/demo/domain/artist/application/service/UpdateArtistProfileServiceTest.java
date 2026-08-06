@@ -39,7 +39,13 @@ class UpdateArtistProfileServiceTest {
 
   @Test
   void updatesArtistProfileInOneFlow() {
-    User user = verifiedUser("oldName");
+    User user =
+        User.builder()
+            .id(USER_ID)
+            .nickname("oldName")
+            .profileImageUrl("https://cdn.example.com/my-profile.jpg")
+            .isVerified(true)
+            .build();
     ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
     when(artistProfileRepository.existsByArtistName("newName")).thenReturn(false);
@@ -48,8 +54,9 @@ class UpdateArtistProfileServiceTest {
 
     assertThat(user.getNickname()).isEqualTo("oldName");
     assertThat(profile.getArtistName()).isEqualTo("newName");
-    assertThat(user.getProfileImageUrl())
+    assertThat(profile.getProfileImageUrl())
         .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
+    assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/my-profile.jpg");
     assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
