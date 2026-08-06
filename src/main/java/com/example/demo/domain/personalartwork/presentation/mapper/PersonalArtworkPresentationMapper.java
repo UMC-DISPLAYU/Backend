@@ -37,7 +37,9 @@ public class PersonalArtworkPresentationMapper {
         result.size(),
         result.point(),
         result.createdAt(),
-        result.images().stream().map(this::toResponse).toList());
+        result.images().stream().map(this::toResponse).toList(),
+        result.likeCount(),
+        result.isLiked());
   }
 
   private PersonalArtworkResponse.ImageResponse toResponse(
