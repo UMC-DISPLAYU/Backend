@@ -22,7 +22,7 @@ public record PersonalArtworkFeelingListResponse(
       long replyCount) {}
 
   public record PersonalArtworkFeelingUserResponse(
-      Long userId, String nickname, Boolean isCreator) {}
+      Long userId, String nickname, String profileImageUrl, Boolean isCreator) {}
 
   public record ImageResponse(
       Long personalFeelingImageId, String imageUrl, int width, int height, int sortOrder) {}

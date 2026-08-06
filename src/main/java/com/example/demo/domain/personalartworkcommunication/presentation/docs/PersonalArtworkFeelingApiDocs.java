@@ -31,7 +31,7 @@ public interface PersonalArtworkFeelingApiDocs {
   @Operation(
       summary = "개인 작품 감상평 목록 조회",
       description =
-          "개인 작품에 등록된 감상평을 커서 방식으로 조회합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다. 답변은 별도 API에서 조회합니다.")
+          "개인 작품에 등록된 감상평을 커서 방식으로 조회하며 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다. 답변은 별도 API에서 조회합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 목록 조회 성공",
@@ -57,6 +57,7 @@ public interface PersonalArtworkFeelingApiDocs {
                                     "user": {
                                       "userId": 2,
                                       "nickname": "관람객",
+                                      "profileImageUrl": "https://cdn.example.com/profile/2.jpg",
                                       "isCreator": false
                                     },
                                     "images": [
@@ -122,7 +123,7 @@ public interface PersonalArtworkFeelingApiDocs {
   @Operation(
       summary = "개인 작품 감상평 답변 목록 조회",
       description =
-          "특정 감상평의 삭제되지 않은 답변을 커서 방식으로 조회합니다. 원본 감상평이 삭제된 경우에도 기존 답변은 유지되고 조회할 수 있습니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
+          "특정 감상평의 삭제되지 않은 답변을 커서 방식으로 조회하며 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 원본 감상평이 삭제된 경우에도 기존 답변은 유지되고 조회할 수 있습니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 답변 목록 조회 성공",
@@ -146,6 +147,7 @@ public interface PersonalArtworkFeelingApiDocs {
                                     "user": {
                                       "userId": 1,
                                       "nickname": "작품소유자",
+                                      "profileImageUrl": "https://cdn.example.com/profile/1.jpg",
                                       "isCreator": true
                                     },
                                     "likeCount": 2,

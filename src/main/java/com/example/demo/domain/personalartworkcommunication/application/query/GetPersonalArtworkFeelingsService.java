@@ -11,6 +11,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class GetPersonalArtworkFeelingsService {
         personalArtworkFeelingReplyRepository.countActiveByPersonalFeelingIds(feelingIds);
     Set<Long> userIds =
         pageFeelings.stream().map(PersonalArtworkFeeling::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
 
     List<PersonalArtworkFeelingItemResult> feelings =
         pageFeelings.stream()
@@ -74,7 +75,7 @@ public class GetPersonalArtworkFeelingsService {
                 feeling ->
                     toFeelingItem(
                         feeling,
-                        nicknameByUserId,
+                        userProfileById,
                         ownerUserId,
                         likeCounts,
                         likedFeelingIds,
@@ -88,16 +89,18 @@ public class GetPersonalArtworkFeelingsService {
 
   private PersonalArtworkFeelingItemResult toFeelingItem(
       PersonalArtworkFeeling feeling,
-      Map<Long, String> nicknameByUserId,
+      Map<Long, UserProfile> userProfileById,
       Long ownerUserId,
       Map<Long, Long> likeCounts,
       Set<Long> likedFeelingIds,
       Long viewerUserId,
       Map<Long, Long> replyCounts) {
+    UserProfile userProfile = findUserProfileOrThrow(userProfileById, feeling.getUserId());
     PersonalArtworkFeelingUserResult user =
         new PersonalArtworkFeelingUserResult(
             feeling.getUserId(),
-            findNicknameOrThrow(nicknameByUserId, feeling.getUserId()),
+            userProfile.nickname(),
+            userProfile.profileImageUrl(),
             ownerUserId.equals(feeling.getUserId()));
 
     return new PersonalArtworkFeelingItemResult(
@@ -122,11 +125,11 @@ public class GetPersonalArtworkFeelingsService {
         replyCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L));
   }
 
-  private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {
-    String nickname = nicknameByUserId.get(userId);
-    if (nickname == null) {
+  private UserProfile findUserProfileOrThrow(Map<Long, UserProfile> userProfileById, Long userId) {
+    UserProfile userProfile = userProfileById.get(userId);
+    if (userProfile == null) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.USER_NOT_FOUND);
     }
-    return nickname;
+    return userProfile;
   }
 }

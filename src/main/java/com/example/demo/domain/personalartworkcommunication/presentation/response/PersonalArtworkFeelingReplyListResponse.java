@@ -18,5 +18,5 @@ public record PersonalArtworkFeelingReplyListResponse(
       boolean isLiked) {}
 
   public record PersonalArtworkFeelingReplyUserResponse(
-      Long userId, String nickname, Boolean isCreator) {}
+      Long userId, String nickname, String profileImageUrl, Boolean isCreator) {}
 }

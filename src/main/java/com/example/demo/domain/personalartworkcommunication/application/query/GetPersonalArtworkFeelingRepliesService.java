@@ -11,6 +11,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class GetPersonalArtworkFeelingRepliesService {
                 replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(PersonalArtworkFeelingReply::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
 
     List<PersonalArtworkFeelingReplyItemResult> items =
         replies.stream()
@@ -76,10 +77,7 @@ public class GetPersonalArtworkFeelingRepliesService {
                         reply.getPersonalFeelingReplyId(),
                         reply.getContent(),
                         reply.getCreatedAt(),
-                        new PersonalArtworkFeelingReplyUserResult(
-                            reply.getUserId(),
-                            findNicknameOrThrow(nicknameByUserId, reply.getUserId()),
-                            ownerUserId.equals(reply.getUserId())),
+                        toUserResult(reply.getUserId(), userProfileById, ownerUserId),
                         likeCounts.getOrDefault(reply.getPersonalFeelingReplyId(), 0L),
                         likedReplyIds.contains(reply.getPersonalFeelingReplyId())))
             .toList();
@@ -88,11 +86,13 @@ public class GetPersonalArtworkFeelingRepliesService {
     return new PersonalArtworkFeelingReplyListResult(items, nextCursorId, pageSize, hasNext);
   }
 
-  private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {
-    String nickname = nicknameByUserId.get(userId);
-    if (nickname == null) {
+  private PersonalArtworkFeelingReplyUserResult toUserResult(
+      Long userId, Map<Long, UserProfile> userProfileById, Long ownerUserId) {
+    UserProfile userProfile = userProfileById.get(userId);
+    if (userProfile == null) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.USER_NOT_FOUND);
     }
-    return nickname;
+    return new PersonalArtworkFeelingReplyUserResult(
+        userId, userProfile.nickname(), userProfile.profileImageUrl(), ownerUserId.equals(userId));
   }
 }

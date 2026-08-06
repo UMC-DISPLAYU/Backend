@@ -135,7 +135,10 @@ public class PersonalArtworkFeelingPresentationMapper {
       PersonalArtworkFeelingItemResult result) {
     PersonalArtworkFeelingUserResponse user =
         new PersonalArtworkFeelingUserResponse(
-            result.user().userId(), result.user().nickname(), result.user().isCreator());
+            result.user().userId(),
+            result.user().nickname(),
+            result.user().profileImageUrl(),
+            result.user().isCreator());
     return new PersonalArtworkFeelingItemResponse(
         result.personalFeelingId(),
         result.content(),
@@ -173,6 +176,7 @@ public class PersonalArtworkFeelingPresentationMapper {
                             .PersonalArtworkFeelingReplyUserResponse(
                             reply.user().userId(),
                             reply.user().nickname(),
+                            reply.user().profileImageUrl(),
                             reply.user().isCreator()),
                         reply.likeCount(),
                         reply.isLiked()))
