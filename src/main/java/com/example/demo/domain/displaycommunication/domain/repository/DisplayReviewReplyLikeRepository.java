@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface DisplayReviewReplyLikeRepository {
 
@@ -11,6 +12,8 @@ public interface DisplayReviewReplyLikeRepository {
       Long displayReviewReplyId, Long userId);
 
   Map<Long, Long> countByDisplayReviewReplyIds(List<Long> displayReviewReplyIds);
+
+  Set<Long> findLikedDisplayReviewReplyIds(List<Long> displayReviewReplyIds, Long userId);
 
   record DisplayReviewReplyLikeSnapshot(
       Long displayReviewReplyId,

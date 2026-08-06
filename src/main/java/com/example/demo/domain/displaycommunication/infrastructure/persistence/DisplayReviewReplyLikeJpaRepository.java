@@ -53,4 +53,16 @@ public interface DisplayReviewReplyLikeJpaRepository
       """)
   List<Object[]> countByDisplayReviewReplyIds(
       @Param("displayReviewReplyIds") List<Long> displayReviewReplyIds);
+
+  @Query(
+      """
+      SELECT replyLike.displayReviewReplyId
+      FROM DisplayReviewReplyLike replyLike
+      WHERE replyLike.displayReviewReplyId IN :displayReviewReplyIds
+        AND replyLike.userId = :userId
+        AND replyLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedDisplayReviewReplyIds(
+      @Param("displayReviewReplyIds") List<Long> displayReviewReplyIds,
+      @Param("userId") Long userId);
 }

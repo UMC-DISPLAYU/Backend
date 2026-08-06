@@ -11,5 +11,5 @@ public interface DisplayReviewRepository {
 
   boolean existsByDisplayIdAndUserId(Long displayId, Long userId);
 
-  List<DisplayReview> findActiveByDisplayIdWithCursor(Long displayId, Long cursorId, int limit);
+  List<DisplayReview> findByDisplayIdWithCursor(Long displayId, Long cursorId, int limit);
 }

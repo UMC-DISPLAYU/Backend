@@ -1,6 +1,7 @@
 package com.example.demo.domain.displaycommunication.presentation.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record DisplayReviewReplyResponse(
     Long displayReviewReplyId,
@@ -9,4 +10,9 @@ public record DisplayReviewReplyResponse(
     Long displayReviewId,
     Long userId,
     String nickname,
-    boolean isTeamMember) {}
+    boolean isTeamMember,
+    List<ImageResponse> images) {
+
+  public record ImageResponse(
+      Long displayReviewReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
+}

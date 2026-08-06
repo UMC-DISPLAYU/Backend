@@ -62,16 +62,18 @@ public class DisplayReviewValidator {
   }
 
   public DisplayReview findReviewOrThrow(Long displayReviewId) {
-    DisplayReview displayReview =
-        displayReviewRepository
-            .findById(displayReviewId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
+    DisplayReview displayReview = findReviewIncludingDeletedOrThrow(displayReviewId);
     if (displayReview.isDeleted()) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);
     }
     return displayReview;
+  }
+
+  public DisplayReview findReviewIncludingDeletedOrThrow(Long displayReviewId) {
+    return displayReviewRepository
+        .findById(displayReviewId)
+        .orElseThrow(
+            () -> new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
   }
 
   public void validateReviewTarget(DisplayReview displayReview, Long displayId) {
@@ -139,6 +141,25 @@ public class DisplayReviewValidator {
     if (content == null || content.isBlank() || content.length() > 300) {
       throw new BusinessException(
           DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_CONTENT);
+    }
+  }
+
+  public void validateReplyImages(List<DisplayReviewReply.ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(
+          DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(
+          DisplayCommunicationErrorCode.INVALID_DISPLAY_REVIEW_REPLY_IMAGES);
     }
   }
 
