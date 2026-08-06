@@ -3,15 +3,12 @@ package com.example.demo.domain.archive.presentation;
 import com.example.demo.domain.archive.application.command.DeleteArchiveDisplayService;
 import com.example.demo.domain.archive.application.command.SaveArchiveDisplayCommand;
 import com.example.demo.domain.archive.application.command.SaveArchiveDisplayService;
-import com.example.demo.domain.archive.application.query.GetArchiveDisplayDetailService;
 import com.example.demo.domain.archive.application.query.GetArchivedDisplaysService;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorResult;
-import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleResult;
 import com.example.demo.domain.archive.presentation.docs.ArchiveDisplayControllerDocs;
 import com.example.demo.domain.archive.presentation.mapper.ArchivePresentationMapper;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveDisplayResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -35,19 +32,16 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
 
   private final SaveArchiveDisplayService saveArchiveDisplayService;
   private final DeleteArchiveDisplayService deleteArchiveDisplayService;
-  private final GetArchiveDisplayDetailService getArchiveDisplayDetailService;
   private final GetArchivedDisplaysService getArchivedDisplaysService;
   private final ArchivePresentationMapper mapper;
 
   public ArchiveDisplayController(
       SaveArchiveDisplayService saveArchiveDisplayService,
       DeleteArchiveDisplayService deleteArchiveDisplayService,
-      GetArchiveDisplayDetailService getArchiveDisplayDetailService,
       GetArchivedDisplaysService getArchivedDisplaysService,
       ArchivePresentationMapper mapper) {
     this.saveArchiveDisplayService = saveArchiveDisplayService;
     this.deleteArchiveDisplayService = deleteArchiveDisplayService;
-    this.getArchiveDisplayDetailService = getArchiveDisplayDetailService;
     this.getArchivedDisplaysService = getArchivedDisplaysService;
     this.mapper = mapper;
   }
@@ -73,18 +67,6 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
       HttpServletRequest request) {
     ArchiveDisplayToggleResult result =
         deleteArchiveDisplayService.deleteArchiveDisplay(requireUserId(user), exhibitionId);
-    return ApiResponseBody.success(mapper.toResponse(result), request);
-  }
-
-  @GetMapping("/api/v1/archives/exhibitions/{savedExhibitionId}")
-  @Override
-  public ApiResponseBody<ArchiveDisplayResponse> getArchiveDisplayDetail(
-      @PathVariable Long savedExhibitionId,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest request) {
-    ArchiveDisplayResult result =
-        getArchiveDisplayDetailService.getArchiveDisplayDetail(
-            requireUserId(user), savedExhibitionId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

@@ -4,8 +4,11 @@ import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorRe
 import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.archive.domain.repository.DisplaySummary;
+import com.example.demo.domain.archive.domain.repository.DisplaySummaryRepository;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,11 +22,15 @@ public class GetArchivedDisplaysService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
   private final MemoRepository memoRepository;
+  private final DisplaySummaryRepository displaySummaryRepository;
 
   public GetArchivedDisplaysService(
-      ArchiveDisplayRepository archiveDisplayRepository, MemoRepository memoRepository) {
+      ArchiveDisplayRepository archiveDisplayRepository,
+      MemoRepository memoRepository,
+      DisplaySummaryRepository displaySummaryRepository) {
     this.archiveDisplayRepository = archiveDisplayRepository;
     this.memoRepository = memoRepository;
+    this.displaySummaryRepository = displaySummaryRepository;
   }
 
   @Transactional(readOnly = true)
@@ -45,12 +52,24 @@ public class GetArchivedDisplaysService {
                 .stream()
                 .collect(Collectors.toMap(Memo::getArchiveDisplayId, Memo::getContent));
 
+    Map<Long, DisplaySummary> summaryByDisplayId =
+        displays.isEmpty()
+            ? Map.of()
+            : displaySummaryRepository
+                .findByDisplayIdIn(displays.stream().map(ArchiveDisplay::getDisplayId).toList())
+                .stream()
+                .collect(Collectors.toMap(DisplaySummary::displayId, summary -> summary));
+
+    LocalDate today = LocalDate.now();
     List<ArchiveDisplayResult> results =
         displays.stream()
             .map(
                 archiveDisplay ->
                     ArchiveDisplayResult.from(
-                        archiveDisplay, memoByArchiveDisplayId.get(archiveDisplay.getId())))
+                        archiveDisplay,
+                        memoByArchiveDisplayId.get(archiveDisplay.getId()),
+                        summaryByDisplayId.get(archiveDisplay.getDisplayId()),
+                        today))
             .toList();
 
     Long nextCursorId = hasNext ? displays.get(displays.size() - 1).getId() : null;

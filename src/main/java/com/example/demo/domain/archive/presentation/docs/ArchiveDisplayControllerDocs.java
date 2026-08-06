@@ -1,7 +1,6 @@
 package com.example.demo.domain.archive.presentation.docs;
 
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveDisplayResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -96,51 +95,6 @@ public interface ArchiveDisplayControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "저장된 전시 상세 조회", description = "저장 기록 ID로 저장된 전시 상세를 조회합니다.")
-  @SecurityRequirement(name = "Authorization")
-  @ApiResponse(
-      responseCode = "200",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "archiveDisplayId": 1,
-                                "displayId": 1,
-                                "userId": 1,
-                                "memo": "여기 조명이 인상적이었다.",
-                                "savedAt": "2026-07-13T01:49:28"
-                              }
-                            },
-                            "error": null,
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "401",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
-                          }
-                          """)))
-  ApiResponseBody<ArchiveDisplayResponse> getArchiveDisplayDetail(
-      @Parameter(description = "저장된 전시(아카이브 기록) ID", example = "1") @PathVariable @Positive Long savedExhibitionId,
-      AuthUser user,
-      HttpServletRequest request);
-
   @Operation(summary = "저장된 전시 목록 조회", description = "내가 저장한 전시 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -157,6 +111,14 @@ public interface ArchiveDisplayControllerDocs {
                               "data": {
                                 "displays": [
                                   {
+                                    "posterImageUrl": "https://cdn.displayu.co.kr/posters/5.png",
+                                    "status": "ONGOING",
+                                    "title": "syzygy",
+                                    "organization": "건국대학교",
+                                    "department": "디자인학과",
+                                    "startedAt": "2026-05-28",
+                                    "endedAt": "2026-06-05",
+                                    "location": "건국대학교 디자인관 310관 갤러리",
                                     "archiveDisplayId": 2,
                                     "displayId": 5,
                                     "userId": 1,
@@ -164,6 +126,14 @@ public interface ArchiveDisplayControllerDocs {
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
+                                    "posterImageUrl": "https://cdn.displayu.co.kr/posters/3.png",
+                                    "status": "ENDED",
+                                    "title": "형태의 침묵",
+                                    "organization": "중앙대학교",
+                                    "department": "디자인학부",
+                                    "startedAt": "2026-04-03",
+                                    "endedAt": "2026-04-05",
+                                    "location": "중앙대학교 310관 갤러리",
                                     "archiveDisplayId": 1,
                                     "displayId": 3,
                                     "userId": 1,
