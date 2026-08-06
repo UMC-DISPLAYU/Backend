@@ -4,12 +4,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ArtworkFeelingLikeRepository {
 
   Optional<ArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(Long feelingId, Long userId);
 
   Map<Long, Long> countByFeelingIds(List<Long> feelingIds);
+
+  Set<Long> findLikedFeelingIds(List<Long> feelingIds, Long userId);
 
   record ArtworkFeelingLikeSnapshot(
       Long feelingId,

@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -28,7 +30,8 @@ public interface ArtworkFeelingApiDocs {
 
   @Operation(
       summary = "작품 감상평 목록 조회",
-      description = "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
+      description =
+          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -49,9 +52,12 @@ public interface ArtworkFeelingApiDocs {
                                     "feelingId": 1,
                                     "content": "정말 감동적인 작품이에요.",
                                     "createdAt": "2026-06-30T22:10:00",
+                                    "isDeleted": false,
+                                    "isMine": true,
                                     "user": {
                                       "userId": 1,
                                       "nickname": "User1",
+                                      "profileImageUrl": "https://cdn.example.com/profile/1.jpg",
                                       "isCreator": false
                                     },
                                     "images": [
@@ -64,11 +70,12 @@ public interface ArtworkFeelingApiDocs {
                                       }
                                     ],
                                     "likeCount": 13,
+                                    "isLiked": true,
                                     "replyCount": 2
                                   }
                                 ],
                                 "nextCursorId": 3,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": true
                               }
                             },
@@ -109,9 +116,16 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(description = "마지막으로 조회한 감상평 ID. 첫 요청이면 전달하지 않음", example = "10")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 감상평 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 답변 목록 조회", description = "감상평의 답변 목록을 조회합니다. 비회원도 조회할 수 있습니다.")
+  @Operation(
+      summary = "작품 감상평 답변 목록 조회",
+      description =
+          "감상평의 삭제되지 않은 답변 목록을 조회하며 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 원본 감상평이 삭제된 경우에도 답변은 유지되고 조회할 수 있습니다. 로그인 사용자의 좋아요 여부는 isLiked로 반환하며, 비회원 조회 시 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "감상평 답변 목록 조회 성공",
@@ -135,13 +149,15 @@ public interface ArtworkFeelingApiDocs {
                                     "user": {
                                       "userId": 2,
                                       "nickname": "고상준",
+                                      "profileImageUrl": "https://cdn.example.com/profile/2.jpg",
                                       "isCreator": true
                                     },
-                                    "likeCount": 3
+                                    "likeCount": 3,
+                                    "isLiked": true
                                   }
                                 ],
                                 "nextCursorId": null,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": false
                               }
                             },
@@ -159,9 +175,16 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(description = "마지막으로 조회한 답변 ID. 첫 요청이면 전달하지 않음", example = "8")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 답글 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
+      @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 작성", description = "로그인 사용자가 감상평을 작성합니다. 해당 작품의 작가도 작성할 수 있습니다.")
+  @Operation(
+      summary = "작품 감상평 작성",
+      description =
+          "로그인 사용자가 감상평을 작성합니다. 해당 작품의 작가도 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 작성 성공",
@@ -263,7 +286,8 @@ public interface ArtworkFeelingApiDocs {
 
   @Operation(
       summary = "작품 감상평 답변 등록",
-      description = "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있습니다.")
+      description =
+          "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 답변 등록 성공",
@@ -418,7 +442,10 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 삭제", description = "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다.")
+  @Operation(
+      summary = "작품 감상평 삭제",
+      description =
+          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 감상평은 isDeleted=true 상태로 목록에 유지되며 기존 답변은 삭제되지 않습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 삭제 성공",

@@ -11,6 +11,6 @@ public interface ArtworkFeelingRepository {
 
   List<ArtworkFeeling> findActiveByDisplayArtworkId(Long displayArtworkId);
 
-  List<ArtworkFeeling> findActiveByDisplayArtworkIdWithCursor(
+  List<ArtworkFeeling> findByDisplayArtworkIdWithCursorIncludingDeleted(
       Long displayArtworkId, Long cursorId, int limit);
 }
