@@ -42,7 +42,7 @@ public class PersonalArtworkQuestionReplyService {
                     new BusinessException(
                         PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
 
-    personalArtworkQuestionValidator.validateReplyTarget(
+    personalArtworkQuestionValidator.validateQuestionTarget(
         personalArtworkQuestion, command.personalArtworkId());
 
     PersonalArtworkQuestionReply questionReply =

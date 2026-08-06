@@ -19,6 +19,10 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.FORBIDDEN,
       "FORBIDDEN_ARTWORK_ACTION",
       "해당 작품을 삭제할 권한이 없습니다. (대표자 또는 본인 등록 작품만 삭제 가능)"),
+  FORBIDDEN_ARTWORK_EDIT(
+      HttpStatus.FORBIDDEN,
+      "FORBIDDEN_ARTWORK_EDIT",
+      "해당 작품을 수정할 권한이 없습니다. (전시 대표자, 작품의 작가, 공동 작업자만 수정 가능)"),
   FORBIDDEN_ARTWORK_ORDER_EDIT(
       HttpStatus.FORBIDDEN, "FORBIDDEN_ARTWORK_ORDER_EDIT", "전시 대표자만 작품 순서를 편집할 수 있습니다."),
   INVALID_ARTWORK_ORDER_LIST(
@@ -30,10 +34,14 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST, "INVALID_CO_AUTHOR", "공동 작업자는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
   INVALID_ARTIST_USER_ID(
       HttpStatus.BAD_REQUEST, "INVALID_ARTIST_USER_ID", "대표 작가는 해당 전시의 작가 인증된 팀원만 지정할 수 있습니다."),
+  FORBIDDEN_PROXY_ARTWORK_REGISTRATION(
+      HttpStatus.FORBIDDEN,
+      "FORBIDDEN_PROXY_ARTWORK_REGISTRATION",
+      "다른 사람의 작품을 대신 등록하는 것은 전시 대표자만 할 수 있습니다."),
   INVALID_QA_HANDLER(
       HttpStatus.BAD_REQUEST,
       "INVALID_QA_HANDLER",
-      "내부 Q&A 담당자는 대표 작가 또는 계정이 연결된 공동 작업자 중에서만 지정할 수 있습니다.");
+      "내부 Q&A 담당자는 대표 작가, 계정이 연결된 공동 작업자, 또는 전시 대표자 중에서만 지정할 수 있습니다.");
 
   private final HttpStatus status;
   private final String code;

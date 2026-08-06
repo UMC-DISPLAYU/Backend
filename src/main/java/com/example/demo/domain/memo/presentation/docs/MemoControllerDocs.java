@@ -71,6 +71,23 @@ public interface MemoControllerDocs {
 
   @Operation(summary = "전시 메모 삭제", description = "저장된 전시에 작성한 메모를 삭제합니다.")
   @ApiResponse(
+      responseCode = "200",
+      description = "전시 메모 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": { "data": null },
+                            "error": null,
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/1/memo" }
+                          }
+                          """)))
+  @ApiResponse(
       responseCode = "401",
       description = "인증이 필요합니다.",
       content =
@@ -140,6 +157,23 @@ public interface MemoControllerDocs {
       HttpServletRequest httpRequest);
 
   @Operation(summary = "작품 메모 삭제", description = "저장된 작품에 작성한 메모를 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 메모 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": { "data": null },
+                            "error": null,
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/1/memo" }
+                          }
+                          """)))
   @ApiResponse(
       responseCode = "401",
       description = "인증이 필요합니다.",

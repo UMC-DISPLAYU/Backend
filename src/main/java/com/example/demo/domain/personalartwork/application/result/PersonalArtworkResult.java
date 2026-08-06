@@ -16,9 +16,12 @@ public record PersonalArtworkResult(
     String size,
     String point,
     LocalDateTime createdAt,
-    List<ImageResult> images) {
+    List<ImageResult> images,
+    long likeCount,
+    boolean isLiked) {
 
-  public static PersonalArtworkResult from(PersonalArtwork personalArtwork) {
+  public static PersonalArtworkResult from(
+      PersonalArtwork personalArtwork, long likeCount, boolean isLiked) {
     return new PersonalArtworkResult(
         personalArtwork.getId(),
         personalArtwork.getOwnerUserId().value(),
@@ -30,7 +33,9 @@ public record PersonalArtworkResult(
         personalArtwork.getSize(),
         personalArtwork.getPoint(),
         personalArtwork.getCreatedAt(),
-        personalArtwork.getImages().stream().map(ImageResult::from).toList());
+        personalArtwork.getImages().stream().map(ImageResult::from).toList(),
+        likeCount,
+        isLiked);
   }
 
   public record ImageResult(

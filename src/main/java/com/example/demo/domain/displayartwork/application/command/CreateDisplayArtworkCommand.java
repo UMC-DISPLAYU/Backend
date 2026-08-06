@@ -17,4 +17,4 @@ public record CreateDisplayArtworkCommand(
     Long artistUserId,
     List<Long> coAuthorUserIds,
     List<String> coAuthorRawNames,
-    Long qaHandlerUserId) {}
+    List<Long> qaHandlerUserIds) {}

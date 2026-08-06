@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
+import com.example.demo.domain.display.application.query.DisplayInvitationDisplayQueryResult;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -20,6 +21,20 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
+      return new ExhibitionResult(
+          queryResult.displayId(),
+          queryResult.title(),
+          queryResult.posterImageUrl(),
+          queryResult.organization(),
+          queryResult.department(),
+          queryResult.startedAt(),
+          queryResult.endedAt(),
+          ChronoUnit.DAYS.between(today, queryResult.endedAt()),
+          false);
+    }
+
+    public static ExhibitionResult from(
+        DisplayInvitationDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
           queryResult.displayId(),
           queryResult.title(),

@@ -43,11 +43,12 @@ class DisplayControllerCreateTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.title").value("FORM 2026"))
+        .andExpect(jsonPath("$.success.data.qnaAccount").value("@displayu"))
         .andExpect(jsonPath("$.success.data.region").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.location.latitude").value(37.0063))
         .andExpect(jsonPath("$.success.data.location.longitude").value(127.2267))
         .andExpect(jsonPath("$.success.data.teamMembers[0].userId").value(user.getId()))
-        .andExpect(jsonPath("$.success.data.teamMembers[0].displayNickname").value("홍길동"))
+        .andExpect(jsonPath("$.success.data.teamMembers[0].displayNickname").value("전시 리더"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].accepted").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
@@ -93,7 +94,8 @@ class DisplayControllerCreateTest {
           "region": "%s",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
-          "hostOrganizationName": null,
+          "qnaAccount": "@displayu",
+          "displayNickname": "전시 리더",
           "subtitle": "중앙대학교 디자인학부 졸업전시",
           "description": "디자인학부 학생들의 전시입니다.",
           "startDate": "2026-05-28",

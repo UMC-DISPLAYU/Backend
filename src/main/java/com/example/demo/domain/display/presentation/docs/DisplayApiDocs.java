@@ -23,6 +23,24 @@ public final class DisplayApiDocs {
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
   public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
 
+  public static final String PUBLISH_SUMMARY = "전시 등록";
+  public static final String PUBLISH_DESCRIPTION =
+      "전시 팀장 권한을 가진 사용자가 초안 상태의 전시를 발행 상태로 변경합니다. 이미 발행된 전시는 성공 응답을 반환합니다.";
+  public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 등록 요청";
+  public static final String PUBLISH_REQUEST_EXAMPLE_NAME = "Display publish request";
+  public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
+  public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
+
+  public static final String RESERVATION_SUMMARY = "전시 콘텐츠 공개 예약 수정";
+  public static final String RESERVATION_DESCRIPTION =
+      "전시 팀장 권한을 가진 사용자가 작품 콘텐츠와 전시 콘텐츠의 공개 시점 정책을 수정합니다.";
+  public static final String RESERVATION_REQUEST_DESCRIPTION = "전시 콘텐츠 공개 예약 수정 요청";
+  public static final String RESERVATION_REQUEST_EXAMPLE_NAME =
+      "Display reservation update request";
+  public static final String RESERVATION_SUCCESS_DESCRIPTION = "전시 콘텐츠 공개 예약 수정 성공";
+  public static final String RESERVATION_SUCCESS_EXAMPLE_NAME =
+      "Display reservation update success";
+
   public static final String LIKE_SUMMARY = "전시 좋아요";
   public static final String LIKE_DESCRIPTION = "인증된 사용자가 전시에 좋아요를 추가합니다.";
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
@@ -90,12 +108,28 @@ public final class DisplayApiDocs {
   public static final String DU_PICKS_SUCCESS_DESCRIPTION = "DU Picks 조회 성공";
   public static final String DU_PICKS_SUCCESS_EXAMPLE_NAME = "DU Picks success";
 
+  public static final String MY_DISPLAY_SUMMARY = "내 전시 목록 조회";
+  public static final String MY_DISPLAY_DESCRIPTION =
+      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안 상태의 전시도 포함합니다.";
+  public static final String MY_DISPLAY_SUCCESS_DESCRIPTION = "내 전시 목록 조회 성공";
+  public static final String MY_DISPLAY_SUCCESS_EXAMPLE_NAME = "My display success";
+
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
   public static final String DETAIL_SUCCESS_EXAMPLE_NAME = "Display detail success";
   public static final String DETAIL_DISPLAY_ID_DESCRIPTION = "전시 ID";
   public static final String DETAIL_DISPLAY_ID_EXAMPLE = "1";
+
+  public static final String EXIT_SUMMARY = "전시 멤버 나가기";
+  public static final String EXIT_DESCRIPTION =
+      "인증된 사용자가 특정 전시에서 나갑니다. 수락된 활성 전시 멤버만 나갈 수 있으며, TEAM_LEADER는 이 API로 나갈 수 없습니다. "
+          + "나가기는 TeamMember.deletedAt을 기록하는 soft delete 방식으로 처리합니다.";
+  public static final String EXIT_SUCCESS_DESCRIPTION = "전시 멤버 나가기 성공";
+  public static final String EXIT_SUCCESS_EXAMPLE_NAME = "Display exit success";
+  public static final String EXIT_UNAUTHORIZED_EXAMPLE_NAME = "Display exit unauthorized";
+  public static final String EXIT_FORBIDDEN_EXAMPLE_NAME = "Display exit forbidden";
+  public static final String EXIT_MEMBER_NOT_FOUND_EXAMPLE_NAME = "Display member not found";
 
   public static final String CREATE_REQUEST_EXAMPLE =
       """
@@ -108,7 +142,8 @@ public final class DisplayApiDocs {
         "region": "SEOUL",
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부",
-        "hostOrganizationName": null,
+        "qnaAccount": "@displayu",
+        "displayNickname": "전시 리더",
         "subtitle": "중앙대학교 디자인학부 졸업전시",
         "description": "디자인학부 학생들의...",
         "startDate": "2026-05-28",
@@ -139,7 +174,7 @@ public final class DisplayApiDocs {
               "latitude": 37.0063,
               "longitude": 127.2267
             },
-            "qnaAccount": "",
+            "qnaAccount": "@displayu",
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -170,7 +205,15 @@ public final class DisplayApiDocs {
               }
             ],
             "contentCategories": [],
-            "teamMembers": [],
+            "teamMembers": [
+              {
+                "teamMemberId": 1,
+                "userId": 1,
+                "displayNickname": "전시 리더",
+                "role": "TEAM_LEADER",
+                "accepted": true
+              }
+            ],
             "invitations": []
           }
         },
@@ -178,6 +221,72 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String EXIT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_FORBIDDEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "접근 권한이 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_UNAUTHORIZED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "인증이 필요합니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
+        }
+      }
+      """;
+
+  public static final String EXIT_MEMBER_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "DISPLAY_MEMBER_NOT_FOUND",
+          "message": "전시 멤버를 찾을 수 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display/1/exit"
         }
       }
       """;
@@ -251,6 +360,121 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
           "path": "/api/v1/display"
+        }
+      }
+      """;
+
+  public static final String PUBLISH_REQUEST_EXAMPLE =
+      """
+      {
+        "displayId": 12
+      }
+      """;
+
+  public static final String PUBLISH_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "ownerUserId": 1,
+            "title": "FORM 2026",
+            "subtitle": "중앙대학교 디자인학부 졸업전시",
+            "content": "디자인학부 학생들의...",
+            "location": {
+              "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+              "latitude": 37.0063,
+              "longitude": 127.2267
+            },
+            "qnaAccount": "",
+            "note": "전시장 내 음료 반입 금지",
+            "organization": "중앙대학교",
+            "department": "디자인학부",
+            "displayType": "GRADUATION",
+            "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
+            "likeCount": 0,
+            "isBookmarked": false,
+            "period": {
+              "startDate": "2026-05-28",
+              "endDate": "2026-06-05",
+              "startTime": "10:00:00",
+              "endTime": "18:00:00"
+            },
+            "artworkContentOpen": "IMMEDIATELY",
+            "exhibitionContentOpen": "ON_EXHIBITION",
+            "status": "PUBLISHED",
+            "invitationToken": null,
+            "invitationDisabledAt": null,
+            "images": [],
+            "contentCategories": [],
+            "teamMembers": [],
+            "invitations": []
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-14T02:00:00",
+          "path": "/api/v1/display/publish"
+        }
+      }
+      """;
+
+  public static final String RESERVATION_REQUEST_EXAMPLE =
+      """
+      {
+        "artworkContentOpen": "ON_EXHIBITION",
+        "exhibitionContentOpen": "IMMEDIATELY"
+      }
+      """;
+
+  public static final String RESERVATION_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "ownerUserId": 1,
+            "title": "FORM 2026",
+            "subtitle": "중앙대학교 디자인학부 졸업전시",
+            "content": "디자인학부 학생들의...",
+            "location": {
+              "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+              "latitude": 37.0063,
+              "longitude": 127.2267
+            },
+            "qnaAccount": "",
+            "note": "전시장 내 음료 반입 금지",
+            "organization": "중앙대학교",
+            "department": "디자인학부",
+            "displayType": "GRADUATION",
+            "displayFields": ["DESIGN", "VIDEO"],
+            "region": "SEOUL",
+            "likeCount": 0,
+            "isBookmarked": false,
+            "period": {
+              "startDate": "2026-05-28",
+              "endDate": "2026-06-05",
+              "startTime": "10:00:00",
+              "endTime": "18:00:00"
+            },
+            "artworkContentOpen": "ON_EXHIBITION",
+            "exhibitionContentOpen": "IMMEDIATELY",
+            "status": "PUBLISHED",
+            "invitationToken": null,
+            "invitationDisabledAt": null,
+            "images": [],
+            "contentCategories": [],
+            "teamMembers": [],
+            "invitations": []
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-14T02:00:00",
+          "path": "/api/v1/display/12/reservation"
         }
       }
       """;
@@ -489,6 +713,48 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
           "path": "/api/v1/display/du-picks"
+        }
+      }
+      """;
+
+  public static final String MY_DISPLAY_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "createdDisplays": [
+              {
+                "displayId": 1,
+                "title": "내가 만든 전시",
+                "isDisplaying": true,
+                "startDate": "2026-08-01",
+                "endDate": "2026-08-07",
+                "school": "디유대학교",
+                "department": "디자인학부",
+                "placeName": "디유 갤러리",
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+              }
+            ],
+            "participatedDisplays": [
+              {
+                "displayId": 2,
+                "title": "내가 참여한 전시",
+                "isDisplaying": false,
+                "startDate": "2026-07-20",
+                "endDate": "2026-07-31",
+                "school": "디유대학교",
+                "department": "디자인학부",
+                "placeName": "디유 갤러리",
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T18:30:00",
+          "path": "/api/v1/display/me"
         }
       }
       """;

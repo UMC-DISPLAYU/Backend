@@ -18,6 +18,9 @@ public class DisplayReferenceJpaEntity {
   @Column(name = "userId")
   private Long ownerUserId;
 
+  @Column(name = "title")
+  private String title;
+
   @Column(name = "startDate")
   private LocalDate startDate;
 

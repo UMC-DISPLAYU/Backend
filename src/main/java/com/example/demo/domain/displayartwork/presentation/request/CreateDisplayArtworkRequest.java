@@ -16,24 +16,24 @@ import java.util.List;
 public record CreateDisplayArtworkRequest(
     @NotNull @Positive Long displayId,
     @NotBlank String artworkName,
-    @NotBlank String content,
-    @NotNull ArtworkType type,
+    String content,
+    @NotNull Field type,
     @NotNull @Min(1000) int productionYear,
     @NotBlank String materialMedia,
-    @NotBlank String size,
-    @NotBlank String point,
+    String size,
+    String point,
     @NotEmpty @Valid List<ImageRequest> images,
     @NotBlank String artistName,
     Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
-    @NotNull Long qaHandlerUserId) {
+    @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
 
   public CreateDisplayArtworkCommand toCommand() {
     return new CreateDisplayArtworkCommand(
         displayId,
         artworkName,
         content,
-        type,
+        toArtworkType(type),
         productionYear,
         materialMedia,
         size,
@@ -43,7 +43,35 @@ public record CreateDisplayArtworkRequest(
         artistUserId,
         coAuthors.userIds(),
         coAuthors.rawNames(),
-        qaHandlerUserId);
+        qaHandlerUserIds);
+  }
+
+  private static ArtworkType toArtworkType(Field field) {
+    return switch (field) {
+      case PAINTING -> ArtworkType.PAINTING;
+      case DESIGN -> ArtworkType.DESIGN;
+      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
+      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
+      case MEDIA -> ArtworkType.MEDIA;
+      case CRAFT -> ArtworkType.CRAFT;
+      case SCULPTURE -> ArtworkType.SCULPTURE;
+      case FASHION -> ArtworkType.FASHION;
+      case COMPLEX -> ArtworkType.COMPLEX;
+      case ETC -> ArtworkType.ETC;
+    };
+  }
+
+  public enum Field {
+    PAINTING,
+    DESIGN,
+    PHOTOGRAPHY,
+    ARCHITECTURE,
+    MEDIA,
+    CRAFT,
+    SCULPTURE,
+    FASHION,
+    COMPLEX,
+    ETC
   }
 
   public record ImageRequest(

@@ -19,7 +19,7 @@ public record DisplayArtworkResult(
     String artistName,
     Long artistUserId,
     int coAuthorCount,
-    Long qaHandlerUserId) {
+    List<Long> qaHandlerUserIds) {
 
   public static DisplayArtworkResult of(
       DisplayArtwork displayArtwork, AuthorSetupResult authorSetupResult) {
@@ -38,7 +38,7 @@ public record DisplayArtworkResult(
         authorSetupResult.artistName(),
         authorSetupResult.artistUserId(),
         authorSetupResult.coAuthorCount(),
-        authorSetupResult.qaHandlerUserId());
+        authorSetupResult.qaHandlerUserIds());
   }
 
   public record ImageResult(

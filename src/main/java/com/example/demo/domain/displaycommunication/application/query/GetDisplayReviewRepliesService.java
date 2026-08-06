@@ -2,6 +2,7 @@ package com.example.demo.domain.displaycommunication.application.query;
 
 import com.example.demo.domain.displaycommunication.application.command.DisplayReviewValidator;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult;
+import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.ImageResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.ReplyItemResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyListResult.UserResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
@@ -37,7 +38,8 @@ public class GetDisplayReviewRepliesService {
   public DisplayReviewReplyListResult getReplies(GetDisplayReviewRepliesQuery query) {
     int pageSize = pagingPolicy.normalize(query.size());
     DisplayReviewAccess access = displayReviewValidator.findDisplayAccessOrThrow(query.displayId());
-    DisplayReview review = displayReviewValidator.findReviewOrThrow(query.displayReviewId());
+    DisplayReview review =
+        displayReviewValidator.findReviewIncludingDeletedOrThrow(query.displayReviewId());
     displayReviewValidator.validateReviewTarget(review, query.displayId());
 
     List<DisplayReviewReply> fetched =
@@ -53,6 +55,11 @@ public class GetDisplayReviewRepliesService {
         replies.stream().map(DisplayReviewReply::getDisplayReviewReplyId).toList();
     Map<Long, Long> likeCounts =
         displayReviewReplyLikeRepository.countByDisplayReviewReplyIds(replyIds);
+    Set<Long> likedReplyIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : displayReviewReplyLikeRepository.findLikedDisplayReviewReplyIds(
+                replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(DisplayReviewReply::getUserId).collect(Collectors.toSet());
     Map<Long, UserInfo> users = userExistenceRepository.findUsersByIds(userIds);
@@ -70,7 +77,18 @@ public class GetDisplayReviewRepliesService {
                         toUserResult(users, reply.getUserId()),
                         access.ownerUserId().equals(reply.getUserId())
                             || teamMemberUserIds.contains(reply.getUserId()),
-                        likeCounts.getOrDefault(reply.getDisplayReviewReplyId(), 0L)))
+                        likeCounts.getOrDefault(reply.getDisplayReviewReplyId(), 0L),
+                        likedReplyIds.contains(reply.getDisplayReviewReplyId()),
+                        reply.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getDisplayReviewReplyImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList()))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).displayReviewReplyId() : null;

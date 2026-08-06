@@ -235,6 +235,24 @@ public final class UserApiDocs {
       }
       """;
 
+  public static final String NICKNAME_CHECK_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "nickname": "maya041225",
+            "isAvailable": true
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-16T20:00:00",
+          "path": "/api/v1/users/nickname/check"
+        }
+      }
+      """;
+
   public static final String MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE =
       """
       {

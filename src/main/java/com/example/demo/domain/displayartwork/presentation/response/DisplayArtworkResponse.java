@@ -17,7 +17,7 @@ public record DisplayArtworkResponse(
     String artistName,
     Long artistUserId,
     int coAuthorCount,
-    Long qaHandlerUserId) {
+    List<Long> qaHandlerUserIds) {
 
   public record ImageResponse(
       Long imageId,

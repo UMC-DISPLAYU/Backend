@@ -32,9 +32,9 @@ public class JpaArtworkFeelingRepositoryAdapter implements ArtworkFeelingReposit
   }
 
   @Override
-  public List<ArtworkFeeling> findActiveByDisplayArtworkIdWithCursor(
+  public List<ArtworkFeeling> findByDisplayArtworkIdWithCursorIncludingDeleted(
       Long displayArtworkId, Long cursorId, int limit) {
-    return artworkFeelingJpaRepository.findActiveByDisplayArtworkIdWithCursor(
+    return artworkFeelingJpaRepository.findByDisplayArtworkIdWithCursorIncludingDeleted(
         displayArtworkId, cursorId, PageRequest.of(0, limit));
   }
 }

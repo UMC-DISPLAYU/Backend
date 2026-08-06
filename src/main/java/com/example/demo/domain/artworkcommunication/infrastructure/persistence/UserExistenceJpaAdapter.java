@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.infrastructure.persistence;
 
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,5 +35,20 @@ public class UserExistenceJpaAdapter implements UserExistenceRepository {
         .collect(
             Collectors.toMap(
                 UserReferenceJpaEntity::getUserId, UserReferenceJpaEntity::getNickname));
+  }
+
+  @Override
+  public Map<Long, UserProfile> findUserProfilesByIds(Set<Long> userIds) {
+    if (userIds.isEmpty()) {
+      return Map.of();
+    }
+
+    return repository.findByUserIdIn(userIds).stream()
+        .collect(
+            Collectors.toMap(
+                UserReferenceJpaEntity::getUserId,
+                user ->
+                    new UserProfile(
+                        user.getUserId(), user.getNickname(), user.getProfileImageUrl())));
   }
 }

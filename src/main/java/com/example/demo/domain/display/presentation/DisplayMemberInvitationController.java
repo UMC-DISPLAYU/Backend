@@ -2,8 +2,10 @@ package com.example.demo.domain.display.presentation;
 
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayMemberListResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.application.service.AcceptDisplayInvitationService;
+import com.example.demo.domain.display.application.service.GetDisplayInvitationDisplaysService;
 import com.example.demo.domain.display.application.service.GetDisplayMembersService;
 import com.example.demo.domain.display.application.service.GetMyDisplayInvitationsService;
 import com.example.demo.domain.display.application.service.InviteDisplayMemberService;
@@ -16,6 +18,7 @@ import com.example.demo.domain.display.presentation.request.InviteDisplayMemberR
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -47,6 +50,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   private final RejectDisplayInvitationService rejectDisplayInvitationService;
   private final GetDisplayMembersService getDisplayMembersService;
   private final GetMyDisplayInvitationsService getMyDisplayInvitationsService;
+  private final GetDisplayInvitationDisplaysService getDisplayInvitationDisplaysService;
   private final UpdateMyDisplayNicknameService updateMyDisplayNicknameService;
   private final DisplayMemberInvitationPresentationMapper mapper;
 
@@ -115,6 +119,15 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyDisplayInvitationListResult result =
         getMyDisplayInvitationsService.getInvitations(requireUserId(user));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @Override
+  @GetMapping("/display-invitations")
+  public ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
+      @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
+    GraduationDisplayResult result =
+        getDisplayInvitationDisplaysService.getInvitations(requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

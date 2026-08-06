@@ -61,14 +61,17 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @GetMapping
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 및 답글 목록 조회
   public ApiResponseBody<DisplayReviewListResponse> getReviews(
       @PathVariable Long displayId,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DisplayReviewListResult result =
-        getDisplayReviewsService.getReviews(mapper.toQuery(displayId, cursorId, size));
+        getDisplayReviewsService.getReviews(
+            mapper.toQuery(displayId, cursorId, size, optionalUserId(user)));
 
     DisplayReviewListResponse response = mapper.toResponse(result);
 
@@ -77,16 +80,18 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @GetMapping("/{displayReviewId}/replies")
+  @SecurityRequirement(name = "Authorization")
   // 전시 후기 답글 목록 조회
   public ApiResponseBody<DisplayReviewReplyListResponse> getReviewReplies(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     DisplayReviewReplyListResult result =
         getDisplayReviewRepliesService.getReplies(
-            mapper.toReplyQuery(displayId, displayReviewId, cursorId, size));
+            mapper.toReplyQuery(displayId, displayReviewId, cursorId, size, optionalUserId(user)));
 
     DisplayReviewReplyListResponse response = mapper.toResponse(result);
 
@@ -218,5 +223,9 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
       throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
     }
     return user.userId();
+  }
+
+  private Long optionalUserId(AuthUser user) {
+    return user == null ? null : user.userId();
   }
 }

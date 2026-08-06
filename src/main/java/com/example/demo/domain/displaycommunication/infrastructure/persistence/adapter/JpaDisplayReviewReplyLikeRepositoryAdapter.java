@@ -6,6 +6,7 @@ import com.example.demo.domain.displaycommunication.infrastructure.persistence.D
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -43,5 +44,10 @@ public class JpaDisplayReviewReplyLikeRepositoryAdapter
   public Map<Long, Long> countByDisplayReviewReplyIds(List<Long> displayReviewReplyIds) {
     return repository.countByDisplayReviewReplyIds(displayReviewReplyIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+  }
+
+  @Override
+  public Set<Long> findLikedDisplayReviewReplyIds(List<Long> displayReviewReplyIds, Long userId) {
+    return Set.copyOf(repository.findLikedDisplayReviewReplyIds(displayReviewReplyIds, userId));
   }
 }

@@ -12,7 +12,12 @@ public record DisplayReviewReplyListResult(
       LocalDateTime createdAt,
       UserResult user,
       boolean isTeamMember,
-      long likeCount) {}
+      long likeCount,
+      boolean isLiked,
+      List<ImageResult> images) {}
 
   public record UserResult(Long userId, String nickname, String profileImageUrl) {}
+
+  public record ImageResult(
+      Long displayReviewReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
 }

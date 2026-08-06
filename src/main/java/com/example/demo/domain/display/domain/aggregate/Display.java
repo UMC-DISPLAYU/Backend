@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
@@ -276,6 +277,16 @@ public class Display extends BaseTimeEntity {
     return Collections.unmodifiableList(images);
   }
 
+  // 전시 대표(포스터) 이미지 URL을 반환한다. 등록된 MAIN 이미지가 없으면 null이다.
+  public String getPosterImageUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN)
+        .filter(image -> !image.isDeleted())
+        .map(DisplayImage::getImageUrl)
+        .findFirst()
+        .orElse(null);
+  }
+
   // 소개 콘텐츠 카테고리 목록을 읽기 전용으로 반환한다.
   public List<DisplayContentCategory> getContentCategories() {
     return Collections.unmodifiableList(contentCategories);
@@ -454,8 +465,13 @@ public class Display extends BaseTimeEntity {
   }
 
   public DisplayContent createContent(Long categoryId, String imageUrl, int width, int height) {
+    return createContent(categoryId, imageUrl, width, height, DisplayContentStatus.PUBLISHED);
+  }
+
+  public DisplayContent createContent(
+      Long categoryId, String imageUrl, int width, int height, DisplayContentStatus status) {
     DisplayContentCategory category = findContentCategory(categoryId);
-    return category.createContent(imageUrl, width, height);
+    return category.createContent(imageUrl, width, height, status);
   }
 
   public DisplayContent changeContent(
@@ -579,6 +595,7 @@ public class Display extends BaseTimeEntity {
         .anyMatch(
             teamMember ->
                 teamMember.isAccepted()
+                    && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId)
                     && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
   }
@@ -586,7 +603,10 @@ public class Display extends BaseTimeEntity {
   public boolean hasAcceptedTeamMember(Long userId) {
     return teamMembers.stream()
         .anyMatch(
-            teamMember -> teamMember.isAccepted() && teamMember.getUserId().value().equals(userId));
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId));
   }
 
   public boolean hasPendingInvitation(Long inviteeUserId) {
@@ -631,7 +651,10 @@ public class Display extends BaseTimeEntity {
   public boolean hasTeamMember(Long userId) {
     return teamMembers.stream()
         .anyMatch(
-            teamMember -> teamMember.getUserId().value().equals(userId) && teamMember.isAccepted());
+            teamMember ->
+                teamMember.getUserId().value().equals(userId)
+                    && teamMember.isAccepted()
+                    && !teamMember.isDeleted());
   }
 
   private static <T> void addAll(java.util.function.Consumer<T> target, List<T> source) {

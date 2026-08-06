@@ -6,6 +6,7 @@ import com.example.demo.domain.display.application.command.RejectDisplayInvitati
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayMemberListResult;
 import com.example.demo.domain.display.application.result.DisplayMemberResult;
+import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
@@ -13,6 +14,7 @@ import com.example.demo.domain.display.presentation.request.InviteDisplayMemberR
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRoleRequest;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
+import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import org.springframework.stereotype.Component;
 
@@ -62,7 +64,13 @@ public class DisplayMemberInvitationPresentationMapper {
 
   public DisplayMemberListResponse.TeamMemberResponse toResponse(DisplayMemberResult result) {
     return new DisplayMemberListResponse.TeamMemberResponse(
-        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
+        result.teamMemberId(),
+        result.userId(),
+        result.displayNickname(),
+        result.loggedIn(),
+        result.artistVerified(),
+        result.accepted(),
+        result.role());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -70,10 +78,21 @@ public class DisplayMemberInvitationPresentationMapper {
         result.invitations().stream().map(this::toResponse).toList());
   }
 
+  public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
+    return new GraduationDisplayResponse(
+        result.exhibitions().stream().map(this::toResponse).toList());
+  }
+
   private DisplayMemberListResponse.TeamMemberResponse toResponse(
       DisplayMemberListResult.TeamMemberResult result) {
     return new DisplayMemberListResponse.TeamMemberResponse(
-        result.teamMemberId(), result.userId(), result.displayNickname(), result.role());
+        result.teamMemberId(),
+        result.userId(),
+        result.displayNickname(),
+        result.loggedIn(),
+        result.artistVerified(),
+        result.accepted(),
+        result.role());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(
@@ -88,5 +107,19 @@ public class DisplayMemberInvitationPresentationMapper {
         result.leaderName(),
         result.title(),
         result.placeName());
+  }
+
+  private GraduationDisplayResponse.ExhibitionResponse toResponse(
+      GraduationDisplayResult.ExhibitionResult result) {
+    return new GraduationDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        result.organization(),
+        result.department(),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft(),
+        result.isBookmarked());
   }
 }

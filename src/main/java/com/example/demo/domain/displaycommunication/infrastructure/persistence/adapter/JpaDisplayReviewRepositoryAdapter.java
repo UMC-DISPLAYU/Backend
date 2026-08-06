@@ -30,9 +30,7 @@ public class JpaDisplayReviewRepositoryAdapter implements DisplayReviewRepositor
   }
 
   @Override
-  public List<DisplayReview> findActiveByDisplayIdWithCursor(
-      Long displayId, Long cursorId, int limit) {
-    return repository.findActiveByDisplayIdWithCursor(
-        displayId, cursorId, PageRequest.of(0, limit));
+  public List<DisplayReview> findByDisplayIdWithCursor(Long displayId, Long cursorId, int limit) {
+    return repository.findByDisplayIdWithCursor(displayId, cursorId, PageRequest.of(0, limit));
   }
 }

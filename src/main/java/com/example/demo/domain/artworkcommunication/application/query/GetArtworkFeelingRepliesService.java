@@ -13,6 +13,7 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFee
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GetArtworkFeelingRepliesService {
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
@@ -43,22 +44,28 @@ public class GetArtworkFeelingRepliesService {
             .findById(query.feelingId())
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-    artworkFeelingValidator.validateReplyTarget(feeling, query.displayArtworkId());
+    artworkFeelingValidator.validateReplyListTarget(feeling, query.displayArtworkId());
 
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<ArtworkFeelingReply> fetched =
         artworkFeelingReplyRepository.findActiveByFeelingIdWithCursor(
-            query.feelingId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<ArtworkFeelingReply> replies = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+            query.feelingId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<ArtworkFeelingReply> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (replies.isEmpty()) {
-      return new ArtworkFeelingReplyListResult(List.of(), null, PAGE_SIZE, false);
+      return new ArtworkFeelingReplyListResult(List.of(), null, pageSize, false);
     }
 
     List<Long> replyIds = replies.stream().map(ArtworkFeelingReply::getFeelingReplyId).toList();
     Map<Long, Long> likeCounts = artworkFeelingReplyLikeRepository.countByFeelingReplyIds(replyIds);
+    Set<Long> likedReplyIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : artworkFeelingReplyLikeRepository.findLikedFeelingReplyIds(
+                replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(ArtworkFeelingReply::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
     Map<Long, String> creatorNameByUserId =
         creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(
             query.displayArtworkId(), userIds);
@@ -73,15 +80,17 @@ public class GetArtworkFeelingRepliesService {
                         reply.getCreatedAt(),
                         toUserResult(
                             userDisplayResolver.resolve(
-                                reply.getUserId(), nicknameByUserId, creatorNameByUserId)),
-                        likeCounts.getOrDefault(reply.getFeelingReplyId(), 0L)))
+                                reply.getUserId(), userProfileById, creatorNameByUserId)),
+                        likeCounts.getOrDefault(reply.getFeelingReplyId(), 0L),
+                        likedReplyIds.contains(reply.getFeelingReplyId())))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).feelingReplyId() : null;
-    return new ArtworkFeelingReplyListResult(items, nextCursorId, PAGE_SIZE, hasNext);
+    return new ArtworkFeelingReplyListResult(items, nextCursorId, pageSize, hasNext);
   }
 
   private ArtworkFeelingReplyUserResult toUserResult(UserDisplayInfo user) {
-    return new ArtworkFeelingReplyUserResult(user.userId(), user.nickname(), user.isCreator());
+    return new ArtworkFeelingReplyUserResult(
+        user.userId(), user.nickname(), user.profileImageUrl(), user.isCreator());
   }
 }
