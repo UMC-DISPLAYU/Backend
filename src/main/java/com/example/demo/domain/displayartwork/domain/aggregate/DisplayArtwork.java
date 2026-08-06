@@ -46,7 +46,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private String artworkName;
 
-  @Column(nullable = false, columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT")
   private String content;
 
   @Enumerated(EnumType.STRING)
@@ -59,10 +59,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private String materialMedia;
 
-  @Column(nullable = false)
   private String size;
 
-  @Column(nullable = false, columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT")
   private String point;
 
   @Column(nullable = false)
@@ -171,13 +170,14 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       String materialMedia,
       String size,
       String point) {
+    // 작품설명/규격/감상 포인트는 디자인상 선택 항목이라 비어 있어도 허용한다.
     this.artworkName = requireNonBlank(artworkName, "artworkName");
-    this.content = requireNonBlank(content, "content");
+    this.content = content;
     this.type = Objects.requireNonNull(type, "type must not be null.");
     this.productionYear = productionYear;
     this.materialMedia = requireNonBlank(materialMedia, "materialMedia");
-    this.size = requireNonBlank(size, "size");
-    this.point = requireNonBlank(point, "point");
+    this.size = size;
+    this.point = point;
   }
 
   public void changeWorkSortOrder(int workSortOrder) {

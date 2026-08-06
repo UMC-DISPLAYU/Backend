@@ -88,6 +88,75 @@ class DisplayArtworkControllerTest {
   }
 
   @Test
+  void createDisplayArtworkAcceptsRequestWithoutOptionalFields() throws Exception {
+    // 작품설명/규격/감상 포인트는 디자인상 선택 항목이므로 생략해도 검증에 걸리지 않아야 한다.
+    // 인증이 없어 401까지는 가더라도, 필드 검증 실패(400)는 나오지 않아야 한다.
+    mockMvc
+        .perform(
+            post("/api/v1/artworks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "displayId": 1,
+                      "artworkName": "작품",
+                      "type": "PAINTING",
+                      "productionYear": 2026,
+                      "materialMedia": "캔버스",
+                      "images": [
+                        {
+                          "imageUrl": "https://example.com/a.jpg",
+                          "isThumbnail": true,
+                          "imageType": "ARTWORK",
+                          "sortOrder": 0,
+                          "width": 800,
+                          "height": 600
+                        }
+                      ],
+                      "artistName": "작가",
+                      "artistUserId": 1,
+                      "coAuthors": { "userIds": [], "rawNames": [] },
+                      "qaHandlerUserIds": [1]
+                    }
+                    """))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void createDisplayArtworkReturnsBadRequestWhenRequiredFieldIsMissing() throws Exception {
+    // 작품명/작품분야/제작 연도/재료·매체는 필수이므로 누락 시 검증에서 막혀야 한다.
+    mockMvc
+        .perform(
+            post("/api/v1/artworks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "displayId": 1,
+                      "type": "PAINTING",
+                      "productionYear": 2026,
+                      "images": [
+                        {
+                          "imageUrl": "https://example.com/a.jpg",
+                          "isThumbnail": true,
+                          "imageType": "ARTWORK",
+                          "sortOrder": 0,
+                          "width": 800,
+                          "height": 600
+                        }
+                      ],
+                      "artistName": "작가",
+                      "artistUserId": 1,
+                      "coAuthors": { "userIds": [], "rawNames": [] },
+                      "qaHandlerUserIds": [1]
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  @Test
   void reorderDisplayArtworksReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(
