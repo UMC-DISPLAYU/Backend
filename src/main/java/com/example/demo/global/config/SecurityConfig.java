@@ -41,6 +41,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/users/search")
                     .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/users/search")
+                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/lounge/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/lounge/**")
@@ -48,6 +50,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/lounge/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/lounge/me/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/lounge/me/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/display/**")
                     .authenticated()
@@ -59,6 +63,13 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
+                        "/api/v1/display/me",
+                        "/api/v1/display/*/members",
+                        "/api/v1/display-invitations",
+                        "/api/v1/display-invitations/me")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.HEAD,
                         "/api/v1/display/me",
                         "/api/v1/display/*/members",
                         "/api/v1/display-invitations",
@@ -85,6 +96,13 @@ public class SecurityConfig {
                         "/api/v1/artworks/questions/received",
                         "/api/v1/artworks/feelings/me")
                     .authenticated()
+                    .requestMatchers(
+                        HttpMethod.HEAD,
+                        "/api/v1/artworks/*/edit",
+                        "/api/v1/artworks/questions/me",
+                        "/api/v1/artworks/questions/received",
+                        "/api/v1/artworks/feelings/me")
+                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/personal-artworks/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.PUT, "/api/v1/personal-artworks/**")
@@ -95,7 +113,11 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/display/reviews/me")
                     .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/display/reviews/me")
+                    .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/display/*/reviews/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/display/*/reviews/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
                     .authenticated()
