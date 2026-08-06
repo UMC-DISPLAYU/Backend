@@ -14,7 +14,9 @@ public record PersonalArtworkResponse(
     String size,
     String point,
     LocalDateTime createdAt,
-    List<ImageResponse> images) {
+    List<ImageResponse> images,
+    long likeCount,
+    boolean isLiked) {
 
   public record ImageResponse(
       Long imageId,

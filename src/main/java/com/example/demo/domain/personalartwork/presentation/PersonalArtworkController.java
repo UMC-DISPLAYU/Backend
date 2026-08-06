@@ -80,7 +80,8 @@ public class PersonalArtworkController {
         personalArtworkCommandService.createPersonalArtwork(
             requireUserId(user), personalArtworkRequest.toCommand());
     PersonalArtworkResult result =
-        personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
+        personalArtworkQueryService.getPersonalArtworkDetail(
+            personalArtworkId, requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -107,8 +108,15 @@ public class PersonalArtworkController {
   }
 
   @GetMapping("/api/v1/personal-artworks/{personalArtworkId}")
-  @SecurityRequirement(name = "Authorization")
-  @Operation(summary = "개인 작품 단건 상세 조회", description = "수정 화면 진입 시 본인 소유 개인 작품의 전체 필드를 조회합니다.")
+  @Operation(
+      summary = "개인 작품 단건 상세 조회",
+      description =
+          """
+          개인 작품의 전체 필드를 조회합니다. 작가 프로필에서 타인의 작품도 열람할 수 있으며 비회원도 조회 가능합니다.
+          본인 작품의 수정 화면에 기존 값을 채울 때도 같은 응답을 사용합니다.
+
+          로그인한 경우 isLiked에 본인의 좋아요 여부가 담기고, 비회원이면 false로 내려갑니다.
+          """)
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 단건 상세 조회 성공",
@@ -124,8 +132,8 @@ public class PersonalArtworkController {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     PersonalArtworkResult result =
-        personalArtworkQueryService.getOwnedPersonalArtworkDetail(
-            personalArtworkId, requireUserId(user));
+        personalArtworkQueryService.getPersonalArtworkDetail(
+            personalArtworkId, optionalUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -150,7 +158,8 @@ public class PersonalArtworkController {
     personalArtworkCommandService.updatePersonalArtwork(
         personalArtworkId, requireUserId(user), personalArtworkRequest.toCommand());
     PersonalArtworkResult result =
-        personalArtworkQueryService.getPersonalArtworkDetail(personalArtworkId);
+        personalArtworkQueryService.getPersonalArtworkDetail(
+            personalArtworkId, requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
@@ -223,6 +232,10 @@ public class PersonalArtworkController {
 
   // 인증이 필수인 API에서 사용한다. SecurityConfig가 모든 요청을 permitAll로 통과시키므로
   // 토큰이 없거나 유효하지 않으면 AuthUser가 null로 주입될 수 있어 컨트롤러단에서 막는다.
+  private Long optionalUserId(AuthUser user) {
+    return user == null ? null : user.userId();
+  }
+
   private Long requireUserId(AuthUser user) {
     if (user == null) {
       throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
