@@ -139,6 +139,32 @@ class AuthorSetupServicePermissionTest {
         .isEqualTo(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
   }
 
+  @Test
+  void 작가_인증을_받지_않은_전시_대표자도_수정_시에는_작가_정보를_갱신할_수_있다() {
+    // 작가 인증은 등록 조건이다. 인증 없이도 전시 대표자가 될 수 있어, 수정에서 요구하면 대표자가 수정하지 못한다.
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(LEADER)).thenReturn(false);
+    when(artistVerificationRepository.isVerifiedArtist(MEMBER)).thenReturn(true);
+
+    service.setupForUpdate(LEADER, command(MEMBER, "팀원", List.of(), List.of(), MEMBER));
+
+    assertThat(savedCreators())
+        .extracting(Creator::getUserId, Creator::isLeader)
+        .containsExactly(tuple(MEMBER, true));
+  }
+
+  @Test
+  void 작가_인증을_받지_않은_전시_대표자는_등록은_할_수_없다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(LEADER)).thenReturn(false);
+
+    assertThatThrownBy(
+            () -> service.setup(LEADER, command(LEADER, "대표자", List.of(), List.of(), LEADER)))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
+  }
+
   private void givenArtwork() {
     DisplayArtwork artwork = artwork();
     when(displayArtworkRepository.findById(ARTWORK_ID)).thenReturn(Optional.of(artwork));
