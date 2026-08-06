@@ -175,7 +175,9 @@ public interface PersonalArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "개인 작품 감상평 답변 등록", description = "개인 작품의 감상평에 답변을 등록합니다.")
+  @Operation(
+      summary = "개인 작품 감상평 답변 등록",
+      description = "개인 작품의 감상평에 답변을 등록합니다. 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
   @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
   @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
@@ -225,7 +227,8 @@ public interface PersonalArtworkFeelingApiDocs {
 
   @Operation(
       summary = "개인 작품 감상평 작성",
-      description = "로그인 사용자가 감상평을 작성합니다. 해당 개인 작품의 소유자도 작성할 수 있습니다.")
+      description =
+          "로그인 사용자가 감상평을 작성합니다. 해당 개인 작품의 소유자도 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "개인 작품 감상평 작성 성공",
