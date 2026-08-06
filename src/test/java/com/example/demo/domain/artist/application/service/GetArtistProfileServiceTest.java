@@ -29,13 +29,14 @@ class GetArtistProfileServiceTest {
     ArtistProfile profile =
         ArtistProfile.create(
             user, "maya", "artist@du.ac.kr", "덕성여자대학교", "https://portfolio.maya.com");
+    profile.updateProfileImage("https://cdn.example.com/artist-profile.jpg");
     profile.updateProfile("시각과 공간의 관계를 탐구하는 작가입니다.", "https://portfolio.maya.com", "덕성여자대학교");
     when(artistProfileRepository.findByUserId(1L)).thenReturn(Optional.of(profile));
     when(areaOfActivityRepository.findByArtistProfile(profile)).thenReturn(List.of());
 
     ArtistProfileResult result = service.getMine(1L);
 
-    assertThat(result.profileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
+    assertThat(result.profileImageUrl()).isEqualTo("https://cdn.example.com/artist-profile.jpg");
     assertThat(result.artistName()).isEqualTo("maya");
     assertThat(result.introduction()).isEqualTo("시각과 공간의 관계를 탐구하는 작가입니다.");
     assertThat(result.externalLink()).isEqualTo("https://portfolio.maya.com");

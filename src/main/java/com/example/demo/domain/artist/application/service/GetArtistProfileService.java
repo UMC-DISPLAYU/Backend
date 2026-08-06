@@ -35,7 +35,7 @@ public class GetArtistProfileService {
 
   private ArtistProfileResult toResult(ArtistProfile profile) {
     return new ArtistProfileResult(
-        profile.getUser().getProfileImageUrl(),
+        profile.getProfileImageUrl(),
         profile.getArtistName(),
         profile.getIntroduction(),
         profile.getUnivName(),

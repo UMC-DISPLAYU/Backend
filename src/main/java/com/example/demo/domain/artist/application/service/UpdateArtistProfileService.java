@@ -64,7 +64,7 @@ public class UpdateArtistProfileService {
     validateActivityFields(command.fields());
 
     changeArtistName(profile, artistName);
-    user.changeProfileImage(profileImageUrl.value());
+    profile.updateProfileImage(profileImageUrl.value());
     user.changeUnivName(univName);
     profile.updateProfile(introduction, externalLink, univName);
     areaOfActivityRepository.deleteAllByArtistProfile(profile);
@@ -73,7 +73,7 @@ public class UpdateArtistProfileService {
         .forEach(field -> areaOfActivityRepository.save(AreaOfActivity.create(profile, field)));
 
     return new UpdateArtistProfileResult(
-        user.getProfileImageUrl(),
+        profile.getProfileImageUrl(),
         profile.getArtistName(),
         introduction,
         List.copyOf(command.fields()),
