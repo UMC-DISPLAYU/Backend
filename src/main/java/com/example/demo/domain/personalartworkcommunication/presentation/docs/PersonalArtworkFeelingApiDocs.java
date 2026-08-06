@@ -151,7 +151,16 @@ public interface PersonalArtworkFeelingApiDocs {
                                       "isCreator": true
                                     },
                                     "likeCount": 2,
-                                    "isLiked": true
+                                    "isLiked": true,
+                                    "images": [
+                                      {
+                                        "personalFeelingReplyImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/personal-feeling-replies/1.jpg",
+                                        "width": 1200,
+                                        "height": 800,
+                                        "sortOrder": 0
+                                      }
+                                    ]
                                   }
                                 ],
                                 "nextCursorId": null,
@@ -179,8 +188,47 @@ public interface PersonalArtworkFeelingApiDocs {
 
   @Operation(
       summary = "개인 작품 감상평 답변 등록",
-      description = "개인 작품의 감상평에 답변을 등록합니다. 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
-  @ApiResponse(responseCode = "200", description = "개인 작품 감상평 답변 등록 성공")
+      description = "개인 작품의 감상평에 답변을 등록합니다. 내용은 공백이 아닌 1자 이상 300자 이하이며, 이미지는 최대 5장까지 첨부할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "개인 작품 감상평 답변 등록 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork feeling reply create success",
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "personalFeelingReplyId": 1,
+                                "createdAt": "2026-08-07T10:00:00",
+                                "content": "감상해 주셔서 감사합니다.",
+                                "personalFeelingId": 1,
+                                "userId": 1,
+                                "nickname": "작품소유자",
+                                "images": [
+                                  {
+                                    "personalFeelingReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/personal-feeling-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 800,
+                                    "sortOrder": 0
+                                  }
+                                ]
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-07T10:00:00",
+                              "path": "/api/v1/personal-artworks/1/feelings/1/replies"
+                            }
+                          }
+                          """)))
+  @ApiResponse(responseCode = "400", description = "답변 내용 또는 이미지 검증 실패")
   @ApiResponse(responseCode = "401", description = "인증 필요")
   @ApiResponse(responseCode = "404", description = "개인 작품, 감상평 또는 사용자 없음")
   ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(

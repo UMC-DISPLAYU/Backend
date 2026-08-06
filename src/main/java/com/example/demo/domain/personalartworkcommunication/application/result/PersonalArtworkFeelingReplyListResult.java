@@ -15,8 +15,12 @@ public record PersonalArtworkFeelingReplyListResult(
       LocalDateTime createdAt,
       PersonalArtworkFeelingReplyUserResult user,
       long likeCount,
-      boolean isLiked) {}
+      boolean isLiked,
+      List<ImageResult> images) {}
 
   public record PersonalArtworkFeelingReplyUserResult(
       Long userId, String nickname, String profileImageUrl, Boolean isCreator) {}
+
+  public record ImageResult(
+      Long personalFeelingReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
 }

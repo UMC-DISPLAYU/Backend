@@ -26,6 +26,7 @@ public class PersonalArtworkFeelingReplyService {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkFeelingValidator.validateUserExists(command.userId());
     personalArtworkFeelingValidator.validateContent(command.content());
+    personalArtworkFeelingValidator.validateReplyImages(command.images());
 
     PersonalArtworkFeeling personalArtworkFeeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
@@ -36,7 +37,10 @@ public class PersonalArtworkFeelingReplyService {
     PersonalArtworkFeelingReply savedFeelingReply =
         personalArtworkFeelingReplyRepository.save(
             PersonalArtworkFeelingReply.create(
-                command.personalFeelingId(), command.userId(), command.content()));
+                command.personalFeelingId(),
+                command.userId(),
+                command.content(),
+                command.images()));
 
     String nickname =
         userExistenceRepository
@@ -50,6 +54,16 @@ public class PersonalArtworkFeelingReplyService {
         savedFeelingReply.getContent(),
         savedFeelingReply.getPersonalFeelingId(),
         savedFeelingReply.getUserId(),
-        nickname);
+        nickname,
+        savedFeelingReply.getImages().stream()
+            .map(
+                image ->
+                    new PersonalArtworkFeelingReplyResult.ImageResult(
+                        image.getPersonalFeelingReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }

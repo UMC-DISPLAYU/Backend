@@ -14,6 +14,7 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling.ImageInfo;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkFeelingRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkFeelingReplyResponse;
@@ -60,8 +61,17 @@ public class PersonalArtworkFeelingPresentationMapper {
       Long personalFeelingId,
       Long userId,
       CreatePersonalArtworkFeelingReplyRequest request) {
+    List<PersonalArtworkFeelingReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new PersonalArtworkFeelingReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
     return new PersonalArtworkFeelingReplyCommand(
-        personalArtworkId, personalFeelingId, userId, request.content());
+        personalArtworkId, personalFeelingId, userId, request.content(), images);
   }
 
   public PersonalArtworkFeelingResponse toResponse(PersonalArtworkFeelingResult result) {
@@ -101,7 +111,17 @@ public class PersonalArtworkFeelingPresentationMapper {
         result.content(),
         result.personalFeelingId(),
         result.userId(),
-        result.nickname());
+        result.nickname(),
+        result.images().stream()
+            .map(
+                image ->
+                    new PersonalArtworkFeelingReplyResponse.ImageResponse(
+                        image.personalFeelingReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public PersonalArtworkFeelingLikeResponse toResponse(PersonalArtworkFeelingLikeResult result) {
@@ -179,7 +199,17 @@ public class PersonalArtworkFeelingPresentationMapper {
                             reply.user().profileImageUrl(),
                             reply.user().isCreator()),
                         reply.likeCount(),
-                        reply.isLiked()))
+                        reply.isLiked(),
+                        reply.images().stream()
+                            .map(
+                                image ->
+                                    new PersonalArtworkFeelingReplyListResponse.ImageResponse(
+                                        image.personalFeelingReplyImageId(),
+                                        image.imageUrl(),
+                                        image.width(),
+                                        image.height(),
+                                        image.sortOrder()))
+                            .toList()))
             .toList(),
         result.nextCursorId(),
         result.size(),

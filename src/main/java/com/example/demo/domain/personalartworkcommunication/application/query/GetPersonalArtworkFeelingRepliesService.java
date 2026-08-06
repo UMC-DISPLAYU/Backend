@@ -2,6 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.application.query;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkFeelingValidator;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.ImageResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.PersonalArtworkFeelingReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.PersonalArtworkFeelingReplyUserResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
@@ -79,7 +80,17 @@ public class GetPersonalArtworkFeelingRepliesService {
                         reply.getCreatedAt(),
                         toUserResult(reply.getUserId(), userProfileById, ownerUserId),
                         likeCounts.getOrDefault(reply.getPersonalFeelingReplyId(), 0L),
-                        likedReplyIds.contains(reply.getPersonalFeelingReplyId())))
+                        likedReplyIds.contains(reply.getPersonalFeelingReplyId()),
+                        reply.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getPersonalFeelingReplyImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList()))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).personalFeelingReplyId() : null;
