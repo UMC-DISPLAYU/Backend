@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record CreatePersonalArtworkFeelingReplyRequest(
-    @NotBlank(message = "답변 내용은 필수입니다.") @Size(min = 1, max = 300, message = "감상평 답변은 1자 이상 300자 이하로 작성해주세요.") String content,
+    @NotBlank(message = "답변 내용은 필수입니다.") @Size(max = 300, message = "감상평 답변은 300자 이하로 작성해주세요.") String content,
     @Size(max = 5, message = "사진은 최대 5개까지 첨부할 수 있습니다.") List<@NotNull @Valid PersonalArtworkFeelingReplyImageRequest> images) {
 
   public record PersonalArtworkFeelingReplyImageRequest(

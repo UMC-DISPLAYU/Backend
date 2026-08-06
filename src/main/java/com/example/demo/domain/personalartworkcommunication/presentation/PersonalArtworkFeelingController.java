@@ -30,6 +30,8 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -58,8 +60,8 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   // 개인 작품 감상평 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
       @PathVariable Long personalArtworkId,
-      @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(defaultValue = "10") @Positive @Max(50) int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkFeelingListResult result =
@@ -79,8 +81,8 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   public ApiResponseBody<PersonalArtworkFeelingReplyListResponse> getFeelingReplies(
       @PathVariable Long personalArtworkId,
       @PathVariable Long personalFeelingId,
-      @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(defaultValue = "10") @Positive @Max(50) int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkFeelingReplyListResult result =
