@@ -13,12 +13,12 @@ import java.util.List;
 
 public record UpdateDisplayArtworkRequest(
     @NotBlank String artworkName,
-    @NotBlank String content,
+    String content,
     @NotNull ArtworkType type,
     @NotNull @Min(1000) int productionYear,
     @NotBlank String materialMedia,
-    @NotBlank String size,
-    @NotBlank String point,
+    String size,
+    String point,
     @NotEmpty @Valid List<ImageRequest> images,
     @NotBlank String artistName,
     Long artistUserId,
