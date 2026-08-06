@@ -32,6 +32,9 @@ public class ArtistProfile extends BaseTimeEntity {
   @Column(name = "artistName", nullable = false, length = 50)
   private String artistName;
 
+  @Column(name = "profileImageUrl", length = 2048)
+  private String profileImageUrl;
+
   @Column(name = "schoolEmail", nullable = false)
   private String schoolEmail;
 
@@ -64,6 +67,10 @@ public class ArtistProfile extends BaseTimeEntity {
 
   public void updatePortfolioUrl(String portfolioUrl) {
     this.portfolioUrl = portfolioUrl;
+  }
+
+  public void updateProfileImage(String profileImageUrl) {
+    this.profileImageUrl = profileImageUrl;
   }
 
   public void updateProfile(String introduction, String portfolioUrl, String univName) {
