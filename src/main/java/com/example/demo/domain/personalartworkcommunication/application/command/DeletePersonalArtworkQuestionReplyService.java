@@ -34,7 +34,7 @@ public class DeletePersonalArtworkQuestionReplyService {
                 () ->
                     new BusinessException(
                         PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
-    personalArtworkQuestionValidator.validateReplyTarget(question, command.personalArtworkId());
+    personalArtworkQuestionValidator.validateQuestionTarget(question, command.personalArtworkId());
 
     PersonalArtworkQuestionReply reply =
         personalArtworkQuestionValidator.findActiveReplyForUpdateOrThrow(

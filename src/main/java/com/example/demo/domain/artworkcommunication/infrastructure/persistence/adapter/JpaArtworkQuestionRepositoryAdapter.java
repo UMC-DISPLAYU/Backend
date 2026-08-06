@@ -26,6 +26,11 @@ public class JpaArtworkQuestionRepositoryAdapter implements ArtworkQuestionRepos
   }
 
   @Override
+  public Optional<ArtworkQuestion> findActiveByIdForUpdate(Long questionId) {
+    return artworkQuestionJpaRepository.findActiveByIdForUpdate(questionId);
+  }
+
+  @Override
   public List<ArtworkQuestion> findActiveByDisplayArtworkIdWithCursor(
       Long displayArtworkId, Long cursorId, int limit) {
     return artworkQuestionJpaRepository.findActiveByDisplayArtworkIdWithCursor(

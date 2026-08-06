@@ -25,6 +25,13 @@ public interface ArchiveWorkControllerDocs {
   @Operation(summary = "작품 저장", description = "작품을 개인 아카이브에 저장합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
+      responseCode = "201",
+      description = "작품 저장 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "저장 성공", value = ARCHIVE_WORK_SAVE_SUCCESS_EXAMPLE)))
+  @ApiResponse(
       responseCode = "401",
       content =
           @Content(
@@ -46,6 +53,14 @@ public interface ArchiveWorkControllerDocs {
 
   @Operation(summary = "작품 저장 취소", description = "개인 아카이브에서 작품 저장을 취소합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "작품 저장 취소 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "저장 취소 성공", value = ARCHIVE_WORK_DELETE_SUCCESS_EXAMPLE)))
   @ApiResponse(
       responseCode = "401",
       content =
@@ -69,6 +84,14 @@ public interface ArchiveWorkControllerDocs {
   @Operation(summary = "저장된 작품 상세 조회", description = "저장 기록 ID로 저장된 작품 상세를 조회합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
+      responseCode = "200",
+      description = "저장된 작품 상세 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "상세 조회 성공", value = ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE)))
+  @ApiResponse(
       responseCode = "401",
       content =
           @Content(
@@ -91,6 +114,14 @@ public interface ArchiveWorkControllerDocs {
   @Operation(summary = "저장된 작품 목록 조회", description = "내가 저장한 작품 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
+      responseCode = "200",
+      description = "저장된 작품 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "목록 조회 성공", value = ARCHIVE_WORK_LIST_SUCCESS_EXAMPLE)))
+  @ApiResponse(
       responseCode = "401",
       content =
           @Content(
@@ -112,4 +143,77 @@ public interface ArchiveWorkControllerDocs {
       @Parameter(description = "한 번에 불러올 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
+
+  String ARCHIVE_WORK_SAVE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "artworkId": 1,
+            "isArchived": true
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
+      }
+      """;
+
+  String ARCHIVE_WORK_DELETE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "artworkId": 1,
+            "isArchived": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
+      }
+      """;
+
+  String ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "archiveWorkId": 1,
+            "artworkId": 1,
+            "userId": 1,
+            "memo": "이 작품의 색감이 좋았다.",
+            "savedAt": "2026-07-13T01:49:28"
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
+      }
+      """;
+
+  String ARCHIVE_WORK_LIST_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "works": [
+              {
+                "archiveWorkId": 1,
+                "artworkId": 1,
+                "userId": 1,
+                "memo": "이 작품의 색감이 좋았다.",
+                "savedAt": "2026-07-13T01:49:28"
+              }
+            ],
+            "nextCursorId": null,
+            "size": 10,
+            "hasNext": false
+          }
+        },
+        "error": null,
+        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks" }
+      }
+      """;
 }

@@ -28,6 +28,45 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface LoungeCommentControllerDocs {
 
   @Operation(summary = "라운지 댓글 생성", description = "라운지 게시글에 댓글을 생성합니다.")
+  @ApiResponse(
+      responseCode = "201",
+      description = "라운지 댓글 생성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungeCommentId": 10,
+                                "parentCommentId": null,
+                                "content": "저도 인상 깊게 본 전시예요.",
+                                "imageUrls": ["https://example.com/lounge/comments/10.jpg"],
+                                "commentStatus": "ACTIVE",
+                                "writer": {
+                                  "userId": 1,
+                                  "nickname": "전시러버",
+                                  "profileImageUrl": "https://example.com/profiles/1.jpg"
+                                },
+                                "createdAt": "2026-08-04T12:00:00",
+                                "updatedAt": "2026-08-04T12:00:00",
+                                "likeCount": 0,
+                                "replyCount": 0,
+                                "isLiked": false,
+                                "isMyComment": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/posts/1/comments"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -35,6 +74,45 @@ public interface LoungeCommentControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 답글 생성", description = "라운지 댓글에 답글을 생성합니다.")
+  @ApiResponse(
+      responseCode = "201",
+      description = "라운지 답글 생성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungeCommentId": 11,
+                                "parentCommentId": 10,
+                                "content": "저도 다음 전시를 기대하고 있어요.",
+                                "imageUrls": [],
+                                "commentStatus": "ACTIVE",
+                                "writer": {
+                                  "userId": 2,
+                                  "nickname": "작품수집가",
+                                  "profileImageUrl": null
+                                },
+                                "createdAt": "2026-08-04T12:10:00",
+                                "updatedAt": "2026-08-04T12:10:00",
+                                "likeCount": 0,
+                                "replyCount": 0,
+                                "isLiked": false,
+                                "isMyComment": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:10:00",
+                              "path": "/api/v1/lounge/comments/10/replies"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -42,14 +120,88 @@ public interface LoungeCommentControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 삭제", description = "작성자가 라운지 댓글 또는 답글을 삭제합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 삭제 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": null
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/comments/10"
+                            }
+                          }
+                          """)))
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 좋아요", description = "라운지 댓글 또는 답글에 좋아요를 추가합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 좋아요 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungeCommentId": 10,
+                                "isLiked": true,
+                                "likeCount": 3
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/comments/10/likes"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeCommentLikeResponse> likeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
   @Operation(summary = "라운지 댓글 좋아요 취소", description = "라운지 댓글 또는 답글 좋아요를 취소합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 댓글 좋아요 취소 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "loungeCommentId": 10,
+                                "isLiked": false,
+                                "likeCount": 2
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/comments/10/likes"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
@@ -120,6 +272,51 @@ public interface LoungeCommentControllerDocs {
   @Operation(
       summary = "라운지 답글 목록 조회",
       description = "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있습니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "라운지 답글 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "replies": [
+                                  {
+                                    "loungeCommentId": 11,
+                                    "parentCommentId": 10,
+                                    "content": "저도 다음 전시를 기대하고 있어요.",
+                                    "imageUrls": [],
+                                    "commentStatus": "ACTIVE",
+                                    "writer": {
+                                      "userId": 2,
+                                      "nickname": "작품수집가",
+                                      "profileImageUrl": null
+                                    },
+                                    "createdAt": "2026-08-04T12:10:00",
+                                    "updatedAt": "2026-08-04T12:10:00",
+                                    "likeCount": 2,
+                                    "isLiked": true,
+                                    "isMyComment": false
+                                  }
+                                ],
+                                "nextCursorId": null,
+                                "size": 10,
+                                "hasNext": false
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/comments/10/replies"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
@@ -131,6 +328,51 @@ public interface LoungeCommentControllerDocs {
   @Operation(
       summary = "내가 댓글을 작성한 라운지 게시글 조회",
       description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글을 중복 없이 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내가 댓글을 작성한 라운지 게시글 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "SUCCESS",
+                            "success": {
+                              "data": {
+                                "posts": [
+                                  {
+                                    "loungePostId": 8,
+                                    "category": "COLLABORATION",
+                                    "title": "협업 전시 팀원을 구합니다",
+                                    "content": "영상 작업에 함께할 팀원을 찾고 있습니다.",
+                                    "postImageUrls": ["https://example.com/lounge/posts/8.jpg"],
+                                    "writer": {
+                                      "userId": 2,
+                                      "nickname": "영상작가",
+                                      "profileImageUrl": null
+                                    },
+                                    "createdAt": "2026-08-03T12:00:00",
+                                    "commentCount": 3,
+                                    "likeCount": 9,
+                                    "isLiked": false,
+                                    "isMyPost": false
+                                  }
+                                ],
+                                "nextCursorId": 24,
+                                "size": 10,
+                                "hasNext": true
+                              }
+                            },
+                            "error": null,
+                            "meta": {
+                              "timestamp": "2026-08-04T12:00:00",
+                              "path": "/api/v1/lounge/me/comments"
+                            }
+                          }
+                          """)))
   ApiResponseBody<LoungePostCursorResponse> getMyComments(
       @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,

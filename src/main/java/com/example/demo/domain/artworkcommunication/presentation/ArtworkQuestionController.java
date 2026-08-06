@@ -2,7 +2,9 @@ package com.example.demo.domain.artworkcommunication.presentation;
 
 import com.example.demo.domain.artworkcommunication.application.command.*;
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkQuestionsService;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionReplyResult;
@@ -11,7 +13,6 @@ import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkQue
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkQuestionPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -33,9 +34,10 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   private final CreateArtworkQuestionService createArtworkQuestionService;
   private final CreateArtworkQuestionReplyService createArtworkQuestionReplyService;
   private final GetArtworkQuestionsService getArtworkQuestionsService;
-  private final UpdateArtworkQuestionService updateArtworkQuestionService;
   private final DeleteArtworkQuestionService deleteArtworkQuestionService;
   private final DeleteArtworkQuestionReplyService deleteArtworkQuestionReplyService;
+  private final ArtworkQuestionLikeService artworkQuestionLikeService;
+  private final ArtworkQuestionReplyLikeService artworkQuestionReplyLikeService;
   private final ArtworkQuestionPresentationMapper mapper;
 
   @Override
@@ -44,9 +46,11 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   public ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @PathVariable Long artworkId,
       @RequestParam(required = false) @Positive Long cursorId,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkQuestionListResult result =
-        getArtworkQuestionsService.getQuestions(mapper.toQuery(artworkId, cursorId));
+        getArtworkQuestionsService.getQuestions(
+            mapper.toQuery(artworkId, cursorId, user == null ? null : user.userId()));
 
     ArtworkQuestionListResponse response = mapper.toResponse(result);
 
@@ -94,26 +98,6 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   }
 
   @Override
-  @PatchMapping("/{questionId}")
-  @SecurityRequirement(name = "Authorization")
-  // 질문 수정
-  public ApiResponseBody<ArtworkQuestionResponse> updateQuestion(
-      @PathVariable Long artworkId,
-      @PathVariable Long questionId,
-      @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody UpdateArtworkQuestionRequest request,
-      HttpServletRequest httpServletRequest) {
-    UpdateArtworkQuestionCommand command =
-        mapper.toCommand(artworkId, questionId, requireUserId(user), request);
-
-    ArtworkQuestionResult result = updateArtworkQuestionService.updateQuestion(command);
-
-    ArtworkQuestionResponse response = mapper.toResponse(result);
-
-    return ApiResponseBody.success(response, httpServletRequest);
-  }
-
-  @Override
   @DeleteMapping("/{questionId}")
   @SecurityRequirement(name = "Authorization")
   // 질문 삭제
@@ -148,6 +132,43 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
     DeletedArtworkQuestionReplyResult result =
         deleteArtworkQuestionReplyService.deleteReply(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{questionId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 좋아요 등록 및 취소
+  public ApiResponseBody<ArtworkQuestionLikeResponse> questionLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionLikeCommand command =
+        new ArtworkQuestionLikeCommand(artworkId, questionId, requireUserId(user));
+
+    ArtworkQuestionLikeResult result = artworkQuestionLikeService.toggleQuestionLike(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @Override
+  @PostMapping("/{questionId}/reply/{questionReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 답변 좋아요 등록 및 취소
+  public ApiResponseBody<ArtworkQuestionReplyLikeResponse> questionReplyLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @PathVariable Long questionReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionReplyLikeCommand command =
+        new ArtworkQuestionReplyLikeCommand(
+            artworkId, questionId, questionReplyId, requireUserId(user));
+
+    ArtworkQuestionReplyLikeResult result =
+        artworkQuestionReplyLikeService.toggleQuestionReplyLike(command);
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }

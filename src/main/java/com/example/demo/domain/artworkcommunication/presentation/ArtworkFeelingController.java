@@ -8,7 +8,6 @@ import com.example.demo.domain.artworkcommunication.presentation.docs.ArtworkFee
 import com.example.demo.domain.artworkcommunication.presentation.mapper.ArtworkFeelingPresentationMapper;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
-import com.example.demo.domain.artworkcommunication.presentation.request.UpdateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -17,18 +16,18 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/artworks/{artworkId}/feelings")
 public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   private final CreateArtworkFeelingService createArtworkFeelingService;
-  private final UpdateArtworkFeelingService updateArtworkFeelingService;
   private final DeleteArtworkFeelingService deleteArtworkFeelingService;
   private final CreateArtworkFeelingReplyService createArtworkFeelingReplyService;
   private final DeleteArtworkFeelingReplyService deleteArtworkFeelingReplyService;
@@ -40,13 +39,18 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @GetMapping
+  @SecurityRequirement(name = "Authorization")
+  @SecurityRequirement(name = "")
   // 감상평 목록 및 답변 조회
   public ApiResponseBody<ArtworkFeelingListResponse> getFeelings(
       @PathVariable Long artworkId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkFeelingListResult result =
-        getArtworkFeelingsService.getFeelings(mapper.toQuery(artworkId, cursorId));
+        getArtworkFeelingsService.getFeelings(
+            mapper.toQuery(artworkId, cursorId, size, optionalUserId(user)));
 
     ArtworkFeelingListResponse response = mapper.toResponse(result);
 
@@ -55,15 +59,19 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @GetMapping("/{feelingId}/replies")
+  @SecurityRequirement(name = "Authorization")
+  @SecurityRequirement(name = "")
   // 감상평 답변 목록 조회
   public ApiResponseBody<ArtworkFeelingReplyListResponse> getFeelingReplies(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkFeelingReplyListResult result =
         getArtworkFeelingRepliesService.getReplies(
-            mapper.toRepliesQuery(artworkId, feelingId, cursorId));
+            mapper.toRepliesQuery(artworkId, feelingId, cursorId, size, optionalUserId(user)));
 
     ArtworkFeelingReplyListResponse response = mapper.toResponse(result);
 
@@ -125,26 +133,6 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     DeletedArtworkFeelingReplyResult result = deleteArtworkFeelingReplyService.deleteReply(command);
 
     DeletedArtworkFeelingReplyResponse response = mapper.toResponse(result);
-
-    return ApiResponseBody.success(response, httpServletRequest);
-  }
-
-  @Override
-  @PatchMapping("/{feelingId}")
-  @SecurityRequirement(name = "Authorization")
-  // 감상평 수정
-  public ApiResponseBody<UpdatedArtworkFeelingResponse> updateFeeling(
-      @PathVariable Long artworkId,
-      @PathVariable Long feelingId,
-      @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody UpdateArtworkFeelingRequest request,
-      HttpServletRequest httpServletRequest) {
-    UpdateArtworkFeelingCommand command =
-        mapper.toCommand(artworkId, feelingId, requireUserId(user), request);
-
-    UpdatedArtworkFeelingResult result = updateArtworkFeelingService.updateFeeling(command);
-
-    UpdatedArtworkFeelingResponse response = mapper.toResponse(result);
 
     return ApiResponseBody.success(response, httpServletRequest);
   }
@@ -213,5 +201,9 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
       throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
     }
     return user.userId();
+  }
+
+  private Long optionalUserId(AuthUser user) {
+    return user == null ? null : user.userId();
   }
 }

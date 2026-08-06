@@ -11,6 +11,8 @@ public interface PersonalArtworkQuestionRepository {
 
   Optional<PersonalArtworkQuestion> findActiveById(Long personalArtworkQuestionId);
 
+  Optional<PersonalArtworkQuestion> findActiveByIdForUpdate(Long personalArtworkQuestionId);
+
   List<PersonalArtworkQuestion> findActiveByPersonalArtworkIdWithCursor(
       Long personalArtworkId, Long cursorId, int limit);
 }

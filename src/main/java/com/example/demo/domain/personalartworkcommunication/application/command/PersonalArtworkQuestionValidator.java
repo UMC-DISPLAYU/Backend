@@ -5,6 +5,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class PersonalArtworkQuestionValidator {
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
+  private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
     if (!personalArtworkExistenceRepository.existsById(personalArtworkId)) {
@@ -61,11 +63,32 @@ public class PersonalArtworkQuestionValidator {
     validateWriter(personalArtworkQuestion, userId);
   }
 
-  public void validateReplyTarget(
+  public void validateQuestionTarget(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
         personalArtworkQuestion, personalArtworkId);
+  }
+
+  public PersonalArtworkQuestion findActiveQuestionForUpdateOrThrow(Long personalQuestionId) {
+    return personalArtworkQuestionRepository
+        .findActiveByIdForUpdate(personalQuestionId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
+  }
+
+  public void validateLikePermission(
+      PersonalArtworkQuestion question, Long personalArtworkId, Long userId) {
+    if (question.isPublicQuestion()
+        || question.isWrittenBy(userId)
+        || personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
+      return;
+    }
+
+    throw new BusinessException(
+        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
   }
 
   public PersonalArtworkQuestionReply findActiveReplyForUpdateOrThrow(
@@ -80,13 +103,18 @@ public class PersonalArtworkQuestionValidator {
 
   public void validateAccessibleReply(
       PersonalArtworkQuestionReply reply, Long personalQuestionId, Long userId) {
-    if (!reply.belongsToQuestion(personalQuestionId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND);
-    }
+    validateReplyBelongsToQuestion(reply, personalQuestionId);
     if (!reply.isWrittenBy(userId)) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
+    }
+  }
+
+  public void validateReplyBelongsToQuestion(
+      PersonalArtworkQuestionReply reply, Long personalQuestionId) {
+    if (!reply.belongsToQuestion(personalQuestionId)) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND);
     }
   }
 

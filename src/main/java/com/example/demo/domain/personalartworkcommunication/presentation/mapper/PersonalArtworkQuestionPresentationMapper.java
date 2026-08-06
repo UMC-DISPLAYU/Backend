@@ -3,23 +3,29 @@ package com.example.demo.domain.personalartworkcommunication.presentation.mapper
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionUserResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import org.springframework.stereotype.Component;
@@ -27,8 +33,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonalArtworkQuestionPresentationMapper {
 
-  public GetPersonalArtworkQuestionsQuery toQuery(Long personalArtworkId, Long cursorId) {
-    return new GetPersonalArtworkQuestionsQuery(personalArtworkId, cursorId);
+  public GetPersonalArtworkQuestionsQuery toQuery(
+      Long personalArtworkId, Long cursorId, Long userId) {
+    return new GetPersonalArtworkQuestionsQuery(personalArtworkId, cursorId, userId);
   }
 
   public DeletePersonalArtworkQuestionCommand toCommand(
@@ -58,6 +65,17 @@ public class PersonalArtworkQuestionPresentationMapper {
       CreatePersonalArtworkQuestionReplyRequest request) {
     return new PersonalArtworkQuestionReplyCommand(
         personalArtworkId, personalQuestionId, userId, request.content());
+  }
+
+  public PersonalArtworkQuestionLikeCommand toLikeCommand(
+      Long personalArtworkId, Long personalQuestionId, Long userId) {
+    return new PersonalArtworkQuestionLikeCommand(personalArtworkId, personalQuestionId, userId);
+  }
+
+  public PersonalArtworkQuestionReplyLikeCommand toReplyLikeCommand(
+      Long personalArtworkId, Long personalQuestionId, Long personalQuestionReplyId, Long userId) {
+    return new PersonalArtworkQuestionReplyLikeCommand(
+        personalArtworkId, personalQuestionId, personalQuestionReplyId, userId);
   }
 
   public PersonalArtworkQuestionResponse toResponse(PersonalArtworkQuestionResult result) {
@@ -102,10 +120,32 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.hasNext());
   }
 
+  public PersonalArtworkQuestionLikeResponse toResponse(PersonalArtworkQuestionLikeResult result) {
+    return new PersonalArtworkQuestionLikeResponse(
+        result.personalQuestionId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
+
+  public PersonalArtworkQuestionReplyLikeResponse toResponse(
+      PersonalArtworkQuestionReplyLikeResult result) {
+    return new PersonalArtworkQuestionReplyLikeResponse(
+        result.personalQuestionReplyId(),
+        result.liked(),
+        result.likeCount(),
+        result.createdAt(),
+        result.deletedAt());
+  }
+
   private PersonalArtworkQuestionItemResponse toQuestionItemResponse(
       PersonalArtworkQuestionItemResult result) {
     PersonalArtworkQuestionUserResponse user =
-        new PersonalArtworkQuestionUserResponse(result.user().userId(), result.user().nickname());
+        result.user() == null
+            ? null
+            : new PersonalArtworkQuestionUserResponse(
+                result.user().userId(), result.user().nickname());
     PersonalArtworkQuestionReplyItemResponse reply =
         result.reply() == null ? null : toQuestionReplyItemResponse(result.reply());
 
@@ -113,6 +153,9 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.personalQuestionId(),
         result.content(),
         result.isPublic(),
+        result.accessible(),
+        result.canReply(),
+        result.likeCount(),
         result.answerStatus(),
         result.createdAt(),
         user,
@@ -127,6 +170,7 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.nickname(),
         result.isCreator(),
         result.content(),
-        result.createdAt());
+        result.createdAt(),
+        result.likeCount());
   }
 }

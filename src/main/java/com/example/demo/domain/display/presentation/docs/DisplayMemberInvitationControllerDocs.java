@@ -21,6 +21,16 @@ public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(summary = "전시 멤버 초대 생성", description = "전시 팀장이 특정 사용자를 전시 멤버로 초대합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "201",
+      description = "전시 멤버 초대 생성 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display invitation created",
+                      value = INVITATION_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> invite(
       Long displayId,
       InviteDisplayMemberRequest request,
@@ -29,6 +39,16 @@ public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(summary = "전시 멤버 초대 수락", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 수락합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 멤버 초대 수락 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display invitation accepted",
+                      value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
       Long invitationId,
       AcceptDisplayInvitationRequest request,
@@ -37,6 +57,16 @@ public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(summary = "전시 멤버 초대 거절", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 거절합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "전시 멤버 초대 거절 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display invitation rejected",
+                      value = INVITATION_REJECT_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> reject(
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
@@ -61,6 +91,16 @@ public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(summary = "내 전시 닉네임 수정", description = "현재 로그인 사용자의 특정 전시 내 닉네임을 수정합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내 전시 닉네임 수정 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Display nickname updated",
+                      value = DISPLAY_NICKNAME_SUCCESS_EXAMPLE)))
   ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
       UpdateMyDisplayNicknameRequest request, AuthUser user, HttpServletRequest httpRequest);
 
@@ -68,6 +108,16 @@ public interface DisplayMemberInvitationControllerDocs {
       summary = "내 전시 멤버 초대 목록 조회",
       description = "현재 로그인 사용자가 받은 처리 대기 중인 전시 멤버 초대 목록을 조회합니다.")
   @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내 전시 멤버 초대 목록 조회 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "My display invitations success",
+                      value = MY_INVITATIONS_SUCCESS_EXAMPLE)))
   ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       AuthUser user, HttpServletRequest httpRequest);
 
@@ -158,6 +208,127 @@ public interface DisplayMemberInvitationControllerDocs {
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
           "path": "/api/v1/display-invitations"
+        }
+      }
+      """;
+
+  String INVITATION_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "invitationId": 1,
+            "displayId": 1,
+            "inviterUserId": 10,
+            "inviteeUserId": 11,
+            "status": "PENDING",
+            "createdAt": "2026-08-03T23:00:00",
+            "respondedAt": null
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-03T23:00:00",
+          "path": "/api/v1/display-invitations/displays/1"
+        }
+      }
+      """;
+
+  String INVITATION_ACCEPT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "invitationId": 1,
+            "displayId": 1,
+            "inviterUserId": 10,
+            "inviteeUserId": 11,
+            "status": "ACCEPTED",
+            "createdAt": "2026-08-03T23:00:00",
+            "respondedAt": "2026-08-04T09:00:00"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display-invitations/1/accept"
+        }
+      }
+      """;
+
+  String INVITATION_REJECT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "invitationId": 1,
+            "displayId": 1,
+            "inviterUserId": 10,
+            "inviteeUserId": 11,
+            "status": "REJECTED",
+            "createdAt": "2026-08-03T23:00:00",
+            "respondedAt": "2026-08-04T09:00:00"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display-invitations/1/reject"
+        }
+      }
+      """;
+
+  String DISPLAY_NICKNAME_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "teamMemberId": 1,
+            "userId": 10,
+            "displayNickname": "도현",
+            "loggedIn": true,
+            "artistVerified": true,
+            "accepted": true,
+            "role": "TEAM_LEADER"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display/me/nickname"
+        }
+      }
+      """;
+
+  String MY_INVITATIONS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "invitations": [
+              {
+                "invitationId": 1,
+                "displayId": 1,
+                "thumbnailUrl": "https://cdn.displayu.com/posters/form.png",
+                "startDate": "2026-05-28",
+                "endDate": "2026-06-05",
+                "location": "서울시 종로구",
+                "leaderName": "도현",
+                "title": "FORM 2026",
+                "placeName": "디유 갤러리"
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display-invitations/me"
         }
       }
       """;

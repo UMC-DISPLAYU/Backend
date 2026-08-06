@@ -26,6 +26,7 @@ public class CreateDisplayReviewReplyService {
   public DisplayReviewReplyResult create(CreateDisplayReviewReplyCommand command) {
     displayReviewValidator.validateUserExists(command.userId());
     displayReviewValidator.validateReplyContent(command.content());
+    displayReviewValidator.validateReplyImages(command.images());
 
     DisplayReview displayReview =
         displayReviewValidator.findReviewOrThrow(command.displayReviewId());
@@ -40,7 +41,7 @@ public class CreateDisplayReviewReplyService {
     DisplayReviewReply saved =
         displayReviewReplyRepository.save(
             DisplayReviewReply.create(
-                command.displayReviewId(), command.userId(), command.content()));
+                command.displayReviewId(), command.userId(), command.content(), command.images()));
 
     String nickname =
         userExistenceRepository
@@ -56,6 +57,16 @@ public class CreateDisplayReviewReplyService {
         saved.getDisplayReviewId(),
         saved.getUserId(),
         nickname,
-        isTeamMember);
+        isTeamMember,
+        saved.getImages().stream()
+            .map(
+                image ->
+                    new DisplayReviewReplyResult.ImageResult(
+                        image.getDisplayReviewReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }

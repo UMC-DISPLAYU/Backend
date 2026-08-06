@@ -9,6 +9,8 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
@@ -31,6 +33,9 @@ public class GetPersonalArtworkQuestionsService {
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
+  private final PersonalArtworkQuestionLikeRepository personalArtworkQuestionLikeRepository;
+  private final PersonalArtworkQuestionReplyLikeRepository
+      personalArtworkQuestionReplyLikeRepository;
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
@@ -59,6 +64,14 @@ public class GetPersonalArtworkQuestionsService {
         findRepliesByQuestionId(pageQuestions);
     Set<Long> userIds = collectUserIds(pageQuestions, replyByQuestionId.values());
     Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, Long> questionLikeCounts =
+        personalArtworkQuestionLikeRepository.countByPersonalQuestionIds(
+            pageQuestions.stream().map(PersonalArtworkQuestion::getPersonalQuestionId).toList());
+    Map<Long, Long> replyLikeCounts =
+        personalArtworkQuestionReplyLikeRepository.countByPersonalQuestionReplyIds(
+            replyByQuestionId.values().stream()
+                .map(PersonalArtworkQuestionReply::getPersonalQuestionReplyId)
+                .toList());
 
     List<PersonalArtworkQuestionItemResult> questions =
         pageQuestions.stream()
@@ -68,7 +81,10 @@ public class GetPersonalArtworkQuestionsService {
                         question,
                         replyByQuestionId.get(question.getPersonalQuestionId()),
                         nicknameByUserId,
-                        ownerUserId))
+                        ownerUserId,
+                        query.userId(),
+                        questionLikeCounts,
+                        replyLikeCounts))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).personalQuestionId() : null;
@@ -102,18 +118,43 @@ public class GetPersonalArtworkQuestionsService {
       PersonalArtworkQuestion question,
       PersonalArtworkQuestionReply reply,
       Map<Long, String> nicknameByUserId,
-      Long ownerUserId) {
+      Long ownerUserId,
+      Long userId,
+      Map<Long, Long> questionLikeCounts,
+      Map<Long, Long> replyLikeCounts) {
+    boolean isOwner = ownerUserId.equals(userId);
+    boolean accessible =
+        Boolean.TRUE.equals(question.getIsPublic()) || question.isWrittenBy(userId) || isOwner;
+    boolean canReply = accessible && isOwner && !question.isAnswered();
+
+    if (!accessible) {
+      return new PersonalArtworkQuestionItemResult(
+          question.getPersonalQuestionId(),
+          null,
+          question.getIsPublic(),
+          false,
+          false,
+          null,
+          question.getAnswerStatus(),
+          question.getCreatedAt(),
+          null,
+          null);
+    }
+
     PersonalArtworkQuestionUserResult user =
         new PersonalArtworkQuestionUserResult(
             question.getUserId(), findNicknameOrThrow(nicknameByUserId, question.getUserId()));
 
     PersonalArtworkQuestionReplyItemResult replyResult =
-        reply == null ? null : toReplyItem(reply, nicknameByUserId, ownerUserId);
+        reply == null ? null : toReplyItem(reply, nicknameByUserId, ownerUserId, replyLikeCounts);
 
     return new PersonalArtworkQuestionItemResult(
         question.getPersonalQuestionId(),
         question.getContent(),
         question.getIsPublic(),
+        true,
+        canReply,
+        questionLikeCounts.getOrDefault(question.getPersonalQuestionId(), 0L),
         question.getAnswerStatus(),
         question.getCreatedAt(),
         user,
@@ -121,14 +162,18 @@ public class GetPersonalArtworkQuestionsService {
   }
 
   private PersonalArtworkQuestionReplyItemResult toReplyItem(
-      PersonalArtworkQuestionReply reply, Map<Long, String> nicknameByUserId, Long ownerUserId) {
+      PersonalArtworkQuestionReply reply,
+      Map<Long, String> nicknameByUserId,
+      Long ownerUserId,
+      Map<Long, Long> replyLikeCounts) {
     return new PersonalArtworkQuestionReplyItemResult(
         reply.getPersonalQuestionReplyId(),
         reply.getUserId(),
         findNicknameOrThrow(nicknameByUserId, reply.getUserId()),
         ownerUserId.equals(reply.getUserId()),
         reply.getContent(),
-        reply.getCreatedAt());
+        reply.getCreatedAt(),
+        replyLikeCounts.getOrDefault(reply.getPersonalQuestionReplyId(), 0L));
   }
 
   private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {

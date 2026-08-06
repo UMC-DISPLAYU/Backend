@@ -19,6 +19,10 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.FORBIDDEN,
       "FORBIDDEN_ARTWORK_ACTION",
       "해당 작품을 삭제할 권한이 없습니다. (대표자 또는 본인 등록 작품만 삭제 가능)"),
+  FORBIDDEN_ARTWORK_EDIT(
+      HttpStatus.FORBIDDEN,
+      "FORBIDDEN_ARTWORK_EDIT",
+      "해당 작품을 수정할 권한이 없습니다. (전시 대표자, 작품의 작가, 공동 작업자만 수정 가능)"),
   FORBIDDEN_ARTWORK_ORDER_EDIT(
       HttpStatus.FORBIDDEN, "FORBIDDEN_ARTWORK_ORDER_EDIT", "전시 대표자만 작품 순서를 편집할 수 있습니다."),
   INVALID_ARTWORK_ORDER_LIST(

@@ -84,6 +84,10 @@ public class PersonalArtworkQuestion extends SoftDeleteBaseEntity {
     return this.userId.equals(userId);
   }
 
+  public boolean isPublicQuestion() {
+    return Boolean.TRUE.equals(this.isPublic);
+  }
+
   public boolean belongsToArtwork(Long personalArtworkId) {
     return this.personalArtworkId.equals(personalArtworkId);
   }

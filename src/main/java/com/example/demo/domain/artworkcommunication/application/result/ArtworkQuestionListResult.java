@@ -10,6 +10,9 @@ public record ArtworkQuestionListResult(
       Long questionId,
       String content,
       Boolean isPublic,
+      boolean accessible,
+      boolean canReply,
+      Long likeCount,
       String answerStatus,
       LocalDateTime createdAt,
       ArtworkQuestionUserResult user,
@@ -18,9 +21,11 @@ public record ArtworkQuestionListResult(
   public record ArtworkQuestionUserResult(Long userId, String nickname) {}
 
   public record ArtworkQuestionReplyItemResult(
+      Long questionReplyId,
       Long creatorId,
       String creatorName,
       Boolean isCreator,
       String content,
-      LocalDateTime createdAt) {}
+      LocalDateTime createdAt,
+      Long likeCount) {}
 }

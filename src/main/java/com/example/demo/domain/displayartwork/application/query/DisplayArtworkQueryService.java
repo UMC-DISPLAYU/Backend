@@ -4,9 +4,11 @@ import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.displayartwork.application.command.ArtworkEditPermission;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.QaHandlerResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkEditResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult.ArtworkItemResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
@@ -27,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -40,18 +43,21 @@ public class DisplayArtworkQueryService {
   private final CreatorRepository creatorRepository;
   private final DisplayArtworkLikeRepository displayArtworkLikeRepository;
   private final ArchiveWorkRepository archiveWorkRepository;
+  private final ArtworkEditPermission artworkEditPermission;
 
   public DisplayArtworkQueryService(
       DisplayRepository displayRepository,
       DisplayArtworkRepository displayArtworkRepository,
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
-      ArchiveWorkRepository archiveWorkRepository) {
+      ArchiveWorkRepository archiveWorkRepository,
+      ArtworkEditPermission artworkEditPermission) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.displayArtworkLikeRepository = displayArtworkLikeRepository;
     this.archiveWorkRepository = archiveWorkRepository;
+    this.artworkEditPermission = artworkEditPermission;
   }
 
   @Transactional(readOnly = true)
@@ -94,6 +100,47 @@ public class DisplayArtworkQueryService {
 
     return DisplayArtworkDetailResult.of(
         displayArtwork, artistName, artistUserId, qaHandlers, likeCount, isLiked, isSaved);
+  }
+
+  /** 수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위해 공동 작업자까지 포함해 조회한다. */
+  @Transactional(readOnly = true)
+  public DisplayArtworkEditResult getArtworkForEdit(Long displayArtworkId, Long requesterUserId) {
+    DisplayArtwork displayArtwork =
+        displayArtworkRepository
+            .findById(displayArtworkId)
+            .filter(artwork -> !artwork.isDeleted())
+            .orElseThrow(
+                () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
+
+    if (!artworkEditPermission.canEdit(
+        displayArtwork.getDisplay(), displayArtworkId, requesterUserId)) {
+      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+    }
+
+    List<Creator> creators = creatorRepository.findByDisplayArtworkId(displayArtworkId);
+    Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
+    List<DisplayArtworkEditResult.CoAuthorResult> coAuthors =
+        creators.stream()
+            .filter(creator -> !creator.isLeader())
+            .map(
+                creator ->
+                    new DisplayArtworkEditResult.CoAuthorResult(
+                        creator.getUserId(), creator.getCreatorName()))
+            .toList();
+    List<Long> qaHandlerUserIds =
+        creators.stream()
+            .filter(Creator::isContact)
+            .map(Creator::getUserId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+    return DisplayArtworkEditResult.of(
+        displayArtwork,
+        leader.map(Creator::getCreatorName).orElse(null),
+        leader.map(Creator::getUserId).orElse(null),
+        coAuthors,
+        qaHandlerUserIds);
   }
 
   private static final DateTimeFormatter FULL_DATE = DateTimeFormatter.ofPattern("yyyy.MM.dd");
