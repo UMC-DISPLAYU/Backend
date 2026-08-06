@@ -10,8 +10,6 @@ public interface DisplayReviewReplyRepository {
 
   Optional<DisplayReviewReply> findById(Long displayReviewReplyId);
 
-  void softDeleteAllByDisplayReviewId(Long displayReviewId);
-
   List<DisplayReviewReply> findActiveByDisplayReviewIdWithCursor(
       Long displayReviewId, Long cursorId, int limit);
 

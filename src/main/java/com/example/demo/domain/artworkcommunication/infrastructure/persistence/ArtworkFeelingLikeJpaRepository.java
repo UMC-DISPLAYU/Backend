@@ -47,4 +47,15 @@ public interface ArtworkFeelingLikeJpaRepository extends JpaRepository<ArtworkFe
       GROUP BY feelingLike.feelingId
       """)
   List<Object[]> countByFeelingIds(@Param("feelingIds") List<Long> feelingIds);
+
+  @Query(
+      """
+      SELECT feelingLike.feelingId
+      FROM ArtworkFeelingLike feelingLike
+      WHERE feelingLike.feelingId IN :feelingIds
+        AND feelingLike.userId = :userId
+        AND feelingLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedFeelingIds(
+      @Param("feelingIds") List<Long> feelingIds, @Param("userId") Long userId);
 }

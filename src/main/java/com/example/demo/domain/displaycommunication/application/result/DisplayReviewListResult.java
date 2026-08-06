@@ -10,9 +10,12 @@ public record DisplayReviewListResult(
       Long displayReviewId,
       String content,
       LocalDateTime createdAt,
+      boolean isDeleted,
+      boolean isMine,
       UserResult user,
       List<ImageResult> images,
       long likeCount,
+      boolean isLiked,
       long replyCount) {}
 
   public record UserResult(Long userId, String nickname, String profileImageUrl) {}

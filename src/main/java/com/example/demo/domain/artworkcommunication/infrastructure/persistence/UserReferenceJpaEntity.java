@@ -18,5 +18,8 @@ public class UserReferenceJpaEntity {
   @Column(name = "nickname")
   private String nickname;
 
+  @Column(name = "profileImageUrl", length = 2048)
+  private String profileImageUrl;
+
   protected UserReferenceJpaEntity() {}
 }

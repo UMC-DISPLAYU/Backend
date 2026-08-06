@@ -15,10 +15,9 @@ public interface DisplayReviewJpaRepository extends JpaRepository<DisplayReview,
       SELECT review
       FROM DisplayReview review
       WHERE review.displayId = :displayId
-        AND review.deletedAt IS NULL
         AND (:cursorId IS NULL OR review.displayReviewId < :cursorId)
       ORDER BY review.displayReviewId DESC
       """)
-  List<DisplayReview> findActiveByDisplayIdWithCursor(
+  List<DisplayReview> findByDisplayIdWithCursor(
       @Param("displayId") Long displayId, @Param("cursorId") Long cursorId, Pageable pageable);
 }

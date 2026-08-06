@@ -13,6 +13,7 @@ import com.example.demo.domain.displaycommunication.application.result.DisplayRe
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
+import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewReplyRequest;
 import com.example.demo.domain.displaycommunication.presentation.request.CreateDisplayReviewRequest;
 import com.example.demo.domain.displaycommunication.presentation.response.DeletedDisplayReviewReplyResponse;
@@ -46,17 +47,28 @@ public class DisplayReviewPresentationMapper {
 
   public CreateDisplayReviewReplyCommand toCommand(
       Long displayId, Long displayReviewId, Long userId, CreateDisplayReviewReplyRequest request) {
+    List<DisplayReviewReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new DisplayReviewReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
     return new CreateDisplayReviewReplyCommand(
-        displayId, displayReviewId, userId, request.content());
+        displayId, displayReviewId, userId, request.content(), images);
   }
 
-  public GetDisplayReviewsQuery toQuery(Long displayId, Long cursorId, int size) {
-    return new GetDisplayReviewsQuery(displayId, cursorId, size);
+  public GetDisplayReviewsQuery toQuery(
+      Long displayId, Long cursorId, int size, Long viewerUserId) {
+    return new GetDisplayReviewsQuery(displayId, cursorId, size, viewerUserId);
   }
 
   public GetDisplayReviewRepliesQuery toReplyQuery(
-      Long displayId, Long displayReviewId, Long cursorId, int size) {
-    return new GetDisplayReviewRepliesQuery(displayId, displayReviewId, cursorId, size);
+      Long displayId, Long displayReviewId, Long cursorId, int size, Long viewerUserId) {
+    return new GetDisplayReviewRepliesQuery(
+        displayId, displayReviewId, cursorId, size, viewerUserId);
   }
 
   public DisplayReviewResponse toResponse(DisplayReviewResult result) {
@@ -86,7 +98,17 @@ public class DisplayReviewPresentationMapper {
         result.displayReviewId(),
         result.userId(),
         result.nickname(),
-        result.isTeamMember());
+        result.isTeamMember(),
+        result.images().stream()
+            .map(
+                image ->
+                    new DisplayReviewReplyResponse.ImageResponse(
+                        image.displayReviewReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public DeletedDisplayReviewResponse toResponse(DeletedDisplayReviewResult result) {
@@ -124,6 +146,8 @@ public class DisplayReviewPresentationMapper {
                         review.displayReviewId(),
                         review.content(),
                         review.createdAt(),
+                        review.isDeleted(),
+                        review.isMine(),
                         new UserResponse(
                             review.user().userId(),
                             review.user().nickname(),
@@ -139,6 +163,7 @@ public class DisplayReviewPresentationMapper {
                                         image.sortOrder()))
                             .toList(),
                         review.likeCount(),
+                        review.isLiked(),
                         review.replyCount()))
             .toList(),
         result.nextCursorId(),
@@ -160,7 +185,18 @@ public class DisplayReviewPresentationMapper {
                             reply.user().nickname(),
                             reply.user().profileImageUrl()),
                         reply.isTeamMember(),
-                        reply.likeCount()))
+                        reply.likeCount(),
+                        reply.isLiked(),
+                        reply.images().stream()
+                            .map(
+                                image ->
+                                    new DisplayReviewReplyListResponse.ImageResponse(
+                                        image.displayReviewReplyImageId(),
+                                        image.imageUrl(),
+                                        image.width(),
+                                        image.height(),
+                                        image.sortOrder()))
+                            .toList()))
             .toList(),
         result.nextCursorId(),
         result.size(),

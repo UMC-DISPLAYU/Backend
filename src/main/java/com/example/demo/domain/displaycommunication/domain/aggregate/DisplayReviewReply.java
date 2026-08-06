@@ -1,8 +1,12 @@
 package com.example.demo.domain.displaycommunication.domain.aggregate;
 
+import com.example.demo.domain.displaycommunication.domain.entity.DisplayReviewReplyImage;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
@@ -22,6 +26,11 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
   @Column(name = "userId", nullable = false)
   private Long userId;
 
+  @OneToMany(mappedBy = "displayReviewReply", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("sortOrder ASC")
+  @BatchSize(size = 50)
+  private final List<DisplayReviewReplyImage> images = new ArrayList<>();
+
   protected DisplayReviewReply() {}
 
   private DisplayReviewReply(Long displayReviewId, Long userId, String content) {
@@ -30,8 +39,16 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
     this.content = content;
   }
 
-  public static DisplayReviewReply create(Long displayReviewId, Long userId, String content) {
-    return new DisplayReviewReply(displayReviewId, userId, content);
+  public static DisplayReviewReply create(
+      Long displayReviewId, Long userId, String content, List<ImageInfo> images) {
+    DisplayReviewReply reply = new DisplayReviewReply(displayReviewId, userId, content);
+    for (int index = 0; index < images.size(); index++) {
+      ImageInfo image = images.get(index);
+      reply.images.add(
+          new DisplayReviewReplyImage(
+              reply, image.imageUrl(), image.width(), image.height(), index));
+    }
+    return reply;
   }
 
   public boolean belongsToReview(Long displayReviewId) {
@@ -41,4 +58,6 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
   public boolean isWrittenBy(Long userId) {
     return this.userId.equals(userId);
   }
+
+  public record ImageInfo(String imageUrl, int width, int height) {}
 }

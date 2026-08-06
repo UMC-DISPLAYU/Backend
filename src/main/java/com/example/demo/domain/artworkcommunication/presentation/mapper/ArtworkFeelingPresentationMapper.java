@@ -29,13 +29,14 @@ public class ArtworkFeelingPresentationMapper {
     return new ArtworkFeelingCommand(artworkId, userId, request.content(), images);
   }
 
-  public GetArtworkFeelingsQuery toQuery(Long artworkId, Long cursorId) {
-    return new GetArtworkFeelingsQuery(artworkId, cursorId);
+  public GetArtworkFeelingsQuery toQuery(
+      Long artworkId, Long cursorId, int size, Long viewerUserId) {
+    return new GetArtworkFeelingsQuery(artworkId, cursorId, size, viewerUserId);
   }
 
   public GetArtworkFeelingRepliesQuery toRepliesQuery(
-      Long artworkId, Long feelingId, Long cursorId) {
-    return new GetArtworkFeelingRepliesQuery(artworkId, feelingId, cursorId);
+      Long artworkId, Long feelingId, Long cursorId, int size, Long viewerUserId) {
+    return new GetArtworkFeelingRepliesQuery(artworkId, feelingId, cursorId, size, viewerUserId);
   }
 
   public ArtworkFeelingReplyCommand toCommand(
@@ -99,8 +100,10 @@ public class ArtworkFeelingPresentationMapper {
                         new ArtworkFeelingReplyListResponse.ArtworkFeelingReplyUserResponse(
                             reply.user().userId(),
                             reply.user().nickname(),
+                            reply.user().profileImageUrl(),
                             reply.user().isCreator()),
-                        reply.likeCount()))
+                        reply.likeCount(),
+                        reply.isLiked()))
             .toList(),
         result.nextCursorId(),
         result.size(),
@@ -113,8 +116,13 @@ public class ArtworkFeelingPresentationMapper {
         result.feelingId(),
         result.content(),
         result.createdAt(),
+        result.isDeleted(),
+        result.isMine(),
         new ArtworkFeelingUserResponse(
-            result.user().userId(), result.user().nickname(), result.user().isCreator()),
+            result.user().userId(),
+            result.user().nickname(),
+            result.user().profileImageUrl(),
+            result.user().isCreator()),
         result.images().stream()
             .map(
                 image ->
@@ -126,6 +134,7 @@ public class ArtworkFeelingPresentationMapper {
                         image.sortOrder()))
             .toList(),
         result.likeCount(),
+        result.isLiked(),
         result.replyCount());
   }
 

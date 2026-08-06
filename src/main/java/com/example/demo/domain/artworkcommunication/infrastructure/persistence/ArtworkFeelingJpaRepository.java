@@ -17,11 +17,10 @@ public interface ArtworkFeelingJpaRepository extends JpaRepository<ArtworkFeelin
       SELECT feeling
       FROM ArtworkFeeling feeling
       WHERE feeling.displayArtworkId = :displayArtworkId
-        AND feeling.deletedAt IS NULL
         AND (:cursorId IS NULL OR feeling.feelingId > :cursorId)
       ORDER BY feeling.feelingId ASC
       """)
-  List<ArtworkFeeling> findActiveByDisplayArtworkIdWithCursor(
+  List<ArtworkFeeling> findByDisplayArtworkIdWithCursorIncludingDeleted(
       @Param("displayArtworkId") Long displayArtworkId,
       @Param("cursorId") Long cursorId,
       Pageable pageable);

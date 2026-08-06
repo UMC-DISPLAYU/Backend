@@ -10,4 +10,8 @@ public interface UserExistenceRepository {
   Optional<String> findNicknameById(Long userId);
 
   Map<Long, String> findNicknamesByIds(Set<Long> userIds);
+
+  Map<Long, UserProfile> findUserProfilesByIds(Set<Long> userIds);
+
+  record UserProfile(Long userId, String nickname, String profileImageUrl) {}
 }
