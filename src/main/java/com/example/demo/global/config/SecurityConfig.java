@@ -37,10 +37,7 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.GET, "/api/v1/agreements")
                     .permitAll()
                     .requestMatchers(
-                        "/api/v1/users/me/**",
-                        "/api/v1/artists/me/**",
-                        "/api/v1/archives/**",
-                        "/api/v1/files/**")
+                        "/api/v1/users/me/**", "/api/v1/artists/me/**", "/api/v1/archives/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/users/search")
                     .authenticated()
@@ -97,6 +94,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/personal-artworks/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/display/reviews/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/display/*/reviews/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
                     .authenticated()
