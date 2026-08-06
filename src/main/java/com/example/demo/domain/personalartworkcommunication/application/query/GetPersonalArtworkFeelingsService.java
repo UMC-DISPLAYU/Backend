@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetPersonalArtworkFeelingsService {
 
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
@@ -42,20 +42,26 @@ public class GetPersonalArtworkFeelingsService {
                     new BusinessException(
                         PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
 
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<PersonalArtworkFeeling> fetched =
-        personalArtworkFeelingRepository.findActiveByPersonalArtworkIdWithCursor(
-            query.personalArtworkId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<PersonalArtworkFeeling> pageFeelings = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+        personalArtworkFeelingRepository.findByPersonalArtworkIdWithCursorIncludingDeleted(
+            query.personalArtworkId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<PersonalArtworkFeeling> pageFeelings = hasNext ? fetched.subList(0, pageSize) : fetched;
 
     if (pageFeelings.isEmpty()) {
-      return new PersonalArtworkFeelingListResult(List.of(), null, PAGE_SIZE, false);
+      return new PersonalArtworkFeelingListResult(List.of(), null, pageSize, false);
     }
 
     List<Long> feelingIds =
         pageFeelings.stream().map(PersonalArtworkFeeling::getPersonalFeelingId).toList();
     Map<Long, Long> likeCounts =
         personalArtworkFeelingLikeRepository.countByPersonalFeelingIds(feelingIds);
+    Set<Long> likedFeelingIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : personalArtworkFeelingLikeRepository.findLikedPersonalFeelingIds(
+                feelingIds, query.viewerUserId());
     Map<Long, Long> replyCounts =
         personalArtworkFeelingReplyRepository.countActiveByPersonalFeelingIds(feelingIds);
     Set<Long> userIds =
@@ -66,11 +72,18 @@ public class GetPersonalArtworkFeelingsService {
         pageFeelings.stream()
             .map(
                 feeling ->
-                    toFeelingItem(feeling, nicknameByUserId, ownerUserId, likeCounts, replyCounts))
+                    toFeelingItem(
+                        feeling,
+                        nicknameByUserId,
+                        ownerUserId,
+                        likeCounts,
+                        likedFeelingIds,
+                        query.viewerUserId(),
+                        replyCounts))
             .toList();
 
     Long nextCursorId = hasNext ? feelings.get(feelings.size() - 1).personalFeelingId() : null;
-    return new PersonalArtworkFeelingListResult(feelings, nextCursorId, PAGE_SIZE, hasNext);
+    return new PersonalArtworkFeelingListResult(feelings, nextCursorId, pageSize, hasNext);
   }
 
   private PersonalArtworkFeelingItemResult toFeelingItem(
@@ -78,6 +91,8 @@ public class GetPersonalArtworkFeelingsService {
       Map<Long, String> nicknameByUserId,
       Long ownerUserId,
       Map<Long, Long> likeCounts,
+      Set<Long> likedFeelingIds,
+      Long viewerUserId,
       Map<Long, Long> replyCounts) {
     PersonalArtworkFeelingUserResult user =
         new PersonalArtworkFeelingUserResult(
@@ -89,6 +104,8 @@ public class GetPersonalArtworkFeelingsService {
         feeling.getPersonalFeelingId(),
         feeling.getContent(),
         feeling.getCreatedAt(),
+        feeling.isDeleted(),
+        viewerUserId != null && feeling.isWrittenBy(viewerUserId),
         user,
         feeling.getImages().stream()
             .map(
@@ -101,6 +118,7 @@ public class GetPersonalArtworkFeelingsService {
                         image.getSortOrder()))
             .toList(),
         likeCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L),
+        likedFeelingIds.contains(feeling.getPersonalFeelingId()),
         replyCounts.getOrDefault(feeling.getPersonalFeelingId(), 0L));
   }
 

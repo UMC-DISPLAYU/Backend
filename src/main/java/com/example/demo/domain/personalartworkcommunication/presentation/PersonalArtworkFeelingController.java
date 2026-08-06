@@ -30,12 +30,13 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/personal-artworks/{personalArtworkId}/feelings")
 public class PersonalArtworkFeelingController implements PersonalArtworkFeelingApiDocs {
@@ -52,13 +53,18 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
 
   @Override
   @GetMapping
+  @SecurityRequirement(name = "Authorization")
+  @SecurityRequirement(name = "")
   // 개인 작품 감상평 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
       @PathVariable Long personalArtworkId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkFeelingListResult result =
-        getPersonalArtworkFeelingsService.getFeelings(mapper.toQuery(personalArtworkId, cursorId));
+        getPersonalArtworkFeelingsService.getFeelings(
+            mapper.toQuery(personalArtworkId, cursorId, size, optionalUserId(user)));
 
     PersonalArtworkFeelingListResponse response = mapper.toResponse(result);
 
@@ -67,15 +73,20 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
 
   @Override
   @GetMapping("/{personalFeelingId}/replies")
+  @SecurityRequirement(name = "Authorization")
+  @SecurityRequirement(name = "")
   // 개인 작품 감상평 답변 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingReplyListResponse> getFeelingReplies(
       @PathVariable Long personalArtworkId,
       @PathVariable Long personalFeelingId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkFeelingReplyListResult result =
         getPersonalArtworkFeelingRepliesService.getReplies(
-            mapper.toRepliesQuery(personalArtworkId, personalFeelingId, cursorId));
+            mapper.toRepliesQuery(
+                personalArtworkId, personalFeelingId, cursorId, size, optionalUserId(user)));
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
@@ -212,5 +223,9 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
       throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
     }
     return user.userId();
+  }
+
+  private Long optionalUserId(AuthUser user) {
+    return user == null ? null : user.userId();
   }
 }

@@ -75,6 +75,12 @@ public class PersonalArtworkFeelingValidator {
         personalArtworkFeeling, personalArtworkId);
   }
 
+  public void validateReplyListTarget(
+      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
+    validatePersonalArtworkFeelingBelongsToPersonalArtwork(
+        personalArtworkFeeling, personalArtworkId);
+  }
+
   public PersonalArtworkFeeling findFeelingOrThrow(Long personalFeelingId) {
     return personalArtworkFeelingRepository
         .findById(personalFeelingId)

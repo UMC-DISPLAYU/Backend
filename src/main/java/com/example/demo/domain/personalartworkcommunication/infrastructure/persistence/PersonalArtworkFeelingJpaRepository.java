@@ -15,11 +15,10 @@ public interface PersonalArtworkFeelingJpaRepository
       SELECT feeling
       FROM PersonalArtworkFeeling feeling
       WHERE feeling.personalArtworkId = :personalArtworkId
-        AND feeling.deletedAt IS NULL
         AND (:cursorId IS NULL OR feeling.personalFeelingId > :cursorId)
       ORDER BY feeling.personalFeelingId ASC
       """)
-  List<PersonalArtworkFeeling> findActiveByPersonalArtworkIdWithCursor(
+  List<PersonalArtworkFeeling> findByPersonalArtworkIdWithCursorIncludingDeleted(
       @Param("personalArtworkId") Long personalArtworkId,
       @Param("cursorId") Long cursorId,
       Pageable pageable);

@@ -14,7 +14,8 @@ public record PersonalArtworkFeelingReplyListResult(
       String content,
       LocalDateTime createdAt,
       PersonalArtworkFeelingReplyUserResult user,
-      long likeCount) {}
+      long likeCount,
+      boolean isLiked) {}
 
   public record PersonalArtworkFeelingReplyUserResult(
       Long userId, String nickname, Boolean isCreator) {}

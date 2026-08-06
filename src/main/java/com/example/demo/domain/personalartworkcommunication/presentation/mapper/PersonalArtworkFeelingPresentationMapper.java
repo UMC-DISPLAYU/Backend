@@ -33,14 +33,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonalArtworkFeelingPresentationMapper {
 
-  public GetPersonalArtworkFeelingsQuery toQuery(Long personalArtworkId, Long cursorId) {
-    return new GetPersonalArtworkFeelingsQuery(personalArtworkId, cursorId);
+  public GetPersonalArtworkFeelingsQuery toQuery(
+      Long personalArtworkId, Long cursorId, int size, Long viewerUserId) {
+    return new GetPersonalArtworkFeelingsQuery(personalArtworkId, cursorId, size, viewerUserId);
   }
 
   public GetPersonalArtworkFeelingRepliesQuery toRepliesQuery(
-      Long personalArtworkId, Long personalFeelingId, Long cursorId) {
+      Long personalArtworkId, Long personalFeelingId, Long cursorId, int size, Long viewerUserId) {
     return new GetPersonalArtworkFeelingRepliesQuery(
-        personalArtworkId, personalFeelingId, cursorId);
+        personalArtworkId, personalFeelingId, cursorId, size, viewerUserId);
   }
 
   public PersonalArtworkFeelingCommand toCommand(
@@ -139,6 +140,8 @@ public class PersonalArtworkFeelingPresentationMapper {
         result.personalFeelingId(),
         result.content(),
         result.createdAt(),
+        result.isDeleted(),
+        result.isMine(),
         user,
         result.images().stream()
             .map(
@@ -151,6 +154,7 @@ public class PersonalArtworkFeelingPresentationMapper {
                         image.sortOrder()))
             .toList(),
         result.likeCount(),
+        result.isLiked(),
         result.replyCount());
   }
 
@@ -170,7 +174,8 @@ public class PersonalArtworkFeelingPresentationMapper {
                             reply.user().userId(),
                             reply.user().nickname(),
                             reply.user().isCreator()),
-                        reply.likeCount()))
+                        reply.likeCount(),
+                        reply.isLiked()))
             .toList(),
         result.nextCursorId(),
         result.size(),

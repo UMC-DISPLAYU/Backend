@@ -13,9 +13,12 @@ public record PersonalArtworkFeelingListResponse(
       Long personalFeelingId,
       String content,
       LocalDateTime createdAt,
+      boolean isDeleted,
+      boolean isMine,
       PersonalArtworkFeelingUserResponse user,
       List<ImageResponse> images,
       long likeCount,
+      boolean isLiked,
       long replyCount) {}
 
   public record PersonalArtworkFeelingUserResponse(
