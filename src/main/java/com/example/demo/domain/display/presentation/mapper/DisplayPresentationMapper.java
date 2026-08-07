@@ -49,6 +49,7 @@ public class DisplayPresentationMapper {
         organization(request),
         department(request),
         request.displayNickname(),
+        request.contract(),
         toDisplayType(request.type()),
         request.fields().stream().map(this::toDisplayField).toList(),
         toDisplayRegion(request.region()),
@@ -73,6 +74,7 @@ public class DisplayPresentationMapper {
         request.schoolOrOrganization(),
         request.departmentOrClub(),
         request.hostOrganizationName(),
+        request.contract(),
         request.subtitle(),
         request.description(),
         request.startDate(),
@@ -151,6 +153,7 @@ public class DisplayPresentationMapper {
         result.content(),
         toResponse(result.location()),
         result.qnaAccount(),
+        result.contract(),
         result.note(),
         result.organization(),
         result.department(),
@@ -158,7 +161,7 @@ public class DisplayPresentationMapper {
         result.displayFields(),
         result.region(),
         result.likeCount(),
-        result.isBookmarked(),
+        result.isArchived(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -191,7 +194,7 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -205,7 +208,7 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -217,7 +220,7 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -230,7 +233,7 @@ public class DisplayPresentationMapper {
         result.posterImageUrl(),
         result.latitude(),
         result.longitude(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private MyDisplayListResponse.MyDisplayResponse toResponse(

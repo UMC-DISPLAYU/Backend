@@ -62,7 +62,7 @@ class DisplayControllerClosingSoonTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(2).toString()))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(2))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false))
         .andExpect(
             jsonPath("$.success.data.pagination.nextCursor")
                 .value(startsWith(today.plusDays(2) + ":")))

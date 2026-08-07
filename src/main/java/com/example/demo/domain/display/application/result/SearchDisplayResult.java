@@ -14,7 +14,7 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isBookmarked) {
+      boolean isArchived) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
@@ -27,9 +27,9 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           false);
     }
 
-    public ExhibitionResult withBookmarked(boolean isBookmarked) {
+    public ExhibitionResult withArchived(boolean isArchived) {
       return new ExhibitionResult(
-          displayId, title, posterImageUrl, startedAt, endedAt, dayLeft, isBookmarked);
+          displayId, title, posterImageUrl, startedAt, endedAt, dayLeft, isArchived);
     }
   }
 

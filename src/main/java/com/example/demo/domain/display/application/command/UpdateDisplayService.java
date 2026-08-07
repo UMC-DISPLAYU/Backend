@@ -60,6 +60,9 @@ public class UpdateDisplayService {
         valueOrCurrent(command.precautions(), display.getNote()),
         organization(command, displayType, display.getOrganization()),
         department(command, displayType, display.getDepartment()));
+    if (command.contract() != null) {
+      display.changeContract(command.contract());
+    }
     display.changePeriod(
         new DisplayPeriod(
             command.startDate() == null ? display.getPeriod().startDate() : command.startDate(),
