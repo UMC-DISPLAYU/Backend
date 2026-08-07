@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: demo-test
-
   datasource:
     url: jdbc:h2:mem:displayu_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
@@ -37,12 +34,17 @@ springdoc:
   swagger-ui:
     enabled: false
 
+management:
+  server:
+    port: 0
+
 frontend:
   base-url: https://www.displayu.co.kr
   allowed-origins: http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app
 
 
 app:
+  environment: test
   display:
     invitation:
       base-url: https://displayu.co.kr/display/invitation
