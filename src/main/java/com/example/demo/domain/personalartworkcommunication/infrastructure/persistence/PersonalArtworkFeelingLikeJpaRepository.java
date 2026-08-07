@@ -4,38 +4,11 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PersonalArtworkFeelingLikeJpaRepository
     extends JpaRepository<PersonalArtworkFeelingLike, Long> {
-
-  @Query(
-      value =
-          """
-          SELECT *
-          FROM PersonalArtworkFeelingLike
-          WHERE personalFeelingId = :personalFeelingId
-          FOR UPDATE
-          """,
-      nativeQuery = true)
-  List<PersonalArtworkFeelingLike> lockByPersonalFeelingId(
-      @Param("personalFeelingId") Long personalFeelingId);
-
-  @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Query(
-      value =
-          """
-          INSERT INTO PersonalArtworkFeelingLike
-            (createdAt, updatedAt, deletedAt, personalFeelingId, userId)
-          VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :personalFeelingId, :userId)
-          ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
-          """,
-      nativeQuery = true)
-  void toggle(@Param("personalFeelingId") Long personalFeelingId, @Param("userId") Long userId);
 
   Optional<PersonalArtworkFeelingLike> findByPersonalFeelingIdAndUserId(
       Long personalFeelingId, Long userId);

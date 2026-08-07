@@ -5,7 +5,6 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,30 +17,24 @@ public class JpaPersonalArtworkFeelingLikeRepositoryAdapter
   private final PersonalArtworkFeelingLikeJpaRepository repository;
 
   @Override
-  public Optional<PersonalArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(
-      Long personalFeelingId, Long userId) {
-    repository.lockByPersonalFeelingId(personalFeelingId);
-    repository.toggle(personalFeelingId, userId);
+  public PersonalArtworkFeelingLike save(PersonalArtworkFeelingLike personalArtworkFeelingLike) {
+    return repository.save(personalArtworkFeelingLike);
+  }
 
-    long likeCount = repository.countByPersonalFeelingIdAndDeletedAtIsNull(personalFeelingId);
-    return repository
-        .findByPersonalFeelingIdAndUserId(personalFeelingId, userId)
-        .map(feelingLike -> toSnapshot(feelingLike, likeCount));
+  @Override
+  public java.util.Optional<PersonalArtworkFeelingLike> findByPersonalFeelingIdAndUserId(
+      Long personalFeelingId, Long userId) {
+    return repository.findByPersonalFeelingIdAndUserId(personalFeelingId, userId);
+  }
+
+  @Override
+  public long countByPersonalFeelingIdAndDeletedAtIsNull(Long personalFeelingId) {
+    return repository.countByPersonalFeelingIdAndDeletedAtIsNull(personalFeelingId);
   }
 
   @Override
   public Map<Long, Long> countByPersonalFeelingIds(List<Long> personalFeelingIds) {
     return repository.countByPersonalFeelingIds(personalFeelingIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
-  }
-
-  private PersonalArtworkFeelingLikeSnapshot toSnapshot(
-      PersonalArtworkFeelingLike feelingLike, long likeCount) {
-    return new PersonalArtworkFeelingLikeSnapshot(
-        feelingLike.getPersonalFeelingId(),
-        !feelingLike.isDeleted(),
-        likeCount,
-        feelingLike.getCreatedAt(),
-        feelingLike.getDeletedAt());
   }
 }

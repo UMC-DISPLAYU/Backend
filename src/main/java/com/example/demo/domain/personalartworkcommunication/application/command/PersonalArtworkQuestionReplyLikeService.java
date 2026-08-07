@@ -3,11 +3,12 @@ package com.example.demo.domain.personalartworkcommunication.application.command
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
-import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReplyLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository.PersonalArtworkQuestionReplyLikeSnapshot;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +20,46 @@ public class PersonalArtworkQuestionReplyLikeService {
   private final PersonalArtworkQuestionReplyLikeRepository repository;
   private final PersonalArtworkQuestionValidator validator;
 
-  public PersonalArtworkQuestionReplyLikeResult toggleReplyLike(
+  public PersonalArtworkQuestionReplyLikeResult like(
       PersonalArtworkQuestionReplyLikeCommand command) {
+    validateReply(command);
+
+    PersonalArtworkQuestionReplyLike replyLike =
+        repository
+            .findByPersonalQuestionReplyIdAndUserId(
+                command.personalQuestionReplyId(), command.userId())
+            .map(this::restoreDeletedLike)
+            .orElseGet(
+                () ->
+                    PersonalArtworkQuestionReplyLike.create(
+                        command.personalQuestionReplyId(), command.userId()));
+
+    try {
+      replyLike = repository.save(replyLike);
+    } catch (DataIntegrityViolationException exception) {
+      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE, exception);
+    }
+
+    return result(replyLike, true);
+  }
+
+  public PersonalArtworkQuestionReplyLikeResult cancel(
+      PersonalArtworkQuestionReplyLikeCommand command) {
+    validateReply(command);
+
+    PersonalArtworkQuestionReplyLike replyLike =
+        repository
+            .findByPersonalQuestionReplyIdAndUserId(
+                command.personalQuestionReplyId(), command.userId())
+            .filter(like -> !like.isDeleted())
+            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
+
+    replyLike.delete();
+
+    return result(replyLike, false);
+  }
+
+  private void validateReply(PersonalArtworkQuestionReplyLikeCommand command) {
     validator.validatePersonalArtworkExists(command.personalArtworkId());
     validator.validateUserExists(command.userId());
 
@@ -32,20 +71,25 @@ public class PersonalArtworkQuestionReplyLikeService {
     PersonalArtworkQuestionReply reply =
         validator.findActiveReplyForUpdateOrThrow(command.personalQuestionReplyId());
     validator.validateReplyBelongsToQuestion(reply, command.personalQuestionId());
+  }
 
-    PersonalArtworkQuestionReplyLikeSnapshot snapshot =
-        repository
-            .toggleAndGetSnapshot(command.personalQuestionReplyId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
+  private PersonalArtworkQuestionReplyLike restoreDeletedLike(
+      PersonalArtworkQuestionReplyLike replyLike) {
+    if (!replyLike.isDeleted()) {
+      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE);
+    }
+    replyLike.restore();
+    return replyLike;
+  }
 
+  private PersonalArtworkQuestionReplyLikeResult result(
+      PersonalArtworkQuestionReplyLike replyLike, boolean liked) {
     return new PersonalArtworkQuestionReplyLikeResult(
-        snapshot.personalQuestionReplyId(),
-        snapshot.liked(),
-        snapshot.likeCount(),
-        snapshot.createdAt(),
-        snapshot.deletedAt());
+        replyLike.getPersonalQuestionReplyId(),
+        liked,
+        repository.countByPersonalQuestionReplyIdAndDeletedAtIsNull(
+            replyLike.getPersonalQuestionReplyId()),
+        replyLike.getCreatedAt(),
+        replyLike.getDeletedAt());
   }
 }

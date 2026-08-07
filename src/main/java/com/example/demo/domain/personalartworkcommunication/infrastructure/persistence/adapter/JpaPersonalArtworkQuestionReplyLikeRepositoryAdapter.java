@@ -2,11 +2,9 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReplyLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository.PersonalArtworkQuestionReplyLikeSnapshot;
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkQuestionReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,25 +17,20 @@ public class JpaPersonalArtworkQuestionReplyLikeRepositoryAdapter
   private final PersonalArtworkQuestionReplyLikeJpaRepository repository;
 
   @Override
-  public Optional<PersonalArtworkQuestionReplyLikeSnapshot> toggleAndGetSnapshot(
-      Long personalQuestionReplyId, Long userId) {
-    repository.toggle(personalQuestionReplyId, userId);
-
-    long likeCount =
-        repository.countByPersonalQuestionReplyIdAndDeletedAtIsNull(personalQuestionReplyId);
-    return repository
-        .findByPersonalQuestionReplyIdAndUserId(personalQuestionReplyId, userId)
-        .map(replyLike -> toSnapshot(replyLike, likeCount));
+  public PersonalArtworkQuestionReplyLike save(
+      PersonalArtworkQuestionReplyLike personalArtworkQuestionReplyLike) {
+    return repository.save(personalArtworkQuestionReplyLike);
   }
 
-  private PersonalArtworkQuestionReplyLikeSnapshot toSnapshot(
-      PersonalArtworkQuestionReplyLike replyLike, long likeCount) {
-    return new PersonalArtworkQuestionReplyLikeSnapshot(
-        replyLike.getPersonalQuestionReplyId(),
-        !replyLike.isDeleted(),
-        likeCount,
-        replyLike.getCreatedAt(),
-        replyLike.getDeletedAt());
+  @Override
+  public java.util.Optional<PersonalArtworkQuestionReplyLike>
+      findByPersonalQuestionReplyIdAndUserId(Long personalQuestionReplyId, Long userId) {
+    return repository.findByPersonalQuestionReplyIdAndUserId(personalQuestionReplyId, userId);
+  }
+
+  @Override
+  public long countByPersonalQuestionReplyIdAndDeletedAtIsNull(Long personalQuestionReplyId) {
+    return repository.countByPersonalQuestionReplyIdAndDeletedAtIsNull(personalQuestionReplyId);
   }
 
   @Override

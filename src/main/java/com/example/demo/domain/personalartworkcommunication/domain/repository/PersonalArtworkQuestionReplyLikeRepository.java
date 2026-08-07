@@ -1,21 +1,19 @@
 package com.example.demo.domain.personalartworkcommunication.domain.repository;
 
-import java.time.LocalDateTime;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReplyLike;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public interface PersonalArtworkQuestionReplyLikeRepository {
 
-  Optional<PersonalArtworkQuestionReplyLikeSnapshot> toggleAndGetSnapshot(
+  PersonalArtworkQuestionReplyLike save(
+      PersonalArtworkQuestionReplyLike personalArtworkQuestionReplyLike);
+
+  Optional<PersonalArtworkQuestionReplyLike> findByPersonalQuestionReplyIdAndUserId(
       Long personalQuestionReplyId, Long userId);
 
-  Map<Long, Long> countByPersonalQuestionReplyIds(List<Long> personalQuestionReplyIds);
+  long countByPersonalQuestionReplyIdAndDeletedAtIsNull(Long personalQuestionReplyId);
 
-  record PersonalArtworkQuestionReplyLikeSnapshot(
-      Long personalQuestionReplyId,
-      boolean liked,
-      long likeCount,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {}
+  Map<Long, Long> countByPersonalQuestionReplyIds(List<Long> personalQuestionReplyIds);
 }

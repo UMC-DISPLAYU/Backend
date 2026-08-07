@@ -138,11 +138,10 @@ public interface PersonalArtworkQuestionApiDocs {
       HttpServletRequest httpServletRequest);
 
   @Operation(
-      summary = "개인 작품 질문 좋아요 등록 및 취소",
+      summary = "개인 작품 질문 좋아요 등록",
       description =
           """
-          로그인 사용자가 개인 작품 질문의 좋아요 상태를 변경합니다.
-          좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.
+          로그인 사용자가 개인 작품 질문의 좋아요를 등록합니다.
           공개 질문은 모든 로그인 사용자가 처리할 수 있습니다.
           비공개 질문은 질문 작성자 또는 개인 작품 소유자만 처리할 수 있습니다.
           동시 요청은 질문 단위 비관적 쓰기 락으로 처리합니다.
@@ -172,7 +171,7 @@ public interface PersonalArtworkQuestionApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-08-04T12:00:00",
-                              "path": "/api/v1/personal-artworks/3/questions/15/like"
+                              "path": "/api/v1/personal-artworks/3/questions/15/likes"
                             }
                           }
                           """)))
@@ -185,12 +184,22 @@ public interface PersonalArtworkQuestionApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
+  @Operation(summary = "개인 작품 질문 좋아요 취소", description = "로그인 사용자가 개인 작품 질문의 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "개인 작품 질문 좋아요 취소 성공")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "비공개 질문 접근 권한 없음")
+  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 질문 또는 좋아요 없음")
+  ApiResponseBody<PersonalArtworkQuestionLikeResponse> cancelQuestionLike(
+      @Parameter(description = "질문이 등록된 개인 작품 ID", example = "3") Long personalArtworkId,
+      @Parameter(description = "좋아요를 취소할 개인 작품 질문 ID", example = "15") Long personalQuestionId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
   @Operation(
-      summary = "개인 작품 질문 답변 좋아요 등록 및 취소",
+      summary = "개인 작품 질문 답변 좋아요 등록",
       description =
           """
-          로그인 사용자가 개인 작품 질문 답변의 좋아요 상태를 변경합니다.
-          좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.
+          로그인 사용자가 개인 작품 질문 답변의 좋아요를 등록합니다.
           부모 질문이 공개이면 모든 로그인 사용자가 처리할 수 있습니다.
           부모 질문이 비공개이면 질문 작성자 또는 개인 작품 소유자만 처리할 수 있습니다.
           동시 요청은 부모 질문과 질문 답변에 비관적 쓰기 락을 적용해 처리합니다.
@@ -220,7 +229,7 @@ public interface PersonalArtworkQuestionApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-08-04T12:00:00",
-                              "path": "/api/v1/personal-artworks/3/questions/15/reply/8/like"
+                              "path": "/api/v1/personal-artworks/3/questions/15/reply/8/likes"
                             }
                           }
                           """)))
@@ -231,6 +240,18 @@ public interface PersonalArtworkQuestionApiDocs {
       @Parameter(description = "질문이 등록된 개인 작품 ID", example = "3") Long personalArtworkId,
       @Parameter(description = "부모 질문 ID", example = "15") Long personalQuestionId,
       @Parameter(description = "좋아요 상태를 변경할 질문 답변 ID", example = "8") Long personalQuestionReplyId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "개인 작품 질문 답변 좋아요 취소", description = "로그인 사용자가 개인 작품 질문 답변의 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "개인 작품 질문 답변 좋아요 취소 성공")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "비공개 질문 접근 권한 없음")
+  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 질문, 질문 답변 또는 좋아요 없음")
+  ApiResponseBody<PersonalArtworkQuestionReplyLikeResponse> cancelQuestionReplyLike(
+      @Parameter(description = "질문이 등록된 개인 작품 ID", example = "3") Long personalArtworkId,
+      @Parameter(description = "부모 질문 ID", example = "15") Long personalQuestionId,
+      @Parameter(description = "좋아요를 취소할 질문 답변 ID", example = "8") Long personalQuestionReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 

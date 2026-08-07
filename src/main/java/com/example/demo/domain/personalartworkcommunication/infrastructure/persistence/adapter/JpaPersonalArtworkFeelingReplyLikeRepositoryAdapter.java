@@ -5,7 +5,6 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,30 +17,25 @@ public class JpaPersonalArtworkFeelingReplyLikeRepositoryAdapter
   private final PersonalArtworkFeelingReplyLikeJpaRepository repository;
 
   @Override
-  public Optional<PersonalArtworkFeelingReplyLikeSnapshot> toggleAndGetSnapshot(
-      Long personalFeelingReplyId, Long userId) {
-    repository.toggle(personalFeelingReplyId, userId);
+  public PersonalArtworkFeelingReplyLike save(
+      PersonalArtworkFeelingReplyLike personalArtworkFeelingReplyLike) {
+    return repository.save(personalArtworkFeelingReplyLike);
+  }
 
-    long likeCount =
-        repository.countByPersonalFeelingReplyIdAndDeletedAtIsNull(personalFeelingReplyId);
-    return repository
-        .findByPersonalFeelingReplyIdAndUserId(personalFeelingReplyId, userId)
-        .map(replyLike -> toSnapshot(replyLike, likeCount));
+  @Override
+  public java.util.Optional<PersonalArtworkFeelingReplyLike> findByPersonalFeelingReplyIdAndUserId(
+      Long personalFeelingReplyId, Long userId) {
+    return repository.findByPersonalFeelingReplyIdAndUserId(personalFeelingReplyId, userId);
+  }
+
+  @Override
+  public long countByPersonalFeelingReplyIdAndDeletedAtIsNull(Long personalFeelingReplyId) {
+    return repository.countByPersonalFeelingReplyIdAndDeletedAtIsNull(personalFeelingReplyId);
   }
 
   @Override
   public Map<Long, Long> countByPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds) {
     return repository.countByPersonalFeelingReplyIds(personalFeelingReplyIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
-  }
-
-  private PersonalArtworkFeelingReplyLikeSnapshot toSnapshot(
-      PersonalArtworkFeelingReplyLike replyLike, long likeCount) {
-    return new PersonalArtworkFeelingReplyLikeSnapshot(
-        replyLike.getPersonalFeelingReplyId(),
-        !replyLike.isDeleted(),
-        likeCount,
-        replyLike.getCreatedAt(),
-        replyLike.getDeletedAt());
   }
 }
