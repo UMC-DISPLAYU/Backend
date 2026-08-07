@@ -61,6 +61,8 @@ class UpdateArtistProfileServiceTest {
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
     assertThat(profile.getUnivName()).isEqualTo("한양대학교");
+    assertThat(result.profileImageUrl())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
     assertThat(result.artistName()).isEqualTo("newName");
     assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);
