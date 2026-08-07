@@ -1,6 +1,5 @@
 package com.example.demo.domain.artworkcommunication.domain.aggregate;
 
-import com.example.demo.domain.artworkcommunication.domain.entity.ArtworkFeelingReplyImage;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;

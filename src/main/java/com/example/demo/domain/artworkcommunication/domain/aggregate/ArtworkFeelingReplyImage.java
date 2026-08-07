@@ -1,6 +1,5 @@
-package com.example.demo.domain.artworkcommunication.domain.entity;
+package com.example.demo.domain.artworkcommunication.domain.aggregate;
 
-import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,7 +40,7 @@ public class ArtworkFeelingReplyImage extends BaseTimeEntity {
 
   protected ArtworkFeelingReplyImage() {}
 
-  public ArtworkFeelingReplyImage(
+  ArtworkFeelingReplyImage(
       ArtworkFeelingReply artworkFeelingReply,
       String imageUrl,
       int width,
