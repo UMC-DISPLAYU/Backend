@@ -130,7 +130,7 @@ public class DisplayArtworkPresentationMapper {
         toResponse(result.exhibitionInfo()),
         result.likeCount(),
         result.isLiked(),
-        result.isSaved());
+        result.isArchived());
   }
 
   private DisplayArtworkDetailResponse.ImageResponse toResponse(

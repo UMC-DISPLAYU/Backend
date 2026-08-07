@@ -22,7 +22,7 @@ public record DisplayArtworkDetailResult(
     ExhibitionInfoResult exhibitionInfo,
     long likeCount,
     boolean isLiked,
-    boolean isSaved) {
+    boolean isArchived) {
 
   public record QaHandlerResult(Long userId, String name) {}
 
@@ -33,7 +33,7 @@ public record DisplayArtworkDetailResult(
       List<QaHandlerResult> qaHandlers,
       long likeCount,
       boolean isLiked,
-      boolean isSaved) {
+      boolean isArchived) {
     return new DisplayArtworkDetailResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
@@ -50,7 +50,7 @@ public record DisplayArtworkDetailResult(
         ExhibitionInfoResult.from(displayArtwork),
         likeCount,
         isLiked,
-        isSaved);
+        isArchived);
   }
 
   public record ImageResult(
