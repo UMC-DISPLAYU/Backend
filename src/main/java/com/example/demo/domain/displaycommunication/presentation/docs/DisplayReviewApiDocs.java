@@ -144,7 +144,7 @@ public interface DisplayReviewApiDocs {
                             "success": null,
                             "error": {
                               "code": "DISPLAY_REVIEW_NOT_WRITABLE",
-                              "message": "진행 중인 공개 전시에만 후기를 작성할 수 있습니다.",
+                              "message": "시작한 공개 전시에만 후기를 작성할 수 있습니다.",
                               "details": null
                             },
                             "meta": {
@@ -197,31 +197,6 @@ public interface DisplayReviewApiDocs {
                         }
                         """)
               }))
-  @ApiResponse(
-      responseCode = "409",
-      description = "이미 작성한 후기",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Display review already exists",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "DISPLAY_REVIEW_ALREADY_EXISTS",
-                              "message": "이미 해당 전시의 후기를 작성했습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
-                            }
-                          }
-                          """)))
   @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DisplayReviewResponse> createReview(
       @Parameter(description = "후기를 작성할 전시 ID", example = "1") Long displayId,

@@ -9,7 +9,5 @@ public interface DisplayReviewRepository {
 
   Optional<DisplayReview> findById(Long displayReviewId);
 
-  boolean existsByDisplayIdAndUserId(Long displayId, Long userId);
-
   List<DisplayReview> findByDisplayIdWithCursor(Long displayId, Long cursorId, int limit);
 }

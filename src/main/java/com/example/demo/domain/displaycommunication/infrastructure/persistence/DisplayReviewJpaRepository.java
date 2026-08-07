@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface DisplayReviewJpaRepository extends JpaRepository<DisplayReview, Long> {
-  boolean existsByDisplayIdAndUserIdAndDeletedAtIsNull(Long displayId, Long userId);
-
   @Query(
       """
       SELECT review
