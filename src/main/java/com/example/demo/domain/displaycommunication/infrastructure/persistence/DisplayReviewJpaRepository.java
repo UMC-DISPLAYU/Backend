@@ -13,6 +13,15 @@ public interface DisplayReviewJpaRepository extends JpaRepository<DisplayReview,
       SELECT review
       FROM DisplayReview review
       WHERE review.displayId = :displayId
+        AND (
+          review.deletedAt IS NULL
+          OR EXISTS (
+            SELECT reply.displayReviewReplyId
+            FROM DisplayReviewReply reply
+            WHERE reply.displayReviewId = review.displayReviewId
+              AND reply.deletedAt IS NULL
+          )
+        )
         AND (:cursorId IS NULL OR review.displayReviewId < :cursorId)
       ORDER BY review.displayReviewId DESC
       """)
