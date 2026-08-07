@@ -190,7 +190,7 @@ public interface PersonalArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-26T04:15:00",
-                              "path": "/api/v1/personal-artworks/1/feelings/1/reply/1"
+                              "path": "/api/v1/personal-artworks/1/feelings/1/replies/1"
                             }
                           }
                           """)))
@@ -508,7 +508,7 @@ public interface PersonalArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-26T04:10:00",
-                              "path": "/api/v1/personal-artworks/1/feelings/1/reply/1/like"
+                              "path": "/api/v1/personal-artworks/1/feelings/1/replies/1/like"
                             }
                           }
                           """)))

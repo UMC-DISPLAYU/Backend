@@ -314,7 +314,7 @@ public interface ArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-06-30T23:20:00",
-                              "path": "/api/v1/artworks/3/feelings/15/reply"
+                              "path": "/api/v1/artworks/3/feelings/15/replies"
                             }
                           }
                           """)))
@@ -344,7 +344,7 @@ public interface ArtworkFeelingApiDocs {
                           },
                           "meta": {
                             "timestamp": "2026-06-30T23:20:00",
-                            "path": "/api/v1/artworks/3/feelings/15/reply"
+                            "path": "/api/v1/artworks/3/feelings/15/replies"
                           }
                         }
                         """),
@@ -367,7 +367,7 @@ public interface ArtworkFeelingApiDocs {
                           },
                           "meta": {
                             "timestamp": "2026-06-30T23:20:00",
-                            "path": "/api/v1/artworks/3/feelings/15/reply"
+                            "path": "/api/v1/artworks/3/feelings/15/replies"
                           }
                         }
                         """)
@@ -393,7 +393,7 @@ public interface ArtworkFeelingApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-06-30T22:10:00",
-                              "path": "/api/v1/artworks/1/feelings/1/reply"
+                              "path": "/api/v1/artworks/1/feelings/1/replies"
                             }
                           }
                           """)))
@@ -428,7 +428,7 @@ public interface ArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-26T03:40:00",
-                              "path": "/api/v1/artworks/3/feelings/7/reply/8"
+                              "path": "/api/v1/artworks/3/feelings/7/replies/8"
                             }
                           }
                           """)))
@@ -617,7 +617,7 @@ public interface ArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-26T03:30:00",
-                              "path": "/api/v1/artworks/3/feelings/7/reply/8/like"
+                              "path": "/api/v1/artworks/3/feelings/7/replies/8/like"
                             }
                           }
                           """)))

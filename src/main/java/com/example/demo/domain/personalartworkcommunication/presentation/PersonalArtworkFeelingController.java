@@ -101,7 +101,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   }
 
   @Override
-  @PostMapping("/{personalFeelingId}/reply")
+  @PostMapping("/{personalFeelingId}/replies")
   @SecurityRequirement(name = "Authorization")
   // 개인 작품 감상평 답변 등록
   public ApiResponseBody<PersonalArtworkFeelingReplyResponse> createFeelingReply(
@@ -122,7 +122,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   }
 
   @Override
-  @DeleteMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}")
+  @DeleteMapping("/{personalFeelingId}/replies/{personalFeelingReplyId}")
   @SecurityRequirement(name = "Authorization")
   // 개인 작품 감상평 답변 삭제
   public ApiResponseBody<DeletedPersonalArtworkFeelingReplyResponse> deleteFeelingReply(
@@ -186,7 +186,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   }
 
   @Override
-  @PostMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}/like")
+  @PostMapping("/{personalFeelingId}/replies/{personalFeelingReplyId}/like")
   @SecurityRequirement(name = "Authorization")
   // 개인 작품 감상평 답변 좋아요 등록 및 취소
   public ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(

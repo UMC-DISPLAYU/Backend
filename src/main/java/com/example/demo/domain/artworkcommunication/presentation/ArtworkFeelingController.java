@@ -97,7 +97,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   }
 
   @Override
-  @PostMapping("{feelingId}/reply")
+  @PostMapping("/{feelingId}/replies")
   @SecurityRequirement(name = "Authorization")
   // 감상평 답변 등록
   public ApiResponseBody<ArtworkFeelingReplyResponse> createFeelingReply(
@@ -117,7 +117,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   }
 
   @Override
-  @DeleteMapping("/{feelingId}/reply/{feelingReplyId}")
+  @DeleteMapping("/{feelingId}/replies/{feelingReplyId}")
   @SecurityRequirement(name = "Authorization")
   // 감상평 답변 삭제
   public ApiResponseBody<DeletedArtworkFeelingReplyResponse> deleteFeelingReply(
@@ -176,7 +176,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   }
 
   @Override
-  @PostMapping("/{feelingId}/reply/{feelingReplyId}/like")
+  @PostMapping("/{feelingId}/replies/{feelingReplyId}/like")
   @SecurityRequirement(name = "Authorization")
   // 감상평 답변 좋아요 등록 및 취소
   public ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
