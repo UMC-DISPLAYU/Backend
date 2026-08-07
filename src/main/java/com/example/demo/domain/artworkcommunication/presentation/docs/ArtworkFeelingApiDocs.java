@@ -463,7 +463,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 삭제",
       description =
-          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 감상평은 isDeleted=true 상태로 목록에 유지되며 기존 답변은 삭제되지 않습니다.")
+          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 기존 답변은 삭제되지 않으며, 삭제된 감상평은 활성 답변이 남아 있는 동안 isDeleted=true 상태로 목록에 유지되고 마지막 활성 답변 삭제 후 목록에서 제외됩니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 삭제 성공",
