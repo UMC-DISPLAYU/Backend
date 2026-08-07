@@ -17,12 +17,6 @@ public interface PersonalArtworkFeelingReplyLikeRepository {
   long countByPersonalFeelingReplyIdAndDeletedAtIsNull(Long personalFeelingReplyId);
 
   Map<Long, Long> countByPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds);
-  Set<Long> findLikedPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds, Long userId);
 
-  record PersonalArtworkFeelingReplyLikeSnapshot(
-      Long personalFeelingReplyId,
-      boolean liked,
-      long likeCount,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {}
+  Set<Long> findLikedPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds, Long userId);
 }

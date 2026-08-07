@@ -16,12 +16,6 @@ public interface PersonalArtworkFeelingLikeRepository {
   long countByPersonalFeelingIdAndDeletedAtIsNull(Long personalFeelingId);
 
   Map<Long, Long> countByPersonalFeelingIds(List<Long> personalFeelingIds);
-  Set<Long> findLikedPersonalFeelingIds(List<Long> personalFeelingIds, Long userId);
 
-  record PersonalArtworkFeelingLikeSnapshot(
-      Long personalFeelingId,
-      boolean liked,
-      long likeCount,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {}
+  Set<Long> findLikedPersonalFeelingIds(List<Long> personalFeelingIds, Long userId);
 }
