@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "`User`")
+@Table(name = "User")
 public class User extends BaseTimeEntity {
 
   private static final long NICKNAME_CHANGE_INTERVAL_DAYS = 30;
