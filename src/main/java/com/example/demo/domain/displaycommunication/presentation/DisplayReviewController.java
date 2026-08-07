@@ -137,9 +137,9 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
   }
 
   @Override
-  @PostMapping("/{displayReviewId}/like")
+  @PostMapping("/{displayReviewId}/likes")
   @SecurityRequirement(name = "Authorization")
-  // 전시 후기 좋아요 등록 및 취소
+  // 전시 후기 좋아요 등록
   public ApiResponseBody<DisplayReviewLikeResponse> reviewLike(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
@@ -148,7 +148,26 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
     DisplayReviewLikeCommand command =
         new DisplayReviewLikeCommand(displayId, displayReviewId, requireUserId(user));
 
-    DisplayReviewLikeResult result = displayReviewLikeService.toggleReviewLike(command);
+    DisplayReviewLikeResult result = displayReviewLikeService.like(command);
+
+    DisplayReviewLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @DeleteMapping("/{displayReviewId}/likes")
+  @SecurityRequirement(name = "Authorization")
+  // 전시 후기 좋아요 취소
+  public ApiResponseBody<DisplayReviewLikeResponse> cancelReviewLike(
+      @PathVariable Long displayId,
+      @PathVariable Long displayReviewId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    DisplayReviewLikeCommand command =
+        new DisplayReviewLikeCommand(displayId, displayReviewId, requireUserId(user));
+
+    DisplayReviewLikeResult result = displayReviewLikeService.cancel(command);
 
     DisplayReviewLikeResponse response = mapper.toResponse(result);
 
@@ -197,9 +216,9 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
   }
 
   @Override
-  @PostMapping("/{displayReviewId}/reply/{displayReviewReplyId}/like")
+  @PostMapping("/{displayReviewId}/reply/{displayReviewReplyId}/likes")
   @SecurityRequirement(name = "Authorization")
-  // 전시 후기 답글 좋아요 등록 및 취소
+  // 전시 후기 답글 좋아요 등록
   public ApiResponseBody<DisplayReviewReplyLikeResponse> reviewReplyLike(
       @PathVariable Long displayId,
       @PathVariable Long displayReviewId,
@@ -210,8 +229,28 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
         new DisplayReviewReplyLikeCommand(
             displayId, displayReviewId, displayReviewReplyId, requireUserId(user));
 
-    DisplayReviewReplyLikeResult result =
-        displayReviewReplyLikeService.toggleReviewReplyLike(command);
+    DisplayReviewReplyLikeResult result = displayReviewReplyLikeService.like(command);
+
+    DisplayReviewReplyLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @Override
+  @DeleteMapping("/{displayReviewId}/reply/{displayReviewReplyId}/likes")
+  @SecurityRequirement(name = "Authorization")
+  // 전시 후기 답글 좋아요 취소
+  public ApiResponseBody<DisplayReviewReplyLikeResponse> cancelReviewReplyLike(
+      @PathVariable Long displayId,
+      @PathVariable Long displayReviewId,
+      @PathVariable Long displayReviewReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    DisplayReviewReplyLikeCommand command =
+        new DisplayReviewReplyLikeCommand(
+            displayId, displayReviewId, displayReviewReplyId, requireUserId(user));
+
+    DisplayReviewReplyLikeResult result = displayReviewReplyLikeService.cancel(command);
 
     DisplayReviewReplyLikeResponse response = mapper.toResponse(result);
 

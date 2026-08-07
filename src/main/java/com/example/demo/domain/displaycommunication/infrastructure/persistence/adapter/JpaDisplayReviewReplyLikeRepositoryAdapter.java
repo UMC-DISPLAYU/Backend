@@ -5,7 +5,6 @@ import com.example.demo.domain.displaycommunication.domain.repository.DisplayRev
 import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -19,25 +18,19 @@ public class JpaDisplayReviewReplyLikeRepositoryAdapter
   private final DisplayReviewReplyLikeJpaRepository repository;
 
   @Override
-  public Optional<DisplayReviewReplyLikeSnapshot> toggleAndGetSnapshot(
-      Long displayReviewReplyId, Long userId) {
-    repository.lockByDisplayReviewReplyId(displayReviewReplyId);
-    repository.toggle(displayReviewReplyId, userId);
-
-    long likeCount = repository.countByDisplayReviewReplyIdAndDeletedAtIsNull(displayReviewReplyId);
-    return repository
-        .findByDisplayReviewReplyIdAndUserId(displayReviewReplyId, userId)
-        .map(replyLike -> toSnapshot(replyLike, likeCount));
+  public DisplayReviewReplyLike save(DisplayReviewReplyLike displayReviewReplyLike) {
+    return repository.save(displayReviewReplyLike);
   }
 
-  private DisplayReviewReplyLikeSnapshot toSnapshot(
-      DisplayReviewReplyLike replyLike, long likeCount) {
-    return new DisplayReviewReplyLikeSnapshot(
-        replyLike.getDisplayReviewReplyId(),
-        !replyLike.isDeleted(),
-        likeCount,
-        replyLike.getCreatedAt(),
-        replyLike.getDeletedAt());
+  @Override
+  public java.util.Optional<DisplayReviewReplyLike> findByDisplayReviewReplyIdAndUserId(
+      Long displayReviewReplyId, Long userId) {
+    return repository.findByDisplayReviewReplyIdAndUserId(displayReviewReplyId, userId);
+  }
+
+  @Override
+  public long countByDisplayReviewReplyIdAndDeletedAtIsNull(Long displayReviewReplyId) {
+    return repository.countByDisplayReviewReplyIdAndDeletedAtIsNull(displayReviewReplyId);
   }
 
   @Override

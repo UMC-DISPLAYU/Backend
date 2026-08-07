@@ -1,6 +1,6 @@
 package com.example.demo.domain.displaycommunication.domain.repository;
 
-import java.time.LocalDateTime;
+import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReplyLike;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,17 +8,14 @@ import java.util.Set;
 
 public interface DisplayReviewReplyLikeRepository {
 
-  Optional<DisplayReviewReplyLikeSnapshot> toggleAndGetSnapshot(
+  DisplayReviewReplyLike save(DisplayReviewReplyLike displayReviewReplyLike);
+
+  Optional<DisplayReviewReplyLike> findByDisplayReviewReplyIdAndUserId(
       Long displayReviewReplyId, Long userId);
+
+  long countByDisplayReviewReplyIdAndDeletedAtIsNull(Long displayReviewReplyId);
 
   Map<Long, Long> countByDisplayReviewReplyIds(List<Long> displayReviewReplyIds);
 
   Set<Long> findLikedDisplayReviewReplyIds(List<Long> displayReviewReplyIds, Long userId);
-
-  record DisplayReviewReplyLikeSnapshot(
-      Long displayReviewReplyId,
-      boolean liked,
-      long likeCount,
-      LocalDateTime createdAt,
-      LocalDateTime deletedAt) {}
 }

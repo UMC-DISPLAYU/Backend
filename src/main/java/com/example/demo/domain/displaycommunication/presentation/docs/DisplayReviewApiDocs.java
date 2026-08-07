@@ -282,10 +282,10 @@ public interface DisplayReviewApiDocs {
       @Valid CreateDisplayReviewReplyRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 좋아요", description = "전시 후기 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "전시 후기 좋아요 등록", description = "전시 후기 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "전시 후기 좋아요 토글 성공",
+      description = "전시 후기 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -307,7 +307,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T13:00:00",
-                              "path": "/api/v1/displays/1/reviews/1/like"
+                              "path": "/api/v1/displays/1/reviews/1/likes"
                             }
                           }
                           """)))
@@ -316,6 +316,16 @@ public interface DisplayReviewApiDocs {
   ApiResponseBody<DisplayReviewLikeResponse> reviewLike(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "좋아요를 누를 후기 ID", example = "1") Long displayReviewId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "전시 후기 좋아요 취소", description = "전시 후기 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "전시 후기 좋아요 취소 성공")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(responseCode = "404", description = "전시 후기, 사용자 또는 좋아요 없음")
+  ApiResponseBody<DisplayReviewLikeResponse> cancelReviewLike(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "좋아요를 취소할 후기 ID", example = "1") Long displayReviewId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
@@ -393,10 +403,10 @@ public interface DisplayReviewApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 답글 좋아요", description = "전시 후기 답글 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "전시 후기 답글 좋아요 등록", description = "전시 후기 답글 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "전시 후기 답글 좋아요 토글 성공",
+      description = "전시 후기 답글 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -418,7 +428,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T17:30:00",
-                              "path": "/api/v1/displays/1/reviews/1/reply/1/like"
+                              "path": "/api/v1/displays/1/reviews/1/reply/1/likes"
                             }
                           }
                           """)))
@@ -428,6 +438,17 @@ public interface DisplayReviewApiDocs {
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
       @Parameter(description = "좋아요를 누를 답글 ID", example = "1") Long displayReviewReplyId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "전시 후기 답글 좋아요 취소", description = "전시 후기 답글 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "전시 후기 답글 좋아요 취소 성공")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(responseCode = "404", description = "전시, 후기, 답글, 사용자 또는 좋아요 없음")
+  ApiResponseBody<DisplayReviewReplyLikeResponse> cancelReviewReplyLike(
+      @Parameter(description = "전시 ID", example = "1") Long displayId,
+      @Parameter(description = "후기 ID", example = "1") Long displayReviewId,
+      @Parameter(description = "좋아요를 취소할 답글 ID", example = "1") Long displayReviewReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }
