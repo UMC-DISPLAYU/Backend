@@ -127,7 +127,15 @@ jobs:
           gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={}".format(os.environ["GEMINI_API_KEY"])
           payload = {"contents": [{"parts": [{"text": prompt}]}]}
           res = requests.post(gemini_url, json=payload)
-          review_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+          response_data = res.json()
+
+          if res.status_code != 200 or "candidates" not in response_data:
+              print("Gemini API request failed.")
+              print("Status code: {}".format(res.status_code))
+              print(json.dumps(response_data, ensure_ascii=False, indent=2))
+              exit(1)
+
+          review_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
 
           # 4. GitHub PR에 리뷰 댓글 작성
           comment_url = "https://api.github.com/repos/{}/issues/{}/comments".format(os.environ["REPOSITORY"], os.environ["PR_NUMBER"])
