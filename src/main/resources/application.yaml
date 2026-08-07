@@ -11,6 +11,21 @@ springdoc:
   swagger-ui:
     enabled: false
 
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: displayu-backend
+      environment: ${spring.profiles.active:default}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
 app:
   display:
     invitation:
