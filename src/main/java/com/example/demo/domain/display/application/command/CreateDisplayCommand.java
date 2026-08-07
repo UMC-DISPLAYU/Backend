@@ -24,6 +24,7 @@ public record CreateDisplayCommand(
     String organization,
     String department,
     String displayNickname,
+    String contract,
     DisplayType displayType,
     List<DisplayField> displayFields,
     DisplayRegion region,

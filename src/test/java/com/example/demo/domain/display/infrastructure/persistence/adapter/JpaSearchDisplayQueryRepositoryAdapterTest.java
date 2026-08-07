@@ -226,6 +226,13 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             List.of(DisplayField.DESIGN),
             today.minusDays(1),
             today.plusDays(4));
+    Display upcomingEndingInThreeDays =
+        publishedDisplay(
+            "아직 시작 전인 3일 이내 종료 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.plusDays(1),
+            today.plusDays(3));
     Display ended =
         publishedDisplay(
             "이미 종료 전시",
@@ -234,7 +241,12 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             today.minusDays(5),
             today.minusDays(1));
     jpaRepository.saveAllAndFlush(
-        List.of(endingToday, endingInThreeDays, endingAfterThreeDays, ended));
+        List.of(
+            endingToday,
+            endingInThreeDays,
+            endingAfterThreeDays,
+            upcomingEndingInThreeDays,
+            ended));
 
     List<SearchDisplayQueryResult> results =
         queryRepository.searchDisplays(
@@ -246,7 +258,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
         .containsExactly("오늘 종료 전시", "3일 이내 종료 전시")
-        .doesNotContain("4일 뒤 종료 전시", "이미 종료 전시");
+        .doesNotContain("4일 뒤 종료 전시", "아직 시작 전인 3일 이내 종료 전시", "이미 종료 전시");
   }
 
   private static Display publishedDisplay(

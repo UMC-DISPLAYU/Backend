@@ -1,0 +1,2 @@
+ALTER TABLE Display
+    ADD COLUMN contract VARCHAR(50) NULL;

@@ -538,7 +538,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.exhibitions[0].startedAt").value("2026-05-28"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].endedAt").value("2026-06-05"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(-47))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false));
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false));
   }
 
   @Test

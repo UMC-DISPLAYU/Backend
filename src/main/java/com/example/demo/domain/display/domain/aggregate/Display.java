@@ -86,6 +86,9 @@ public class Display extends BaseTimeEntity {
   @Column(nullable = false)
   private String department;
 
+  @Column(length = 50)
+  private String contract;
+
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
   @AttributeOverrides({
@@ -172,6 +175,43 @@ public class Display extends BaseTimeEntity {
         note,
         organization,
         department,
+        null,
+        displayType,
+        displayFields,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen);
+  }
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      String contract,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
+    return create(
+        ownerUserId,
+        title,
+        posterImageUrl,
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        contract,
         displayType,
         displayFields,
         DisplayRegion.OTHERS,
@@ -197,6 +237,44 @@ public class Display extends BaseTimeEntity {
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
       ContentOpenPolicy exhibitionContentOpen) {
+    return create(
+        ownerUserId,
+        title,
+        posterImageUrl,
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        null,
+        displayType,
+        displayFields,
+        region,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen);
+  }
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      String contract,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayRegion region,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
     return new Display(
             null,
             ownerUserId,
@@ -208,6 +286,7 @@ public class Display extends BaseTimeEntity {
             note,
             organization,
             department,
+            contract,
             displayType,
             period,
             artworkContentOpen,
@@ -242,6 +321,7 @@ public class Display extends BaseTimeEntity {
       String note,
       String organization,
       String department,
+      String contract,
       DisplayType displayType,
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
@@ -257,6 +337,7 @@ public class Display extends BaseTimeEntity {
     this.id = id;
     this.ownerUserId = Objects.requireNonNull(ownerUserId, "ownerUserId must not be null.");
     changeBasicInfo(title, subtitle, content, qnaAccount, note, organization, department);
+    changeContract(contract);
     changeLocation(location);
     changeClassification(displayType);
     changePeriod(period);
@@ -323,6 +404,10 @@ public class Display extends BaseTimeEntity {
     this.note = nullToEmpty(note);
     this.organization = requireNonBlank(organization, "organization");
     this.department = nullToEmpty(department);
+  }
+
+  public void changeContract(String contract) {
+    this.contract = contract;
   }
 
   // 전시 장소와 좌표 정보를 변경한다.

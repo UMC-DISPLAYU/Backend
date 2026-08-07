@@ -75,6 +75,7 @@ class DisplayControllerUpdateTest {
         .andExpect(jsonPath("$.success.data.title").value("FORM 2026 (수정본)"))
         .andExpect(jsonPath("$.success.data.subtitle").value("변경된 전시 부제목입니다."))
         .andExpect(jsonPath("$.success.data.content").value("변경된 전시 소개글입니다."))
+        .andExpect(jsonPath("$.success.data.contract").value("Email"))
         .andExpect(jsonPath("$.success.data.note").value("물품 보관소를 운영하지 않습니다."))
         .andExpect(jsonPath("$.success.data.location.placeName").value("중앙대학교 301관 갤러리 3층 전시장"))
         .andExpect(jsonPath("$.success.data.displayType").value("GRADUATION"))
@@ -129,6 +130,7 @@ class DisplayControllerUpdateTest {
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부 시각디자인",
           "hostOrganizationName": null,
+          "contract": "Email",
           "subtitle": "변경된 전시 부제목입니다.",
           "description": "변경된 전시 소개글입니다.",
           "startDate": "2026-05-29",

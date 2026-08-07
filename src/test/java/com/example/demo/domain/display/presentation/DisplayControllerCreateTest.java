@@ -44,6 +44,7 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.title").value("FORM 2026"))
         .andExpect(jsonPath("$.success.data.qnaAccount").value("@displayu"))
+        .andExpect(jsonPath("$.success.data.contract").value("Instagram DM"))
         .andExpect(jsonPath("$.success.data.region").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.location.latitude").value(37.0063))
         .andExpect(jsonPath("$.success.data.location.longitude").value(127.2267))
@@ -96,6 +97,7 @@ class DisplayControllerCreateTest {
           "departmentOrClub": "디자인학부",
           "qnaAccount": "@displayu",
           "displayNickname": "전시 리더",
+          "contract": "Instagram DM",
           "subtitle": "중앙대학교 디자인학부 졸업전시",
           "description": "디자인학부 학생들의 전시입니다.",
           "startDate": "2026-05-28",

@@ -42,6 +42,7 @@ public class CreateDisplayService {
             command.note(),
             command.organization(),
             command.department(),
+            command.contract(),
             command.displayType(),
             command.displayFields(),
             command.region(),

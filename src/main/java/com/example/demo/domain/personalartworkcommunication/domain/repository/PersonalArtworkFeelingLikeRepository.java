@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface PersonalArtworkFeelingLikeRepository {
 
@@ -11,6 +12,8 @@ public interface PersonalArtworkFeelingLikeRepository {
       Long personalFeelingId, Long userId);
 
   Map<Long, Long> countByPersonalFeelingIds(List<Long> personalFeelingIds);
+
+  Set<Long> findLikedPersonalFeelingIds(List<Long> personalFeelingIds, Long userId);
 
   record PersonalArtworkFeelingLikeSnapshot(
       Long personalFeelingId,

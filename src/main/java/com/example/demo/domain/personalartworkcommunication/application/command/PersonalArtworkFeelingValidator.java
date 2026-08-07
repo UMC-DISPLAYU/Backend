@@ -60,6 +60,23 @@ public class PersonalArtworkFeelingValidator {
     }
   }
 
+  public void validateReplyImages(List<PersonalArtworkFeelingReply.ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+  }
+
   public void validateAccessiblePersonalFeeling(
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId, Long userId) {
     validateNotDeleted(personalArtworkFeeling);
@@ -71,6 +88,12 @@ public class PersonalArtworkFeelingValidator {
   public void validateReplyTarget(
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
     validateNotDeleted(personalArtworkFeeling);
+    validatePersonalArtworkFeelingBelongsToPersonalArtwork(
+        personalArtworkFeeling, personalArtworkId);
+  }
+
+  public void validateReplyListTarget(
+      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
     validatePersonalArtworkFeelingBelongsToPersonalArtwork(
         personalArtworkFeeling, personalArtworkId);
   }

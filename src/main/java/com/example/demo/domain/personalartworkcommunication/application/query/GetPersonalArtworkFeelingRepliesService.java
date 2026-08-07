@@ -2,6 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.application.query;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkFeelingValidator;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.ImageResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.PersonalArtworkFeelingReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingReplyListResult.PersonalArtworkFeelingReplyUserResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
@@ -11,6 +12,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GetPersonalArtworkFeelingRepliesService {
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
@@ -43,24 +45,30 @@ public class GetPersonalArtworkFeelingRepliesService {
                         PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
     PersonalArtworkFeeling feeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(query.personalFeelingId());
-    personalArtworkFeelingValidator.validateReplyTarget(feeling, query.personalArtworkId());
+    personalArtworkFeelingValidator.validateReplyListTarget(feeling, query.personalArtworkId());
 
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<PersonalArtworkFeelingReply> fetched =
         personalArtworkFeelingReplyRepository.findActiveByPersonalFeelingIdWithCursor(
-            query.personalFeelingId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<PersonalArtworkFeelingReply> replies = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+            query.personalFeelingId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<PersonalArtworkFeelingReply> replies = hasNext ? fetched.subList(0, pageSize) : fetched;
     if (replies.isEmpty()) {
-      return new PersonalArtworkFeelingReplyListResult(List.of(), null, PAGE_SIZE, false);
+      return new PersonalArtworkFeelingReplyListResult(List.of(), null, pageSize, false);
     }
 
     List<Long> replyIds =
         replies.stream().map(PersonalArtworkFeelingReply::getPersonalFeelingReplyId).toList();
     Map<Long, Long> likeCounts =
         personalArtworkFeelingReplyLikeRepository.countByPersonalFeelingReplyIds(replyIds);
+    Set<Long> likedReplyIds =
+        query.viewerUserId() == null
+            ? Set.of()
+            : personalArtworkFeelingReplyLikeRepository.findLikedPersonalFeelingReplyIds(
+                replyIds, query.viewerUserId());
     Set<Long> userIds =
         replies.stream().map(PersonalArtworkFeelingReply::getUserId).collect(Collectors.toSet());
-    Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    Map<Long, UserProfile> userProfileById = userExistenceRepository.findUserProfilesByIds(userIds);
 
     List<PersonalArtworkFeelingReplyItemResult> items =
         replies.stream()
@@ -70,22 +78,32 @@ public class GetPersonalArtworkFeelingRepliesService {
                         reply.getPersonalFeelingReplyId(),
                         reply.getContent(),
                         reply.getCreatedAt(),
-                        new PersonalArtworkFeelingReplyUserResult(
-                            reply.getUserId(),
-                            findNicknameOrThrow(nicknameByUserId, reply.getUserId()),
-                            ownerUserId.equals(reply.getUserId())),
-                        likeCounts.getOrDefault(reply.getPersonalFeelingReplyId(), 0L)))
+                        toUserResult(reply.getUserId(), userProfileById, ownerUserId),
+                        likeCounts.getOrDefault(reply.getPersonalFeelingReplyId(), 0L),
+                        likedReplyIds.contains(reply.getPersonalFeelingReplyId()),
+                        reply.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getPersonalFeelingReplyImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList()))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).personalFeelingReplyId() : null;
-    return new PersonalArtworkFeelingReplyListResult(items, nextCursorId, PAGE_SIZE, hasNext);
+    return new PersonalArtworkFeelingReplyListResult(items, nextCursorId, pageSize, hasNext);
   }
 
-  private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {
-    String nickname = nicknameByUserId.get(userId);
-    if (nickname == null) {
+  private PersonalArtworkFeelingReplyUserResult toUserResult(
+      Long userId, Map<Long, UserProfile> userProfileById, Long ownerUserId) {
+    UserProfile userProfile = userProfileById.get(userId);
+    if (userProfile == null) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.USER_NOT_FOUND);
     }
-    return nickname;
+    return new PersonalArtworkFeelingReplyUserResult(
+        userId, userProfile.nickname(), userProfile.profileImageUrl(), ownerUserId.equals(userId));
   }
 }

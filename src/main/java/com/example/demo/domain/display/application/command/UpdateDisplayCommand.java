@@ -16,6 +16,7 @@ public record UpdateDisplayCommand(
     String schoolOrOrganization,
     String departmentOrClub,
     String hostOrganizationName,
+    String contract,
     String subtitle,
     String description,
     LocalDate startDate,
