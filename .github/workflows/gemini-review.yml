@@ -34,7 +34,7 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          python -c '
+          python <<'PY'
           import os, json, requests, subprocess
 
           # 1. Git Diff 추출
@@ -144,4 +144,4 @@ jobs:
               "Accept": "application/vnd.github.v3+json"
           }
           requests.post(comment_url, json={"body": f"### 🤖 Gemini PR Code Review\n\n{review_text}"}, headers=headers)
-          '
+          PY
