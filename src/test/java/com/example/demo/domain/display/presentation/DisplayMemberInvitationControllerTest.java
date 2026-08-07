@@ -332,7 +332,9 @@ class DisplayMemberInvitationControllerTest {
   void getMembersReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(get("/api/v1/display/{displayId}/members", 1L))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   @Test
