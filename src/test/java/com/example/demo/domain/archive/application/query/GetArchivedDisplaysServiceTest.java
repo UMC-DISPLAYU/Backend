@@ -2,6 +2,7 @@ package com.example.demo.domain.archive.application.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorResult;
@@ -93,6 +94,7 @@ class GetArchivedDisplaysServiceTest {
 
     ArchiveDisplayCursorResult result = service.getArchivedDisplays(7L, null, 20);
 
+    verifyNoInteractions(memoRepository, getDisplaySummariesUseCase);
     assertThat(result.displays()).isEmpty();
     assertThat(result.hasNext()).isFalse();
     assertThat(result.nextCursorId()).isNull();
