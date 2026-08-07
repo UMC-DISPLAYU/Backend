@@ -15,6 +15,7 @@ public record DisplayDetailResponse(
     String content,
     LocationResponse location,
     String qnaAccount,
+    String contract,
     String note,
     String organization,
     String department,

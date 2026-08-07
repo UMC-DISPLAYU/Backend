@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,6 +22,7 @@ public record CreateDisplayRequest(
     String departmentOrClub,
     @NotBlank String qnaAccount,
     @NotBlank String displayNickname,
+    @Size(max = 50) String contract,
     String subtitle,
     String description,
     @NotNull LocalDate startDate,
