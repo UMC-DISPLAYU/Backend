@@ -18,7 +18,7 @@ public record DisplayArtworkDetailResponse(
     ExhibitionInfoResponse exhibitionInfo,
     long likeCount,
     boolean isLiked,
-    boolean isSaved) {
+    boolean isArchived) {
 
   public record QaHandlerResponse(Long userId, String name) {}
 

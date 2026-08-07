@@ -238,7 +238,7 @@ public class DisplayArtworkController {
   @Operation(
       summary = "전시 출품작 상세 조회",
       description =
-          "작품 소개 탭에 필요한 상세 정보를 조회합니다. 비회원도 조회 가능하며, 로그인한 경우에만 isLiked/isSaved가 사용자 기준으로 계산됩니다.")
+          "작품 소개 탭에 필요한 상세 정보를 조회합니다. 비회원도 조회 가능하며, 로그인한 경우에만 isLiked·isArchived가 사용자 기준으로 계산됩니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 출품작 상세 조회 성공",
@@ -563,7 +563,7 @@ public class DisplayArtworkController {
             },
             "likeCount": 12,
             "isLiked": true,
-            "isSaved": false
+            "isArchived": false
           }
         },
         "error": null,
