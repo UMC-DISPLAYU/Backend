@@ -1,8 +1,8 @@
 package com.example.demo.domain.archive.application.result;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
-import com.example.demo.domain.archive.domain.repository.DisplaySummary;
 import com.example.demo.domain.archive.domain.type.ArchiveDisplayStatus;
+import com.example.demo.domain.display.application.result.DisplaySummaryResult;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -24,7 +24,7 @@ public record ArchiveDisplayResult(
   private static final int CLOSING_SOON_WITHIN_DAYS = 3;
 
   public static ArchiveDisplayResult from(
-      ArchiveDisplay archiveDisplay, String memo, DisplaySummary summary, LocalDate today) {
+      ArchiveDisplay archiveDisplay, String memo, DisplaySummaryResult summary, LocalDate today) {
     return new ArchiveDisplayResult(
         summary == null ? null : summary.posterImageUrl(),
         summary == null ? null : computeStatus(summary.startDate(), summary.endDate(), today),

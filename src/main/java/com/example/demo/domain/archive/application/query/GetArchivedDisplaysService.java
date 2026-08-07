@@ -4,8 +4,8 @@ import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorRe
 import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
-import com.example.demo.domain.archive.domain.repository.DisplaySummary;
-import com.example.demo.domain.archive.domain.repository.DisplaySummaryRepository;
+import com.example.demo.domain.display.application.result.DisplaySummaryResult;
+import com.example.demo.domain.display.application.usecase.GetDisplaySummariesUseCase;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import java.time.LocalDate;
@@ -22,15 +22,15 @@ public class GetArchivedDisplaysService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
   private final MemoRepository memoRepository;
-  private final DisplaySummaryRepository displaySummaryRepository;
+  private final GetDisplaySummariesUseCase getDisplaySummariesUseCase;
 
   public GetArchivedDisplaysService(
       ArchiveDisplayRepository archiveDisplayRepository,
       MemoRepository memoRepository,
-      DisplaySummaryRepository displaySummaryRepository) {
+      GetDisplaySummariesUseCase getDisplaySummariesUseCase) {
     this.archiveDisplayRepository = archiveDisplayRepository;
     this.memoRepository = memoRepository;
-    this.displaySummaryRepository = displaySummaryRepository;
+    this.getDisplaySummariesUseCase = getDisplaySummariesUseCase;
   }
 
   @Transactional(readOnly = true)
@@ -52,13 +52,13 @@ public class GetArchivedDisplaysService {
                 .stream()
                 .collect(Collectors.toMap(Memo::getArchiveDisplayId, Memo::getContent));
 
-    Map<Long, DisplaySummary> summaryByDisplayId =
+    Map<Long, DisplaySummaryResult> summaryByDisplayId =
         displays.isEmpty()
             ? Map.of()
-            : displaySummaryRepository
-                .findByDisplayIdIn(displays.stream().map(ArchiveDisplay::getDisplayId).toList())
+            : getDisplaySummariesUseCase
+                .getDisplaySummaries(displays.stream().map(ArchiveDisplay::getDisplayId).toList())
                 .stream()
-                .collect(Collectors.toMap(DisplaySummary::displayId, summary -> summary));
+                .collect(Collectors.toMap(DisplaySummaryResult::displayId, summary -> summary));
 
     LocalDate today = LocalDate.now();
     List<ArchiveDisplayResult> results =

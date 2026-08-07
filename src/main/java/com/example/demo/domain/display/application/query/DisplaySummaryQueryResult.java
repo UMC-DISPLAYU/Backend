@@ -1,8 +1,8 @@
-package com.example.demo.domain.archive.domain.repository;
+package com.example.demo.domain.display.application.query;
 
 import java.time.LocalDate;
 
-public record DisplaySummary(
+public record DisplaySummaryQueryResult(
     Long displayId,
     String title,
     String organization,
