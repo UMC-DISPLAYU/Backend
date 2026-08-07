@@ -31,7 +31,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 목록 조회",
       description =
-          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 삭제된 감상평도 isDeleted=true 상태로 목록에 유지됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다.")
+          "작품 방명록 감상 탭에서 감상평 목록을 조회합니다. 작성자의 프로필 이미지 URL을 user.profileImageUrl로 반환합니다. 삭제된 감상평은 활성 답글이 남아 있을 때만 isDeleted=true 상태로 유지되며 마지막 답글이 삭제되면 목록에서 제외됩니다. 로그인 사용자의 좋아요 여부는 isLiked, 본인 작성 여부는 isMine으로 반환하며 비회원 조회 시 두 값은 false입니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 목록 조회 성공",
@@ -153,7 +153,16 @@ public interface ArtworkFeelingApiDocs {
                                       "isCreator": true
                                     },
                                     "likeCount": 3,
-                                    "isLiked": true
+                                    "isLiked": true,
+                                    "images": [
+                                      {
+                                        "feelingReplyImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/artwork-feeling-replies/1.jpg",
+                                        "width": 1200,
+                                        "height": 800,
+                                        "sortOrder": 0
+                                      }
+                                    ]
                                   }
                                 ],
                                 "nextCursorId": null,
@@ -287,7 +296,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 답변 등록",
       description =
-          "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
+          "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하이고 이미지는 최대 5장까지 첨부할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 답변 등록 성공",
@@ -308,7 +317,16 @@ public interface ArtworkFeelingApiDocs {
                                 "createdAt": "2026-06-30T23:20:00",
                                 "feelingId": 15,
                                 "userId": 4,
-                                "nickname": "고상준"
+                                "nickname": "고상준",
+                                "images": [
+                                  {
+                                    "feelingReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/artwork-feeling-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 800,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -320,7 +338,7 @@ public interface ArtworkFeelingApiDocs {
                           """)))
   @ApiResponse(
       responseCode = "400",
-      description = "답변 내용 검증 실패",
+      description = "답변 내용 또는 이미지 검증 실패",
       content =
           @Content(
               mediaType = "application/json",
@@ -445,7 +463,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 삭제",
       description =
-          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 감상평은 isDeleted=true 상태로 목록에 유지되며 기존 답변은 삭제되지 않습니다.")
+          "사용자가 본인이 작성한 작품 감상평을 soft delete 방식으로 삭제합니다. 기존 답변은 삭제되지 않으며, 삭제된 감상평은 활성 답변이 남아 있는 동안 isDeleted=true 상태로 목록에 유지되고 마지막 활성 답변 삭제 후 목록에서 제외됩니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 삭제 성공",

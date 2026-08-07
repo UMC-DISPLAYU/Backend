@@ -5,6 +5,7 @@ import com.example.demo.domain.artworkcommunication.application.query.ArtworkFee
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyListResult.ArtworkFeelingReplyItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyListResult.ArtworkFeelingReplyUserResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkFeelingReplyListResult.ImageResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
@@ -82,7 +83,17 @@ public class GetArtworkFeelingRepliesService {
                             userDisplayResolver.resolve(
                                 reply.getUserId(), userProfileById, creatorNameByUserId)),
                         likeCounts.getOrDefault(reply.getFeelingReplyId(), 0L),
-                        likedReplyIds.contains(reply.getFeelingReplyId())))
+                        likedReplyIds.contains(reply.getFeelingReplyId()),
+                        reply.getImages().stream()
+                            .map(
+                                image ->
+                                    new ImageResult(
+                                        image.getFeelingReplyImageId(),
+                                        image.getImageUrl(),
+                                        image.getWidth(),
+                                        image.getHeight(),
+                                        image.getSortOrder()))
+                            .toList()))
             .toList();
 
     Long nextCursorId = hasNext ? items.get(items.size() - 1).feelingReplyId() : null;
