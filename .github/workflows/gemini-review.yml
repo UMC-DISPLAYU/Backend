@@ -124,7 +124,7 @@ jobs:
           """
 
           # 3. Gemini API 호출
-          gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.environ['GEMINI_API_KEY']}"
+          gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.environ['GEMINI_API_KEY']}"
           payload = {"contents": [{"parts": [{"text": prompt}]}]}
           res = requests.post(gemini_url, json=payload)
           response_data = res.json()
