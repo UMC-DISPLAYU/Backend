@@ -153,7 +153,16 @@ public interface ArtworkFeelingApiDocs {
                                       "isCreator": true
                                     },
                                     "likeCount": 3,
-                                    "isLiked": true
+                                    "isLiked": true,
+                                    "images": [
+                                      {
+                                        "feelingReplyImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/artwork-feeling-replies/1.jpg",
+                                        "width": 1200,
+                                        "height": 800,
+                                        "sortOrder": 0
+                                      }
+                                    ]
                                   }
                                 ],
                                 "nextCursorId": null,
@@ -287,7 +296,7 @@ public interface ArtworkFeelingApiDocs {
   @Operation(
       summary = "작품 감상평 답변 등록",
       description =
-          "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하로 입력해야 합니다.")
+          "작품 감상평에 대한 답변을 작성합니다. 작가와 일반 회원 모두 작성할 수 있으며, 내용은 공백이 아닌 1자 이상 300자 이하이고 이미지는 최대 5장까지 첨부할 수 있습니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 감상평 답변 등록 성공",
@@ -308,7 +317,16 @@ public interface ArtworkFeelingApiDocs {
                                 "createdAt": "2026-06-30T23:20:00",
                                 "feelingId": 15,
                                 "userId": 4,
-                                "nickname": "고상준"
+                                "nickname": "고상준",
+                                "images": [
+                                  {
+                                    "feelingReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/artwork-feeling-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 800,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -320,7 +338,7 @@ public interface ArtworkFeelingApiDocs {
                           """)))
   @ApiResponse(
       responseCode = "400",
-      description = "답변 내용 검증 실패",
+      description = "답변 내용 또는 이미지 검증 실패",
       content =
           @Content(
               mediaType = "application/json",

@@ -58,6 +58,23 @@ public class ArtworkFeelingValidator {
     }
   }
 
+  public void validateReplyImages(List<ArtworkFeelingReply.ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+  }
+
   public void validateAccessibleFeeling(
       ArtworkFeeling artworkFeeling, Long displayArtworkId, Long userId) {
     validateNotDeleted(artworkFeeling);
