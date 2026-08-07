@@ -4,6 +4,8 @@ import com.example.demo.domain.archive.application.result.ArchiveWorkCursorResul
 import com.example.demo.domain.archive.application.result.ArchiveWorkResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.displayartwork.application.result.ArtworkSummaryResult;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import java.util.List;
@@ -19,11 +21,15 @@ public class GetArchivedWorksService {
 
   private final ArchiveWorkRepository archiveWorkRepository;
   private final MemoRepository memoRepository;
+  private final GetArtworkSummariesUseCase getArtworkSummariesUseCase;
 
   public GetArchivedWorksService(
-      ArchiveWorkRepository archiveWorkRepository, MemoRepository memoRepository) {
+      ArchiveWorkRepository archiveWorkRepository,
+      MemoRepository memoRepository,
+      GetArtworkSummariesUseCase getArtworkSummariesUseCase) {
     this.archiveWorkRepository = archiveWorkRepository;
     this.memoRepository = memoRepository;
+    this.getArtworkSummariesUseCase = getArtworkSummariesUseCase;
   }
 
   @Transactional(readOnly = true)
@@ -45,12 +51,23 @@ public class GetArchivedWorksService {
                 .stream()
                 .collect(Collectors.toMap(Memo::getArchiveWorkId, Memo::getContent));
 
+    Map<Long, ArtworkSummaryResult> summaryByArtworkId =
+        works.isEmpty()
+            ? Map.of()
+            : getArtworkSummariesUseCase
+                .getArtworkSummaries(works.stream().map(ArchiveWork::getDisplayArtworkId).toList())
+                .stream()
+                .collect(
+                    Collectors.toMap(ArtworkSummaryResult::displayArtworkId, summary -> summary));
+
     List<ArchiveWorkResult> results =
         works.stream()
             .map(
                 archiveWork ->
                     ArchiveWorkResult.from(
-                        archiveWork, memoByArchiveWorkId.get(archiveWork.getId())))
+                        archiveWork,
+                        memoByArchiveWorkId.get(archiveWork.getId()),
+                        summaryByArtworkId.get(archiveWork.getDisplayArtworkId())))
             .toList();
 
     Long nextCursorId = hasNext ? works.get(works.size() - 1).getId() : null;

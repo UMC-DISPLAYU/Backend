@@ -56,10 +56,13 @@ public class ArchivePresentationMapper {
   public ArchiveWorkResponse toResponse(ArchiveWorkResult result) {
     // 도메인 용어(displayArtworkId) -> API 응답 용어(artworkId) 변환은 여기(Presentation Mapper)에서만 담당
     return new ArchiveWorkResponse(
+        result.artworkImageUrl(),
+        result.artworkName(),
+        result.artistName(),
+        result.memo(),
         result.archiveWorkId(),
         result.displayArtworkId(),
         result.userId(),
-        result.memo(),
         result.savedAt());
   }
 
