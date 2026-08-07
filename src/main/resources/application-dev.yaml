@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: demo
-
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USERNAME}
@@ -35,6 +32,7 @@ server:
 
 
 app:
+  environment: dev
   kakao:
     client:
       id: ${KAKAO_CLIENT_ID}
