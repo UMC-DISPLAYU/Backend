@@ -39,7 +39,7 @@ jobs:
 
           # 1. Git Diff 추출
           subprocess.run(["git", "fetch", "origin", os.environ["BASE_REF"]])
-          diff_cmd = ["git", "diff", f"origin/{os.environ[\"BASE_REF\"]}...HEAD"]
+          diff_cmd = ["git", "diff", "origin/{}...HEAD".format(os.environ["BASE_REF"])]
 
           # 제외할 경로 패턴 설정 (Coderabbit path_filters)
           exclude_patterns = [":!infra/**", ":!build/**", ":!.gradle/**", ":!**/*.min.js", ":!**/node_modules/**", ":!config/**"]
@@ -124,15 +124,15 @@ jobs:
           """
 
           # 3. Gemini API 호출
-          gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={os.environ[\"GEMINI_API_KEY\"]}"
+          gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={}".format(os.environ["GEMINI_API_KEY"])
           payload = {"contents": [{"parts": [{"text": prompt}]}]}
           res = requests.post(gemini_url, json=payload)
           review_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
 
           # 4. GitHub PR에 리뷰 댓글 작성
-          comment_url = f"https://api.github.com/repos/{os.environ[\"REPOSITORY\"]}/issues/{os.environ[\"PR_NUMBER\"]}/comments"
+          comment_url = "https://api.github.com/repos/{}/issues/{}/comments".format(os.environ["REPOSITORY"], os.environ["PR_NUMBER"])
           headers = {
-              "Authorization": f"Bearer {os.environ[\"GITHUB_TOKEN\"]}",
+              "Authorization": "Bearer {}".format(os.environ["GITHUB_TOKEN"]),
               "Accept": "application/vnd.github.v3+json"
           }
           requests.post(comment_url, json={"body": f"### 🤖 Gemini PR Code Review\n\n{review_text}"}, headers=headers)
