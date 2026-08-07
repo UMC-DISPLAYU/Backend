@@ -9,6 +9,6 @@ public interface PersonalArtworkFeelingRepository {
 
   Optional<PersonalArtworkFeeling> findById(Long feelingId);
 
-  List<PersonalArtworkFeeling> findActiveByPersonalArtworkIdWithCursor(
+  List<PersonalArtworkFeeling> findByPersonalArtworkIdWithCursorIncludingDeleted(
       Long personalArtworkId, Long cursorId, int limit);
 }

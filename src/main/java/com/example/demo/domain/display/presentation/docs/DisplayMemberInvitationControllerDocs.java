@@ -199,7 +199,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "startedAt": "2026-05-28",
                 "endedAt": "2026-06-05",
                 "dayLeft": 3,
-                "isBookmarked": false
+                "isArchived": false
               }
             ]
           }

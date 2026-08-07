@@ -52,4 +52,15 @@ public interface PersonalArtworkFeelingLikeJpaRepository
       """)
   List<Object[]> countByPersonalFeelingIds(
       @Param("personalFeelingIds") List<Long> personalFeelingIds);
+
+  @Query(
+      """
+      SELECT feelingLike.personalFeelingId
+      FROM PersonalArtworkFeelingLike feelingLike
+      WHERE feelingLike.personalFeelingId IN :personalFeelingIds
+        AND feelingLike.userId = :userId
+        AND feelingLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedPersonalFeelingIds(
+      @Param("personalFeelingIds") List<Long> personalFeelingIds, @Param("userId") Long userId);
 }

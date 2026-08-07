@@ -144,6 +144,7 @@ public final class DisplayApiDocs {
         "departmentOrClub": "디자인학부",
         "qnaAccount": "@displayu",
         "displayNickname": "전시 리더",
+        "contract": "Instagram DM",
         "subtitle": "중앙대학교 디자인학부 졸업전시",
         "description": "디자인학부 학생들의...",
         "startDate": "2026-05-28",
@@ -175,6 +176,7 @@ public final class DisplayApiDocs {
               "longitude": 127.2267
             },
             "qnaAccount": "@displayu",
+            "contract": "Instagram DM",
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -182,7 +184,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
-            "isBookmarked": false,
+            "isArchived": false,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -303,6 +305,7 @@ public final class DisplayApiDocs {
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부 시각디자인",
         "hostOrganizationName": null,
+        "contract": "Email",
         "subtitle": "변경된 전시 부제목입니다.",
         "description": "변경된 전시 소개글입니다.",
         "startDate": "2026-05-29",
@@ -331,6 +334,7 @@ public final class DisplayApiDocs {
               "longitude": 127.2267
             },
             "qnaAccount": "",
+            "contract": "Email",
             "note": "물품 보관소를 운영하지 않습니다.",
             "organization": "중앙대학교",
             "department": "디자인학부 시각디자인",
@@ -338,7 +342,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 12,
-            "isBookmarked": false,
+            "isArchived": false,
             "period": {
               "startDate": "2026-05-29",
               "endDate": "2026-06-06",
@@ -395,7 +399,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
-            "isBookmarked": false,
+            "isArchived": false,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -453,7 +457,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
-            "isBookmarked": false,
+            "isArchived": false,
             "period": {
               "startDate": "2026-05-28",
               "endDate": "2026-06-05",
@@ -574,7 +578,7 @@ public final class DisplayApiDocs {
                 "posterImageUrl": "https://cdn.displayu.com/posters/inner_view.png",
                 "latitude": 37.5513,
                 "longitude": 126.9248,
-                "isBookmarked": true
+                "isArchived": true
               }
             ],
             "pagination": {
@@ -608,7 +612,7 @@ public final class DisplayApiDocs {
                 "startedAt": "2026-06-20",
                 "endedAt": "2026-07-15",
                 "dayLeft": 3,
-                "isBookmarked": true
+                "isArchived": true
               }
             ],
             "pagination": {
@@ -642,7 +646,7 @@ public final class DisplayApiDocs {
                 "startedAt": "2026-07-10",
                 "endedAt": "2026-07-20",
                 "dayLeft": 8,
-                "isBookmarked": true
+                "isArchived": true
               }
             ],
             "pagination": {
@@ -674,7 +678,7 @@ public final class DisplayApiDocs {
                 "startedAt": "2026-05-20",
                 "endedAt": "2026-05-28",
                 "dayLeft": 0,
-                "isBookmarked": true
+                "isArchived": true
               }
             ]
           }
@@ -776,6 +780,7 @@ public final class DisplayApiDocs {
               "longitude": 126.9780000
             },
             "qnaAccount": "@displayu",
+            "contract": "Instagram DM",
             "note": "입장 무료",
             "organization": "디스플레이유",
             "department": "디자인학과",
@@ -783,7 +788,7 @@ public final class DisplayApiDocs {
             "displayFields": ["DESIGN", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 143,
-            "isBookmarked": true,
+            "isArchived": true,
             "period": {
               "startDate": "2026-07-01",
               "endDate": "2026-07-10",

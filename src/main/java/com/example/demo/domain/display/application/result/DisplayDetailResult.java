@@ -22,6 +22,7 @@ public record DisplayDetailResult(
     String content,
     LocationResult location,
     String qnaAccount,
+    String contract,
     String note,
     String organization,
     String department,
@@ -29,7 +30,7 @@ public record DisplayDetailResult(
     List<String> displayFields,
     String region,
     long likeCount,
-    boolean isBookmarked,
+    boolean isArchived,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -50,6 +51,7 @@ public record DisplayDetailResult(
         display.getContent(),
         LocationResult.from(display),
         display.getQnaAccount(),
+        display.getContract(),
         display.getNote(),
         display.getOrganization(),
         display.getDepartment(),
@@ -76,7 +78,7 @@ public record DisplayDetailResult(
             .toList());
   }
 
-  public DisplayDetailResult withBookmarked(boolean isBookmarked) {
+  public DisplayDetailResult withArchived(boolean isArchived) {
     return new DisplayDetailResult(
         displayId,
         ownerUserId,
@@ -85,6 +87,7 @@ public record DisplayDetailResult(
         content,
         location,
         qnaAccount,
+        contract,
         note,
         organization,
         department,
@@ -92,7 +95,7 @@ public record DisplayDetailResult(
         displayFields,
         region,
         likeCount,
-        isBookmarked,
+        isArchived,
         period,
         artworkContentOpen,
         exhibitionContentOpen,
