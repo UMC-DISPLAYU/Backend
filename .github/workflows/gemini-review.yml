@@ -23,7 +23,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install google-genai requests
 
       - name: Run Gemini PR Review
         env:
@@ -34,114 +34,82 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          python <<'PY'
-          import os, json, requests, subprocess
+          python - << 'EOF'
+          import os, sys, subprocess, requests
+          from google import genai
+
+          gemini_key = os.environ.get("GEMINI_API_KEY")
+          github_token = os.environ.get("GITHUB_TOKEN")
+          pr_number = os.environ.get("PR_NUMBER")
+          repository = os.environ.get("REPOSITORY")
+          base_ref = os.environ.get("BASE_REF")
+
+          if not gemini_key:
+              print("Error: GEMINI_API_KEY is not set.")
+              sys.exit(1)
 
           # 1. Git Diff 추출
-          subprocess.run(["git", "fetch", "origin", os.environ["BASE_REF"]])
-          diff_cmd = ["git", "diff", "origin/{}...HEAD".format(os.environ["BASE_REF"])]
+          subprocess.run(["git", "fetch", "origin", base_ref])
+          diff_cmd = ["git", "diff", f"origin/{base_ref}...HEAD"]
 
-          # 제외할 경로 패턴 설정 (Coderabbit path_filters)
+          # 제외할 경로 패턴
           exclude_patterns = [":!infra/**", ":!build/**", ":!.gradle/**", ":!**/*.min.js", ":!**/node_modules/**", ":!config/**"]
           diff_output = subprocess.check_output(diff_cmd + exclude_patterns).decode("utf-8", errors="ignore")
 
           if not diff_output.strip():
               print("No relevant code changes to review.")
-              exit(0)
+              sys.exit(0)
 
-          # 2. Gemini 프롬프트 및 Coderabbit 규칙 작성
+          # 2. 보강된 system_instruction 프롬프트
           prompt = f"""
-          너는 단호하고 꼼꼼한(Assertive) 수석 백엔드 개발자야.
-          제시된 PR의 변경 사항을 검토하고 모든 리뷰 코멘트는 반드시 "한국어(ko-KR)"로 작성해줘.
+          너는 단호하고 꼼꼼한(Assertive) 10년 차 수석 백엔드 개발자야.
+          제시된 PR의 변경 사항(Git Diff)을 검토하고 모든 리뷰 코멘트는 반드시 "한국어(ko-KR)"로 작성해줘.
 
-          [리뷰 결과 정리 규칙]
+          [리뷰 결과 정리 및 작성 규칙]
           1. 발견사항은 반드시 심각도와 우선순위에 따라 정리해줘:
              Critical > High > Medium > Low > Suggestion 순서로 리스트업해줘.
              - Critical: 보안 취약점, 데이터 유실/오염, 결제/인증/권한 우회, 운영 장애 유발 문제.
              - High: 런타임 예외, 트랜잭션 불일치, 잘못된 비즈니스 결과, 심각한 성능 저하, API 호환성 깨짐.
              - Medium: 유지보수성 저하, 테스트 누락, 경계값 오류 가능성, 불필요한 쿼리, 설계 개선 필요.
              - Low: 네이밍, 가독성, 작은 중복, 사소한 스타일 문제.
-             - Suggestion: 장기적 품질 향상을 위한 개선 제안.
-          2. 각 이슈는 `[심각도] 제목` 형식으로 시작하고, 영향 범위와 수정 방향을 함께 제시해줘.
-          3. 문제가 없는 항목은 억지로 코멘트하지 말고, 실제 위험이 있는 변경에 집중해줘.
-
+             - Suggestion: 당장 수정하지 않아도 되지만 장기적으로 품질을 높이는 개선 제안.
+          2. 각 이슈는 `[심각도] 제목` 형식으로 시작하고, 영향 범위, 문제 원인, 그리고 반드시 개선된 코드 예시(Before / After)를 함께 제시해줘.
+          3. 같은 성격의 이슈가 다수일 경우 대표 위치와 공통 해결 방향을 제시해줘.
+          4. 실제 변경된 코드(Diff) 위주로 검토하며, 위험이나 개선점 없는 정상적인 코드는 억지로 코멘트하지 마.
 
           [상세 검토 체크리스트 (Spring Boot / Java / DDD)]
+          1. 예외 처리 & 공통 응답: try-catch/ExceptionAdvice 적절성, RuntimeException 남발 금지 및 커스텀 예외 활용, 민감 정보 노출 방지.
+          2. 코드 품질 & 가독성 & JVM 메모리: SRP 준수, 대용량 데이터 처리 시 OOM 가능성 점검 (Paging / Stream processing 활용 여부).
+          3. 성능 & JPA/Hibernate 최적화: N+1 문제 방지 (fetch join, @EntityGraph), 대량 CUD 시 saveAll / bulk update 활용, OSIV 설정 및 DB 커넥션 효율성.
+          4. 트랜잭션 관리 & 동시성: @Transactional 누락 및 readOnly = true 적절성, 외부 API 호출이 @Transactional 내부에 포함되어 DB 커넥션을 오래 잡고 있는지 점검, Race Condition 방지 (낙관적/비관적 락, Redisson 분산락), 멱등성 보장.
+          5. 입력 검증 & 보안 (Spring Security / JWT): @Valid 검증, Controller/Service AuthN/AuthZ 체크, SecurityContext ThreadLocal 메모리 누수 방지, Injection 방지, 민감정보 로깅 금지.
+          6. 비동기 / 이벤트 / 스케줄러: @Async 사용 시 커스텀 ThreadPoolTaskExecutor 지정 여부, @TransactionalEventListener 사용 및 DLQ/Retry 처리.
+          7. DDD 구조 & 계층 격리: Domain Model @Setter/@Data 지양 및 비즈니스 행위 메소드 작성, Application Service 유스케이스 조율 집중, Domain 영역의 Infra/Framework 의존성 제거, DTO-Command-Domain-Entity 간 Mapper 분리.
+          8. 테스트 코드 & 설정: 단위 테스트 독립성, Slice Test 활용, 환경별 프로필 분리 및 ddl-auto/show-sql 등 운영 위험 설정 점검.
 
-          1. 예외 처리 & 공통 응답:
-            - try-catch/ExceptionAdvice 적절성, 공통 ApiResponse 포맷 준수.
-            - RuntimeException 남발 금지 및 커스텀 예외 활용, 민감 정보(DB URL, 스택트레이스) 외부 노출 방지.
-
-          2. 코드 품질 & 가독성 & JVM 메모리:
-            - SRP(단일 책임 원칙) 준수, 중복 코드 유틸화, 의미 있는 변수/메소드명, 매직 넘버 배제.
-            - 대용량 데이터 처리 시 OOM(OutOfMemory) 가능성 점검 (Paging / Stream processing 활용 여부).
-
-          3. 성능 & JPA/Hibernate 최적화:
-            - N+1 문제 방지 (fetch join, @EntityGraph, BatchSize 등).
-            - 대량 데이터 CUD 시 loop save 대신 saveAll / bulk update / JDBC Batch 연산 활용 여부.
-            - OSIV 설정 및 영속성 컨텍스트 수명 주기 관련 DB 커넥션 효율성.
-            - JPQL/Querydsl 쿼리 조건, 정렬, 인덱스 활용성 점검.
-
-          4. 트랜잭션 관리 & 동시성:
-            - @Transactional 누락 및 readOnly = true 적절성.
-            - **외부 API 호출이 @Transactional 내부에 포함되어 DB 커넥션을 오래 잡고 있는지 점검.**
-            - Race Condition, Lost Update 방지책 (낙관적/비관적 락, 분산락 Redisson/ShedLock).
-            - 멱등성(Idempotency) 보장 및 원자적(Atomic) 연산 처리 여부.
-
-          5. 입력 검증 & 보안 (Spring Security / JWT):
-            - @Valid / Bean Validation 어노테이션 규칙 검증.
-            - Controller / Service 계층의 AuthN/AuthZ 체크, `@PreAuthorize` 권한 누락 여부.
-            - JWT / SecurityContext 사용 후 ThreadLocal 메모리 누수 방지 처리.
-            - Injection (SQL, SpEL), Path Traversal, Mass Assignment 방지.
-            - 비밀번호, 토큰 등 민감정보 로깅 금지.
-
-          6. 비동기 / 이벤트 / 스케줄러:
-            - `@Async` 사용 시 커스텀 ThreadPoolTaskExecutor 지정 여부 (기본 Executor 사용 금지).
-            - 스케줄러 다중 인스턴스 환경 중복 실행 방지 (ShedLock 등).
-            - `@TransactionalEventListener`를 통한 트랜잭션 커밋 시점 연동 및 DLQ/Retry 처리.
-
-          7. DDD 구조 & 계층 격리:
-            - Domain Model에 `@Setter`, `@Data` 지양 및 비즈니스 행위 메소드 제공 여부.
-            - Application Service가 유스케이스 흐름 조율만 담당하고 도메인 로직을 침범하지 않는지.
-            - Domain 영역이 Infra / JPA / HTTP / Web Framework에 직접 의존하지 않는지 (순수 자바 객체 유지).
-            - Repository Interface(Domain)와 RepositoryImpl / JpaRepository(Infra) 격리 여부.
-            - Presentation DTO - Application Command - Domain Model - JpaEntity 간 Mapper 분리 책임.
-
-          8. 테스트 코드:
-            - 단위 테스트(Unit Test) 독립성, 경계값 / 예외 케이스 검증.
-            - SpringBootTest 남용 지양 및 Slice Test (@WebMvcTest, @DataJpaTest) 활용.
-            - 테스트 데이터 격리 및 실행 순서 독립성.
-
-          9. Spring Boot 설정 & DB 마이그레이션:
-            - 환경별(local/dev/prod) 프로필 분리.
-            - ddl-auto, show-sql, debug 등 운영 환경 노출 위험 설정 점검.
-          - DB 스키마 변경 시 Flyway/Liquibase 하위 호환성 및 락 타임 점검.
-
-                 다음 PR Diff 내용에 대해 리뷰해줘:
+          다음 PR Diff 내용에 대해 리뷰해줘:
           ```diff
-          {diff_output[:30000]}
+          {diff_output[:15000]}
           ```
           """
 
-          # 3. Gemini API 호출
-          gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.environ['GEMINI_API_KEY']}"
-          payload = {"contents": [{"parts": [{"text": prompt}]}]}
-          res = requests.post(gemini_url, json=payload)
-          response_data = res.json()
+          # 3. 공식 SDK를 통한 Gemini API 호출 (404/경로 에러 방지)
+          try:
+              client = genai.Client(api_key=gemini_key)
+              response = client.models.generate_content(
+                  model='gemini-2.0-flash-exp',
+                  contents=prompt,
+              )
+              review_text = response.text
+          except Exception as e:
+              print(f"Gemini API Call Failed: {e}")
+              sys.exit(1)
 
-          if res.status_code != 200 or "candidates" not in response_data:
-              print("Gemini API request failed.")
-              print("Status code: {}".format(res.status_code))
-              print(json.dumps(response_data, ensure_ascii=False, indent=2))
-              exit(1)
-
-          review_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
-
-          # 4. GitHub PR에 리뷰 댓글 작성
-          comment_url = "https://api.github.com/repos/{}/issues/{}/comments".format(os.environ["REPOSITORY"], os.environ["PR_NUMBER"])
+          # 4. GitHub PR 댓글 작성
+          comment_url = f"https://api.github.com/repos/{repository}/issues/{pr_number}/comments"
           headers = {
-              "Authorization": "Bearer {}".format(os.environ["GITHUB_TOKEN"]),
+              "Authorization": f"Bearer {github_token}",
               "Accept": "application/vnd.github.v3+json"
           }
           requests.post(comment_url, json={"body": f"### 🤖 Gemini PR Code Review\n\n{review_text}"}, headers=headers)
-          PY
+          EOF
