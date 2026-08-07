@@ -25,10 +25,18 @@ public class ArchivePresentationMapper {
 
   public ArchiveDisplayResponse toResponse(ArchiveDisplayResult result) {
     return new ArchiveDisplayResponse(
+        result.posterImageUrl(),
+        result.status(),
+        result.title(),
+        result.organization(),
+        result.department(),
+        result.startedAt(),
+        result.endedAt(),
+        result.location(),
+        result.memo(),
         result.archiveDisplayId(),
         result.displayId(),
         result.userId(),
-        result.memo(),
         result.savedAt());
   }
 
