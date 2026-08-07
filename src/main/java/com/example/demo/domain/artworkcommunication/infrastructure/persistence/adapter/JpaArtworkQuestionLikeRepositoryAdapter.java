@@ -2,11 +2,9 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository.ArtworkQuestionLikeSnapshot;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkQuestionLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,23 +16,19 @@ public class JpaArtworkQuestionLikeRepositoryAdapter implements ArtworkQuestionL
   private final ArtworkQuestionLikeJpaRepository artworkQuestionLikeJpaRepository;
 
   @Override
-  public Optional<ArtworkQuestionLikeSnapshot> toggleAndGetSnapshot(Long questionId, Long userId) {
-    artworkQuestionLikeJpaRepository.toggle(questionId, userId);
-
-    long likeCount =
-        artworkQuestionLikeJpaRepository.countByQuestionIdAndDeletedAtIsNull(questionId);
-    return artworkQuestionLikeJpaRepository
-        .findByQuestionIdAndUserId(questionId, userId)
-        .map(questionLike -> toSnapshot(questionLike, likeCount));
+  public ArtworkQuestionLike save(ArtworkQuestionLike artworkQuestionLike) {
+    return artworkQuestionLikeJpaRepository.save(artworkQuestionLike);
   }
 
-  private ArtworkQuestionLikeSnapshot toSnapshot(ArtworkQuestionLike questionLike, long likeCount) {
-    return new ArtworkQuestionLikeSnapshot(
-        questionLike.getQuestionId(),
-        !questionLike.isDeleted(),
-        likeCount,
-        questionLike.getCreatedAt(),
-        questionLike.getDeletedAt());
+  @Override
+  public java.util.Optional<ArtworkQuestionLike> findByQuestionIdAndUserId(
+      Long questionId, Long userId) {
+    return artworkQuestionLikeJpaRepository.findByQuestionIdAndUserId(questionId, userId);
+  }
+
+  @Override
+  public long countByQuestionIdAndDeletedAtIsNull(Long questionId) {
+    return artworkQuestionLikeJpaRepository.countByQuestionIdAndDeletedAtIsNull(questionId);
   }
 
   @Override

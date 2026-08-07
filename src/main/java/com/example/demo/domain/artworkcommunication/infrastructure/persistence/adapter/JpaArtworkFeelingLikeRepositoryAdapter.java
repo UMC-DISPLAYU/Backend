@@ -2,11 +2,9 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository.ArtworkFeelingLikeSnapshot;
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +17,19 @@ public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLik
   private final ArtworkFeelingLikeJpaRepository artworkFeelingLikeJpaRepository;
 
   @Override
-  public Optional<ArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(Long feelingId, Long userId) {
-    artworkFeelingLikeJpaRepository.lockByFeelingId(feelingId);
-    artworkFeelingLikeJpaRepository.toggle(feelingId, userId);
-
-    long likeCount = artworkFeelingLikeJpaRepository.countByFeelingIdAndDeletedAtIsNull(feelingId);
-    return artworkFeelingLikeJpaRepository
-        .findByFeelingIdAndUserId(feelingId, userId)
-        .map(feelingLike -> toSnapshot(feelingLike, likeCount));
+  public ArtworkFeelingLike save(ArtworkFeelingLike artworkFeelingLike) {
+    return artworkFeelingLikeJpaRepository.save(artworkFeelingLike);
   }
 
-  private ArtworkFeelingLikeSnapshot toSnapshot(ArtworkFeelingLike feelingLike, long likeCount) {
-    return new ArtworkFeelingLikeSnapshot(
-        feelingLike.getFeelingId(),
-        !feelingLike.isDeleted(),
-        likeCount,
-        feelingLike.getCreatedAt(),
-        feelingLike.getDeletedAt());
+  @Override
+  public java.util.Optional<ArtworkFeelingLike> findByFeelingIdAndUserId(
+      Long feelingId, Long userId) {
+    return artworkFeelingLikeJpaRepository.findByFeelingIdAndUserId(feelingId, userId);
+  }
+
+  @Override
+  public long countByFeelingIdAndDeletedAtIsNull(Long feelingId) {
+    return artworkFeelingLikeJpaRepository.countByFeelingIdAndDeletedAtIsNull(feelingId);
   }
 
   @Override

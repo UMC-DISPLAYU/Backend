@@ -529,10 +529,10 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 좋아요 토글", description = "감상평 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "작품 감상평 좋아요 등록", description = "감상평 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "감상평 좋아요 토글 성공",
+      description = "감상평 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -555,7 +555,7 @@ public interface ArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-06-30T23:40:00",
-                              "path": "/api/v1/artworks/3/feelings/7/like"
+                              "path": "/api/v1/artworks/3/feelings/7/likes"
                             }
                           }
                           """)))
@@ -580,21 +580,31 @@ public interface ArtworkFeelingApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-06-30T23:40:00",
-                              "path": "/api/v1/artworks/3/feelings/7/like"
+                              "path": "/api/v1/artworks/3/feelings/7/likes"
                             }
                           }
                           """)))
   @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
-      @Parameter(description = "좋아요를 토글할 감상평 ID", example = "7") Long feelingId,
+      @Parameter(description = "좋아요를 등록할 감상평 ID", example = "7") Long feelingId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 답변 좋아요 토글", description = "감상평 답변 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "작품 감상평 좋아요 취소", description = "감상평 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "감상평 좋아요 취소 성공")
+  @ApiResponse(responseCode = "404", description = "작품, 사용자, 감상평 또는 좋아요 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  ApiResponseBody<ArtworkFeelingLikeResponse> cancelFeelingLike(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "좋아요를 취소할 감상평 ID", example = "7") Long feelingId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 답변 좋아요 등록", description = "감상평 답변 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "감상평 답변 좋아요 토글 성공",
+      description = "감상평 답변 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -617,7 +627,7 @@ public interface ArtworkFeelingApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-26T03:30:00",
-                              "path": "/api/v1/artworks/3/feelings/7/replies/8/like"
+                              "path": "/api/v1/artworks/3/feelings/7/replies/8/likes"
                             }
                           }
                           """)))
@@ -626,7 +636,18 @@ public interface ArtworkFeelingApiDocs {
   ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
-      @Parameter(description = "좋아요를 토글할 감상평 답변 ID", example = "8") Long feelingReplyId,
+      @Parameter(description = "좋아요를 등록할 감상평 답변 ID", example = "8") Long feelingReplyId,
+      @Parameter(hidden = true) AuthUser user,
+      HttpServletRequest httpServletRequest);
+
+  @Operation(summary = "작품 감상평 답변 좋아요 취소", description = "감상평 답변 좋아요를 취소합니다.")
+  @ApiResponse(responseCode = "200", description = "감상평 답변 좋아요 취소 성공")
+  @ApiResponse(responseCode = "404", description = "작품, 사용자, 감상평, 감상평 답변 또는 좋아요 없음")
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  ApiResponseBody<ArtworkFeelingReplyLikeResponse> cancelFeelingReplyLike(
+      @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
+      @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
+      @Parameter(description = "좋아요를 취소할 감상평 답변 ID", example = "8") Long feelingReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }

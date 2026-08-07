@@ -26,4 +26,14 @@ public class ArtworkQuestionReplyLike extends SoftDeleteBaseEntity {
   private Long userId;
 
   protected ArtworkQuestionReplyLike() {}
+
+  private ArtworkQuestionReplyLike(Long questionReplyLikeId, Long questionReplyId, Long userId) {
+    this.questionReplyLikeId = questionReplyLikeId;
+    this.questionReplyId = questionReplyId;
+    this.userId = userId;
+  }
+
+  public static ArtworkQuestionReplyLike create(Long questionReplyId, Long userId) {
+    return new ArtworkQuestionReplyLike(null, questionReplyId, userId);
+  }
 }

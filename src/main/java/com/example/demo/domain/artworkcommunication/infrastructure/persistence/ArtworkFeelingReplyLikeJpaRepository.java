@@ -4,26 +4,11 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeel
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ArtworkFeelingReplyLikeJpaRepository
     extends JpaRepository<ArtworkFeelingReplyLike, Long> {
-
-  @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Query(
-      value =
-          """
-          INSERT INTO ArtworkFeelingReplyLike
-            (createdAt, updatedAt, deletedAt, feelingReplyId, userId)
-          VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :feelingReplyId, :userId)
-          ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
-          """,
-      nativeQuery = true)
-  void toggle(@Param("feelingReplyId") Long feelingReplyId, @Param("userId") Long userId);
 
   Optional<ArtworkFeelingReplyLike> findByFeelingReplyIdAndUserId(Long feelingReplyId, Long userId);
 
