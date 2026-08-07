@@ -91,6 +91,10 @@ public class ArtworkFeelingValidator {
     validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
   }
 
+  public void validateReplyDeletionTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
+    validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
+  }
+
   public ArtworkFeelingReply findReplyOrThrow(Long feelingReplyId) {
     ArtworkFeelingReply reply =
         artworkFeelingReplyRepository
