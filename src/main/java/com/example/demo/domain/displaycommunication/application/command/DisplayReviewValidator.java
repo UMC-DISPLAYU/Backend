@@ -47,10 +47,10 @@ public class DisplayReviewValidator {
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 
-  public void validateDisplayIsOngoing(DisplayReviewAccess access) {
+  public void validateDisplayIsWritable(DisplayReviewAccess access) {
     LocalDate today = LocalDate.now(clock);
-    boolean isOngoing = !today.isBefore(access.startDate()) && !today.isAfter(access.endDate());
-    if (!access.published() || !isOngoing) {
+    boolean isStarted = !today.isBefore(access.startDate());
+    if (!access.published() || !isStarted) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_WRITABLE);
     }
   }
@@ -122,12 +122,6 @@ public class DisplayReviewValidator {
   private void validateReplyWriter(DisplayReviewReply displayReviewReply, Long userId) {
     if (!displayReviewReply.isWrittenBy(userId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_FORBIDDEN);
-    }
-  }
-
-  public void validateReviewNotExists(Long displayId, Long userId) {
-    if (displayReviewRepository.existsByDisplayIdAndUserId(displayId, userId)) {
-      throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_ALREADY_EXISTS);
     }
   }
 
