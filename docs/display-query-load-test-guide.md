@@ -4,11 +4,11 @@
 
 대상 API:
 
-- `/api/v1/display/search`
-- `/api/v1/display/map`
-- `/api/v1/display/closing-soon`
-- `/api/v1/display/graduation`
-- `/api/v1/display/du-picks`
+- `/api/v1/displays/search`
+- `/api/v1/displays/map`
+- `/api/v1/displays/closing-soon`
+- `/api/v1/displays/graduation`
+- `/api/v1/displays/du-picks`
 
 ## 1. 준비
 

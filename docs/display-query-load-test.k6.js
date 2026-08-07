@@ -71,30 +71,30 @@ function get(path, name) {
 export default function () {
   group('display-search', () => {
     get(
-      '/api/v1/display/search?cursor=0&size=20',
+      '/api/v1/displays/search?cursor=0&size=20',
       'display_search_default',
     );
     get(
-      '/api/v1/display/search?searchWord=%EC%A0%84%EC%8B%9C&status=ONGOING&region=SEOUL&cursor=0&size=20',
+      '/api/v1/displays/search?searchWord=%EC%A0%84%EC%8B%9C&status=ONGOING&region=SEOUL&cursor=0&size=20',
       'display_search_filtered',
     );
   });
 
   group('display-map', () => {
     get(
-      '/api/v1/display/map?southLatitude=37.4500&westLongitude=126.8500&northLatitude=37.7000&eastLongitude=127.1500&size=50',
+      '/api/v1/displays/map?southLatitude=37.4500&westLongitude=126.8500&northLatitude=37.7000&eastLongitude=127.1500&size=50',
       'display_map_default',
     );
     get(
-      '/api/v1/display/map?southLatitude=37.4500&westLongitude=126.8500&northLatitude=37.7000&eastLongitude=127.1500&searchWord=%EC%84%9C%EC%9A%B8&size=50',
+      '/api/v1/displays/map?southLatitude=37.4500&westLongitude=126.8500&northLatitude=37.7000&eastLongitude=127.1500&searchWord=%EC%84%9C%EC%9A%B8&size=50',
       'display_map_search',
     );
   });
 
   group('display-curation', () => {
-    get('/api/v1/display/closing-soon?size=20', 'display_closing_soon');
-    get('/api/v1/display/graduation?size=10', 'display_graduation');
-    get('/api/v1/display/du-picks?size=10', 'display_du_picks');
+    get('/api/v1/displays/closing-soon?size=20', 'display_closing_soon');
+    get('/api/v1/displays/graduation?size=10', 'display_graduation');
+    get('/api/v1/displays/du-picks?size=10', 'display_du_picks');
   });
 
   sleep(1);

@@ -49,7 +49,7 @@ class DisplayControllerReservationTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/reservation", display.getId())
+            patch("/api/v1/displays/{displayId}/reservation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reservationRequest()))
@@ -60,7 +60,7 @@ class DisplayControllerReservationTest {
         .andExpect(jsonPath("$.success.data.exhibitionContentOpen").value("IMMEDIATELY"))
         .andExpect(
             jsonPath("$.meta.path")
-                .value("/api/v1/display/%d/reservation".formatted(display.getId())));
+                .value("/api/v1/displays/%d/reservation".formatted(display.getId())));
   }
 
   @Test
@@ -70,7 +70,7 @@ class DisplayControllerReservationTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/reservation", display.getId())
+            patch("/api/v1/displays/{displayId}/reservation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reservationRequest()))
@@ -86,7 +86,7 @@ class DisplayControllerReservationTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/reservation", display.getId())
+            patch("/api/v1/displays/{displayId}/reservation", display.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reservationRequest()))
         .andExpect(status().isUnauthorized())
@@ -101,7 +101,7 @@ class DisplayControllerReservationTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/reservation", display.getId())
+            patch("/api/v1/displays/{displayId}/reservation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

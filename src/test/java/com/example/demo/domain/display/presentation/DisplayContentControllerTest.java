@@ -53,7 +53,7 @@ class DisplayContentControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/content-categories", display.getId())
+            post("/api/v1/displays/{displayId}/content-categories", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
@@ -67,7 +67,7 @@ class DisplayContentControllerTest {
         .andExpect(jsonPath("$.error").doesNotExist())
         .andExpect(
             jsonPath("$.meta.path")
-                .value("/api/v1/display/" + display.getId() + "/content-categories"));
+                .value("/api/v1/displays/" + display.getId() + "/content-categories"));
   }
 
   @Test
@@ -76,7 +76,7 @@ class DisplayContentControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/content-categories", display.getId())
+            post("/api/v1/displays/{displayId}/content-categories", display.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
         .andExpect(status().isUnauthorized())
@@ -90,7 +90,7 @@ class DisplayContentControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/content-categories", display.getId())
+            post("/api/v1/displays/{displayId}/content-categories", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(3L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
@@ -108,7 +108,7 @@ class DisplayContentControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/content-categories", savedDisplay.getId())
+            post("/api/v1/displays/{displayId}/content-categories", savedDisplay.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
@@ -123,7 +123,7 @@ class DisplayContentControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/content-categories", display.getId())
+            post("/api/v1/displays/{displayId}/content-categories", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("", "전시장 이미지입니다.")))
@@ -139,7 +139,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}",
                     display.getId(),
                     999L)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -159,7 +159,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             delete(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}",
                     savedDisplay.getId(),
                     categoryId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
@@ -180,7 +180,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             post(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents",
                     savedDisplay.getId(),
                     categoryId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -207,7 +207,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             post(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents",
                     savedDisplay.getId(),
                     categoryId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -226,7 +226,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             post(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents",
                     display.getId(),
                     999L)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -247,7 +247,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}",
                     savedDisplay.getId(),
                     categoryId,
                     999L)
@@ -271,7 +271,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}",
                     savedDisplay.getId(),
                     category.getId(),
                     contentId)
@@ -298,7 +298,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}",
                     savedDisplay.getId(),
                     category.getId(),
                     contentId)
@@ -321,7 +321,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             delete(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}",
                     savedDisplay.getId(),
                     category.getId(),
                     contentId)
@@ -345,7 +345,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             delete(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}",
                     savedDisplay.getId(),
                     category.getId(),
                     contentId)
@@ -367,7 +367,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/reorder",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/reorder",
                     savedDisplay.getId(),
                     category.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -393,7 +393,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/reorder",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/reorder",
                     savedDisplay.getId(),
                     category.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
@@ -415,7 +415,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             patch(
-                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/reorder",
+                    "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/reorder",
                     savedDisplay.getId(),
                     category.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(3L))

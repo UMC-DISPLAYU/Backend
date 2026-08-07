@@ -40,7 +40,7 @@ class DisplayControllerGraduationTest {
     jpaRepository.saveAndFlush(publishedDisplay("졸업 전시", DisplayType.GRADUATION));
 
     mockMvc
-        .perform(get("/api/v1/display/graduation").param("size", "1"))
+        .perform(get("/api/v1/displays/graduation").param("size", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].displayId", notNullValue()))
@@ -55,17 +55,17 @@ class DisplayControllerGraduationTest {
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft", notNullValue()))
         .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/graduation"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/graduation"));
   }
 
   @Test
   void getRandomGraduationDisplaysReturnsBadRequestWhenSizeIsInvalid() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/graduation").param("size", "101"))
+        .perform(get("/api/v1/displays/graduation").param("size", "101"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/graduation"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/graduation"));
   }
 
   private static Display publishedDisplay(String title, DisplayType displayType) {

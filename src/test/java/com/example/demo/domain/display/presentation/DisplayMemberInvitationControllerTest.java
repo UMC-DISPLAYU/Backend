@@ -288,7 +288,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/{displayId}/members", display.getId())
+            get("/api/v1/displays/{displayId}/members", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(member.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
@@ -320,7 +320,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/{displayId}/members", display.getId())
+            get("/api/v1/displays/{displayId}/members", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
@@ -334,7 +334,7 @@ class DisplayMemberInvitationControllerTest {
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
 
     mockMvc
-        .perform(get("/api/v1/display/{displayId}/members", display.getId()))
+        .perform(get("/api/v1/displays/{displayId}/members", display.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
@@ -353,7 +353,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/v1/display/{displayId}/exit", display.getId())
+            delete("/api/v1/displays/{displayId}/exit", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(member.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
@@ -380,7 +380,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/v1/display/{displayId}/exit", display.getId())
+            delete("/api/v1/displays/{displayId}/exit", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
@@ -394,7 +394,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/v1/display/{displayId}/exit", display.getId())
+            delete("/api/v1/displays/{displayId}/exit", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_MEMBER_NOT_FOUND"));
@@ -403,7 +403,7 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void exitDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
-        .perform(delete("/api/v1/display/{displayId}/exit", 1L))
+        .perform(delete("/api/v1/displays/{displayId}/exit", 1L))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -418,7 +418,7 @@ class DisplayMemberInvitationControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/me/nickname")
+            patch("/api/v1/displays/me/nickname")
                 .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateNicknameRequest(display.getId(), "새 전시 닉네임")))
@@ -444,7 +444,7 @@ class DisplayMemberInvitationControllerTest {
   void updateMyDisplayNicknameReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/me/nickname")
+            patch("/api/v1/displays/me/nickname")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateNicknameRequest(1L, "새 전시 닉네임")))
         .andExpect(status().isUnauthorized())

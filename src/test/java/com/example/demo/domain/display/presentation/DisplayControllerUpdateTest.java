@@ -50,7 +50,7 @@ class DisplayControllerUpdateTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/{displayId}", display.getId())
+            get("/api/v1/displays/{displayId}", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
@@ -65,7 +65,7 @@ class DisplayControllerUpdateTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/displays")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(display.getId())))
@@ -84,7 +84,7 @@ class DisplayControllerUpdateTest {
         .andExpect(jsonPath("$.success.data.period.endDate").value("2026-06-06"))
         .andExpect(jsonPath("$.success.data.period.startTime").value("09:00:00"))
         .andExpect(jsonPath("$.success.data.period.endTime").value("19:00:00"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays"));
   }
 
   @Test
@@ -94,7 +94,7 @@ class DisplayControllerUpdateTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/displays")
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(display.getId())))
@@ -110,7 +110,7 @@ class DisplayControllerUpdateTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display")
+            patch("/api/v1/displays")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(display.getId())))
         .andExpect(status().isUnauthorized())

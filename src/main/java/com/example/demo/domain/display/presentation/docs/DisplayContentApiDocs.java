@@ -96,7 +96,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:00:00",
-          "path": "/api/v1/display/12/content-categories"
+          "path": "/api/v1/displays/12/content-categories"
         }
       }
       """;
@@ -127,7 +127,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:03:00",
-          "path": "/api/v1/display/12/content-categories/3"
+          "path": "/api/v1/displays/12/content-categories/3"
         }
       }
       """;
@@ -145,7 +145,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:05:00",
-          "path": "/api/v1/display/12/content-categories/3"
+          "path": "/api/v1/displays/12/content-categories/3"
         }
       }
       """;
@@ -176,7 +176,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:10:00",
-          "path": "/api/v1/display/12/content-categories/3/contents"
+          "path": "/api/v1/displays/12/content-categories/3/contents"
         }
       }
       """;
@@ -198,7 +198,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:12:00",
-          "path": "/api/v1/display/12/content-categories/3/contents/7"
+          "path": "/api/v1/displays/12/content-categories/3/contents/7"
         }
       }
       """;
@@ -217,7 +217,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:15:00",
-          "path": "/api/v1/display/12/content-categories/3/contents/7"
+          "path": "/api/v1/displays/12/content-categories/3/contents/7"
         }
       }
       """;
@@ -268,7 +268,7 @@ public final class DisplayContentApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-24T12:20:00",
-          "path": "/api/v1/display/12/content-categories/3/contents/reorder"
+          "path": "/api/v1/displays/12/content-categories/3/contents/reorder"
         }
       }
       """;

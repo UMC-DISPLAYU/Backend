@@ -46,8 +46,6 @@ public final class DisplayApiDocs {
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
   public static final String LIKE_CANCEL_DESCRIPTION =
       "인증된 사용자가 전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
-  public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
-  public static final String LIKE_REQUEST_EXAMPLE_NAME = "Display like request";
   public static final String LIKE_SUCCESS_DESCRIPTION = "전시 좋아요 처리 성공";
   public static final String LIKE_SUCCESS_EXAMPLE_NAME = "Display like success";
   public static final String LIKE_CANCEL_SUCCESS_EXAMPLE_NAME = "Display like cancel success";
@@ -61,7 +59,10 @@ public final class DisplayApiDocs {
 
   public static final String INVITATION_DISABLE_SUMMARY = "전시 초대 링크 비활성화";
   public static final String INVITATION_DISABLE_DESCRIPTION =
-      "전시 팀장이 초대 링크를 비활성화합니다. 토큰은 삭제하지 않고 비활성화 시각만 기록하며, 이미 비활성화된 링크도 성공 응답을 반환합니다.";
+      "전시 팀장이 초대 링크 상태를 변경합니다. 현재는 invitationEnabled=false로 비활성화만 지원합니다.";
+  public static final String INVITATION_DISABLE_REQUEST_DESCRIPTION = "전시 초대 링크 상태 변경 요청";
+  public static final String INVITATION_DISABLE_REQUEST_EXAMPLE_NAME =
+      "Display invitation disable request";
   public static final String INVITATION_DISABLE_SUCCESS_DESCRIPTION = "전시 초대 링크 비활성화 성공";
   public static final String INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME =
       "Display invitation disable success";
@@ -220,7 +221,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-09T19:55:00",
-          "path": "/api/v1/display"
+          "path": "/api/v1/displays"
         }
       }
       """;
@@ -235,7 +236,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
-          "path": "/api/v1/display/1/exit"
+          "path": "/api/v1/displays/1/exit"
         }
       }
       """;
@@ -252,7 +253,7 @@ public final class DisplayApiDocs {
         },
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
-          "path": "/api/v1/display/1/exit"
+          "path": "/api/v1/displays/1/exit"
         }
       }
       """;
@@ -269,7 +270,7 @@ public final class DisplayApiDocs {
         },
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
-          "path": "/api/v1/display/1/exit"
+          "path": "/api/v1/displays/1/exit"
         }
       }
       """;
@@ -286,7 +287,7 @@ public final class DisplayApiDocs {
         },
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
-          "path": "/api/v1/display/1/exit"
+          "path": "/api/v1/displays/1/exit"
         }
       }
       """;
@@ -359,7 +360,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
-          "path": "/api/v1/display"
+          "path": "/api/v1/displays"
         }
       }
       """;
@@ -416,7 +417,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
-          "path": "/api/v1/display/publish"
+          "path": "/api/v1/displays/publish"
         }
       }
       """;
@@ -474,15 +475,15 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
-          "path": "/api/v1/display/12/reservation"
+          "path": "/api/v1/displays/12/reservation"
         }
       }
       """;
 
-  public static final String LIKE_REQUEST_EXAMPLE =
+  public static final String INVITATION_DISABLE_REQUEST_EXAMPLE =
       """
       {
-        "displayId": 12
+        "invitationEnabled": false
       }
       """;
 
@@ -499,7 +500,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-01T23:00:00",
-          "path": "/api/v1/display/like"
+          "path": "/api/v1/displays/12/likes"
         }
       }
       """;
@@ -517,7 +518,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-01T23:00:00",
-          "path": "/api/v1/display/like"
+          "path": "/api/v1/displays/12/likes"
         }
       }
       """;
@@ -535,7 +536,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-17T23:30:00",
-          "path": "/api/v1/display/12/invitation"
+          "path": "/api/v1/displays/12/invitation"
         }
       }
       """;
@@ -553,7 +554,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-17T23:30:00",
-          "path": "/api/v1/display/12/invitation/disable"
+          "path": "/api/v1/displays/12/invitation"
         }
       }
       """;
@@ -587,7 +588,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
-          "path": "/api/v1/display/map"
+          "path": "/api/v1/displays/map"
         }
       }
       """;
@@ -621,7 +622,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
-          "path": "/api/v1/display/closing-soon"
+          "path": "/api/v1/displays/closing-soon"
         }
       }
       """;
@@ -655,7 +656,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
-          "path": "/api/v1/display/search"
+          "path": "/api/v1/displays/search"
         }
       }
       """;
@@ -682,7 +683,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
-          "path": "/api/v1/display/graduation"
+          "path": "/api/v1/displays/graduation"
         }
       }
       """;
@@ -712,7 +713,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-12T07:00:00",
-          "path": "/api/v1/display/du-picks"
+          "path": "/api/v1/displays/du-picks"
         }
       }
       """;
@@ -754,7 +755,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-03T18:30:00",
-          "path": "/api/v1/display/me"
+          "path": "/api/v1/displays/me"
         }
       }
       """;
@@ -859,7 +860,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-08T23:40:00",
-          "path": "/api/v1/display/1"
+          "path": "/api/v1/displays/1"
         }
       }
       """;

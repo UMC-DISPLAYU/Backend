@@ -56,7 +56,7 @@ class DisplayControllerSearchTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/search")
+            get("/api/v1/displays/search")
                 .param("searchWord", " 디자인 ")
                 .param("status", "ONGOING")
                 .param("region", "SEOUL")
@@ -82,7 +82,7 @@ class DisplayControllerSearchTest {
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/search"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/search"));
   }
 
   @Test
@@ -95,7 +95,7 @@ class DisplayControllerSearchTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/search")
+            get("/api/v1/displays/search")
                 .header(HttpHeaders.AUTHORIZATION, bearer(7L))
                 .param("searchWord", "디자인")
                 .param("cursor", "0")
@@ -108,11 +108,11 @@ class DisplayControllerSearchTest {
   @Test
   void searchDisplaysReturnsBadRequestWhenRequiredPaginationIsMissing() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/search").param("size", "10"))
+        .perform(get("/api/v1/displays/search").param("size", "10"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/search"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/search"));
   }
 
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {

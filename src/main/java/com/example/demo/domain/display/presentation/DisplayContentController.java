@@ -114,7 +114,7 @@ public class DisplayContentController {
     this.mapper = mapper;
   }
 
-  @PostMapping("/api/v1/display/{displayId}/content-categories")
+  @PostMapping("/api/v1/displays/{displayId}/content-categories")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_CATEGORY_SUMMARY, description = CREATE_CATEGORY_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
@@ -151,7 +151,7 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/content-categories/{categoryId}")
+  @PatchMapping("/api/v1/displays/{displayId}/content-categories/{categoryId}")
   @Operation(summary = UPDATE_CATEGORY_SUMMARY, description = UPDATE_CATEGORY_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -190,7 +190,7 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @DeleteMapping("/api/v1/display/{displayId}/content-categories/{categoryId}")
+  @DeleteMapping("/api/v1/displays/{displayId}/content-categories/{categoryId}")
   @Operation(summary = DELETE_CATEGORY_SUMMARY, description = DELETE_CATEGORY_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -218,7 +218,7 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PostMapping("/api/v1/display/{displayId}/content-categories/{categoryId}/contents")
+  @PostMapping("/api/v1/displays/{displayId}/content-categories/{categoryId}/contents")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_CONTENT_SUMMARY, description = CREATE_CONTENT_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
@@ -258,7 +258,7 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}")
+  @PatchMapping("/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}")
   @Operation(summary = UPDATE_CONTENT_SUMMARY, description = UPDATE_CONTENT_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -300,7 +300,8 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @DeleteMapping("/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}")
+  @DeleteMapping(
+      "/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/{contentId}")
   @Operation(summary = DELETE_CONTENT_SUMMARY, description = DELETE_CONTENT_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -331,7 +332,7 @@ public class DisplayContentController {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/content-categories/{categoryId}/contents/reorder")
+  @PatchMapping("/api/v1/displays/{displayId}/content-categories/{categoryId}/contents/reorder")
   @Operation(summary = REORDER_CONTENTS_SUMMARY, description = REORDER_CONTENTS_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(

@@ -36,7 +36,7 @@ class DisplayControllerCreateTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display")
+            post("/api/v1/displays")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("SEOUL")))
@@ -52,7 +52,7 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.success.data.teamMembers[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].accepted").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays"));
   }
 
   @Test
@@ -61,27 +61,27 @@ class DisplayControllerCreateTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display")
+            post("/api/v1/displays")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("ALL")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays"));
   }
 
   @Test
   void createDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/display")
+            post("/api/v1/displays")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("SEOUL")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays"));
   }
 
   private static String requestBody(String region) {

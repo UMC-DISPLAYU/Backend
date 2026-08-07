@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/display/{displayId}/reviews")
+@RequestMapping("/api/v1/displays/{displayId}/reviews")
 public class DisplayReviewController implements DisplayReviewApiDocs {
   private final CreateDisplayReviewService createDisplayReviewService;
   private final CreateDisplayReviewReplyService createDisplayReviewReplyService;

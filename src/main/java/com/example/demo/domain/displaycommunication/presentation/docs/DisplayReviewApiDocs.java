@@ -94,7 +94,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
+                              "path": "/api/v1/displays/1/reviews"
                             }
                           }
                           """)))
@@ -124,7 +124,7 @@ public interface DisplayReviewApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
+                              "path": "/api/v1/displays/1/reviews"
                             }
                           }
                           """)))
@@ -149,7 +149,7 @@ public interface DisplayReviewApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
+                              "path": "/api/v1/displays/1/reviews"
                             }
                           }
                           """)))
@@ -174,7 +174,7 @@ public interface DisplayReviewApiDocs {
                           },
                           "meta": {
                             "timestamp": "2026-07-23T20:00:00",
-                            "path": "/api/v1/display/1/reviews"
+                            "path": "/api/v1/displays/1/reviews"
                           }
                         }
                         """),
@@ -192,7 +192,7 @@ public interface DisplayReviewApiDocs {
                           },
                           "meta": {
                             "timestamp": "2026-07-23T20:00:00",
-                            "path": "/api/v1/display/1/reviews"
+                            "path": "/api/v1/displays/1/reviews"
                           }
                         }
                         """)
@@ -218,7 +218,7 @@ public interface DisplayReviewApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
+                              "path": "/api/v1/displays/1/reviews"
                             }
                           }
                           """)))
@@ -268,7 +268,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T01:00:00",
-                              "path": "/api/v1/display/1/reviews/1/replies"
+                              "path": "/api/v1/displays/1/reviews/1/replies"
                             }
                           }
                           """)))
@@ -307,7 +307,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T13:00:00",
-                              "path": "/api/v1/display/1/reviews/1/like"
+                              "path": "/api/v1/displays/1/reviews/1/like"
                             }
                           }
                           """)))
@@ -344,7 +344,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T16:00:00",
-                              "path": "/api/v1/display/1/reviews/1"
+                              "path": "/api/v1/displays/1/reviews/1"
                             }
                           }
                           """)))
@@ -379,7 +379,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T17:00:00",
-                              "path": "/api/v1/display/1/reviews/1/reply/1"
+                              "path": "/api/v1/displays/1/reviews/1/reply/1"
                             }
                           }
                           """)))
@@ -418,7 +418,7 @@ public interface DisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-24T17:30:00",
-                              "path": "/api/v1/display/1/reviews/1/reply/1/like"
+                              "path": "/api/v1/displays/1/reviews/1/reply/1/like"
                             }
                           }
                           """)))

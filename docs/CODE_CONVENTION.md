@@ -106,7 +106,7 @@
 - API prefix는 `/api/v1`을 사용한다.
 - 리소스 기반 URL을 우선한다. 예: `/api/v1/lounge/posts/{loungePostId}`, `/api/v1/archives/exhibitions`.
 - 생성은 `POST`, 수정은 `PATCH`, 삭제/취소는 `DELETE`를 주로 사용한다.
-- 일부 legacy/신규 기능에서 토글 취소를 `PATCH`로 쓰는 API가 있다. 예: `/api/v1/display/like`.
+- 토글 리소스는 생성 `POST`, 취소 `DELETE`를 우선한다. 예: `/api/v1/displays/12/likes`.
 - 커서 조회는 `cursorId`, `cursor`, `size` query parameter를 사용하고 기본 size는 대체로 `10`이다.
 
 ## 14. 현재 혼용 중인 패턴과 통일 권장 사항
@@ -178,7 +178,7 @@
 ### Like/Archive 토글 API
 
 - 현재 불일치: 좋아요/저장 취소가 `DELETE`인 API와 `PATCH`인 API가 함께 존재한다.
-- 권장: 신규 토글 리소스는 생성 `POST`, 취소 `DELETE`를 우선한다. 기존 `PATCH /display/like`는 호환성 때문에 유지한다.
+- 권장: 신규 토글 리소스는 생성 `POST`, 취소 `DELETE`를 우선한다.
 - 수정 필요성: 같은 성격의 토글 API가 서로 다른 HTTP method를 쓰면 프론트엔드 구현과 문서 이해가 어려워진다.
 
 ### Query Repository 위치

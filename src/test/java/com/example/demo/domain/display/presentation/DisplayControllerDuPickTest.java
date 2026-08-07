@@ -31,7 +31,7 @@ class DisplayControllerDuPickTest {
     jpaRepository.saveAndFlush(duPick(2L, "시선이 머무는 각도", "공간을 채우는 젊은 예술가 인터뷰"));
 
     mockMvc
-        .perform(get("/api/v1/display/du-picks?size=1"))
+        .perform(get("/api/v1/displays/du-picks?size=1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.duPicks[0].duPickId").value(1))
@@ -46,17 +46,17 @@ class DisplayControllerDuPickTest {
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/du-picks"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/du-picks"));
   }
 
   @Test
   void getDuPicksReturnsBadRequestWhenSizeIsInvalid() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/du-picks?size=101"))
+        .perform(get("/api/v1/displays/du-picks?size=101"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/du-picks"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/du-picks"));
   }
 
   private static DuPickColumnJpaEntity duPick(Long id, String title, String content) {

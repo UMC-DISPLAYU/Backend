@@ -13,9 +13,9 @@ const duPicksDuration = new Trend('display_du_picks_duration');
 const closingSoonDuration = new Trend('display_closing_soon_duration');
 
 const ENDPOINTS = {
-  graduation: `${BASE_URL}/api/v1/display/graduation?size=${SIZE}`,
-  duPicks: `${BASE_URL}/api/v1/display/du-picks?size=${SIZE}`,
-  closingSoon: `${BASE_URL}/api/v1/display/closing-soon?size=${SIZE}`,
+  graduation: `${BASE_URL}/api/v1/displays/graduation?size=${SIZE}`,
+  duPicks: `${BASE_URL}/api/v1/displays/du-picks?size=${SIZE}`,
+  closingSoon: `${BASE_URL}/api/v1/displays/closing-soon?size=${SIZE}`,
 };
 
 export const options = {

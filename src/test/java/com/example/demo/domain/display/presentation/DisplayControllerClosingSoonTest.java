@@ -46,7 +46,7 @@ class DisplayControllerClosingSoonTest {
     jpaRepository.saveAndFlush(publishedDisplay("다음 전시", today.minusDays(2), today.plusDays(3)));
 
     mockMvc
-        .perform(get("/api/v1/display/closing-soon?size=1"))
+        .perform(get("/api/v1/displays/closing-soon?size=1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].displayId", notNullValue()))
@@ -69,27 +69,27 @@ class DisplayControllerClosingSoonTest {
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(true))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/closing-soon"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/closing-soon"));
   }
 
   @Test
   void getClosingSoonDisplaysReturnsBadRequestWhenSizeIsInvalid() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/closing-soon?size=101"))
+        .perform(get("/api/v1/displays/closing-soon?size=101"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/closing-soon"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/closing-soon"));
   }
 
   @Test
   void getClosingSoonDisplaysReturnsBadRequestWhenCursorFormatIsInvalid() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/closing-soon?cursor=invalid-cursor"))
+        .perform(get("/api/v1/displays/closing-soon?cursor=invalid-cursor"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/closing-soon"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/closing-soon"));
   }
 
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {

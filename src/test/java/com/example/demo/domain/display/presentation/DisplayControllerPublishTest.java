@@ -49,7 +49,7 @@ class DisplayControllerPublishTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(display.getId())))
@@ -57,7 +57,7 @@ class DisplayControllerPublishTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.status").value("PUBLISHED"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/publish"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/publish"));
   }
 
   @Test
@@ -68,7 +68,7 @@ class DisplayControllerPublishTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(display.getId())))
@@ -84,7 +84,7 @@ class DisplayControllerPublishTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(display.getId())))
@@ -100,7 +100,7 @@ class DisplayControllerPublishTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(display.getId())))
         .andExpect(status().isUnauthorized())
@@ -112,7 +112,7 @@ class DisplayControllerPublishTest {
   void publishDisplayReturnsNotFoundWhenDisplayDoesNotExist() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(999_999L)))
@@ -125,7 +125,7 @@ class DisplayControllerPublishTest {
   void publishDisplayReturnsBadRequestWhenDisplayIdIsInvalid() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(-1L)))
@@ -137,7 +137,7 @@ class DisplayControllerPublishTest {
   void publishDisplayReturnsBadRequestWhenDisplayIdIsMissing() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/publish")
+            patch("/api/v1/displays/publish")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))

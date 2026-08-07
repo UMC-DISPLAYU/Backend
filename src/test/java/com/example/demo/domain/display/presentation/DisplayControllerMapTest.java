@@ -41,7 +41,7 @@ class DisplayControllerMapTest {
 
     mockMvc
         .perform(
-            get("/api/v1/display/map")
+            get("/api/v1/displays/map")
                 .param("southLatitude", "37.4900")
                 .param("westLongitude", "126.9000")
                 .param("northLatitude", "37.5700")
@@ -63,14 +63,14 @@ class DisplayControllerMapTest {
         .andExpect(jsonPath("$.success.data.pagination.size").value(20))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(false))
         .andExpect(jsonPath("$.error").doesNotExist())
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/map"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/map"));
   }
 
   @Test
   void getDisplayMapReturnsBadRequestWhenBoundsAreReversed() throws Exception {
     mockMvc
         .perform(
-            get("/api/v1/display/map")
+            get("/api/v1/displays/map")
                 .param("southLatitude", "37.5700")
                 .param("westLongitude", "126.9000")
                 .param("northLatitude", "37.4900")
@@ -78,14 +78,14 @@ class DisplayControllerMapTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/map"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/map"));
   }
 
   @Test
   void getDisplayMapReturnsBadRequestWhenSizeIsInvalid() throws Exception {
     mockMvc
         .perform(
-            get("/api/v1/display/map")
+            get("/api/v1/displays/map")
                 .param("southLatitude", "37.4900")
                 .param("westLongitude", "126.9000")
                 .param("northLatitude", "37.5700")
@@ -94,7 +94,7 @@ class DisplayControllerMapTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/map"));
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/map"));
   }
 
   private static Display publishedDisplay(String title, String placeName) {

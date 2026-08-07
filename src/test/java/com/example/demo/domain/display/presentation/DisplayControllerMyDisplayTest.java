@@ -54,7 +54,7 @@ class DisplayControllerMyDisplayTest {
             participatedDisplay(2L, 1L, "내가 참여한 전시", today.minusDays(10), today.minusDays(1)));
 
     mockMvc
-        .perform(get("/api/v1/display/me").header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .perform(get("/api/v1/displays/me").header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(
@@ -83,7 +83,7 @@ class DisplayControllerMyDisplayTest {
   @Test
   void getMyDisplaysReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/me"))
+        .perform(get("/api/v1/displays/me"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));

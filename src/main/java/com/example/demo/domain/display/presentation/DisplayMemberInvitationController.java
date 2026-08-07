@@ -94,7 +94,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @GetMapping("/display/{displayId}/members")
+  @GetMapping("/displays/{displayId}/members")
   public ApiResponseBody<DisplayMemberListResponse> getMembers(
       @PathVariable Long displayId, HttpServletRequest httpRequest) {
     DisplayMemberListResult result = getDisplayMembersService.getMembers(displayId);
@@ -102,7 +102,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @PatchMapping("/display/me/nickname")
+  @PatchMapping("/displays/me/nickname")
   public ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
       @Valid @RequestBody UpdateMyDisplayNicknameRequest request,
       @AuthenticationPrincipal AuthUser user,

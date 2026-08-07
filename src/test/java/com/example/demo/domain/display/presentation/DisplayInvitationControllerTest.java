@@ -36,6 +36,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -64,7 +65,7 @@ class DisplayInvitationControllerTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/display/{displayId}/invitation", display.getId())
+                post("/api/v1/displays/{displayId}/invitation", display.getId())
                     .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.resultType").value("SUCCESS"))
@@ -92,12 +93,12 @@ class DisplayInvitationControllerTest {
     assertThat(firstUrl).isNotEqualTo(secondUrl);
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(firstUrl)))
+        .perform(get("/api/v1/displays/invitation/{token}", rawToken(firstUrl)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(secondUrl)))
+        .perform(get("/api/v1/displays/invitation/{token}", rawToken(secondUrl)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
   }
@@ -108,7 +109,7 @@ class DisplayInvitationControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/invitation", display.getId())
+            post("/api/v1/displays/{displayId}/invitation", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
@@ -122,7 +123,7 @@ class DisplayInvitationControllerTest {
     Display display = displayJpaRepository.saveAndFlush(display());
 
     mockMvc
-        .perform(post("/api/v1/display/{displayId}/invitation", display.getId()))
+        .perform(post("/api/v1/displays/{displayId}/invitation", display.getId()))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -135,21 +136,25 @@ class DisplayInvitationControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/displays/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(disableInvitationBody()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/displays/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(disableInvitationBody()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(invitationUrl)))
+        .perform(get("/api/v1/displays/invitation/{token}", rawToken(invitationUrl)))
         .andExpect(status().isGone())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_DISABLED"));
   }
@@ -161,8 +166,10 @@ class DisplayInvitationControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+            patch("/api/v1/displays/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(disableInvitationBody()))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
 
@@ -176,7 +183,10 @@ class DisplayInvitationControllerTest {
     issue(display.getId());
 
     mockMvc
-        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .perform(
+            patch("/api/v1/displays/{displayId}/invitation", display.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(disableInvitationBody()))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -185,7 +195,7 @@ class DisplayInvitationControllerTest {
   @Test
   void getDisplayByInvitationReturnsNotFoundWhenTokenDoesNotExist() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", "not-existing-token"))
+        .perform(get("/api/v1/displays/invitation/{token}", "not-existing-token"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
   }
@@ -196,8 +206,10 @@ class DisplayInvitationControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/displays/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(disableInvitationBody()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_NOT_ISSUED"));
   }
@@ -205,7 +217,7 @@ class DisplayInvitationControllerTest {
   private MvcResult issue(Long displayId) throws Exception {
     return mockMvc
         .perform(
-            post("/api/v1/display/{displayId}/invitation", displayId)
+            post("/api/v1/displays/{displayId}/invitation", displayId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andReturn();
@@ -213,6 +225,14 @@ class DisplayInvitationControllerTest {
 
   private String bearer(Long userId) {
     return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
+  }
+
+  private static String disableInvitationBody() {
+    return """
+        {
+          "invitationEnabled": false
+        }
+        """;
   }
 
   private String invitationUrl(MvcResult result) throws Exception {

@@ -51,7 +51,7 @@ public interface MyDisplayReviewApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-08-03T18:00:00",
-                              "path": "/api/v1/display/reviews/me"
+                              "path": "/api/v1/displays/reviews/me"
                             }
                           }
                           """)))
@@ -76,7 +76,7 @@ public interface MyDisplayReviewApiDocs {
                             },
                             "meta": {
                               "timestamp": "2026-08-03T18:00:00",
-                              "path": "/api/v1/display/reviews/me"
+                              "path": "/api/v1/displays/reviews/me"
                             }
                           }
                           """)))

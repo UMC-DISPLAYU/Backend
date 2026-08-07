@@ -47,6 +47,9 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.I
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_REQUEST_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME;
@@ -65,9 +68,6 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.L
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_DESCRIPTION;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_DESCRIPTION;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE_NAME;
@@ -116,6 +116,7 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
+import com.example.demo.domain.display.application.command.DisplayLikeCommand;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
 import com.example.demo.domain.display.application.command.PublishDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayReservationService;
@@ -137,7 +138,7 @@ import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
 import com.example.demo.domain.display.presentation.request.ClosingSoonDisplayRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
-import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
+import com.example.demo.domain.display.presentation.request.DisplayInvitationStatusRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
@@ -239,7 +240,7 @@ public class DisplayController {
     this.mapper = mapper;
   }
 
-  @PostMapping("/api/v1/display")
+  @PostMapping("/api/v1/displays")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_SUMMARY, description = CREATE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
@@ -277,7 +278,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @DeleteMapping("/api/v1/display/{displayId}/exit")
+  @DeleteMapping("/api/v1/displays/{displayId}/exit")
   @Operation(summary = EXIT_SUMMARY, description = EXIT_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -328,7 +329,7 @@ public class DisplayController {
     return ApiResponseBody.success(null, request);
   }
 
-  @PatchMapping("/api/v1/display")
+  @PatchMapping("/api/v1/displays")
   @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -362,7 +363,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/publish")
+  @PatchMapping("/api/v1/displays/publish")
   @Operation(summary = PUBLISH_SUMMARY, description = PUBLISH_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -395,7 +396,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/reservation")
+  @PatchMapping("/api/v1/displays/{displayId}/reservation")
   @Operation(summary = RESERVATION_SUMMARY, description = RESERVATION_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -432,17 +433,9 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PostMapping("/api/v1/display/like")
+  @PostMapping("/api/v1/displays/{displayId}/likes")
   @Operation(summary = LIKE_SUMMARY, description = LIKE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      description = LIKE_REQUEST_DESCRIPTION,
-      required = true,
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
       description = LIKE_SUCCESS_DESCRIPTION,
@@ -452,25 +445,19 @@ public class DisplayController {
               examples =
                   @ExampleObject(name = LIKE_SUCCESS_EXAMPLE_NAME, value = LIKE_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> likeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     DisplayLikeResult result =
-        displayLikeCommandService.like(displayLikeRequest.toCommand(requireUserId(user)));
+        displayLikeCommandService.like(new DisplayLikeCommand(displayId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/like")
+  @DeleteMapping("/api/v1/displays/{displayId}/likes")
   @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      description = LIKE_REQUEST_DESCRIPTION,
-      required = true,
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = LIKE_REQUEST_EXAMPLE_NAME, value = LIKE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
       description = LIKE_SUCCESS_DESCRIPTION,
@@ -482,15 +469,17 @@ public class DisplayController {
                       name = LIKE_CANCEL_SUCCESS_EXAMPLE_NAME,
                       value = LIKE_CANCEL_SUCCESS_EXAMPLE)))
   public ApiResponseBody<DisplayLikeResponse> cancelLikeDisplay(
-      @Valid @RequestBody DisplayLikeRequest displayLikeRequest,
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     DisplayLikeResult result =
-        displayLikeCommandService.cancel(displayLikeRequest.toCommand(requireUserId(user)));
+        displayLikeCommandService.cancel(new DisplayLikeCommand(displayId, requireUserId(user)));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PostMapping("/api/v1/display/{displayId}/invitation")
+  @PostMapping("/api/v1/displays/{displayId}/invitation")
   @Operation(summary = INVITATION_ISSUE_SUMMARY, description = INVITATION_ISSUE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -516,9 +505,19 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
+  @PatchMapping("/api/v1/displays/{displayId}/invitation")
   @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = INVITATION_DISABLE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = INVITATION_DISABLE_REQUEST_EXAMPLE_NAME,
+                      value = INVITATION_DISABLE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_DISABLE_SUCCESS_DESCRIPTION,
@@ -535,14 +534,16 @@ public class DisplayController {
               example = INVITATION_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
+      @Valid @RequestBody DisplayInvitationStatusRequest displayInvitationStatusRequest,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    displayInvitationStatusRequest.validateDisableOnly();
     DisplayInvitationDisableResult result =
         displayInvitationCommandService.disableInvitation(requireUserId(user), displayId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/display/invitation/{token}")
+  @GetMapping("/api/v1/displays/invitation/{token}")
   @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -566,7 +567,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/display/map")
+  @GetMapping("/api/v1/displays/map")
   @Operation(summary = MAP_SUMMARY, description = MAP_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -588,7 +589,7 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/search")
+  @GetMapping("/api/v1/displays/search")
   @Operation(summary = SEARCH_SUMMARY, description = SEARCH_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -612,7 +613,7 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/closing-soon")
+  @GetMapping("/api/v1/displays/closing-soon")
   @Operation(summary = CLOSING_SOON_SUMMARY, description = CLOSING_SOON_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -637,7 +638,7 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/graduation")
+  @GetMapping("/api/v1/displays/graduation")
   @Operation(summary = GRADUATION_SUMMARY, description = GRADUATION_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -662,7 +663,7 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/du-picks")
+  @GetMapping("/api/v1/displays/du-picks")
   @Operation(summary = DU_PICKS_SUMMARY, description = DU_PICKS_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -680,7 +681,7 @@ public class DisplayController {
         mapper.toResponse(getDuPicksUseCase.getDuPicks(duPickRequest.toQuery())), request);
   }
 
-  @GetMapping("/api/v1/display/me")
+  @GetMapping("/api/v1/displays/me")
   @Operation(summary = MY_DISPLAY_SUMMARY, description = MY_DISPLAY_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
@@ -699,7 +700,7 @@ public class DisplayController {
         mapper.toResponse(getMyDisplaysService.getMyDisplays(requireUserId(user))), request);
   }
 
-  @GetMapping("/api/v1/display/{displayId}")
+  @GetMapping("/api/v1/displays/{displayId}")
   @Operation(summary = DETAIL_SUMMARY, description = DETAIL_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",

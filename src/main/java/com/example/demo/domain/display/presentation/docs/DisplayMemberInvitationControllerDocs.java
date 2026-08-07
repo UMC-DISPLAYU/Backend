@@ -178,7 +178,7 @@ public interface DisplayMemberInvitationControllerDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-03T23:00:00",
-          "path": "/api/v1/display/1/members"
+          "path": "/api/v1/displays/1/members"
         }
       }
       """;
@@ -299,7 +299,7 @@ public interface DisplayMemberInvitationControllerDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-04T09:00:00",
-          "path": "/api/v1/display/me/nickname"
+          "path": "/api/v1/displays/me/nickname"
         }
       }
       """;

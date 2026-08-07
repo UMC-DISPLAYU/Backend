@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/display/reviews/me")
+@RequestMapping("/api/v1/displays/reviews/me")
 public class MyDisplayReviewController implements MyDisplayReviewApiDocs {
 
   private final GetMyDisplayReviewsService getMyDisplayReviewsService;
