@@ -120,6 +120,6 @@ public class DisplayMemberInvitationPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 }

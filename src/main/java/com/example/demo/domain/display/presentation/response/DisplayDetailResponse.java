@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public record DisplayDetailResponse(
     List<String> displayFields,
     String region,
     long likeCount,
-    boolean isBookmarked,
+    @JsonProperty("isArchived") boolean isArchived,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,

@@ -24,17 +24,17 @@ public class DisplayBookmarkEnrichmentService {
   @Transactional(readOnly = true)
   public DisplayDetailResult enrich(DisplayDetailResult result, Long userId) {
     if (userId == null) {
-      return result.withBookmarked(false);
+      return result.withArchived(false);
     }
-    boolean isBookmarked =
+    boolean isArchived =
         archiveDisplayRepository.findByUserIdAndDisplayId(userId, result.displayId()).isPresent();
-    return result.withBookmarked(isBookmarked);
+    return result.withArchived(isArchived);
   }
 
   @Transactional(readOnly = true)
   public SearchDisplayResult enrich(SearchDisplayResult result, Long userId) {
-    Set<Long> bookmarkedDisplayIds =
-        findBookmarkedDisplayIds(
+    Set<Long> archivedDisplayIds =
+        findArchivedDisplayIds(
             userId,
             result.exhibitions().stream()
                 .map(SearchDisplayResult.ExhibitionResult::displayId)
@@ -43,16 +43,15 @@ public class DisplayBookmarkEnrichmentService {
         result.exhibitions().stream()
             .map(
                 exhibition ->
-                    exhibition.withBookmarked(
-                        bookmarkedDisplayIds.contains(exhibition.displayId())))
+                    exhibition.withArchived(archivedDisplayIds.contains(exhibition.displayId())))
             .toList(),
         result.pagination());
   }
 
   @Transactional(readOnly = true)
   public ClosingSoonDisplayResult enrich(ClosingSoonDisplayResult result, Long userId) {
-    Set<Long> bookmarkedDisplayIds =
-        findBookmarkedDisplayIds(
+    Set<Long> archivedDisplayIds =
+        findArchivedDisplayIds(
             userId,
             result.exhibitions().stream()
                 .map(ClosingSoonDisplayResult.ExhibitionResult::displayId)
@@ -61,16 +60,15 @@ public class DisplayBookmarkEnrichmentService {
         result.exhibitions().stream()
             .map(
                 exhibition ->
-                    exhibition.withBookmarked(
-                        bookmarkedDisplayIds.contains(exhibition.displayId())))
+                    exhibition.withArchived(archivedDisplayIds.contains(exhibition.displayId())))
             .toList(),
         result.pagination());
   }
 
   @Transactional(readOnly = true)
   public GraduationDisplayResult enrich(GraduationDisplayResult result, Long userId) {
-    Set<Long> bookmarkedDisplayIds =
-        findBookmarkedDisplayIds(
+    Set<Long> archivedDisplayIds =
+        findArchivedDisplayIds(
             userId,
             result.exhibitions().stream()
                 .map(GraduationDisplayResult.ExhibitionResult::displayId)
@@ -79,25 +77,24 @@ public class DisplayBookmarkEnrichmentService {
         result.exhibitions().stream()
             .map(
                 exhibition ->
-                    exhibition.withBookmarked(
-                        bookmarkedDisplayIds.contains(exhibition.displayId())))
+                    exhibition.withArchived(archivedDisplayIds.contains(exhibition.displayId())))
             .toList());
   }
 
   @Transactional(readOnly = true)
   public DisplayMapResult enrich(DisplayMapResult result, Long userId) {
-    Set<Long> bookmarkedDisplayIds =
-        findBookmarkedDisplayIds(
+    Set<Long> archivedDisplayIds =
+        findArchivedDisplayIds(
             userId,
             result.markers().stream().map(DisplayMapResult.MarkerResult::displayId).toList());
     return new DisplayMapResult(
         result.markers().stream()
-            .map(marker -> marker.withBookmarked(bookmarkedDisplayIds.contains(marker.displayId())))
+            .map(marker -> marker.withArchived(archivedDisplayIds.contains(marker.displayId())))
             .toList(),
         result.pagination());
   }
 
-  private Set<Long> findBookmarkedDisplayIds(Long userId, List<Long> displayIds) {
+  private Set<Long> findArchivedDisplayIds(Long userId, List<Long> displayIds) {
     if (userId == null || displayIds.isEmpty()) {
       return Set.of();
     }

@@ -29,7 +29,7 @@ public record DisplayDetailResult(
     List<String> displayFields,
     String region,
     long likeCount,
-    boolean isBookmarked,
+    boolean isArchived,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -76,7 +76,7 @@ public record DisplayDetailResult(
             .toList());
   }
 
-  public DisplayDetailResult withBookmarked(boolean isBookmarked) {
+  public DisplayDetailResult withArchived(boolean isArchived) {
     return new DisplayDetailResult(
         displayId,
         ownerUserId,
@@ -92,7 +92,7 @@ public record DisplayDetailResult(
         displayFields,
         region,
         likeCount,
-        isBookmarked,
+        isArchived,
         period,
         artworkContentOpen,
         exhibitionContentOpen,

@@ -17,7 +17,7 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isBookmarked) {
+      boolean isArchived) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -47,7 +47,7 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           false);
     }
 
-    public ExhibitionResult withBookmarked(boolean isBookmarked) {
+    public ExhibitionResult withArchived(boolean isArchived) {
       return new ExhibitionResult(
           displayId,
           title,
@@ -57,7 +57,7 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           startedAt,
           endedAt,
           dayLeft,
-          isBookmarked);
+          isArchived);
     }
   }
 }
