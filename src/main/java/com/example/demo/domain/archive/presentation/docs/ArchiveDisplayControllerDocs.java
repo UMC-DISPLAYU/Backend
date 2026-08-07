@@ -112,7 +112,7 @@ public interface ArchiveDisplayControllerDocs {
                                 "displays": [
                                   {
                                     "posterImageUrl": "https://cdn.displayu.co.kr/posters/5.png",
-                                    "status": "ONGOING",
+                                    "status": "ENDED",
                                     "title": "syzygy",
                                     "organization": "건국대학교",
                                     "department": "디자인학과",
