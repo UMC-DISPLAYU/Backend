@@ -4,6 +4,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.aggregate.Per
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface PersonalArtworkFeelingReplyLikeRepository {
 
@@ -16,4 +17,12 @@ public interface PersonalArtworkFeelingReplyLikeRepository {
   long countByPersonalFeelingReplyIdAndDeletedAtIsNull(Long personalFeelingReplyId);
 
   Map<Long, Long> countByPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds);
+  Set<Long> findLikedPersonalFeelingReplyIds(List<Long> personalFeelingReplyIds, Long userId);
+
+  record PersonalArtworkFeelingReplyLikeSnapshot(
+      Long personalFeelingReplyId,
+      boolean liked,
+      long likeCount,
+      LocalDateTime createdAt,
+      LocalDateTime deletedAt) {}
 }

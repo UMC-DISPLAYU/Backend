@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
@@ -30,6 +31,7 @@ public class PersonalArtworkFeeling extends SoftDeleteBaseEntity {
 
   @OneToMany(mappedBy = "personalArtworkFeeling", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
+  @BatchSize(size = 50)
   private final List<PersonalArtworkFeelingImage> images = new ArrayList<>();
 
   protected PersonalArtworkFeeling() {}

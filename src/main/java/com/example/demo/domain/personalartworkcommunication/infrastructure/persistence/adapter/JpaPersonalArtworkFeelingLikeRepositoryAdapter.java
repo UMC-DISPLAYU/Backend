@@ -5,6 +5,8 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -36,5 +38,20 @@ public class JpaPersonalArtworkFeelingLikeRepositoryAdapter
   public Map<Long, Long> countByPersonalFeelingIds(List<Long> personalFeelingIds) {
     return repository.countByPersonalFeelingIds(personalFeelingIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+  }
+
+  @Override
+  public Set<Long> findLikedPersonalFeelingIds(List<Long> personalFeelingIds, Long userId) {
+    return Set.copyOf(repository.findLikedPersonalFeelingIds(personalFeelingIds, userId));
+  }
+
+  private PersonalArtworkFeelingLikeSnapshot toSnapshot(
+      PersonalArtworkFeelingLike feelingLike, long likeCount) {
+    return new PersonalArtworkFeelingLikeSnapshot(
+        feelingLike.getPersonalFeelingId(),
+        !feelingLike.isDeleted(),
+        likeCount,
+        feelingLike.getCreatedAt(),
+        feelingLike.getDeletedAt());
   }
 }

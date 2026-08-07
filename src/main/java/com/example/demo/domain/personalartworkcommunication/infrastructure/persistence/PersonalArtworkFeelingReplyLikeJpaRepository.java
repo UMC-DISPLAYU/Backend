@@ -25,4 +25,16 @@ public interface PersonalArtworkFeelingReplyLikeJpaRepository
       """)
   List<Object[]> countByPersonalFeelingReplyIds(
       @Param("personalFeelingReplyIds") List<Long> personalFeelingReplyIds);
+
+  @Query(
+      """
+      SELECT replyLike.personalFeelingReplyId
+      FROM PersonalArtworkFeelingReplyLike replyLike
+      WHERE replyLike.personalFeelingReplyId IN :personalFeelingReplyIds
+        AND replyLike.userId = :userId
+        AND replyLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedPersonalFeelingReplyIds(
+      @Param("personalFeelingReplyIds") List<Long> personalFeelingReplyIds,
+      @Param("userId") Long userId);
 }
