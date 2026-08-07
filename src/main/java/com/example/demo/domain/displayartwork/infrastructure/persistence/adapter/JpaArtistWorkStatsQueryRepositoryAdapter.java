@@ -1,9 +1,11 @@
 package com.example.demo.domain.displayartwork.infrastructure.persistence.adapter;
 
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.query.ArtistWorkStatsQueryRepository;
 import com.example.demo.domain.displayartwork.application.query.ArtistWorkStatsQueryResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.QDisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.QCreator;
+import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -37,7 +39,11 @@ public class JpaArtistWorkStatsQueryRepositoryAdapter implements ArtistWorkStats
         .from(creator)
         .join(displayArtwork)
         .on(displayArtwork.id.eq(creator.displayArtworkId))
-        .where(creator.userId.in(userIds), displayArtwork.deletedAt.isNull())
+        .where(
+            creator.userId.in(userIds),
+            displayArtwork.deletedAt.isNull(),
+            displayArtwork.status.eq(DisplayArtworkStatus.PUBLISHED),
+            displayArtwork.display.status.eq(DisplayStatus.PUBLISHED))
         .groupBy(creator.userId)
         .fetch();
   }
