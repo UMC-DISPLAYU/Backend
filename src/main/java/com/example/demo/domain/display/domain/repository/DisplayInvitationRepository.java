@@ -15,4 +15,6 @@ public interface DisplayInvitationRepository {
   List<DisplayInvitation> findPendingByInviteeUserId(Long inviteeUserId);
 
   DisplayInvitation save(DisplayInvitation invitation);
+
+  DisplayInvitation saveInNewTransaction(DisplayInvitation invitation);
 }

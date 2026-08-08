@@ -31,6 +31,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,9 +45,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -56,11 +64,33 @@ class DisplayInvitationControllerTest {
 
   @Autowired private JwtFactory jwtFactory;
 
+  @Autowired private JdbcTemplate jdbcTemplate;
+
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
   @Autowired private SpringDataDisplayInvitationJpaRepository invitationJpaRepository;
 
   @Autowired private DisplayInvitationTokenHasher tokenHasher;
+
+  @BeforeEach
+  void setUpPendingInvitationUniqueConstraint() {
+    jdbcTemplate.execute(
+        """
+        ALTER TABLE display_invitation
+        ADD COLUMN IF NOT EXISTS active_pending_invitee_user_id BIGINT
+          GENERATED ALWAYS AS (
+            CASE
+              WHEN status = 'PENDING' AND deleted_at IS NULL THEN user_id2
+              ELSE NULL
+            END
+          )
+        """);
+    jdbcTemplate.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS UQ_DISPLAYINVITATION_PENDING_DISPLAY_INVITEE
+        ON display_invitation(display_id, active_pending_invitee_user_id)
+        """);
+  }
 
   @Test
   void issueInvitationCreatesFirstInvitationLink() throws Exception {
@@ -208,41 +238,83 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void getDisplayByInvitationCreatesPendingInvitationForAuthenticatedRequester() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
-    String invitationUrl = invitationUrl(issue(display.getId()));
+    try {
+      String invitationUrl = invitationUrl(issue(display.getId()));
 
-    mockMvc
-        .perform(
-            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
 
-    List<DisplayInvitation> invitations = pendingInvitations(display.getId(), 2L);
-    assertThat(invitations).hasSize(1);
-    assertThat(invitations.get(0).getStatus()).isEqualTo(DisplayInvitationStatus.PENDING);
-    assertThat(invitations.get(0).getInviterUserId().value()).isEqualTo(1L);
-    assertThat(invitations.get(0).getInviteeUserId().value()).isEqualTo(2L);
+      List<DisplayInvitation> invitations = pendingInvitations(display.getId(), 2L);
+      assertThat(invitations).hasSize(1);
+      assertThat(invitations.get(0).getStatus()).isEqualTo(DisplayInvitationStatus.PENDING);
+      assertThat(invitations.get(0).getInviterUserId().value()).isEqualTo(1L);
+      assertThat(invitations.get(0).getInviteeUserId().value()).isEqualTo(2L);
+    } finally {
+      invitationJpaRepository.deleteAll();
+      displayJpaRepository.deleteById(display.getId());
+    }
   }
 
   @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void getDisplayByInvitationIsIdempotentForSameRequester() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
-    String invitationUrl = invitationUrl(issue(display.getId()));
+    try {
+      String invitationUrl = invitationUrl(issue(display.getId()));
 
-    mockMvc
-        .perform(
-            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
-        .andExpect(status().isOk());
-    mockMvc
-        .perform(
-            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
-        .andExpect(status().isOk());
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+          .andExpect(status().isOk());
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+          .andExpect(status().isOk());
 
-    assertThat(pendingInvitations(display.getId(), 2L)).hasSize(1);
+      assertThat(pendingInvitations(display.getId(), 2L)).hasSize(1);
+    } finally {
+      invitationJpaRepository.deleteAll();
+      displayJpaRepository.deleteById(display.getId());
+    }
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void getDisplayByInvitationCreatesOnlyOnePendingInvitationForConcurrentRequests()
+      throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String token = rawToken(invitationUrl(issue(display.getId())));
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    CountDownLatch startLatch = new CountDownLatch(1);
+
+    try {
+      List<Future<Integer>> responses =
+          List.of(
+              executorService.submit(
+                  () -> getDisplayByInvitationStatusAfterStart(startLatch, token)),
+              executorService.submit(
+                  () -> getDisplayByInvitationStatusAfterStart(startLatch, token)));
+
+      startLatch.countDown();
+
+      for (Future<Integer> response : responses) {
+        assertThat(response.get(5, TimeUnit.SECONDS)).isEqualTo(200);
+      }
+      assertThat(pendingInvitations(display.getId(), 2L)).hasSize(1);
+    } finally {
+      executorService.shutdownNow();
+      invitationJpaRepository.deleteAll();
+      displayJpaRepository.deleteById(display.getId());
+    }
   }
 
   @Test
@@ -310,13 +382,21 @@ class DisplayInvitationControllerTest {
     return invitationUrl.substring(INVITATION_BASE_URL.length());
   }
 
+  private int getDisplayByInvitationStatusAfterStart(CountDownLatch startLatch, String token)
+      throws Exception {
+    startLatch.await(5, TimeUnit.SECONDS);
+    return mockMvc
+        .perform(
+            get("/api/v1/display/invitation/{token}", token)
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andReturn()
+        .getResponse()
+        .getStatus();
+  }
+
   private List<DisplayInvitation> pendingInvitations(Long displayId, Long inviteeUserId) {
-    return invitationJpaRepository
-        .findByInviteeUserIdValueAndStatusAndDeletedAtIsNullOrderByIdDesc(
-            inviteeUserId, DisplayInvitationStatus.PENDING)
-        .stream()
-        .filter(invitation -> invitation.getDisplay().getId().equals(displayId))
-        .toList();
+    return invitationJpaRepository.findByDisplayIdAndInviteeUserIdValueAndStatusAndDeletedAtIsNull(
+        displayId, inviteeUserId, DisplayInvitationStatus.PENDING);
   }
 
   private static Display display() {
