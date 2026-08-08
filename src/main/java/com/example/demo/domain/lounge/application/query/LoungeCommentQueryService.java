@@ -54,6 +54,8 @@ public class LoungeCommentQueryService {
         loungeCommentQueryRepository
             .findActiveById(loungeCommentId)
             .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
+    LoungePost loungePost = getActivePost(comment.loungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), viewerUserId);
 
     return toResults(List.of(comment), viewerUserId, comment.parentCommentId() == null).getFirst();
   }

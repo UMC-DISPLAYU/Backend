@@ -266,6 +266,22 @@ class LoungePublicQueryControllerTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
 
+    LoungePost restrictedPost =
+        postRepository.saveAndFlush(
+            LoungePost.create(
+                new UserId(unverifiedUser.getId()),
+                "작가 전용 게시글",
+                "작가 전용 게시글 내용",
+                LoungePostCategory.WORK_TIP));
+    mockMvc
+        .perform(
+            patch("/api/v1/lounge/posts/{loungePostId}", restrictedPost.getId())
+                .header("Authorization", "Bearer unverified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artistPostRequest("DISPLAY_REVIEW")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
     mockMvc
         .perform(
             post("/api/v1/lounge/posts")

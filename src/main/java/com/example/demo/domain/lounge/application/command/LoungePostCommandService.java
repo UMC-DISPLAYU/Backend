@@ -57,6 +57,7 @@ public class LoungePostCommandService {
 
     LoungePost loungePost = getPost(loungePostId);
     validateAuthor(loungePost, new UserId(requesterUserId));
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), requesterUserId);
     loungeAccessPolicy.validateCategoryAccess(command.category(), requesterUserId);
 
     loungePost.changeContent(command.title(), command.content());
