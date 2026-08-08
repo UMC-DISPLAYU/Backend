@@ -13,6 +13,7 @@ public record CreateDisplayCommand(
     Long ownerUserId,
     String title,
     String posterImageUrl,
+    List<String> displayImageUrls,
     String subtitle,
     String content,
     String placeName,

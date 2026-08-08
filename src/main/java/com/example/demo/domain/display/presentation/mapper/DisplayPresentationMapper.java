@@ -28,6 +28,7 @@ import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,6 +39,7 @@ public class DisplayPresentationMapper {
         ownerUserId,
         request.title(),
         request.posterImageUrl(),
+        request.displayImageUrls() == null ? List.of() : request.displayImageUrls(),
         request.subtitle(),
         request.description(),
         request.locationName(),

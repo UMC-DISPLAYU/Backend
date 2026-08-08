@@ -8,7 +8,8 @@ public final class DisplayApiDocs {
   public static final String CREATE_SUMMARY = "전시 생성";
   public static final String CREATE_DESCRIPTION =
       "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
-          + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다.";
+          + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다. "
+          + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다.";
   public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
@@ -137,6 +138,11 @@ public final class DisplayApiDocs {
         "title": "FORM 2026",
         "posterImageUrl": "https://cdn...",
         "_posterImageUrlRule": "대표 이미지는 서버에서 imageType=MAIN, sortOrder=0으로 저장됩니다.",
+        "displayImageUrl": [
+          "https://cdn.../detail-1.jpg",
+          "https://cdn.../detail-2.jpg"
+        ],
+        "_displayImageUrlRule": "최대 4개까지 전달할 수 있으며 imageType=DETAIL, sortOrder=0부터 순서대로 저장됩니다.",
         "type": "GRADUATION",
         "fields": ["DESIGN", "MEDIA"],
         "region": "SEOUL",
