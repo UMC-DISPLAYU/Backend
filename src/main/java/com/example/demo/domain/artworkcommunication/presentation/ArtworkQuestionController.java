@@ -43,6 +43,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
 
   @Override
   @GetMapping
+  @SecurityRequirement(name = "Authorization")
   // 질문 목록 및 답변 조회
   public ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @PathVariable Long artworkId,
