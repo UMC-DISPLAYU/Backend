@@ -26,6 +26,8 @@ env:
   ALLOY_CONTAINER_NAME: displayu-alloy
   ALLOY_NETWORK: displayu-monitoring
   ALLOY_INSTANCE: ${{ secrets.ALLOY_INSTANCE || 'displayu-ec2' }}
+  DOCKER_SOCKET_PROXY_IMAGE: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
+  DOCKER_SOCKET_PROXY_CONTAINER_NAME: displayu-docker-proxy
   TEMP_DB_NAME: displayu_migration_precheck
   APPLICATION_JAR: build/libs/demo-0.0.1-SNAPSHOT.jar
   PRODUCTION_DB_TUNNEL_PORT: "13306"
@@ -710,7 +712,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Prepare SSH key
         run: |
@@ -747,6 +751,8 @@ jobs:
           RUNTIME_CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
           RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS: ${{ secrets.PRESIGNED_URL_EXPIRATION_SECONDS || '3600' }}
         run: |
+          umask 0277
+
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
             printf 'SPRING_FLYWAY_ENABLED=false\n'
@@ -786,6 +792,7 @@ jobs:
           GRAFANA_CLOUD_API_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
         run: |
           set -euo pipefail
+          umask 0277
 
           for name in GRAFANA_PROMETHEUS_URL GRAFANA_PROMETHEUS_USERNAME GRAFANA_LOKI_URL GRAFANA_LOKI_USERNAME GRAFANA_CLOUD_API_TOKEN; do
             if [ -z "${!name}" ]; then
@@ -806,6 +813,7 @@ jobs:
 
       - name: Copy deployment files to EC2
         run: |
+          chmod 600 .env.deploy .env.alloy
           ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p ~/displayu-backend/monitoring"
           scp -i ~/.ssh/deploy_key -P "$EC2_PORT" .env.deploy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/.env"
           scp -i ~/.ssh/deploy_key -P "$EC2_PORT" .env.alloy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/.env.alloy"
@@ -829,6 +837,8 @@ jobs:
              ALLOY_IMAGE=\"$ALLOY_IMAGE\"
              ALLOY_CONTAINER_NAME=\"$ALLOY_CONTAINER_NAME\"
              ALLOY_NETWORK=\"$ALLOY_NETWORK\"
+             DOCKER_SOCKET_PROXY_IMAGE=\"$DOCKER_SOCKET_PROXY_IMAGE\"
+             DOCKER_SOCKET_PROXY_CONTAINER_NAME=\"$DOCKER_SOCKET_PROXY_CONTAINER_NAME\"
              ECR_ACCOUNT_ID=\$(aws sts get-caller-identity --query Account --output text)
              ECR_REGISTRY=\"\$ECR_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com\"
              IMAGE_URI=\"\$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG\"
@@ -877,6 +887,7 @@ jobs:
              # Pull the image built by this workflow
              docker pull \"\$IMAGE_URI\"
              docker pull \"\$ALLOY_IMAGE\"
+             docker pull \"\$DOCKER_SOCKET_PROXY_IMAGE\"
 
              if ! docker network inspect \"\$ALLOY_NETWORK\" >/dev/null 2>&1; then
                docker network create \"\$ALLOY_NETWORK\" >/dev/null
@@ -906,6 +917,23 @@ jobs:
                docker rm \"\$ALLOY_CONTAINER_NAME\" >/dev/null 2>&1 || true
              fi
 
+             if docker ps -a --format '{{.Names}}' | grep -Fxq \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\"; then
+               docker stop \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+               docker rm \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+             fi
+
+             docker run -d \
+               --name \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" \
+               --restart unless-stopped \
+               --network \"\$ALLOY_NETWORK\" \
+               --network-alias docker-proxy \
+               --env CONTAINERS=1 \
+               --env POST=0 \
+               --log-opt max-size=10m \
+               --log-opt max-file=3 \
+               -v /var/run/docker.sock:/var/run/docker.sock:ro \
+               \"\$DOCKER_SOCKET_PROXY_IMAGE\"
+
              docker run -d \
                --name \"\$ALLOY_CONTAINER_NAME\" \
                --restart unless-stopped \
@@ -914,7 +942,6 @@ jobs:
                --log-opt max-size=10m \
                --log-opt max-file=3 \
                -v \"\$ALLOY_CONFIG_FILE:/etc/alloy/config.alloy:ro\" \
-               -v /var/run/docker.sock:/var/run/docker.sock:ro \
                -v displayu-alloy-data:/var/lib/alloy/data \
                \"\$ALLOY_IMAGE\" \
                run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
@@ -926,10 +953,11 @@ jobs:
                status=\$(docker inspect -f '{{.State.Status}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
                health=\$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
                alloy_status=\$(docker inspect -f '{{.State.Status}}' \"\$ALLOY_CONTAINER_NAME\" 2>/dev/null || echo missing)
+               proxy_status=\$(docker inspect -f '{{.State.Status}}' \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" 2>/dev/null || echo missing)
 
-               echo \"Container check \$attempt/\$max_attempts: app=\$status health=\$health alloy=\$alloy_status\"
+               echo \"Container check \$attempt/\$max_attempts: app=\$status health=\$health alloy=\$alloy_status proxy=\$proxy_status\"
 
-               if [ \"\$status\" = \"running\" ] && [ \"\$alloy_status\" = \"running\" ] \
+               if [ \"\$status\" = \"running\" ] && [ \"\$alloy_status\" = \"running\" ] && [ \"\$proxy_status\" = \"running\" ] \
                  && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
                  success_count=\$((success_count + 1))
                  if [ \"\$success_count\" -ge 2 ]; then
@@ -949,6 +977,11 @@ jobs:
                if [ \"\$alloy_status\" = \"exited\" ] || [ \"\$alloy_status\" = \"dead\" ] || [ \"\$alloy_status\" = \"missing\" ]; then
                  echo \"Alloy failed during startup. Recent logs:\"
                  docker logs --tail 120 \"\$ALLOY_CONTAINER_NAME\" || true
+                 exit 1
+               fi
+               if [ \"\$proxy_status\" = \"exited\" ] || [ \"\$proxy_status\" = \"dead\" ] || [ \"\$proxy_status\" = \"missing\" ]; then
+                 echo \"Docker Socket Proxy failed during startup. Recent logs:\"
+                 docker logs --tail 120 \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" || true
                  exit 1
                fi
 

@@ -1,6 +1,8 @@
 prometheus.scrape "spring_boot" {
-	targets    = [{"__address__" = "displayu-backend:8081"}]
-	forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+	metrics_path    = "/actuator/prometheus"
+	scrape_interval = "15s"
+	targets         = [{"__address__" = "displayu-backend:8081"}]
+	forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
 }
 
 prometheus.remote_write "grafana_cloud" {
@@ -19,7 +21,7 @@ prometheus.remote_write "grafana_cloud" {
 }
 
 discovery.docker "containers" {
-	host = "unix:///var/run/docker.sock"
+	host = "tcp://docker-proxy:2375"
 }
 
 discovery.relabel "app_logs" {
@@ -33,7 +35,7 @@ discovery.relabel "app_logs" {
 }
 
 loki.source.docker "app" {
-	host    = "unix:///var/run/docker.sock"
+	host    = "tcp://docker-proxy:2375"
 	targets = discovery.relabel.app_logs.output
 	labels  = {
 		service_name = "displayu-backend",
