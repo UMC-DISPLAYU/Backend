@@ -39,8 +39,6 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @GetMapping
-  @SecurityRequirement(name = "Authorization")
-  @SecurityRequirement(name = "")
   // 감상평 목록 및 답변 조회
   public ApiResponseBody<ArtworkFeelingListResponse> getFeelings(
       @PathVariable Long artworkId,
@@ -59,8 +57,6 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
 
   @Override
   @GetMapping("/{feelingId}/replies")
-  @SecurityRequirement(name = "Authorization")
-  @SecurityRequirement(name = "")
   // 감상평 답변 목록 조회
   public ApiResponseBody<ArtworkFeelingReplyListResponse> getFeelingReplies(
       @PathVariable Long artworkId,
