@@ -586,6 +586,7 @@ public class DisplayController {
 
   @GetMapping("/api/v1/display/invitation/{token}")
   @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
       description = INVITATION_DETAIL_SUCCESS_DESCRIPTION,
@@ -602,9 +603,10 @@ public class DisplayController {
           String token,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    Long requesterUserId = requireUserId(user);
     DisplayDetailResult result =
         displayBookmarkEnrichmentService.enrich(
-            getDisplayByInvitationService.getDisplay(token), userIdOrNull(user));
+            getDisplayByInvitationService.getDisplay(token, requesterUserId), requesterUserId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

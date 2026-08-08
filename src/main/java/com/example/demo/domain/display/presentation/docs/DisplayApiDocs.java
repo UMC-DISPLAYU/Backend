@@ -77,7 +77,9 @@ public final class DisplayApiDocs {
 
   public static final String INVITATION_DETAIL_SUMMARY = "초대 토큰으로 전시 조회";
   public static final String INVITATION_DETAIL_DESCRIPTION =
-      "초대 URL의 원본 토큰으로 전시 상세 정보를 조회합니다. 유효하지 않거나 비활성화된 초대 링크는 실패 응답을 반환합니다.";
+      "인증된 사용자가 초대 URL의 원본 토큰으로 전시 상세 정보를 조회합니다. "
+          + "조회 시 요청 사용자에게 대기 중인 전시 초대가 생성될 수 있습니다. "
+          + "유효하지 않거나 비활성화된 초대 링크는 실패 응답을 반환합니다.";
   public static final String INVITATION_DETAIL_SUCCESS_DESCRIPTION = "초대 토큰 전시 조회 성공";
   public static final String INVITATION_DETAIL_SUCCESS_EXAMPLE_NAME =
       "Display invitation detail success";
