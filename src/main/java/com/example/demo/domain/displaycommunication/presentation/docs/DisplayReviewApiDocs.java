@@ -28,7 +28,7 @@ public interface DisplayReviewApiDocs {
       summary = "전시 후기 목록 조회",
       description =
           """
-          전시 후기를 최신순 커서 페이지네이션으로 조회합니다. 삭제된 후기도 목록에 유지되며 isDeleted가 true로 반환됩니다.
+          전시 후기를 최신순 커서 페이지네이션으로 조회합니다. 삭제된 후기는 활성 답글이 하나 이상 있을 때만 목록에 유지되며 isDeleted가 true로 반환됩니다.
           로그인한 사용자는 각 후기의 좋아요 여부(isLiked)와 본인 작성 여부(isMine)를 확인할 수 있고, 비회원 조회 시 두 값은 false입니다.
           """)
   @ApiResponse(responseCode = "200", description = "전시 후기 목록 조회 성공")
@@ -144,7 +144,7 @@ public interface DisplayReviewApiDocs {
                             "success": null,
                             "error": {
                               "code": "DISPLAY_REVIEW_NOT_WRITABLE",
-                              "message": "진행 중인 공개 전시에만 후기를 작성할 수 있습니다.",
+                              "message": "시작한 공개 전시에만 후기를 작성할 수 있습니다.",
                               "details": null
                             },
                             "meta": {
@@ -197,31 +197,6 @@ public interface DisplayReviewApiDocs {
                         }
                         """)
               }))
-  @ApiResponse(
-      responseCode = "409",
-      description = "이미 작성한 후기",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Display review already exists",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "DISPLAY_REVIEW_ALREADY_EXISTS",
-                              "message": "이미 해당 전시의 후기를 작성했습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-23T20:00:00",
-                              "path": "/api/v1/display/1/reviews"
-                            }
-                          }
-                          """)))
   @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<DisplayReviewResponse> createReview(
       @Parameter(description = "후기를 작성할 전시 ID", example = "1") Long displayId,
@@ -322,7 +297,7 @@ public interface DisplayReviewApiDocs {
   @Operation(
       summary = "전시 후기 삭제",
       description =
-          "작성자가 자신의 전시 후기를 삭제합니다. 삭제된 후기는 목록에 isDeleted=true로 유지되며, 해당 후기의 답글은 삭제되지 않습니다.")
+          "작성자가 자신의 전시 후기를 삭제합니다. 해당 후기의 답글은 삭제되지 않으며, 활성 답글이 남아 있는 동안 목록에 isDeleted=true로 유지됩니다.")
   @ApiResponse(
       responseCode = "200",
       description = "전시 후기 삭제 성공",

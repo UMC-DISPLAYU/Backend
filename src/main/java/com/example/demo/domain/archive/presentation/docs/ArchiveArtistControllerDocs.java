@@ -1,7 +1,6 @@
 package com.example.demo.domain.archive.presentation.docs;
 
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveArtistResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -95,49 +94,6 @@ public interface ArchiveArtistControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "저장된 작가 상세 조회", description = "저장 기록 ID로 저장된 작가 상세를 조회합니다.")
-  @ApiResponse(
-      responseCode = "200",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "archiveArtistId": 1,
-                                "artistId": 1,
-                                "userId": 1,
-                                "savedAt": "2026-07-13T01:49:28"
-                              }
-                            },
-                            "error": null,
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "401",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
-                          }
-                          """)))
-  ApiResponseBody<ArchiveArtistResponse> getArchiveArtistDetail(
-      @Parameter(description = "저장된 작가(아카이브 기록) ID", example = "1") @PathVariable @Positive Long savedArtistId,
-      AuthUser user,
-      HttpServletRequest request);
-
   @Operation(summary = "저장된 작가 목록 조회", description = "내가 저장한 작가 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다.")
   @ApiResponse(
       responseCode = "200",
@@ -153,12 +109,22 @@ public interface ArchiveArtistControllerDocs {
                               "data": {
                                 "artists": [
                                   {
+                                    "profileImageUrl": "https://cdn.displayu.co.kr/artists/5/profile.png",
+                                    "artistName": "김지원",
+                                    "fields": ["PAINTING", "ILLUSTRATION"],
+                                    "artworkCount": 24,
+                                    "exhibitionCount": 8,
                                     "archiveArtistId": 2,
                                     "artistId": 5,
                                     "userId": 1,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
+                                    "profileImageUrl": "https://cdn.displayu.co.kr/artists/3/profile.png",
+                                    "artistName": "고상준",
+                                    "fields": ["DESIGN"],
+                                    "artworkCount": 3,
+                                    "exhibitionCount": 1,
                                     "archiveArtistId": 1,
                                     "artistId": 3,
                                     "userId": 1,

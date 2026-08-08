@@ -1,0 +1,57 @@
+prometheus.scrape "spring_boot" {
+	metrics_path    = "/actuator/prometheus"
+	scrape_interval = "15s"
+	targets         = [{"__address__" = "displayu-backend:8081"}]
+	forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+	external_labels = {
+		instance = sys.env("ALLOY_INSTANCE"),
+	}
+
+	endpoint {
+		url = sys.env("GRAFANA_PROMETHEUS_URL")
+
+		basic_auth {
+			username = sys.env("GRAFANA_PROMETHEUS_USERNAME")
+			password = sys.env("GRAFANA_CLOUD_API_TOKEN")
+		}
+	}
+}
+
+discovery.docker "containers" {
+	host = "tcp://docker-proxy:2375"
+}
+
+discovery.relabel "app_logs" {
+	targets = discovery.docker.containers.targets
+
+	rule {
+		source_labels = ["__meta_docker_container_label_alloy_logs"]
+		regex         = "displayu-backend"
+		action        = "keep"
+	}
+}
+
+loki.source.docker "app" {
+	host    = "tcp://docker-proxy:2375"
+	targets = discovery.relabel.app_logs.output
+	labels  = {
+		service_name = "displayu-backend",
+		environment  = sys.env("DEPLOY_ENVIRONMENT"),
+		instance     = sys.env("ALLOY_INSTANCE"),
+	}
+	forward_to = [loki.write.grafana_cloud.receiver]
+}
+
+loki.write "grafana_cloud" {
+	endpoint {
+		url = sys.env("GRAFANA_LOKI_URL")
+
+		basic_auth {
+			username = sys.env("GRAFANA_LOKI_USERNAME")
+			password = sys.env("GRAFANA_CLOUD_API_TOKEN")
+		}
+	}
+}

@@ -19,13 +19,11 @@ public enum DisplayCommunicationErrorCode implements BaseErrorCode {
       "INVALID_DISPLAY_REVIEW_REPLY_IMAGES",
       "전시 후기 답글 이미지는 최대 5장까지 등록할 수 있습니다."),
   DISPLAY_REVIEW_NOT_WRITABLE(
-      HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_NOT_WRITABLE", "진행 중인 공개 전시에만 후기를 작성할 수 있습니다."),
+      HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_NOT_WRITABLE", "시작한 공개 전시에만 후기를 작성할 수 있습니다."),
   DISPLAY_REVIEW_FORBIDDEN(
       HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_FORBIDDEN", "전시 후기 작성자만 삭제할 수 있습니다."),
   DISPLAY_REVIEW_REPLY_FORBIDDEN(
-      HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_REPLY_FORBIDDEN", "전시 후기 답글 작성자만 삭제할 수 있습니다."),
-  DISPLAY_REVIEW_ALREADY_EXISTS(
-      HttpStatus.CONFLICT, "DISPLAY_REVIEW_ALREADY_EXISTS", "이미 해당 전시의 후기를 작성했습니다.");
+      HttpStatus.FORBIDDEN, "DISPLAY_REVIEW_REPLY_FORBIDDEN", "전시 후기 답글 작성자만 삭제할 수 있습니다.");
 
   private final HttpStatus status;
   private final String code;

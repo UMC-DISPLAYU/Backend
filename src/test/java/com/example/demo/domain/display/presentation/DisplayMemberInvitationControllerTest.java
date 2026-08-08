@@ -329,16 +329,12 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
-  void getMembersReturnsAcceptedDisplayMembersWithoutAuthentication() throws Exception {
-    User leader = userJpaRepository.save(user("leader"));
-    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
-
+  void getMembersReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/{displayId}/members", display.getId()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
-        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.members.length()").value(1));
+        .perform(get("/api/v1/display/{displayId}/members", 1L))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   @Test

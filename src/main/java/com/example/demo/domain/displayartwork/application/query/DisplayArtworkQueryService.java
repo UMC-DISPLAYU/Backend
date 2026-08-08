@@ -92,14 +92,14 @@ public class DisplayArtworkQueryService {
         requesterUserId != null
             && displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
                 displayArtworkId, requesterUserId);
-    boolean isSaved =
+    boolean isArchived =
         requesterUserId != null
             && archiveWorkRepository
                 .findByUserIdAndDisplayArtworkId(requesterUserId, displayArtworkId)
                 .isPresent();
 
     return DisplayArtworkDetailResult.of(
-        displayArtwork, artistName, artistUserId, qaHandlers, likeCount, isLiked, isSaved);
+        displayArtwork, artistName, artistUserId, qaHandlers, likeCount, isLiked, isArchived);
   }
 
   /** 수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위해 공동 작업자까지 포함해 조회한다. */

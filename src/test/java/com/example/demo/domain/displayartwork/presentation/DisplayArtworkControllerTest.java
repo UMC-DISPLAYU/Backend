@@ -7,10 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.global.security.JwtFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 class DisplayArtworkControllerTest {
 
   @Autowired private MockMvc mockMvc;
+
+  @Autowired private JwtFactory jwtFactory;
 
   @Test
   void likeDisplayArtworkReturnsUnauthorizedWithoutAuthentication() throws Exception {
@@ -54,6 +58,7 @@ class DisplayArtworkControllerTest {
     mockMvc
         .perform(
             post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -129,6 +134,7 @@ class DisplayArtworkControllerTest {
     mockMvc
         .perform(
             post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -208,5 +214,9 @@ class DisplayArtworkControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  private String bearer(Long userId) {
+    return "Bearer " + jwtFactory.create(userId.toString(), 3_600_000L, "ACCESS");
   }
 }

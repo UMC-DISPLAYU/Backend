@@ -8,13 +8,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface DisplayReviewJpaRepository extends JpaRepository<DisplayReview, Long> {
-  boolean existsByDisplayIdAndUserIdAndDeletedAtIsNull(Long displayId, Long userId);
-
   @Query(
       """
       SELECT review
       FROM DisplayReview review
       WHERE review.displayId = :displayId
+        AND (
+          review.deletedAt IS NULL
+          OR EXISTS (
+            SELECT reply.displayReviewReplyId
+            FROM DisplayReviewReply reply
+            WHERE reply.displayReviewId = review.displayReviewId
+              AND reply.deletedAt IS NULL
+          )
+        )
         AND (:cursorId IS NULL OR review.displayReviewId < :cursorId)
       ORDER BY review.displayReviewId DESC
       """)

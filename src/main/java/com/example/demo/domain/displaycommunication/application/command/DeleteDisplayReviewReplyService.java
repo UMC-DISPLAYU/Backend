@@ -22,7 +22,7 @@ public class DeleteDisplayReviewReplyService {
     displayReviewValidator.validateUserExists(command.userId());
 
     DisplayReview displayReview =
-        displayReviewValidator.findReviewOrThrow(command.displayReviewId());
+        displayReviewValidator.findReviewIncludingDeletedOrThrow(command.displayReviewId());
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
     DisplayReviewReply displayReviewReply =

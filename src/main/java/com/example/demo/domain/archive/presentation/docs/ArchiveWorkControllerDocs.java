@@ -1,7 +1,6 @@
 package com.example.demo.domain.archive.presentation.docs;
 
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -81,36 +80,6 @@ public interface ArchiveWorkControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "저장된 작품 상세 조회", description = "저장 기록 ID로 저장된 작품 상세를 조회합니다.")
-  @SecurityRequirement(name = "Authorization")
-  @ApiResponse(
-      responseCode = "200",
-      description = "저장된 작품 상세 조회 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "상세 조회 성공", value = ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE)))
-  @ApiResponse(
-      responseCode = "401",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
-                          }
-                          """)))
-  ApiResponseBody<ArchiveWorkResponse> getArchiveWorkDetail(
-      @Parameter(description = "저장된 작품(아카이브 기록) ID", example = "1") @PathVariable @Positive Long savedArtworkId,
-      AuthUser user,
-      HttpServletRequest request);
-
   @Operation(summary = "저장된 작품 목록 조회", description = "내가 저장한 작품 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -174,24 +143,6 @@ public interface ArchiveWorkControllerDocs {
       }
       """;
 
-  String ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "archiveWorkId": 1,
-            "artworkId": 1,
-            "userId": 1,
-            "memo": "이 작품의 색감이 좋았다.",
-            "savedAt": "2026-07-13T01:49:28"
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
-      }
-      """;
-
   String ARCHIVE_WORK_LIST_SUCCESS_EXAMPLE =
       """
       {
@@ -200,10 +151,13 @@ public interface ArchiveWorkControllerDocs {
           "data": {
             "works": [
               {
+                "artworkImageUrl": "https://cdn.displayu.co.kr/artworks/1/thumb.jpg",
+                "artworkName": "FORM 2026",
+                "artistName": "고상준",
+                "memo": "이 작품의 색감이 좋았다.",
                 "archiveWorkId": 1,
                 "artworkId": 1,
                 "userId": 1,
-                "memo": "이 작품의 색감이 좋았다.",
                 "savedAt": "2026-07-13T01:49:28"
               }
             ],

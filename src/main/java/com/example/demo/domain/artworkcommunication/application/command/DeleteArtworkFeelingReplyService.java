@@ -29,7 +29,7 @@ public class DeleteArtworkFeelingReplyService {
             .findById(command.feelingId())
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-    artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
+    artworkFeelingValidator.validateReplyDeletionTarget(artworkFeeling, command.displayArtworkId());
 
     ArtworkFeelingReply reply =
         artworkFeelingValidator.findActiveReplyForUpdateOrThrow(command.feelingReplyId());
