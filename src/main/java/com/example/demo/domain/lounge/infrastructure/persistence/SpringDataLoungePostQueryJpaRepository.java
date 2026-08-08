@@ -4,6 +4,7 @@ import com.example.demo.domain.lounge.application.query.LoungePostQueryResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungePostImage;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
+import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.type.LoungePostStatus;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       )
       FROM LoungePost post
       WHERE post.authorUserId.value = :userId
+        AND post.category IN :categories
         AND post.status = :status
         AND post.deletedAt IS NULL
         AND (:cursorId IS NULL OR post.id < :cursorId)
@@ -33,6 +35,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       """)
   List<LoungePostQueryResult> findActiveByAuthorCursor(
       @Param("userId") Long userId,
+      @Param("categories") List<LoungePostCategory> categories,
       @Param("status") LoungePostStatus status,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
@@ -51,6 +54,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       FROM LoungePostScrap postScrap
       JOIN LoungePost post ON post.id = postScrap.loungePostId
       WHERE postScrap.userId.value = :userId
+        AND post.category IN :categories
         AND post.status = :status
         AND post.deletedAt IS NULL
         AND (:cursorId IS NULL OR postScrap.id < :cursorId)
@@ -58,6 +62,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       """)
   List<LoungePostQueryResult> findActiveScrappedByUserCursor(
       @Param("userId") Long userId,
+      @Param("categories") List<LoungePostCategory> categories,
       @Param("status") LoungePostStatus status,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
@@ -76,6 +81,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       FROM LoungeComment comment
       JOIN LoungePost post ON post.id = comment.loungePostId
       WHERE comment.authorUserId.value = :userId
+        AND post.category IN :categories
         AND comment.status = :commentStatus
         AND comment.deletedAt IS NULL
         AND post.status = :postStatus
@@ -86,6 +92,7 @@ public interface SpringDataLoungePostQueryJpaRepository extends Repository<Loung
       """)
   List<LoungePostQueryResult> findActiveCommentedByUserCursor(
       @Param("userId") Long userId,
+      @Param("categories") List<LoungePostCategory> categories,
       @Param("commentStatus") LoungeCommentStatus commentStatus,
       @Param("postStatus") LoungePostStatus postStatus,
       @Param("cursorId") Long cursorId,

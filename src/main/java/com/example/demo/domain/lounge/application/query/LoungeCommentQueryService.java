@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.query;
 
+import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
 import com.example.demo.domain.lounge.application.result.LoungeCommentCursorResult;
 import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
 import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult;
@@ -30,18 +31,21 @@ public class LoungeCommentQueryService {
   private final LoungeCommentQueryRepository loungeCommentQueryRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
   private final LoungeWriterRepository loungeWriterRepository;
+  private final LoungeAccessPolicy loungeAccessPolicy;
 
   public LoungeCommentQueryService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
       LoungeCommentQueryRepository loungeCommentQueryRepository,
       LoungeCommentLikeRepository loungeCommentLikeRepository,
-      LoungeWriterRepository loungeWriterRepository) {
+      LoungeWriterRepository loungeWriterRepository,
+      LoungeAccessPolicy loungeAccessPolicy) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
     this.loungeCommentQueryRepository = loungeCommentQueryRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
     this.loungeWriterRepository = loungeWriterRepository;
+    this.loungeAccessPolicy = loungeAccessPolicy;
   }
 
   @Transactional(readOnly = true)
@@ -50,6 +54,8 @@ public class LoungeCommentQueryService {
         loungeCommentQueryRepository
             .findActiveById(loungeCommentId)
             .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
+    LoungePost loungePost = getActivePost(comment.loungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), viewerUserId);
 
     return toResults(List.of(comment), viewerUserId, comment.parentCommentId() == null).getFirst();
   }
@@ -58,6 +64,7 @@ public class LoungeCommentQueryService {
   public LoungeCommentCursorResult getComments(
       Long loungePostId, Long cursorId, int size, Long viewerUserId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), viewerUserId);
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
     List<LoungeCommentQueryResult> fetched =
         loungeCommentQueryRepository.findVisibleRootByCursor(
@@ -77,7 +84,8 @@ public class LoungeCommentQueryService {
   public LoungeReplyCursorResult getReplies(
       Long parentCommentId, Long cursorId, int size, Long viewerUserId) {
     LoungeComment parentComment = getComment(parentCommentId);
-    getActivePost(parentComment.getLoungePostId());
+    LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), viewerUserId);
     if (!parentComment.isRootComment()) {
       throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
     }

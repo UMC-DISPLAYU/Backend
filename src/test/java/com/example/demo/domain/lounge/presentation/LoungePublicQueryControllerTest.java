@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,10 +17,14 @@ import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +48,8 @@ class LoungePublicQueryControllerTest {
 
   @Autowired private SpringDataLoungeCommentJpaRepository commentRepository;
 
+  @Autowired private UserJpaRepository userRepository;
+
   @Autowired private EntityManager entityManager;
 
   @MockitoBean private LoungeWriterRepository writerRepository;
@@ -50,7 +57,9 @@ class LoungePublicQueryControllerTest {
   @MockitoBean private TokenProvider tokenProvider;
 
   private LoungePost post;
+  private LoungePost artistPost;
   private LoungeComment comment;
+  private LoungeComment artistComment;
   private LoungeComment reply;
 
   @BeforeEach
@@ -64,6 +73,10 @@ class LoungePublicQueryControllerTest {
                 List.of("image-1", "image-2", "image-3", "image-4"),
                 "분위기가 좋았어요.",
                 LoungePostCategory.DISPLAY_REVIEW));
+    artistPost =
+        postRepository.saveAndFlush(
+            LoungePost.create(
+                new UserId(201L), "작업 팁", List.of(), "작업 과정을 공유합니다.", LoungePostCategory.WORK_TIP));
     comment =
         commentRepository.saveAndFlush(
             LoungeComment.createComment(
@@ -79,6 +92,9 @@ class LoungePublicQueryControllerTest {
                 new UserId(103L),
                 "저도 같은 생각이에요.",
                 List.of("reply-image-1", "reply-image-2")));
+    artistComment =
+        commentRepository.saveAndFlush(
+            LoungeComment.createComment(artistPost.getId(), new UserId(202L), "작가 전용 댓글"));
   }
 
   @Test
@@ -86,6 +102,7 @@ class LoungePublicQueryControllerTest {
     mockMvc
         .perform(get("/api/v1/lounge/posts"))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posts.length()").value(1))
         .andExpect(jsonPath("$.success.data.posts[0].postImageUrls.length()").value(4))
         .andExpect(jsonPath("$.success.data.posts[0].postImageUrls[0]").value("image-1"))
         .andExpect(jsonPath("$.success.data.posts[0].postImageUrls[3]").value("image-4"))
@@ -122,6 +139,194 @@ class LoungePublicQueryControllerTest {
         .andExpect(jsonPath("$.success.data.replies[0].replyCount").doesNotExist())
         .andExpect(jsonPath("$.success.data.replies[0].isLiked").value(false))
         .andExpect(jsonPath("$.success.data.replies[0].isMyComment").value(false));
+  }
+
+  @Test
+  void anonymousUserCannotAccessArtistOnlyLounge() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/lounge/posts").param("category", "WORK_TIP"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.error.message").value("인증이 필요합니다."));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}", artistPost.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}/comments", artistPost.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/comments/{parentCommentId}/replies", artistComment.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void unverifiedUserCannotAccessArtistOnlyLounge() throws Exception {
+    User user = saveUser(false);
+    when(tokenProvider.getUserId("unverified-token")).thenReturn(user.getId());
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts").header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(post.getId()));
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts")
+                .param("category", "COLLABORATION")
+                .header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"))
+        .andExpect(jsonPath("$.error.message").value("작가 인증이 필요합니다."));
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts/{loungePostId}", artistPost.getId())
+                .header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts/{loungePostId}/comments", artistPost.getId())
+                .header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+  }
+
+  @Test
+  void verifiedUserCanAccessArtistOnlyLounge() throws Exception {
+    User user = saveUser(true);
+    when(tokenProvider.getUserId("verified-token")).thenReturn(user.getId());
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts").header("Authorization", "Bearer verified-token"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posts.length()").value(2));
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts")
+                .param("category", "WORK_TIP")
+                .header("Authorization", "Bearer verified-token"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.posts[0].loungePostId").value(artistPost.getId()));
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts/{loungePostId}", artistPost.getId())
+                .header("Authorization", "Bearer verified-token"))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/lounge/posts/{loungePostId}/comments", artistPost.getId())
+                .header("Authorization", "Bearer verified-token"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.success.data.comments[0].loungeCommentId").value(artistComment.getId()));
+  }
+
+  @Test
+  void artistVerificationIsRequiredToWriteArtistOnlyLounge() throws Exception {
+    User unverifiedUser = saveUser(false);
+    User verifiedUser = saveUser(true);
+    when(tokenProvider.getUserId("unverified-token")).thenReturn(unverifiedUser.getId());
+    when(tokenProvider.getUserId("verified-token")).thenReturn(verifiedUser.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts")
+                .header("Authorization", "Bearer unverified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artistPostRequest("COLLABORATION")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
+    LoungePost unverifiedUserPost =
+        postRepository.saveAndFlush(
+            LoungePost.create(
+                new UserId(unverifiedUser.getId()),
+                "일반 게시글",
+                "일반 게시글 내용",
+                LoungePostCategory.DISPLAY_REVIEW));
+    mockMvc
+        .perform(
+            patch("/api/v1/lounge/posts/{loungePostId}", unverifiedUserPost.getId())
+                .header("Authorization", "Bearer unverified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artistPostRequest("WORK_TIP")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
+    LoungePost restrictedPost =
+        postRepository.saveAndFlush(
+            LoungePost.create(
+                new UserId(unverifiedUser.getId()),
+                "작가 전용 게시글",
+                "작가 전용 게시글 내용",
+                LoungePostCategory.WORK_TIP));
+    mockMvc
+        .perform(
+            patch("/api/v1/lounge/posts/{loungePostId}", restrictedPost.getId())
+                .header("Authorization", "Bearer unverified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artistPostRequest("DISPLAY_REVIEW")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts")
+                .header("Authorization", "Bearer verified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artistPostRequest("WORK_TIP")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.category").value("WORK_TIP"));
+  }
+
+  @Test
+  void artistVerificationIsRequiredToInteractWithArtistOnlyLounge() throws Exception {
+    User unverifiedUser = saveUser(false);
+    User verifiedUser = saveUser(true);
+    when(tokenProvider.getUserId("unverified-token")).thenReturn(unverifiedUser.getId());
+    when(tokenProvider.getUserId("verified-token")).thenReturn(verifiedUser.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", artistPost.getId())
+                .header("Authorization", "Bearer unverified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"content\":\"댓글\",\"imageUrls\":[]}"))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/likes", artistPost.getId())
+                .header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/scraps", artistPost.getId())
+                .header("Authorization", "Bearer unverified-token"))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", artistPost.getId())
+                .header("Authorization", "Bearer verified-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"content\":\"인증 작가 댓글\",\"imageUrls\":[]}"))
+        .andExpect(status().isCreated());
   }
 
   @Test
@@ -283,5 +488,30 @@ class LoungePublicQueryControllerTest {
     LoungePost reloaded = postRepository.findById(post.getId()).orElseThrow();
 
     assertThat(reloaded.getPostImageUrls()).containsExactly("replacement-2", "replacement-1");
+  }
+
+  private User saveUser(boolean verified) {
+    String uniqueValue = UUID.randomUUID().toString();
+    return userRepository.saveAndFlush(
+        User.builder()
+            .provider(Provider.Google)
+            .providerId(uniqueValue)
+            .name("테스트 사용자")
+            .nickname(uniqueValue)
+            .isVerified(verified)
+            .socialEmail(uniqueValue + "@example.com")
+            .build());
+  }
+
+  private String artistPostRequest(String category) {
+    return """
+        {
+          "title": "작가 전용 게시글",
+          "postImageUrls": [],
+          "content": "작가 전용 게시글 내용",
+          "category": "%s"
+        }
+        """
+        .formatted(category);
   }
 }

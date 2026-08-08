@@ -17,27 +17,13 @@ public interface SpringDataLoungePostJpaRepository extends JpaRepository<LoungeP
       FROM LoungePost post
       WHERE post.status = :status
         AND post.deletedAt IS NULL
+        AND post.category IN :categories
         AND (:cursorId IS NULL OR post.id < :cursorId)
       ORDER BY post.id DESC
       """)
-  List<LoungePost> findActiveByCursor(
+  List<LoungePost> findActiveByCategoriesAndCursor(
       @Param("status") LoungePostStatus status,
-      @Param("cursorId") Long cursorId,
-      Pageable pageable);
-
-  @Query(
-      """
-      SELECT post
-      FROM LoungePost post
-      WHERE post.status = :status
-        AND post.deletedAt IS NULL
-        AND post.category = :category
-        AND (:cursorId IS NULL OR post.id < :cursorId)
-      ORDER BY post.id DESC
-      """)
-  List<LoungePost> findActiveByCategoryAndCursor(
-      @Param("status") LoungePostStatus status,
-      @Param("category") LoungePostCategory category,
+      @Param("categories") List<LoungePostCategory> categories,
       @Param("cursorId") Long cursorId,
       Pageable pageable);
 }
