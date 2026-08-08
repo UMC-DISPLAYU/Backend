@@ -27,12 +27,13 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/personal-artworks/{personalArtworkId}/questions")
 public class PersonalArtworkQuestionController implements PersonalArtworkQuestionApiDocs {
@@ -48,15 +49,17 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
 
   @Override
   @GetMapping
+  @SecurityRequirement(name = "Authorization")
   // 개인 작품 질문 목록 및 답변 조회
   public ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
       @PathVariable Long personalArtworkId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionListResult result =
         getPersonalArtworkQuestionsService.getQuestions(
-            mapper.toQuery(personalArtworkId, cursorId, user == null ? null : user.userId()));
+            mapper.toQuery(personalArtworkId, cursorId, size, user == null ? null : user.userId()));
 
     PersonalArtworkQuestionListResponse response = mapper.toResponse(result);
 

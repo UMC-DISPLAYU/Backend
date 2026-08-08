@@ -7,6 +7,7 @@ import com.example.demo.domain.personalartworkcommunication.infrastructure.persi
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -51,5 +52,16 @@ public class JpaPersonalArtworkQuestionLikeRepositoryAdapter
         .countByPersonalQuestionIds(personalQuestionIds)
         .stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+  }
+
+  @Override
+  public Set<Long> findLikedPersonalQuestionIds(List<Long> personalQuestionIds, Long userId) {
+    if (personalQuestionIds.isEmpty()) {
+      return Set.of();
+    }
+
+    return Set.copyOf(
+        personalArtworkQuestionLikeJpaRepository.findLikedPersonalQuestionIds(
+            personalQuestionIds, userId));
   }
 }
