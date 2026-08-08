@@ -8,9 +8,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
@@ -18,6 +20,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.DisplayInvitationTokenHasher;
+import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayInvitationJpaRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import com.jayway.jsonpath.JsonPath;
@@ -54,6 +57,8 @@ class DisplayInvitationControllerTest {
   @Autowired private JwtFactory jwtFactory;
 
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
+
+  @Autowired private SpringDataDisplayInvitationJpaRepository invitationJpaRepository;
 
   @Autowired private DisplayInvitationTokenHasher tokenHasher;
 
@@ -92,12 +97,16 @@ class DisplayInvitationControllerTest {
     assertThat(firstUrl).isNotEqualTo(secondUrl);
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(firstUrl)))
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(firstUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(secondUrl)))
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(secondUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
   }
@@ -149,9 +158,13 @@ class DisplayInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
 
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", rawToken(invitationUrl)))
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
         .andExpect(status().isGone())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_DISABLED"));
+
+    assertThat(pendingInvitations(display.getId(), 2L)).isEmpty();
   }
 
   @Test
@@ -185,9 +198,83 @@ class DisplayInvitationControllerTest {
   @Test
   void getDisplayByInvitationReturnsNotFoundWhenTokenDoesNotExist() throws Exception {
     mockMvc
-        .perform(get("/api/v1/display/invitation/{token}", "not-existing-token"))
+        .perform(
+            get("/api/v1/display/invitation/{token}", "not-existing-token")
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code").value("INVALID_DISPLAY_INVITATION_TOKEN"));
+
+    assertThat(pendingInvitations(1L, 2L)).isEmpty();
+  }
+
+  @Test
+  void getDisplayByInvitationCreatesPendingInvitationForAuthenticatedRequester() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String invitationUrl = invitationUrl(issue(display.getId()));
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
+
+    List<DisplayInvitation> invitations = pendingInvitations(display.getId(), 2L);
+    assertThat(invitations).hasSize(1);
+    assertThat(invitations.get(0).getStatus()).isEqualTo(DisplayInvitationStatus.PENDING);
+    assertThat(invitations.get(0).getInviterUserId().value()).isEqualTo(1L);
+    assertThat(invitations.get(0).getInviteeUserId().value()).isEqualTo(2L);
+  }
+
+  @Test
+  void getDisplayByInvitationIsIdempotentForSameRequester() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String invitationUrl = invitationUrl(issue(display.getId()));
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk());
+
+    assertThat(pendingInvitations(display.getId(), 2L)).hasSize(1);
+  }
+
+  @Test
+  void getDisplayByInvitationDoesNotCreateInvitationForAcceptedTeamMember() throws Exception {
+    Display display = display();
+    display.addTeamMember(
+        new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    display = displayJpaRepository.saveAndFlush(display);
+    String invitationUrl = invitationUrl(issue(display.getId()));
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/invitation/{token}", rawToken(invitationUrl))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()));
+
+    assertThat(pendingInvitations(display.getId(), 2L)).isEmpty();
+  }
+
+  @Test
+  void getDisplayByInvitationReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String invitationUrl = invitationUrl(issue(display.getId()));
+
+    mockMvc
+        .perform(get("/api/v1/display/invitation/{token}", rawToken(invitationUrl)))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+    assertThat(pendingInvitations(display.getId(), 2L)).isEmpty();
   }
 
   @Test
@@ -221,6 +308,15 @@ class DisplayInvitationControllerTest {
 
   private static String rawToken(String invitationUrl) {
     return invitationUrl.substring(INVITATION_BASE_URL.length());
+  }
+
+  private List<DisplayInvitation> pendingInvitations(Long displayId, Long inviteeUserId) {
+    return invitationJpaRepository
+        .findByInviteeUserIdValueAndStatusAndDeletedAtIsNullOrderByIdDesc(
+            inviteeUserId, DisplayInvitationStatus.PENDING)
+        .stream()
+        .filter(invitation -> invitation.getDisplay().getId().equals(displayId))
+        .toList();
   }
 
   private static Display display() {
