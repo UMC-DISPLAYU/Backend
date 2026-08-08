@@ -38,7 +38,11 @@ public class CreateDisplayService {
             command.displayImageUrls(),
             command.subtitle(),
             command.content(),
-            new DisplayLocation(command.placeName(), command.latitude(), command.longitude()),
+            new DisplayLocation(
+                command.placeName(),
+                command.latitude(),
+                command.longitude(),
+                command.roadAddress()),
             command.qnaAccount(),
             command.note(),
             command.organization(),

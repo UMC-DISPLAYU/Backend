@@ -255,7 +255,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.LocationResponse toResponse(
       DisplayDetailResult.LocationResult result) {
     return new DisplayDetailResponse.LocationResponse(
-        result.placeName(), result.latitude(), result.longitude());
+        result.placeName(), result.latitude(), result.longitude(), result.roadAddress());
   }
 
   private DisplayDetailResponse.PeriodResponse toResponse(DisplayDetailResult.PeriodResult result) {

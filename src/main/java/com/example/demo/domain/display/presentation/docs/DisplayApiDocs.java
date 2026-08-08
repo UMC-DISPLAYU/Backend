@@ -189,7 +189,8 @@ public final class DisplayApiDocs {
             "location": {
               "placeName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
               "latitude": 37.0063,
-              "longitude": 127.2267
+              "longitude": 127.2267,
+              "roadAddress": "경기도 안성시 대덕면 서동대로 4726"
             },
             "qnaAccount": "@displayu",
             "contract": "Instagram DM",
