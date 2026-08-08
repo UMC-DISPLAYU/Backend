@@ -89,24 +89,22 @@ public class DisplayContentCategory extends BaseTimeEntity {
     contents.add(displayContent);
   }
 
-  public DisplayContent createContent(String imageUrl, int width, int height) {
-    return createContent(imageUrl, width, height, DisplayContentStatus.PUBLISHED);
+  public DisplayContent createContent(String imageUrl) {
+    return createContent(imageUrl, DisplayContentStatus.PUBLISHED);
   }
 
-  public DisplayContent createContent(
-      String imageUrl, int width, int height, DisplayContentStatus status) {
+  public DisplayContent createContent(String imageUrl, DisplayContentStatus status) {
     if (contents.size() >= MAX_CONTENT_COUNT) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_LIMIT_EXCEEDED);
     }
-    DisplayContent content =
-        new DisplayContent(null, imageUrl, width, height, nextSortOrder(), status);
+    DisplayContent content = new DisplayContent(null, imageUrl, nextSortOrder(), status);
     addContent(content);
     return content;
   }
 
-  public DisplayContent changeContent(Long contentId, String imageUrl, int width, int height) {
+  public DisplayContent changeContent(Long contentId, String imageUrl) {
     DisplayContent content = findContent(contentId);
-    content.changeImageInfo(imageUrl, width, height);
+    content.changeImageUrl(imageUrl);
     return content;
   }
 

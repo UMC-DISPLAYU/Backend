@@ -79,11 +79,7 @@ public class DisplayContentCommandService {
     validateContentEditor(display, command.userId());
     DisplayContent content =
         display.createContent(
-            command.categoryId(),
-            command.imageUrl(),
-            command.width(),
-            command.height(),
-            initialContentStatus(display));
+            command.categoryId(), command.imageUrl(), initialContentStatus(display));
     displayRepository.flush();
 
     return DisplayContentResult.from(content);
@@ -96,12 +92,7 @@ public class DisplayContentCommandService {
     Display display = findDisplay(command.displayId());
     validateContentEditor(display, command.userId());
     DisplayContent content =
-        display.changeContent(
-            command.categoryId(),
-            command.contentId(),
-            command.imageUrl(),
-            command.width(),
-            command.height());
+        display.changeContent(command.categoryId(), command.contentId(), command.imageUrl());
 
     return DisplayContentResult.from(content);
   }

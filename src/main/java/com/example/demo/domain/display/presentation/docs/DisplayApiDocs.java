@@ -201,8 +201,6 @@ public final class DisplayApiDocs {
                 "imageId": 1,
                 "imageUrl": "https://cdn...",
                 "imageType": "MAIN",
-                "width": 1,
-                "height": 1,
                 "sortOrder": 0
               }
             ],
@@ -805,16 +803,12 @@ public final class DisplayApiDocs {
                 "imageId": 1,
                 "imageUrl": "https://cdn.displayu.com/display/main.jpg",
                 "imageType": "MAIN",
-                "width": 1200,
-                "height": 800,
                 "sortOrder": 0
               },
               {
                 "imageId": 2,
                 "imageUrl": "https://cdn.displayu.com/display/detail.jpg",
                 "imageType": "DETAIL",
-                "width": 1200,
-                "height": 800,
                 "sortOrder": 1
               }
             ],
@@ -828,8 +822,6 @@ public final class DisplayApiDocs {
                   {
                     "contentId": 1,
                     "imageUrl": "https://cdn.displayu.com/display/content-1.jpg",
-                    "width": 1200,
-                    "height": 800,
                     "sortOrder": 0
                   }
                 ]

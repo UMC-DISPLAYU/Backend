@@ -263,12 +263,7 @@ public class DisplayPresentationMapper {
 
   private DisplayDetailResponse.ImageResponse toResponse(DisplayDetailResult.ImageResult result) {
     return new DisplayDetailResponse.ImageResponse(
-        result.imageId(),
-        result.imageUrl(),
-        result.imageType(),
-        result.width(),
-        result.height(),
-        result.sortOrder());
+        result.imageId(), result.imageUrl(), result.imageType(), result.sortOrder());
   }
 
   private DisplayDetailResponse.ContentCategoryResponse toResponse(
@@ -284,7 +279,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.ContentResponse toResponse(
       DisplayDetailResult.ContentResult result) {
     return new DisplayDetailResponse.ContentResponse(
-        result.contentId(), result.imageUrl(), result.width(), result.height(), result.sortOrder());
+        result.contentId(), result.imageUrl(), result.sortOrder());
   }
 
   private DisplayDetailResponse.TeamMemberResponse toResponse(

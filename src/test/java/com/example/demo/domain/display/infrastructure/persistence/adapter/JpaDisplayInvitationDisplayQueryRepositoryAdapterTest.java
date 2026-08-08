@@ -85,8 +85,6 @@ class JpaDisplayInvitationDisplayQueryRepositoryAdapterTest {
             null,
             "https://cdn.displayu.com/posters/detail-" + index + ".png",
             DisplayImageType.DETAIL,
-            1200,
-            800,
             1,
             null));
     display.addInvitation(

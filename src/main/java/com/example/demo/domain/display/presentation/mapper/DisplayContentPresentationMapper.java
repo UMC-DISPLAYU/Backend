@@ -46,8 +46,7 @@ public class DisplayContentPresentationMapper {
 
   public CreateDisplayContentCommand toCommand(
       CreateDisplayContentRequest request, Long userId, Long displayId, Long categoryId) {
-    return new CreateDisplayContentCommand(
-        userId, displayId, categoryId, request.imageUrl(), request.width(), request.height());
+    return new CreateDisplayContentCommand(userId, displayId, categoryId, request.imageUrl());
   }
 
   public UpdateDisplayContentCommand toCommand(
@@ -57,13 +56,7 @@ public class DisplayContentPresentationMapper {
       Long categoryId,
       Long contentId) {
     return new UpdateDisplayContentCommand(
-        userId,
-        displayId,
-        categoryId,
-        contentId,
-        request.imageUrl(),
-        request.width(),
-        request.height());
+        userId, displayId, categoryId, contentId, request.imageUrl());
   }
 
   public DeleteDisplayContentCommand toDeleteContentCommand(
@@ -89,12 +82,7 @@ public class DisplayContentPresentationMapper {
 
   public DisplayContentResponse toResponse(DisplayContentResult result) {
     return new DisplayContentResponse(
-        result.categoryId(),
-        result.contentId(),
-        result.imageUrl(),
-        result.width(),
-        result.height(),
-        result.sortOrder());
+        result.categoryId(), result.contentId(), result.imageUrl(), result.sortOrder());
   }
 
   public DeleteDisplayContentCategoryResponse toResponse(
