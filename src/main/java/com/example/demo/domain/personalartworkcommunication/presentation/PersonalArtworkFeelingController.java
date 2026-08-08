@@ -55,8 +55,6 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
 
   @Override
   @GetMapping
-  @SecurityRequirement(name = "Authorization")
-  @SecurityRequirement(name = "")
   // 개인 작품 감상평 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingListResponse> getFeelings(
       @PathVariable Long personalArtworkId,
@@ -75,8 +73,6 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
 
   @Override
   @GetMapping("/{personalFeelingId}/replies")
-  @SecurityRequirement(name = "Authorization")
-  @SecurityRequirement(name = "")
   // 개인 작품 감상평 답변 목록 조회
   public ApiResponseBody<PersonalArtworkFeelingReplyListResponse> getFeelingReplies(
       @PathVariable Long personalArtworkId,
