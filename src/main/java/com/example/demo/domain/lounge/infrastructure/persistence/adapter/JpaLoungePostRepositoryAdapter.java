@@ -25,13 +25,9 @@ public class JpaLoungePostRepositoryAdapter implements LoungePostRepository {
 
   @Override
   public List<LoungePost> findActiveByCursor(
-      LoungePostCategory category, Long cursorId, int limit) {
-    PageRequest pageRequest = PageRequest.of(0, limit);
-    if (category == null) {
-      return jpaRepository.findActiveByCursor(LoungePostStatus.ACTIVE, cursorId, pageRequest);
-    }
-    return jpaRepository.findActiveByCategoryAndCursor(
-        LoungePostStatus.ACTIVE, category, cursorId, pageRequest);
+      List<LoungePostCategory> categories, Long cursorId, int limit) {
+    return jpaRepository.findActiveByCategoriesAndCursor(
+        LoungePostStatus.ACTIVE, categories, cursorId, PageRequest.of(0, limit));
   }
 
   @Override

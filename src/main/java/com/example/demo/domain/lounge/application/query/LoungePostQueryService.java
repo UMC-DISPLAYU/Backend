@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.query;
 
+import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
 import com.example.demo.domain.lounge.application.result.LoungePostCursorResult;
 import com.example.demo.domain.lounge.application.result.LoungePostDetailResult;
 import com.example.demo.domain.lounge.application.result.LoungePostListResult;
@@ -32,6 +33,7 @@ public class LoungePostQueryService {
   private final LoungePostScrapRepository loungePostScrapRepository;
   private final LoungeCommentRepository loungeCommentRepository;
   private final LoungeWriterRepository loungeWriterRepository;
+  private final LoungeAccessPolicy loungeAccessPolicy;
 
   public LoungePostQueryService(
       LoungePostRepository loungePostRepository,
@@ -39,21 +41,30 @@ public class LoungePostQueryService {
       LoungePostLikeRepository loungePostLikeRepository,
       LoungePostScrapRepository loungePostScrapRepository,
       LoungeCommentRepository loungeCommentRepository,
-      LoungeWriterRepository loungeWriterRepository) {
+      LoungeWriterRepository loungeWriterRepository,
+      LoungeAccessPolicy loungeAccessPolicy) {
     this.loungePostRepository = loungePostRepository;
     this.loungePostQueryRepository = loungePostQueryRepository;
     this.loungePostLikeRepository = loungePostLikeRepository;
     this.loungePostScrapRepository = loungePostScrapRepository;
     this.loungeCommentRepository = loungeCommentRepository;
     this.loungeWriterRepository = loungeWriterRepository;
+    this.loungeAccessPolicy = loungeAccessPolicy;
   }
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getPosts(
       LoungePostCategory category, Long cursorId, int size, Long viewerUserId) {
     int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    List<LoungePostCategory> accessibleCategories;
+    if (category == null) {
+      accessibleCategories = loungeAccessPolicy.getAccessibleCategories(viewerUserId);
+    } else {
+      loungeAccessPolicy.validateCategoryAccess(category, viewerUserId);
+      accessibleCategories = List.of(category);
+    }
     List<LoungePost> fetched =
-        loungePostRepository.findActiveByCursor(category, cursorId, pageSize + 1);
+        loungePostRepository.findActiveByCursor(accessibleCategories, cursorId, pageSize + 1);
     boolean hasNext = fetched.size() > pageSize;
     List<LoungePost> loungePosts = hasNext ? fetched.subList(0, pageSize) : fetched;
     Long nextCursorId = hasNext ? loungePosts.getLast().getId() : null;
@@ -62,24 +73,36 @@ public class LoungePostQueryService {
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyPosts(Long userId, Long cursorId, int size) {
+    List<LoungePostCategory> accessibleCategories =
+        loungeAccessPolicy.getAccessibleCategories(userId);
     return getQueryCursorResult(
-        limit -> loungePostQueryRepository.findActiveByAuthorCursor(userId, cursorId, limit),
+        limit ->
+            loungePostQueryRepository.findActiveByAuthorCursor(
+                userId, accessibleCategories, cursorId, limit),
         size,
         userId);
   }
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyScrappedPosts(Long userId, Long cursorId, int size) {
+    List<LoungePostCategory> accessibleCategories =
+        loungeAccessPolicy.getAccessibleCategories(userId);
     return getQueryCursorResult(
-        limit -> loungePostQueryRepository.findActiveScrappedByUserCursor(userId, cursorId, limit),
+        limit ->
+            loungePostQueryRepository.findActiveScrappedByUserCursor(
+                userId, accessibleCategories, cursorId, limit),
         size,
         userId);
   }
 
   @Transactional(readOnly = true)
   public LoungePostCursorResult getMyCommentedPosts(Long userId, Long cursorId, int size) {
+    List<LoungePostCategory> accessibleCategories =
+        loungeAccessPolicy.getAccessibleCategories(userId);
     return getQueryCursorResult(
-        limit -> loungePostQueryRepository.findActiveCommentedByUserCursor(userId, cursorId, limit),
+        limit ->
+            loungePostQueryRepository.findActiveCommentedByUserCursor(
+                userId, accessibleCategories, cursorId, limit),
         size,
         userId);
   }
@@ -191,6 +214,7 @@ public class LoungePostQueryService {
             .filter(post -> !post.isDeleted())
             .filter(LoungePost::isActive)
             .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), viewerUserId);
 
     boolean hasViewer = viewerUserId != null;
     List<Long> loungePostIds = List.of(loungePost.getId());

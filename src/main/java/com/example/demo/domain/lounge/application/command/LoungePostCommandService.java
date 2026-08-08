@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.command;
 
+import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
 import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
@@ -19,19 +20,23 @@ public class LoungePostCommandService {
   private final LoungePostRepository loungePostRepository;
   private final LoungePostLikeRepository loungePostLikeRepository;
   private final LoungePostScrapRepository loungePostScrapRepository;
+  private final LoungeAccessPolicy loungeAccessPolicy;
 
   public LoungePostCommandService(
       LoungePostRepository loungePostRepository,
       LoungePostLikeRepository loungePostLikeRepository,
-      LoungePostScrapRepository loungePostScrapRepository) {
+      LoungePostScrapRepository loungePostScrapRepository,
+      LoungeAccessPolicy loungeAccessPolicy) {
     this.loungePostRepository = loungePostRepository;
     this.loungePostLikeRepository = loungePostLikeRepository;
     this.loungePostScrapRepository = loungePostScrapRepository;
+    this.loungeAccessPolicy = loungeAccessPolicy;
   }
 
   @Transactional
   public Long createPost(Long authorUserId, LoungePostContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+    loungeAccessPolicy.validateCategoryAccess(command.category(), authorUserId);
 
     LoungePost loungePost =
         LoungePost.create(
@@ -52,6 +57,7 @@ public class LoungePostCommandService {
 
     LoungePost loungePost = getPost(loungePostId);
     validateAuthor(loungePost, new UserId(requesterUserId));
+    loungeAccessPolicy.validateCategoryAccess(command.category(), requesterUserId);
 
     loungePost.changeContent(command.title(), command.content());
     loungePost.replaceImages(command.postImageUrls());
@@ -68,6 +74,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostLikeResult likePost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungePostLikeRepository.saveIfAbsent(loungePost.getId(), likeUserId);
@@ -79,6 +86,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostLikeResult cancelLikePost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungePostLikeRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), likeUserId);
@@ -92,6 +100,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostScrapResult scrapPost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId scrapUserId = new UserId(userId);
 
     loungePostScrapRepository.saveIfAbsent(loungePost.getId(), scrapUserId);
@@ -105,6 +114,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostScrapResult cancelScrapPost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId scrapUserId = new UserId(userId);
 
     loungePostScrapRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), scrapUserId);

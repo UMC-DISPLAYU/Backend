@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
@@ -29,8 +30,10 @@ class LoungeCommentCommandServiceTest {
   private final LoungeCommentRepository commentRepository = mock(LoungeCommentRepository.class);
   private final LoungeCommentLikeRepository commentLikeRepository =
       mock(LoungeCommentLikeRepository.class);
+  private final LoungeAccessPolicy loungeAccessPolicy = mock(LoungeAccessPolicy.class);
   private final LoungeCommentCommandService service =
-      new LoungeCommentCommandService(postRepository, commentRepository, commentLikeRepository);
+      new LoungeCommentCommandService(
+          postRepository, commentRepository, commentLikeRepository, loungeAccessPolicy);
 
   @Test
   void createsCommentWithImages() {

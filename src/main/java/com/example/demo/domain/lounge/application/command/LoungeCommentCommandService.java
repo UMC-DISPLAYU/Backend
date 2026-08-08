@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.command;
 
+import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
@@ -21,14 +22,17 @@ public class LoungeCommentCommandService {
   private final LoungePostRepository loungePostRepository;
   private final LoungeCommentRepository loungeCommentRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
+  private final LoungeAccessPolicy loungeAccessPolicy;
 
   public LoungeCommentCommandService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
-      LoungeCommentLikeRepository loungeCommentLikeRepository) {
+      LoungeCommentLikeRepository loungeCommentLikeRepository,
+      LoungeAccessPolicy loungeAccessPolicy) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
+    this.loungeAccessPolicy = loungeAccessPolicy;
   }
 
   @Transactional
@@ -36,6 +40,7 @@ public class LoungeCommentCommandService {
       Long loungePostId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
     LoungePost loungePost = getActivePost(loungePostId);
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), authorUserId);
 
     LoungeComment comment =
         LoungeComment.createComment(
@@ -51,6 +56,7 @@ public class LoungeCommentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     LoungeComment parentComment = getComment(parentCommentId);
     LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), authorUserId);
 
     if (!parentComment.isRootComment()) {
       throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
@@ -80,7 +86,8 @@ public class LoungeCommentCommandService {
   @Transactional
   public LoungeCommentLikeResult likeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
-    getActivePost(comment.getLoungePostId());
+    LoungePost loungePost = getActivePost(comment.getLoungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.saveIfAbsent(comment.getId(), likeUserId);
@@ -92,7 +99,8 @@ public class LoungeCommentCommandService {
   @Transactional
   public LoungeCommentLikeResult cancelLikeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
-    getActivePost(comment.getLoungePostId());
+    LoungePost loungePost = getActivePost(comment.getLoungePostId());
+    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
