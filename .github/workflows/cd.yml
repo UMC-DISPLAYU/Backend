@@ -928,6 +928,7 @@ jobs:
                --network \"\$ALLOY_NETWORK\" \
                --network-alias docker-proxy \
                --env CONTAINERS=1 \
+               --env NETWORKS=1 \
                --env POST=0 \
                --log-opt max-size=10m \
                --log-opt max-file=3 \
