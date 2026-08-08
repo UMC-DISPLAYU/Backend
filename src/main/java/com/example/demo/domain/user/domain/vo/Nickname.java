@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public record Nickname(String value) {
 
-  private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9]{5,15}$");
+  private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9]{2,15}$");
 
   public Nickname {
     validate(value);

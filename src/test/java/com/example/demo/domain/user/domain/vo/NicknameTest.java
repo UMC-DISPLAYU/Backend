@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class NicknameTest {
 
   @ParameterizedTest
-  @ValueSource(strings = {"가나다라", "abcdefghijklmnop", "닉네임 공백", "닉네임!", "닉네임😀"})
+  @ValueSource(strings = {"가", "abcdefghijklmnop", "닉네임 공백", "닉네임!", "닉네임😀"})
   void rejectsInvalidNickname(String value) {
     assertThatExceptionOfType(UserException.class)
         .isThrownBy(() -> Nickname.of(value))
@@ -21,7 +21,7 @@ class NicknameTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"가나다라마", "abcdefghijklmno", "작가Artist01"})
+  @ValueSource(strings = {"가나", "abcdefghijklmno", "작가Artist01"})
   void acceptsValidNickname(String value) {
     assertThat(Nickname.of(value).value()).isEqualTo(value);
   }
