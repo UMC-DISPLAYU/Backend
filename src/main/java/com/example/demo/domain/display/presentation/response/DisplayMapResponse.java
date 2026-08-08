@@ -15,6 +15,7 @@ public record DisplayMapResponse(
       LocalDate endDate,
       String locationName,
       String posterImageUrl,
+      String schoolDepartmentName,
       BigDecimal latitude,
       BigDecimal longitude,
       @JsonProperty("isArchived") boolean isArchived) {}

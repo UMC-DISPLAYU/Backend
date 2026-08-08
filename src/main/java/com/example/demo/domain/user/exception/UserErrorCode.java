@@ -21,7 +21,7 @@ public enum UserErrorCode implements BaseErrorCode {
   INVALID_NICKNAME_FORMAT(
       HttpStatus.BAD_REQUEST,
       "INVALID_NICKNAME_FORMAT",
-      "닉네임은 한글, 영문, 숫자로 5~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
+      "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
 
   INVALID_PROFILE_IMAGE_URL(
       HttpStatus.BAD_REQUEST,
@@ -44,6 +44,9 @@ public enum UserErrorCode implements BaseErrorCode {
   MISSING_NICKNAME(HttpStatus.BAD_REQUEST, "MISSING_NICKNAME", "닉네임을 입력해주세요."),
 
   UNSUPPORTED_UNIVERSITY(HttpStatus.BAD_REQUEST, "UNSUPPORTED_UNIVERSITY", "지원하지 않는 대학교입니다."),
+
+  SCHOOL_EMAIL_DOMAIN_MISMATCH(
+      HttpStatus.BAD_REQUEST, "SCHOOL_EMAIL_DOMAIN_MISMATCH", "선택한 학교의 웹메일과 일치하지 않습니다."),
 
   INVALID_EMAIL(HttpStatus.BAD_REQUEST, "INVALID_EMAIL", "유효하지 않은 학교 이메일입니다."),
 

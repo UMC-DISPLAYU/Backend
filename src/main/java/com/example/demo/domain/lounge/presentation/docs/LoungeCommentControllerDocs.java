@@ -27,7 +27,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @SecurityRequirement(name = "Authorization")
 public interface LoungeCommentControllerDocs {
 
-  @Operation(summary = "라운지 댓글 생성", description = "라운지 게시글에 댓글을 생성합니다.")
+  @Operation(
+      summary = "라운지 댓글 생성",
+      description = "라운지 게시글에 댓글을 생성합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "201",
       description = "라운지 댓글 생성 성공",
@@ -73,7 +77,11 @@ public interface LoungeCommentControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 답글 생성", description = "라운지 댓글에 답글을 생성합니다.")
+  @Operation(
+      summary = "라운지 답글 생성",
+      description = "라운지 댓글에 답글을 생성합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "201",
       description = "라운지 답글 생성 성공",
@@ -145,7 +153,11 @@ public interface LoungeCommentControllerDocs {
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 좋아요", description = "라운지 댓글 또는 답글에 좋아요를 추가합니다.")
+  @Operation(
+      summary = "라운지 댓글 좋아요",
+      description = "라운지 댓글 또는 답글에 좋아요를 추가합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 댓글 좋아요 성공",
@@ -175,7 +187,11 @@ public interface LoungeCommentControllerDocs {
   ApiResponseBody<LoungeCommentLikeResponse> likeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 댓글 좋아요 취소", description = "라운지 댓글 또는 답글 좋아요를 취소합니다.")
+  @Operation(
+      summary = "라운지 댓글 좋아요 취소",
+      description = "라운지 댓글 또는 답글 좋아요를 취소합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 댓글 좋아요 취소 성공",
@@ -210,10 +226,13 @@ public interface LoungeCommentControllerDocs {
       description =
           """
           게시글의 댓글 목록을 커서 방식으로 조회합니다.
+          작가 전용 카테고리 게시글의 댓글 조회에는 작가 인증이 필요합니다.
           ACTIVE 상태이면서 삭제되지 않은 부모 댓글을 반환합니다.
           DELETED 상태인 부모 댓글은 활성 답글이 남아 있을 때만 반환하며, commentStatus는 DELETED, content는 빈 문자열, imageUrls는 빈 배열입니다.
           HIDDEN 상태인 부모 댓글과 활성 답글이 없는 삭제된 부모 댓글은 반환하지 않습니다.
           """)
+  @ApiResponse(responseCode = "401", description = "작가 전용 게시글 댓글 조회 시 로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 전용 게시글 댓글 조회 시 작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 댓글 목록 조회 성공",
@@ -271,7 +290,10 @@ public interface LoungeCommentControllerDocs {
 
   @Operation(
       summary = "라운지 답글 목록 조회",
-      description = "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있습니다.")
+      description =
+          "댓글의 활성 답글 목록을 커서 방식으로 조회합니다. 부모 댓글이 삭제되어도 남아 있는 답글을 조회할 수 있으며, 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "작가 전용 게시글 답글 조회 시 로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 전용 게시글 답글 조회 시 작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 답글 목록 조회 성공",
@@ -327,7 +349,7 @@ public interface LoungeCommentControllerDocs {
 
   @Operation(
       summary = "내가 댓글을 작성한 라운지 게시글 조회",
-      description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글을 중복 없이 조회합니다.")
+      description = "로그인 사용자가 댓글 또는 답글을 작성한 게시글 중 현재 접근 가능한 카테고리의 게시글을 중복 없이 조회합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "내가 댓글을 작성한 라운지 게시글 조회 성공",

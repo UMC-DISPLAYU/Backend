@@ -7,6 +7,8 @@ import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisp
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaDisplayInvitationRepositoryAdapter implements DisplayInvitationRepository {
@@ -42,6 +44,12 @@ public class JpaDisplayInvitationRepositoryAdapter implements DisplayInvitationR
 
   @Override
   public DisplayInvitation save(DisplayInvitation invitation) {
-    return jpaRepository.save(invitation);
+    return jpaRepository.saveAndFlush(invitation);
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public DisplayInvitation saveInNewTransaction(DisplayInvitation invitation) {
+    return jpaRepository.saveAndFlush(invitation);
   }
 }

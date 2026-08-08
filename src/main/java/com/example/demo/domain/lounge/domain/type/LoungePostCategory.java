@@ -4,5 +4,9 @@ public enum LoungePostCategory {
   DISPLAY_REVIEW,
   WORK_TIP,
   COLLABORATION,
-  SPACE_RENTAL
+  SPACE_RENTAL;
+
+  public boolean requiresArtistVerification() {
+    return this == WORK_TIP || this == COLLABORATION;
+  }
 }

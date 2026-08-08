@@ -14,6 +14,8 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
       LocalDate endDate,
       String locationName,
       String posterImageUrl,
+      String organization,
+      String department,
       BigDecimal latitude,
       BigDecimal longitude,
       boolean isArchived) {
@@ -26,6 +28,8 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           queryResult.endDate(),
           queryResult.locationName(),
           queryResult.posterImageUrl(),
+          queryResult.organization(),
+          queryResult.department(),
           queryResult.latitude(),
           queryResult.longitude(),
           false);
@@ -39,6 +43,8 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           endDate,
           locationName,
           posterImageUrl,
+          organization,
+          department,
           latitude,
           longitude,
           isArchived);

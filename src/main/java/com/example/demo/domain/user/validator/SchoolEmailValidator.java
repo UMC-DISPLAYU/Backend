@@ -21,7 +21,7 @@ public class SchoolEmailValidator {
             .orElseThrow(() -> new UserException(UserErrorCode.UNSUPPORTED_UNIVERSITY));
 
     if (!university.getDomain().equalsIgnoreCase(domain)) {
-      throw new UserException(UserErrorCode.UNSUPPORTED_UNIVERSITY);
+      throw new UserException(UserErrorCode.SCHOOL_EMAIL_DOMAIN_MISMATCH);
     }
   }
 

@@ -11,6 +11,7 @@ public record SearchDisplayResponse(
       Long displayId,
       String title,
       String posterImageUrl,
+      String schoolDepartmentName,
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,

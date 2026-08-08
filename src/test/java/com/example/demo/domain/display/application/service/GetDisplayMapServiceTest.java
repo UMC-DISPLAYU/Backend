@@ -59,6 +59,8 @@ class GetDisplayMapServiceTest {
         LocalDate.of(2026, 5, 28),
         "장소 " + id,
         "https://cdn.displayu.com/posters/main.png",
+        "organization",
+        "department",
         bd("37.5513"),
         bd("126.9248"));
   }
