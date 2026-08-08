@@ -1,6 +1,6 @@
 package com.example.demo.global.security;
 
-import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +29,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     log.warn(
         "HTTP error response. status={} code={} method={} uri={}",
         HttpServletResponse.SC_UNAUTHORIZED,
-        AuthErrorCode.INVALID_ACCESS_TOKEN.getCode(),
+        GlobalErrorCode.UNAUTHORIZED.getCode(),
         request.getMethod(),
         request.getRequestURI());
 
@@ -40,8 +40,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     ApiResponseBody<Void> body =
         ApiResponseBody.fail(
             new ApiResponseBody.ErrorBody(
-                AuthErrorCode.INVALID_ACCESS_TOKEN.getCode(),
-                AuthErrorCode.INVALID_ACCESS_TOKEN.getMessage(),
+                GlobalErrorCode.UNAUTHORIZED.getCode(),
+                GlobalErrorCode.UNAUTHORIZED.getMessage(),
                 null),
             request);
 
