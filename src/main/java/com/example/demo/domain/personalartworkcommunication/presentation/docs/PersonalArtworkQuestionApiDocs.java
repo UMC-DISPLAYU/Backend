@@ -405,31 +405,6 @@ public interface PersonalArtworkQuestionApiDocs {
                                     }
                                     """)))
   @ApiResponse(
-      responseCode = "403",
-      description = "작품 소유자의 질문 작성 시도",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Personal artwork creator cannot write question",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
-                              "message": "작업자는 본인 작품에 질문을 작성할 수 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal-artworks/1/questions"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
       responseCode = "400",
       description = "질문 내용 검증 실패",
       content =
