@@ -237,9 +237,7 @@ public interface ArtworkQuestionApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(
-      summary = "작품 Q&A 질문 등록",
-      description = "로그인 사용자가 공개 또는 비공개 질문을 등록합니다. 해당 작품의 작가는 질문을 작성할 수 없습니다.")
+  @Operation(summary = "작품 Q&A 질문 등록", description = "로그인 사용자가 공개 또는 비공개 질문을 등록합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "작품 Q&A 질문 등록 성공",
@@ -265,31 +263,6 @@ public interface ArtworkQuestionApiDocs {
                               }
                             },
                             "error": null,
-                            "meta": {
-                              "timestamp": "2026-06-30T22:10:00",
-                              "path": "/api/v1/artworks/3/questions"
-                            }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "403",
-      description = "해당 작품의 작가는 질문 작성 불가",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Creator cannot write question",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
-                              "message": "작가는 본인 작품에 질문을 작성할 수 없습니다.",
-                              "details": null
-                            },
                             "meta": {
                               "timestamp": "2026-06-30T22:10:00",
                               "path": "/api/v1/artworks/3/questions"
