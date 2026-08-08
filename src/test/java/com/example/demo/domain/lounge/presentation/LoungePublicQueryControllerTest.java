@@ -146,7 +146,8 @@ class LoungePublicQueryControllerTest {
     mockMvc
         .perform(get("/api/v1/lounge/posts").param("category", "WORK_TIP"))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.error.message").value("인증이 필요합니다."));
 
     mockMvc
         .perform(get("/api/v1/lounge/posts/{loungePostId}", artistPost.getId()))
@@ -181,7 +182,8 @@ class LoungePublicQueryControllerTest {
                 .param("category", "COLLABORATION")
                 .header("Authorization", "Bearer unverified-token"))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"));
+        .andExpect(jsonPath("$.error.code").value("LOUNGE_ARTIST_VERIFICATION_REQUIRED"))
+        .andExpect(jsonPath("$.error.message").value("작가 인증이 필요합니다."));
 
     mockMvc
         .perform(

@@ -30,7 +30,7 @@ class LoungeAccessPolicyTest {
 
   @Test
   void rejectsAnonymousUserForArtistCategory() {
-    assertAccessDenied(null, GlobalErrorCode.UNAUTHORIZED);
+    assertAccessDenied(null, GlobalErrorCode.UNAUTHORIZED, "인증이 필요합니다.");
   }
 
   @Test
@@ -38,7 +38,7 @@ class LoungeAccessPolicyTest {
     User user = mock(User.class);
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-    assertAccessDenied(1L, LoungeErrorCode.LOUNGE_ARTIST_VERIFICATION_REQUIRED);
+    assertAccessDenied(1L, LoungeErrorCode.LOUNGE_ARTIST_VERIFICATION_REQUIRED, "작가 인증이 필요합니다.");
   }
 
   @Test
@@ -57,11 +57,14 @@ class LoungeAccessPolicyTest {
         .containsExactly(LoungePostCategory.DISPLAY_REVIEW, LoungePostCategory.SPACE_RENTAL);
   }
 
-  private void assertAccessDenied(Long userId, Object errorCode) {
+  private void assertAccessDenied(Long userId, Object errorCode, String message) {
     assertThatThrownBy(
             () -> policy.validateCategoryAccess(LoungePostCategory.COLLABORATION, userId))
         .isInstanceOfSatisfying(
             BusinessException.class,
-            exception -> assertThat(exception.errorCode()).isEqualTo(errorCode));
+            exception -> {
+              assertThat(exception.errorCode()).isEqualTo(errorCode);
+              assertThat(exception).hasMessage(message);
+            });
   }
 }
