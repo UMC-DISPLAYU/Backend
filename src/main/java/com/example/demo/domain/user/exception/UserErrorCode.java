@@ -45,6 +45,9 @@ public enum UserErrorCode implements BaseErrorCode {
 
   UNSUPPORTED_UNIVERSITY(HttpStatus.BAD_REQUEST, "UNSUPPORTED_UNIVERSITY", "지원하지 않는 대학교입니다."),
 
+  SCHOOL_EMAIL_DOMAIN_MISMATCH(
+      HttpStatus.BAD_REQUEST, "SCHOOL_EMAIL_DOMAIN_MISMATCH", "선택한 학교의 웹메일과 일치하지 않습니다."),
+
   INVALID_EMAIL(HttpStatus.BAD_REQUEST, "INVALID_EMAIL", "유효하지 않은 학교 이메일입니다."),
 
   ALREADY_VERIFIED_USER(HttpStatus.BAD_REQUEST, "ALREADY_VERIFIED_USER", "이미 작가 인증이 완료된 사용자입니다."),
