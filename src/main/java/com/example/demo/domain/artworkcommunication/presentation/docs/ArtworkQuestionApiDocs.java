@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -40,6 +42,7 @@ public interface ArtworkQuestionApiDocs {
           해당 작품의 isContact=true 담당 작가이고 질문 상태가 WAITING일 때만 true입니다.
           일반 참여 작가는 비공개 질문을 조회할 수 있지만 답변을 등록할 수 없습니다.
           likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
+          isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
           답변 좋아요 API 호출에 필요한 답변 ID는 reply.questionReplyId로 제공합니다.
           접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
@@ -66,11 +69,13 @@ public interface ArtworkQuestionApiDocs {
                                     "accessible": true,
                                     "canReply": false,
                                     "likeCount": 12,
+                                    "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-06-30T22:10:00",
                                     "user": {
                                       "userId": 1,
-                                      "nickname": "User1"
+                                      "nickname": "User1",
+                                      "isCreator": false
                                     },
                                     "reply": {
                                       "questionReplyId": 8,
@@ -79,7 +84,8 @@ public interface ArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "캔버스에 유화를 사용했어요.",
                                       "createdAt": "2026-06-30T22:10:00",
-                                      "likeCount": 4
+                                      "likeCount": 4,
+                                      "isLiked": false
                                     }
                                   },
                                   {
@@ -89,6 +95,7 @@ public interface ArtworkQuestionApiDocs {
                                     "accessible": false,
                                     "canReply": false,
                                     "likeCount": null,
+                                    "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-06-30T22:15:00",
                                     "user": null,
@@ -96,7 +103,7 @@ public interface ArtworkQuestionApiDocs {
                                   }
                                 ],
                                 "nextCursorId": null,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": false
                               }
                             },
@@ -137,6 +144,9 @@ public interface ArtworkQuestionApiDocs {
       @Parameter(description = "마지막으로 조회한 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 질문 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 

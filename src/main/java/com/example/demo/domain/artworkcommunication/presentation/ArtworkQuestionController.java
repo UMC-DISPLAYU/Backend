@@ -21,12 +21,13 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/artworks/{artworkId}/questions")
 public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
@@ -45,12 +46,13 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   // 질문 목록 및 답변 조회
   public ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @PathVariable Long artworkId,
-      @RequestParam(required = false) @Positive Long cursorId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkQuestionListResult result =
         getArtworkQuestionsService.getQuestions(
-            mapper.toQuery(artworkId, cursorId, user == null ? null : user.userId()));
+            mapper.toQuery(artworkId, cursorId, size, user == null ? null : user.userId()));
 
     ArtworkQuestionListResponse response = mapper.toResponse(result);
 
