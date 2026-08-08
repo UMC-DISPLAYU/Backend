@@ -41,6 +41,14 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE;
@@ -117,6 +125,7 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.HideDisplayService;
 import com.example.demo.domain.display.application.command.PublishDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayReservationService;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
@@ -141,6 +150,7 @@ import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
+import com.example.demo.domain.display.presentation.request.HideDisplayRequest;
 import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
@@ -189,6 +199,7 @@ public class DisplayController {
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
   private final PublishDisplayService publishDisplayService;
+  private final HideDisplayService hideDisplayService;
   private final UpdateDisplayReservationService updateDisplayReservationService;
   private final GetDisplayDetailService getDisplayDetailService;
   private final GetDisplayByInvitationService getDisplayByInvitationService;
@@ -208,6 +219,7 @@ public class DisplayController {
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
       PublishDisplayService publishDisplayService,
+      HideDisplayService hideDisplayService,
       UpdateDisplayReservationService updateDisplayReservationService,
       GetDisplayDetailService getDisplayDetailService,
       GetDisplayByInvitationService getDisplayByInvitationService,
@@ -225,6 +237,7 @@ public class DisplayController {
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
     this.publishDisplayService = publishDisplayService;
+    this.hideDisplayService = hideDisplayService;
     this.updateDisplayReservationService = updateDisplayReservationService;
     this.getDisplayDetailService = getDisplayDetailService;
     this.getDisplayByInvitationService = getDisplayByInvitationService;
@@ -391,6 +404,35 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayDetailResult result =
         publishDisplayService.publishDisplay(publishDisplayRequest.toCommand(requireUserId(user)));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @PatchMapping("/api/v1/display/status")
+  @Operation(summary = HIDE_SUMMARY, description = HIDE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = HIDE_REQUEST_DESCRIPTION,
+      required = true,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = HIDE_REQUEST_EXAMPLE_NAME, value = HIDE_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "200",
+      description = HIDE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = HIDE_SUCCESS_EXAMPLE_NAME, value = HIDE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> hideDisplay(
+      @Valid @RequestBody HideDisplayRequest hideDisplayRequest,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayDetailResult result =
+        hideDisplayService.hideDisplay(hideDisplayRequest.toCommand(requireUserId(user)));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
