@@ -117,8 +117,6 @@ public final class DisplayContentApiDocs {
                 "categoryId": 3,
                 "contentId": 7,
                 "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
-                "width": 1440,
-                "height": 960,
                 "sortOrder": 0
               }
             ]
@@ -153,9 +151,7 @@ public final class DisplayContentApiDocs {
   public static final String CONTENT_REQUEST_EXAMPLE =
       """
       {
-        "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
-        "width": 1440,
-        "height": 960
+        "imageUrl": "https://cdn.displayu.com/display/content-7.jpg"
       }
       """;
 
@@ -168,8 +164,6 @@ public final class DisplayContentApiDocs {
             "categoryId": 3,
             "contentId": 7,
             "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
-            "width": 1440,
-            "height": 960,
             "sortOrder": 0
           }
         },
@@ -190,8 +184,6 @@ public final class DisplayContentApiDocs {
             "categoryId": 3,
             "contentId": 7,
             "imageUrl": "https://cdn.displayu.com/display/content-7-updated.jpg",
-            "width": 1600,
-            "height": 1000,
             "sortOrder": 0
           }
         },
@@ -242,24 +234,18 @@ public final class DisplayContentApiDocs {
                 "categoryId": 3,
                 "contentId": 9,
                 "imageUrl": "https://cdn.displayu.com/display/content-9.jpg",
-                "width": 1440,
-                "height": 960,
                 "sortOrder": 0
               },
               {
                 "categoryId": 3,
                 "contentId": 7,
                 "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
-                "width": 1440,
-                "height": 960,
                 "sortOrder": 1
               },
               {
                 "categoryId": 3,
                 "contentId": 8,
                 "imageUrl": "https://cdn.displayu.com/display/content-8.jpg",
-                "width": 1440,
-                "height": 960,
                 "sortOrder": 2
               }
             ]

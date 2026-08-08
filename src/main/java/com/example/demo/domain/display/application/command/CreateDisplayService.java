@@ -35,6 +35,7 @@ public class CreateDisplayService {
             new UserId(command.ownerUserId()),
             command.title(),
             command.posterImageUrl(),
+            command.displayImageUrls(),
             command.subtitle(),
             command.content(),
             new DisplayLocation(command.placeName(), command.latitude(), command.longitude()),

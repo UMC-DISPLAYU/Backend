@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -15,6 +16,7 @@ import java.util.List;
 public record CreateDisplayRequest(
     @NotBlank String title,
     @NotBlank String posterImageUrl,
+    @JsonProperty("displayImageUrl") @Size(max = 4) List<@NotBlank String> displayImageUrls,
     @NotNull Type type,
     @NotEmpty List<Field> fields,
     @NotNull Region region,

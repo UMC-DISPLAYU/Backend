@@ -185,8 +185,7 @@ class DisplayContentControllerTest {
                     categoryId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest("https://cdn.displayu.com/display/content-2.jpg", 1440, 960)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-2.jpg")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.categoryId").value(categoryId))
@@ -212,8 +211,7 @@ class DisplayContentControllerTest {
                     categoryId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest("https://cdn.displayu.com/display/content-21.jpg", 1440, 960)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-21.jpg")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_LIMIT_EXCEEDED"));
@@ -231,8 +229,7 @@ class DisplayContentControllerTest {
                     999L)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest("https://cdn.displayu.com/display/content-1.jpg", 1440, 960)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-1.jpg")))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_CATEGORY_NOT_FOUND"));
@@ -253,9 +250,7 @@ class DisplayContentControllerTest {
                     999L)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest(
-                        "https://cdn.displayu.com/display/content-updated.jpg", 1600, 1000)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-updated.jpg")))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_NOT_FOUND"));
@@ -277,9 +272,7 @@ class DisplayContentControllerTest {
                     contentId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest(
-                        "https://cdn.displayu.com/display/content-updated.jpg", 1600, 1000)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-updated.jpg")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.contentId").value(contentId))
@@ -303,9 +296,7 @@ class DisplayContentControllerTest {
                     category.getId(),
                     contentId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    contentRequest(
-                        "https://cdn.displayu.com/display/content-updated.jpg", 1600, 1000)))
+                .content(contentRequest("https://cdn.displayu.com/display/content-updated.jpg")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -440,15 +431,13 @@ class DisplayContentControllerTest {
         .formatted(name, description);
   }
 
-  private static String contentRequest(String imageUrl, int width, int height) {
+  private static String contentRequest(String imageUrl) {
     return """
         {
-          "imageUrl": "%s",
-          "width": %d,
-          "height": %d
+          "imageUrl": "%s"
         }
         """
-        .formatted(imageUrl, width, height);
+        .formatted(imageUrl);
   }
 
   private static String reorderRequest(List<Long> orderedContentIds) {
@@ -476,8 +465,7 @@ class DisplayContentControllerTest {
             "전시장 이미지입니다.",
             0,
             List.of(
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-1.jpg", 1440, 960, 0))));
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0))));
     return display;
   }
 
@@ -490,12 +478,9 @@ class DisplayContentControllerTest {
             "전시장 이미지입니다.",
             0,
             List.of(
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-1.jpg", 1440, 960, 0),
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-2.jpg", 1440, 960, 1),
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-3.jpg", 1440, 960, 2))));
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0),
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-2.jpg", 1),
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-3.jpg", 2))));
     return display;
   }
 
@@ -513,8 +498,6 @@ class DisplayContentControllerTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-" + (index + 1) + ".jpg",
-                    1440,
-                    960,
                     index))
         .toList();
   }

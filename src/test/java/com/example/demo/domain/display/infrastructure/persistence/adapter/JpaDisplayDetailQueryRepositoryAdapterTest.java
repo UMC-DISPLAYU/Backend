@@ -61,10 +61,8 @@ class JpaDisplayDetailQueryRepositoryAdapterTest {
             "전시장 이미지입니다.",
             0,
             List.of(
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-1.jpg", 1440, 960, 0),
-                new DisplayContent(
-                    null, "https://cdn.displayu.com/display/content-2.jpg", 1440, 960, 1))));
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0),
+                new DisplayContent(null, "https://cdn.displayu.com/display/content-2.jpg", 1))));
     display.addTeamMember(
         new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
     display.addInvitation(

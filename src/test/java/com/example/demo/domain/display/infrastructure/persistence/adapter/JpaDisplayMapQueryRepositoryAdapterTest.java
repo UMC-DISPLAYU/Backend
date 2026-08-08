@@ -13,6 +13,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.global.config.JpaAuditingConfig;
 import com.example.demo.global.config.QuerydslConfig;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({JpaDisplayMapQueryRepositoryAdapter.class, QuerydslConfig.class})
+@Import({JpaDisplayMapQueryRepositoryAdapter.class, JpaAuditingConfig.class, QuerydslConfig.class})
 class JpaDisplayMapQueryRepositoryAdapterTest {
 
   @Autowired private DisplayMapQueryRepository displayMapQueryRepository;
@@ -50,6 +51,8 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
         .containsExactly("내면의 풍경", "디자인 전시");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
+    assertThat(results.getFirst().organization()).isEqualTo("organization");
+    assertThat(results.getFirst().department()).isEqualTo("department");
   }
 
   @Test
