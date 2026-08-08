@@ -10,5 +10,7 @@ public record DisplayMapQueryResult(
     LocalDate endDate,
     String locationName,
     String posterImageUrl,
+    String organization,
+    String department,
     BigDecimal latitude,
     BigDecimal longitude) {}

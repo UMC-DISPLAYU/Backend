@@ -189,8 +189,7 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        result.organization(),
-        result.department(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
@@ -203,8 +202,7 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        result.organization(),
-        result.department(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
@@ -217,6 +215,7 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
@@ -231,6 +230,7 @@ public class DisplayPresentationMapper {
         result.endDate(),
         result.locationName(),
         result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.latitude(),
         result.longitude(),
         result.isArchived());
@@ -301,6 +301,22 @@ public class DisplayPresentationMapper {
       DisplayDetailResult.InvitationResult result) {
     return new DisplayDetailResponse.InvitationResponse(
         result.invitationId(), result.inviterUserId(), result.inviteeUserId(), result.createdAt());
+  }
+
+  private String schoolDepartmentName(String organization, String department) {
+    String trimmedOrganization = trimToEmpty(organization);
+    String trimmedDepartment = trimToEmpty(department);
+    if (trimmedOrganization.isBlank()) {
+      return trimmedDepartment;
+    }
+    if (trimmedDepartment.isBlank()) {
+      return trimmedOrganization;
+    }
+    return trimmedOrganization + " " + trimmedDepartment;
+  }
+
+  private String trimToEmpty(String value) {
+    return value == null ? "" : value.trim();
   }
 
   private String organization(CreateDisplayRequest request) {
