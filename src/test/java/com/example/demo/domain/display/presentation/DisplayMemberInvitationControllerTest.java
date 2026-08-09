@@ -24,7 +24,7 @@ import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisp
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataTeamMemberJpaRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import com.jayway.jsonpath.JsonPath;

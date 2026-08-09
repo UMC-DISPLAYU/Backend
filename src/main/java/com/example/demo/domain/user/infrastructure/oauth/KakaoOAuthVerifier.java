@@ -2,8 +2,8 @@ package com.example.demo.domain.user.infrastructure.oauth;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.port.KakaoOAuthVerifierPort;
-import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.error.AuthErrorCode;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;

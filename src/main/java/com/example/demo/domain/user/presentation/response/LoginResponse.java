@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.presentation.response;
 
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class LoginResponse {

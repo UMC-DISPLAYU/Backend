@@ -1,9 +1,9 @@
 package com.example.demo.domain.user.domain.aggregate;
 
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
-import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;

@@ -1,8 +1,8 @@
 package com.example.demo.domain.user.infrastructure.persistence;
 
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.type.Provider;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

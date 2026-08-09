@@ -1,8 +1,8 @@
 package com.example.demo.domain.user.infrastructure.persistence;
 
 import com.example.demo.domain.user.domain.entity.Agreement;
-import com.example.demo.domain.user.domain.enums.AgreementCode;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
+import com.example.demo.domain.user.domain.type.AgreementCode;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

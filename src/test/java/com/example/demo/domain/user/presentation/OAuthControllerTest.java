@@ -16,7 +16,7 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.service.OAuthLoginService;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
 import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.global.error.GlobalExceptionHandler;
