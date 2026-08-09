@@ -6,7 +6,7 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "app.google")
 public record GoogleOAuthProperties(Client client, String redirectUri) {
 
-  private static final String CALLBACK_PATH = "/api/auth/google/callback";
+  private static final String CALLBACK_PATH = "/api/v1/auth/google/callback";
 
   public GoogleOAuthProperties {
     if (client == null

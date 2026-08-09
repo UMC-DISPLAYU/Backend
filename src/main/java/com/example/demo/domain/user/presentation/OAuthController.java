@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @Slf4j
 public class OAuthController implements OAuthControllerDocs {
 
@@ -207,7 +207,7 @@ public class OAuthController implements OAuthControllerDocs {
 
   private String callbackPath(String cookieName) {
     return KAKAO_STATE_COOKIE.equals(cookieName)
-        ? "/api/auth/kakao/callback"
-        : "/api/auth/google/callback";
+        ? "/api/v1/auth/kakao/callback"
+        : "/api/v1/auth/google/callback";
   }
 }
