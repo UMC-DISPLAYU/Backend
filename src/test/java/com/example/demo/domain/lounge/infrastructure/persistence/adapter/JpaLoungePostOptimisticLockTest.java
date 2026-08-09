@@ -94,7 +94,7 @@ class JpaLoungePostOptimisticLockTest {
                         winningChange.accept(post);
                         bothLoaded.countDown();
                         await(bothLoaded);
-                        postRepository.flush();
+                        postRepository.save(post);
                       });
                 } finally {
                   winnerCommitted.countDown();
@@ -111,7 +111,7 @@ class JpaLoungePostOptimisticLockTest {
                         bothLoaded.countDown();
                         await(bothLoaded);
                         await(winnerCommitted);
-                        postRepository.flush();
+                        postRepository.save(post);
                       });
                   return null;
                 } catch (Throwable exception) {
@@ -138,7 +138,6 @@ class JpaLoungePostOptimisticLockTest {
                           imageUrls,
                           "기존 내용",
                           LoungePostCategory.DISPLAY_REVIEW));
-              postRepository.flush();
               return post.getId();
             });
   }

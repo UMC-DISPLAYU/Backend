@@ -14,6 +14,4 @@ public interface LoungePostRepository {
       List<LoungePostCategory> categories, Long cursorId, int limit);
 
   LoungePost save(LoungePost loungePost);
-
-  void flush();
 }

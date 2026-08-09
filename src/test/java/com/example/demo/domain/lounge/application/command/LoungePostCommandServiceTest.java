@@ -34,7 +34,7 @@ class LoungePostCommandServiceTest {
           postRepository, postLikeRepository, postScrapRepository, loungeAccessPolicy);
 
   @Test
-  void updatePostUsesOptimisticLockAndFlushesChanges() {
+  void updatePostUsesOptimisticLockAndSavesChanges() {
     LoungePost post = activePost();
     when(postRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(post));
 
@@ -48,11 +48,11 @@ class LoungePostCommandServiceTest {
     assertThat(post.getContent()).isEqualTo("수정 내용");
     assertThat(post.getPostImageUrls()).containsExactly("image-2", "image-1");
     assertThat(post.getCategory()).isEqualTo(LoungePostCategory.WORK_TIP);
-    verify(postRepository).flush();
+    verify(postRepository).save(post);
   }
 
   @Test
-  void deletePostUsesOptimisticLockAndFlushesChanges() {
+  void deletePostUsesOptimisticLockAndSavesChanges() {
     LoungePost post = activePost();
     when(postRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(post));
 
@@ -60,7 +60,7 @@ class LoungePostCommandServiceTest {
 
     assertThat(post.isDeleted()).isTrue();
     assertThat(post.getStatus()).isEqualTo(LoungePostStatus.DELETED);
-    verify(postRepository).flush();
+    verify(postRepository).save(post);
   }
 
   @Test
@@ -69,7 +69,7 @@ class LoungePostCommandServiceTest {
     when(postRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(post));
     doThrow(new ObjectOptimisticLockingFailureException(LoungePost.class, 1L))
         .when(postRepository)
-        .flush();
+        .save(post);
 
     assertConflict(
         () ->
@@ -86,7 +86,7 @@ class LoungePostCommandServiceTest {
     when(postRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(post));
     doThrow(new ObjectOptimisticLockingFailureException(LoungePost.class, 1L))
         .when(postRepository)
-        .flush();
+        .save(post);
 
     assertConflict(() -> service.deletePost(1L, 1L));
   }

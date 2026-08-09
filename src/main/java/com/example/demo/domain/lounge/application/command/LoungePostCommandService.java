@@ -66,7 +66,7 @@ public class LoungePostCommandService {
       loungePost.changeContent(command.title(), command.content());
       loungePost.replaceImages(command.postImageUrls());
       loungePost.changeCategory(command.category());
-      loungePostRepository.flush();
+      loungePostRepository.save(loungePost);
     } catch (OptimisticLockingFailureException | OptimisticLockException e) {
       throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
     }
@@ -78,7 +78,7 @@ public class LoungePostCommandService {
       LoungePost loungePost = getPostWithOptimisticLock(loungePostId);
       validateAuthor(loungePost, new UserId(requesterUserId));
       loungePost.delete();
-      loungePostRepository.flush();
+      loungePostRepository.save(loungePost);
     } catch (OptimisticLockingFailureException | OptimisticLockException e) {
       throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
     }

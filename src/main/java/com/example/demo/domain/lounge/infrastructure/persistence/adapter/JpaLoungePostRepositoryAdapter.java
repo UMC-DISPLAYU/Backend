@@ -37,11 +37,6 @@ public class JpaLoungePostRepositoryAdapter implements LoungePostRepository {
 
   @Override
   public LoungePost save(LoungePost loungePost) {
-    return jpaRepository.save(loungePost);
-  }
-
-  @Override
-  public void flush() {
-    jpaRepository.flush();
+    return jpaRepository.saveAndFlush(loungePost);
   }
 }
