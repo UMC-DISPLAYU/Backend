@@ -76,6 +76,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.L
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_REQUEST_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_STATUS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_STATUS_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_STATUS_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_STATUS_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_STATUS_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_SUCCESS_EXAMPLE_NAME;
@@ -131,10 +136,12 @@ import com.example.demo.domain.display.application.command.UpdateDisplayReservat
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
+import com.example.demo.domain.display.application.query.GetDisplayLikeStatusService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
+import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
 import com.example.demo.domain.display.application.service.ExitDisplayService;
 import com.example.demo.domain.display.application.service.GetMyDisplaysService;
@@ -160,6 +167,7 @@ import com.example.demo.domain.display.presentation.response.DisplayDetailRespon
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
@@ -202,6 +210,7 @@ public class DisplayController {
   private final HideDisplayService hideDisplayService;
   private final UpdateDisplayReservationService updateDisplayReservationService;
   private final GetDisplayDetailService getDisplayDetailService;
+  private final GetDisplayLikeStatusService getDisplayLikeStatusService;
   private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
@@ -222,6 +231,7 @@ public class DisplayController {
       HideDisplayService hideDisplayService,
       UpdateDisplayReservationService updateDisplayReservationService,
       GetDisplayDetailService getDisplayDetailService,
+      GetDisplayLikeStatusService getDisplayLikeStatusService,
       GetDisplayByInvitationService getDisplayByInvitationService,
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
@@ -240,6 +250,7 @@ public class DisplayController {
     this.hideDisplayService = hideDisplayService;
     this.updateDisplayReservationService = updateDisplayReservationService;
     this.getDisplayDetailService = getDisplayDetailService;
+    this.getDisplayLikeStatusService = getDisplayLikeStatusService;
     this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
@@ -529,6 +540,30 @@ public class DisplayController {
       HttpServletRequest request) {
     DisplayLikeResult result =
         displayLikeCommandService.cancel(displayLikeRequest.toCommand(requireUserId(user)));
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @GetMapping("/api/v1/display/{displayId}/isliked")
+  @Operation(summary = LIKE_STATUS_SUMMARY, description = LIKE_STATUS_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = LIKE_STATUS_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = LIKE_STATUS_SUCCESS_EXAMPLE_NAME,
+                      value = LIKE_STATUS_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayLikeStatusResponse> getDisplayLikeStatus(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayLikeStatusResult result =
+        getDisplayLikeStatusService.getLikeStatus(displayId, requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

@@ -17,10 +17,16 @@ public class DisplayLocation {
   private String placeName;
   private BigDecimal latitude;
   private BigDecimal longitude;
+  private String roadAddress;
 
   protected DisplayLocation() {}
 
   public DisplayLocation(String placeName, BigDecimal latitude, BigDecimal longitude) {
+    this(placeName, latitude, longitude, null);
+  }
+
+  public DisplayLocation(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {
     if (placeName == null || placeName.isBlank()) {
       throw new IllegalArgumentException("placeName must not be blank.");
     }
@@ -37,6 +43,7 @@ public class DisplayLocation {
     this.placeName = placeName;
     this.latitude = latitude;
     this.longitude = longitude;
+    this.roadAddress = roadAddress;
   }
 
   public String placeName() {
@@ -49,5 +56,9 @@ public class DisplayLocation {
 
   public BigDecimal longitude() {
     return longitude;
+  }
+
+  public String roadAddress() {
+    return roadAddress;
   }
 }

@@ -7,6 +7,7 @@ import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
+import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
@@ -23,6 +24,7 @@ import com.example.demo.domain.display.presentation.response.DisplayDetailRespon
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
@@ -136,6 +138,10 @@ public class DisplayPresentationMapper {
 
   public DisplayLikeResponse toResponse(DisplayLikeResult result) {
     return new DisplayLikeResponse(result.displayId(), result.likeCount());
+  }
+
+  public DisplayLikeStatusResponse toResponse(DisplayLikeStatusResult result) {
+    return new DisplayLikeStatusResponse(result.isLiked());
   }
 
   public DisplayInvitationResponse toResponse(DisplayInvitationResult result) {
@@ -255,7 +261,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.LocationResponse toResponse(
       DisplayDetailResult.LocationResult result) {
     return new DisplayDetailResponse.LocationResponse(
-        result.placeName(), result.latitude(), result.longitude());
+        result.placeName(), result.latitude(), result.longitude(), result.roadAddress());
   }
 
   private DisplayDetailResponse.PeriodResponse toResponse(DisplayDetailResult.PeriodResult result) {

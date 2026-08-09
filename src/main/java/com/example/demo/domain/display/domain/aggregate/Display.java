@@ -96,7 +96,8 @@ public class Display extends BaseTimeEntity {
         column = @Column(name = "latitude", nullable = false, precision = 10, scale = 7)),
     @AttributeOverride(
         name = "longitude",
-        column = @Column(name = "longitude", nullable = false, precision = 10, scale = 7))
+        column = @Column(name = "longitude", nullable = false, precision = 10, scale = 7)),
+    @AttributeOverride(name = "roadAddress", column = @Column(name = "roadAddress"))
   })
   private DisplayLocation location;
 

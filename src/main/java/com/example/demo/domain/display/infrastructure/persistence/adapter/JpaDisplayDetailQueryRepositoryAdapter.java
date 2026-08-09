@@ -74,6 +74,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.location.placeName,
             display.location.latitude,
             display.location.longitude,
+            display.location.roadAddress,
             display.qnaAccount,
             display.contract,
             display.note,
@@ -242,7 +243,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         new DisplayDetailResult.LocationResult(
             base.get(display.location.placeName),
             base.get(display.location.latitude),
-            base.get(display.location.longitude)),
+            base.get(display.location.longitude),
+            base.get(display.location.roadAddress)),
         base.get(display.qnaAccount),
         base.get(display.contract),
         base.get(display.note),

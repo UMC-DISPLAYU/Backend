@@ -48,6 +48,7 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.success.data.region").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.location.latitude").value(37.0063))
         .andExpect(jsonPath("$.success.data.location.longitude").value(127.2267))
+        .andExpect(jsonPath("$.success.data.location.roadAddress").value("경기도 안성시 대덕면 서동대로 4726"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].userId").value(user.getId()))
         .andExpect(jsonPath("$.success.data.teamMembers[0].displayNickname").value("전시 리더"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].role").value("TEAM_LEADER"))
