@@ -59,13 +59,14 @@ class MeAuthenticationTest {
 
   @Test
   void getMyArtistProfileReturnsUnauthorizedWithoutAuthentication() throws Exception {
-    assertUnauthorized(get("/api/v1/users/me/artist-profile"), "/api/v1/users/me/artist-profile");
+    assertUnauthorized(
+        get("/api/v1/artists/me/artist-profile"), "/api/v1/artists/me/artist-profile");
   }
 
   @Test
   void updateMyArtistProfileReturnsUnauthorizedWithoutAuthentication() throws Exception {
     assertUnauthorized(
-        patch("/api/v1/users/me/artist-profile")
+        patch("/api/v1/artists/me/artist-profile")
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
@@ -74,7 +75,7 @@ class MeAuthenticationTest {
                   "fields": ["PAINTING"]
                 }
                 """),
-        "/api/v1/users/me/artist-profile");
+        "/api/v1/artists/me/artist-profile");
   }
 
   @Test
