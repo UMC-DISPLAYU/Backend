@@ -35,7 +35,8 @@ public record DisplayDetailResponse(
     List<TeamMemberResponse> teamMembers,
     List<InvitationResponse> invitations) {
 
-  public record LocationResponse(String placeName, BigDecimal latitude, BigDecimal longitude) {}
+  public record LocationResponse(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
 
   public record PeriodResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}

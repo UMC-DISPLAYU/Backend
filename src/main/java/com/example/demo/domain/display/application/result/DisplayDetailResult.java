@@ -108,13 +108,15 @@ public record DisplayDetailResult(
         invitations);
   }
 
-  public record LocationResult(String placeName, BigDecimal latitude, BigDecimal longitude) {
+  public record LocationResult(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {
 
     private static LocationResult from(Display display) {
       return new LocationResult(
           display.getLocation().placeName(),
           display.getLocation().latitude(),
-          display.getLocation().longitude());
+          display.getLocation().longitude(),
+          display.getLocation().roadAddress());
     }
   }
 
