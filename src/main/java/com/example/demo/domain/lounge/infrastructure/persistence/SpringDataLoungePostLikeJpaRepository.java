@@ -13,11 +13,13 @@ public interface SpringDataLoungePostLikeJpaRepository extends JpaRepository<Lou
   @Query(
       value =
           """
-          INSERT IGNORE INTO LoungePostLike (loungePostId, userId)
-          VALUES (:loungePostId, :userId)
+          INSERT INTO LoungePostLike (createdAt, loungePostId, userId)
+          VALUES (CURRENT_TIMESTAMP, :loungePostId, :userId)
+          ON DUPLICATE KEY UPDATE
+            loungePostLikeId = loungePostLikeId
           """,
       nativeQuery = true)
-  void insertIgnore(@Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
 
   @Modifying
   @Query(
