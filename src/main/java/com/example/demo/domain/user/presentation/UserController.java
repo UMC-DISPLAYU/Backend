@@ -11,8 +11,8 @@ import com.example.demo.domain.user.application.service.SendSchoolEmailVerificat
 import com.example.demo.domain.user.application.service.UpdateMyProfileService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.application.service.WithdrawUserService;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.presentation.docs.UserControllerDocs;
 import com.example.demo.domain.user.presentation.mapper.UserPresentationMapper;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;

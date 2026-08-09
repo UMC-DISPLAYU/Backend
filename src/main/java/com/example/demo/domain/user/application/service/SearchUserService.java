@@ -2,8 +2,8 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.query.UserSearchQueryRepository;
 import com.example.demo.domain.user.application.result.UserSearchResult;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -2,10 +2,10 @@ package com.example.demo.domain.artist.application.service;
 
 import com.example.demo.domain.artist.application.result.ArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
+import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
+import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
-import com.example.demo.domain.artist.exception.ArtistErrorCode;
-import com.example.demo.domain.artist.exception.ArtistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

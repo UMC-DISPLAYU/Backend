@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.global.error.BusinessException;
 import org.junit.jupiter.api.Test;

@@ -9,12 +9,12 @@ import com.example.demo.domain.user.application.command.SendSchoolEmailVerificat
 import com.example.demo.domain.user.application.command.VerifySchoolEmailVerificationCommand;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
-import com.example.demo.domain.user.validator.SchoolEmailValidator;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 

@@ -2,7 +2,7 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.enums.Provider;
-import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.GoogleAuthorizationCodeClient;
 import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthClient;
 import com.example.demo.global.error.BusinessException;

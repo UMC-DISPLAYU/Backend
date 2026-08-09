@@ -2,10 +2,10 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.WithdrawUserCommand;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

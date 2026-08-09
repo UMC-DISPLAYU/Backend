@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.domain.vo;
 
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import java.util.regex.Pattern;
 
 public record Nickname(String value) {
