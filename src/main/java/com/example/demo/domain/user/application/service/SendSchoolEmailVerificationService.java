@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
+import com.example.demo.domain.user.application.port.SchoolEmailSenderPort;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
@@ -8,7 +9,6 @@ import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
-import com.example.demo.domain.user.infrastructure.mail.SchoolEmailSenderAdapter;
 import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class SendSchoolEmailVerificationService {
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private final SchoolEmailVerificationRepository verificationRepository;
-  private final SchoolEmailSenderAdapter emailSenderAdapter;
+  private final SchoolEmailSenderPort emailSender;
   private final SchoolEmailValidator schoolEmailValidator;
   private final UserRepository userRepository;
 
@@ -59,7 +59,7 @@ public class SendSchoolEmailVerificationService {
     verificationRepository.save(verification);
 
     // 이메일 발송
-    emailSenderAdapter.send(command.schoolEmail(), verificationCode);
+    emailSender.send(command.schoolEmail(), verificationCode);
   }
 
   private String createVerificationCode() {

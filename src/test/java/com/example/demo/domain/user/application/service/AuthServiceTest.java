@@ -7,14 +7,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
+import com.example.demo.domain.user.application.port.GoogleOAuthVerifierPort;
+import com.example.demo.domain.user.application.port.KakaoOAuthVerifierPort;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.RefreshToken;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.infrastructure.oauth.GoogleOAuthVerifier;
-import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
 import com.example.demo.global.security.TokenProvider;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,8 @@ class AuthServiceTest {
 
   private static final String SOCIAL_TOKEN = "social-token";
 
-  private final KakaoOAuthVerifier kakaoOAuthVerifier = mock(KakaoOAuthVerifier.class);
-  private final GoogleOAuthVerifier googleOAuthVerifier = mock(GoogleOAuthVerifier.class);
+  private final KakaoOAuthVerifierPort kakaoOAuthVerifier = mock(KakaoOAuthVerifierPort.class);
+  private final GoogleOAuthVerifierPort googleOAuthVerifier = mock(GoogleOAuthVerifierPort.class);
   private final UserRepository userRepository = mock(UserRepository.class);
   private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
   private final TokenProvider tokenProvider = mock(TokenProvider.class);

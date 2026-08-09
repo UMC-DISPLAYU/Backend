@@ -1,6 +1,8 @@
 package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
+import com.example.demo.domain.user.application.port.GoogleOAuthVerifierPort;
+import com.example.demo.domain.user.application.port.KakaoOAuthVerifierPort;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.RefreshToken;
@@ -8,8 +10,6 @@ import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.infrastructure.oauth.GoogleOAuthVerifier;
-import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthVerifier;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-  private final KakaoOAuthVerifier kakaoOAuthVerifier;
-  private final GoogleOAuthVerifier googleOAuthVerifier;
+  private final KakaoOAuthVerifierPort kakaoOAuthVerifier;
+  private final GoogleOAuthVerifierPort googleOAuthVerifier;
 
   private final UserRepository userRepository;
   private final RefreshTokenRepository refreshTokenRepository;

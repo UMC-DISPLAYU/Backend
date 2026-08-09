@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
+import com.example.demo.domain.user.application.port.KakaoOAuthClientPort;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoOAuthErrorResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
@@ -19,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @Slf4j
-public class KakaoOAuthClient {
+public class KakaoOAuthClient implements KakaoOAuthClientPort {
 
   private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
   private static final String TOKEN_URL = "https://kauth.kakao.com/oauth/token";
@@ -35,6 +36,7 @@ public class KakaoOAuthClient {
     this.properties = properties;
   }
 
+  @Override
   public String authorizationUrl(String state) {
     return UriComponentsBuilder.fromUriString(AUTHORIZATION_URL)
         .queryParam("client_id", properties.client().id())
@@ -47,6 +49,7 @@ public class KakaoOAuthClient {
         .toUriString();
   }
 
+  @Override
   public String exchangeCode(String code) {
     MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
     form.add("grant_type", "authorization_code");

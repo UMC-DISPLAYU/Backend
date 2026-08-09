@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
+import com.example.demo.domain.user.application.port.KakaoOAuthVerifierPort;
 import com.example.demo.domain.user.domain.enums.Provider;
 import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.infrastructure.oauth.dto.KakaoUserInfoResponse;
@@ -13,10 +14,11 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class KakaoOAuthVerifier {
+public class KakaoOAuthVerifier implements KakaoOAuthVerifierPort {
 
   private final KakaoOAuthClient kakaoOAuthClient;
 
+  @Override
   public SocialUserInfo verify(String accessToken) {
     String failureStage = "USER_INFO_REQUEST";
     try {
