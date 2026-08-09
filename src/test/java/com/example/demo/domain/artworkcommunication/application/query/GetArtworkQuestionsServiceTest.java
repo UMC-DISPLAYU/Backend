@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionValidator;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
@@ -95,12 +96,18 @@ class GetArtworkQuestionsServiceTest {
   @Test
   void loggedInUserReceivesQuestionLikeStatus() {
     ArtworkQuestion question = mock(ArtworkQuestion.class);
+    ArtworkQuestionReply reply = mock(ArtworkQuestionReply.class);
     when(question.getQuestionId()).thenReturn(10L);
     when(question.getContent()).thenReturn("좋아요한 질문");
     when(question.getIsPublic()).thenReturn(true);
     when(question.getAnswerStatus()).thenReturn(AnswerStatus.WAITING);
     when(question.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 12, 0));
     when(question.getUserId()).thenReturn(2L);
+    when(reply.getQueReplyId()).thenReturn(20L);
+    when(reply.getQuestionId()).thenReturn(10L);
+    when(reply.getCreatorId()).thenReturn(4L);
+    when(reply.getContent()).thenReturn("답변");
+    when(reply.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 13, 0));
 
     when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
     when(creatorExistenceRepository.findCreatorNameByDisplayArtworkIdAndUserId(1L, 3L))
@@ -110,23 +117,26 @@ class GetArtworkQuestionsServiceTest {
     when(artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(1L, null, 11))
         .thenReturn(List.of(question));
     when(artworkQuestionReplyRepository.findActiveByQuestionIds(List.of(10L)))
-        .thenReturn(List.of());
+        .thenReturn(List.of(reply));
     when(userExistenceRepository.findNicknamesByIds(Set.of(2L))).thenReturn(Map.of(2L, "질문자"));
     when(creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(1L, Set.of(2L)))
         .thenReturn(Map.of());
-    when(creatorExistenceRepository.findCreatorNamesByIds(Set.of())).thenReturn(Map.of());
+    when(creatorExistenceRepository.findCreatorNamesByIds(Set.of(4L)))
+        .thenReturn(Map.of(4L, "답변 작가"));
     when(artworkQuestionLikeRepository.countByQuestionIds(List.of(10L))).thenReturn(Map.of());
     when(artworkQuestionLikeRepository.findLikedQuestionIds(List.of(10L), 3L))
         .thenReturn(Set.of(10L));
-    when(artworkQuestionReplyLikeRepository.countByQuestionReplyIds(List.of()))
-        .thenReturn(Map.of());
-    when(artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(List.of(), 3L))
-        .thenReturn(Set.of());
+    when(artworkQuestionReplyLikeRepository.countByQuestionReplyIds(List.of(20L)))
+        .thenReturn(Map.of(20L, 2L));
+    when(artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(List.of(20L), 3L))
+        .thenReturn(Set.of(20L));
 
     ArtworkQuestionListResult result =
         service.getQuestions(new GetArtworkQuestionsQuery(1L, null, 10, 3L));
 
     assertThat(result.questions().get(0).isLiked()).isTrue();
+    assertThat(result.questions().get(0).reply().likeCount()).isEqualTo(2L);
+    assertThat(result.questions().get(0).reply().isLiked()).isTrue();
   }
 
   @Test

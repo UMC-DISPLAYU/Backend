@@ -27,6 +27,8 @@ import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -49,12 +51,11 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
 
   @Override
   @GetMapping
-  @SecurityRequirement(name = "Authorization")
   // 개인 작품 질문 목록 및 답변 조회
   public ApiResponseBody<PersonalArtworkQuestionListResponse> getQuestions(
       @PathVariable Long personalArtworkId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionListResult result =
