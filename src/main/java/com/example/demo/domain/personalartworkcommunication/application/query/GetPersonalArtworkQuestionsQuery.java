@@ -1,4 +1,4 @@
 package com.example.demo.domain.personalartworkcommunication.application.query;
 
 public record GetPersonalArtworkQuestionsQuery(
-    Long personalArtworkId, Long cursorId, Long userId) {}
+    Long personalArtworkId, Long cursorId, int size, Long userId) {}

@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetArtworkQuestionsService {
 
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final ArtworkQuestionRepository artworkQuestionRepository;
@@ -43,6 +43,7 @@ public class GetArtworkQuestionsService {
 
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
 
     boolean isParticipant =
         query.userId() != null
@@ -59,27 +60,38 @@ public class GetArtworkQuestionsService {
 
     List<ArtworkQuestion> fetched =
         artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(
-            query.displayArtworkId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<ArtworkQuestion> pageQuestions = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+            query.displayArtworkId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<ArtworkQuestion> pageQuestions = hasNext ? fetched.subList(0, pageSize) : fetched;
 
     if (pageQuestions.isEmpty()) {
-      return new ArtworkQuestionListResult(List.of(), null, PAGE_SIZE, false);
+      return new ArtworkQuestionListResult(List.of(), null, pageSize, false);
     }
 
     Map<Long, List<ArtworkQuestionReply>> repliesByQuestionId =
         findRepliesByQuestionId(pageQuestions);
     Map<Long, String> nicknameByUserId = findQuestionUserNicknames(pageQuestions);
+    Map<Long, String> creatorNameByUserId = findQuestionCreatorNames(pageQuestions, query);
     Map<Long, String> creatorNameById = findCreatorNamesById(repliesByQuestionId);
+    List<Long> questionIds = pageQuestions.stream().map(ArtworkQuestion::getQuestionId).toList();
+    List<Long> questionReplyIds =
+        repliesByQuestionId.values().stream()
+            .flatMap(List::stream)
+            .map(ArtworkQuestionReply::getQueReplyId)
+            .toList();
     Map<Long, Long> questionLikeCounts =
-        artworkQuestionLikeRepository.countByQuestionIds(
-            pageQuestions.stream().map(ArtworkQuestion::getQuestionId).toList());
+        artworkQuestionLikeRepository.countByQuestionIds(questionIds);
+    Set<Long> likedQuestionIds =
+        query.userId() == null
+            ? Set.of()
+            : artworkQuestionLikeRepository.findLikedQuestionIds(questionIds, query.userId());
     Map<Long, Long> replyLikeCounts =
-        artworkQuestionReplyLikeRepository.countByQuestionReplyIds(
-            repliesByQuestionId.values().stream()
-                .flatMap(List::stream)
-                .map(ArtworkQuestionReply::getQueReplyId)
-                .toList());
+        artworkQuestionReplyLikeRepository.countByQuestionReplyIds(questionReplyIds);
+    Set<Long> likedQuestionReplyIds =
+        query.userId() == null
+            ? Set.of()
+            : artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(
+                questionReplyIds, query.userId());
 
     List<ArtworkQuestionItemResult> questions =
         pageQuestions.stream()
@@ -90,16 +102,19 @@ public class GetArtworkQuestionsService {
                         question,
                         repliesByQuestionId.getOrDefault(question.getQuestionId(), List.of()),
                         nicknameByUserId,
+                        creatorNameByUserId,
                         creatorNameById,
                         questionLikeCounts,
+                        likedQuestionIds,
                         replyLikeCounts,
+                        likedQuestionReplyIds,
                         query.userId(),
                         isParticipant,
                         isContact))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).questionId() : null;
-    return new ArtworkQuestionListResult(questions, nextCursorId, PAGE_SIZE, hasNext);
+    return new ArtworkQuestionListResult(questions, nextCursorId, pageSize, hasNext);
   }
 
   private Map<Long, List<ArtworkQuestionReply>> findRepliesByQuestionId(
@@ -114,9 +129,12 @@ public class GetArtworkQuestionsService {
       ArtworkQuestion question,
       List<ArtworkQuestionReply> replies,
       Map<Long, String> nicknameByUserId,
+      Map<Long, String> creatorNameByUserId,
       Map<Long, String> creatorNameById,
       Map<Long, Long> questionLikeCounts,
+      Set<Long> likedQuestionIds,
       Map<Long, Long> replyLikeCounts,
+      Set<Long> likedQuestionReplyIds,
       Long userId,
       boolean isParticipant,
       boolean isContact) {
@@ -134,6 +152,7 @@ public class GetArtworkQuestionsService {
           false,
           false,
           null,
+          false,
           question.getAnswerStatus().name(),
           question.getCreatedAt(),
           null,
@@ -142,14 +161,21 @@ public class GetArtworkQuestionsService {
 
     ArtworkQuestionUserResult user =
         new ArtworkQuestionUserResult(
-            question.getUserId(), getNicknameOrThrow(nicknameByUserId, question.getUserId()));
+            question.getUserId(),
+            getNicknameOrThrow(nicknameByUserId, question.getUserId()),
+            creatorNameByUserId.containsKey(question.getUserId()));
 
     ArtworkQuestionReplyItemResult reply =
         replies.stream()
             .findFirst()
             .map(
                 firstReply ->
-                    toReplyItem(displayArtworkId, firstReply, creatorNameById, replyLikeCounts))
+                    toReplyItem(
+                        displayArtworkId,
+                        firstReply,
+                        creatorNameById,
+                        replyLikeCounts,
+                        likedQuestionReplyIds))
             .orElse(null);
 
     return new ArtworkQuestionItemResult(
@@ -159,6 +185,7 @@ public class GetArtworkQuestionsService {
         true,
         canReply,
         questionLikeCounts.getOrDefault(question.getQuestionId(), 0L),
+        likedQuestionIds.contains(question.getQuestionId()),
         question.getAnswerStatus().name(),
         question.getCreatedAt(),
         user,
@@ -169,7 +196,8 @@ public class GetArtworkQuestionsService {
       Long displayArtworkId,
       ArtworkQuestionReply reply,
       Map<Long, String> creatorNameById,
-      Map<Long, Long> replyLikeCounts) {
+      Map<Long, Long> replyLikeCounts,
+      Set<Long> likedQuestionReplyIds) {
     Long creatorId = reply.getCreatorId();
     String creatorName = creatorId == null ? null : creatorNameById.get(creatorId);
     if (creatorName == null) {
@@ -183,7 +211,8 @@ public class GetArtworkQuestionsService {
         creatorName != null,
         reply.getContent(),
         reply.getCreatedAt(),
-        replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L));
+        replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L),
+        likedQuestionReplyIds.contains(reply.getQueReplyId()));
   }
 
   private Map<Long, String> findCreatorNamesById(
@@ -203,6 +232,15 @@ public class GetArtworkQuestionsService {
         questions.stream().map(ArtworkQuestion::getUserId).collect(Collectors.toSet());
 
     return userExistenceRepository.findNicknamesByIds(userIds);
+  }
+
+  private Map<Long, String> findQuestionCreatorNames(
+      List<ArtworkQuestion> questions, GetArtworkQuestionsQuery query) {
+    Set<Long> userIds =
+        questions.stream().map(ArtworkQuestion::getUserId).collect(Collectors.toSet());
+
+    return creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(
+        query.displayArtworkId(), userIds);
   }
 
   private String findContactCreatorNameOrNull(Long displayArtworkId) {

@@ -18,8 +18,6 @@ public class CreateArtworkQuestionService {
   public ArtworkQuestionResult createQuestion(CreateArtworkQuestionCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());
-    artworkQuestionValidator.validateNotArtworkCreator(
-        command.displayArtworkId(), command.userId());
     artworkQuestionValidator.validateContent(command.content());
 
     ArtworkQuestion artworkQuestion =

@@ -69,14 +69,6 @@ public class ArtworkQuestionValidator {
     }
   }
 
-  public void validateNotArtworkCreator(Long displayArtworkId, Long userId) {
-    if (creatorExistenceRepository
-        .findCreatorNameByDisplayArtworkIdAndUserId(displayArtworkId, userId)
-        .isPresent()) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_QUESTION);
-    }
-  }
-
   public void validateQuestionTarget(ArtworkQuestion artworkQuestion, Long displayArtworkId) {
     if (artworkQuestion.isDeleted() || !artworkQuestion.belongsToArtwork(displayArtworkId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND);

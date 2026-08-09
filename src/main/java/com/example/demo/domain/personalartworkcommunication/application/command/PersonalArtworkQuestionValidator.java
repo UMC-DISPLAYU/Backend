@@ -41,13 +41,6 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  public void validateNotPersonalArtworkCreator(Long personalArtworkId, Long userId) {
-    if (personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.CREATOR_CANNOT_WRITE_QUESTION);
-    }
-  }
-
   public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
     if (!personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
       throw new BusinessException(

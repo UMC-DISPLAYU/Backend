@@ -35,8 +35,8 @@ public class ArtworkQuestionPresentationMapper {
     return new ArtworkQuestionReplyCommand(artworkId, questionId, userId, request.content());
   }
 
-  public GetArtworkQuestionsQuery toQuery(Long artworkId, Long cursorId, Long userId) {
-    return new GetArtworkQuestionsQuery(artworkId, cursorId, userId);
+  public GetArtworkQuestionsQuery toQuery(Long artworkId, Long cursorId, int size, Long userId) {
+    return new GetArtworkQuestionsQuery(artworkId, cursorId, size, userId);
   }
 
   public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
@@ -103,12 +103,13 @@ public class ArtworkQuestionPresentationMapper {
         result.accessible(),
         result.canReply(),
         result.likeCount(),
+        result.isLiked(),
         result.answerStatus(),
         result.createdAt(),
         result.user() == null
             ? null
             : new ArtworkQuestionListResponse.ArtworkQuestionUserResponse(
-                result.user().userId(), result.user().nickname()),
+                result.user().userId(), result.user().nickname(), result.user().isCreator()),
         toQuestionReplyItemResponse(result.reply()));
   }
 
@@ -125,6 +126,7 @@ public class ArtworkQuestionPresentationMapper {
         result.isCreator(),
         result.content(),
         result.createdAt(),
-        result.likeCount());
+        result.likeCount(),
+        result.isLiked());
   }
 }
