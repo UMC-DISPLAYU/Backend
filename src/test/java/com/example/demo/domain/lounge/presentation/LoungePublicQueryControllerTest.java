@@ -14,6 +14,7 @@ import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
@@ -139,6 +140,20 @@ class LoungePublicQueryControllerTest {
         .andExpect(jsonPath("$.success.data.replies[0].replyCount").doesNotExist())
         .andExpect(jsonPath("$.success.data.replies[0].isLiked").value(false))
         .andExpect(jsonPath("$.success.data.replies[0].isMyComment").value(false));
+  }
+
+  @Test
+  void postResponseIncludesWriterProfileImageUrl() throws Exception {
+    when(writerRepository.findByUserIds(anyList()))
+        .thenReturn(
+            Map.of(101L, new LoungeWriter(101L, "작성자", "https://cdn.example.com/profile.jpg")));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.success.data.writer.profileImageUrl")
+                .value("https://cdn.example.com/profile.jpg"));
   }
 
   @Test
