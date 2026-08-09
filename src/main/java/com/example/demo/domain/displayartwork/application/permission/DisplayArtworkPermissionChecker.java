@@ -80,6 +80,7 @@ public class DisplayArtworkPermissionChecker {
       Display display, Long userId, DisplayArtworkErrorCode errorCode) {
     TeamMember teamMember =
         display.getTeamMembers().stream()
+            .filter(member -> !member.isDeleted())
             .filter(TeamMember::isAccepted)
             .filter(member -> Objects.equals(member.getUserId().value(), userId))
             .findFirst()

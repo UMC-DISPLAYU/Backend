@@ -16,11 +16,13 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.displayartwork.domain.entity.Creator;
+import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +56,20 @@ class DisplayArtworkPermissionCheckerTest {
         .thenReturn(List.of(new Creator(null, "artist", false, true, ARTIST, ARTWORK_ID)));
 
     assertThatThrownBy(() -> checker.requireArtworkEditor(MEMBER, display(), ARTWORK_ID))
-        .isInstanceOf(BusinessException.class);
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+  }
+
+  @Test
+  void unrelatedTeamMemberCannotDeleteArtwork() {
+    when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
+        .thenReturn(List.of(new Creator(null, "artist", false, true, ARTIST, ARTWORK_ID)));
+
+    assertThatThrownBy(() -> checker.requireArtworkDeleter(MEMBER, display(), ARTWORK_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ACTION);
   }
 
   @Test
@@ -71,7 +86,9 @@ class DisplayArtworkPermissionCheckerTest {
     assertThatCode(() -> checker.requireArtworkOrderEditor(OWNER, display()))
         .doesNotThrowAnyException();
     assertThatThrownBy(() -> checker.requireArtworkOrderEditor(TEAM_LEADER, display()))
-        .isInstanceOf(BusinessException.class);
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
   }
 
   @Test
@@ -81,11 +98,53 @@ class DisplayArtworkPermissionCheckerTest {
   }
 
   @Test
+  void teamMemberCannotRegisterArtworkForAnotherArtist() {
+    assertThatThrownBy(() -> checker.requireProxyRegistrationAllowed(MEMBER, display(), ARTIST))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
+  }
+
+  @Test
   void qnaHandlerMustBeArtistOrDisplayLeader() {
     assertThatCode(() -> checker.requireQnaHandlerAssignable(display(), ARTIST, Set.of(ARTIST)))
         .doesNotThrowAnyException();
     assertThatThrownBy(() -> checker.requireQnaHandlerAssignable(display(), MEMBER, Set.of(ARTIST)))
-        .isInstanceOf(BusinessException.class);
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
+  }
+
+  @Test
+  void unverifiedArtistParticipantIsRejectedWithRequestedErrorCode() {
+    when(artistVerificationRepository.isVerifiedArtist(ARTIST)).thenReturn(false);
+
+    assertThatThrownBy(
+            () ->
+                checker.requireVerifiedArtistParticipant(
+                    display(), ARTIST, DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
+  }
+
+  @Test
+  void deletedVerifiedArtistTeamMemberIsRejectedWithRequestedErrorCode() {
+    Display display = display();
+    display.getTeamMembers().stream()
+        .filter(member -> member.getUserId().value().equals(ARTIST))
+        .findFirst()
+        .orElseThrow()
+        .softDelete(LocalDateTime.of(2026, 5, 1, 0, 0));
+    when(artistVerificationRepository.isVerifiedArtist(ARTIST)).thenReturn(true);
+
+    assertThatThrownBy(
+            () ->
+                checker.requireVerifiedArtistTeamMember(
+                    display, ARTIST, DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID);
   }
 
   private static Display display() {
