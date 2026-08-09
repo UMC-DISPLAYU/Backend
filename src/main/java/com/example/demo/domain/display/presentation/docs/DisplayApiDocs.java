@@ -870,7 +870,8 @@ public final class DisplayApiDocs {
             "location": {
               "placeName": "디스플레이유 갤러리",
               "latitude": 37.5665000,
-              "longitude": 126.9780000
+              "longitude": 126.9780000,
+              "roadAddress": "서울특별시 중구 세종대로 110"
             },
             "qnaAccount": "@displayu",
             "contract": "Instagram DM",
