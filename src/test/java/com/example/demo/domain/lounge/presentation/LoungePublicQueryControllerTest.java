@@ -429,6 +429,26 @@ class LoungePublicQueryControllerTest {
   }
 
   @Test
+  void commentCreationReturnsEmptyImagesWhenImageUrlsAreOmitted() throws Exception {
+    when(tokenProvider.getUserId("test-token")).thenReturn(104L);
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", post.getId())
+                .header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "content": "이미지가 없는 댓글"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.imageUrls").isArray())
+        .andExpect(jsonPath("$.success.data.imageUrls").isEmpty());
+  }
+
+  @Test
   void commentCreationRejectsMoreThanFiveImages() throws Exception {
     when(tokenProvider.getUserId("test-token")).thenReturn(104L);
 
