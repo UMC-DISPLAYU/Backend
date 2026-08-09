@@ -55,11 +55,15 @@ public final class DisplayApiDocs {
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
   public static final String LIKE_CANCEL_DESCRIPTION =
       "인증된 사용자가 전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
+  public static final String LIKE_STATUS_SUMMARY = "전시 좋아요 여부 조회";
+  public static final String LIKE_STATUS_DESCRIPTION = "인증된 사용자 기준으로 해당 전시에 활성 좋아요를 눌렀는지 조회합니다.";
   public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
   public static final String LIKE_REQUEST_EXAMPLE_NAME = "Display like request";
   public static final String LIKE_SUCCESS_DESCRIPTION = "전시 좋아요 처리 성공";
   public static final String LIKE_SUCCESS_EXAMPLE_NAME = "Display like success";
   public static final String LIKE_CANCEL_SUCCESS_EXAMPLE_NAME = "Display like cancel success";
+  public static final String LIKE_STATUS_SUCCESS_DESCRIPTION = "전시 좋아요 여부 조회 성공";
+  public static final String LIKE_STATUS_SUCCESS_EXAMPLE_NAME = "Display like status success";
 
   public static final String INVITATION_ISSUE_SUMMARY = "전시 초대 링크 생성";
   public static final String INVITATION_ISSUE_DESCRIPTION =
@@ -594,6 +598,23 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-01T23:00:00",
           "path": "/api/v1/display/like"
+        }
+      }
+      """;
+
+  public static final String LIKE_STATUS_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "isLiked": true
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-01T23:00:00",
+          "path": "/api/v1/display/12/isliked"
         }
       }
       """;
