@@ -22,8 +22,8 @@ public interface DisplayReviewJpaRepository extends JpaRepository<DisplayReview,
               AND reply.deletedAt IS NULL
           )
         )
-        AND (:cursorId IS NULL OR review.displayReviewId < :cursorId)
-      ORDER BY review.displayReviewId DESC
+        AND (:cursorId IS NULL OR review.displayReviewId > :cursorId)
+      ORDER BY review.displayReviewId ASC
       """)
   List<DisplayReview> findByDisplayIdWithCursor(
       @Param("displayId") Long displayId, @Param("cursorId") Long cursorId, Pageable pageable);
