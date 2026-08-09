@@ -301,6 +301,7 @@ class DisplayCacheIntegrationTest {
         1L,
         "전시",
         "https://cdn.displayu.com/posters/main.png",
+        List.of(),
         "부제",
         "설명",
         "전시장",

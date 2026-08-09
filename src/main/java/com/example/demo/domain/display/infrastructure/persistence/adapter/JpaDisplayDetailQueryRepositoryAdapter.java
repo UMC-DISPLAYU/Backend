@@ -74,6 +74,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.location.placeName,
             display.location.latitude,
             display.location.longitude,
+            display.location.roadAddress,
             display.qnaAccount,
             display.contract,
             display.note,
@@ -107,8 +108,6 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                 image.id,
                 image.imageUrl,
                 image.imageType.stringValue(),
-                image.width,
-                image.height,
                 image.sortOrder))
         .from(image)
         .where(image.display.id.eq(displayId), image.deletedAt.isNull())
@@ -164,13 +163,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
 
     List<Tuple> contents =
         queryFactory
-            .select(
-                content.category.id,
-                content.id,
-                content.imageUrl,
-                content.width,
-                content.height,
-                content.sortOrder)
+            .select(content.category.id, content.id, content.imageUrl, content.sortOrder)
             .from(content)
             .where(
                 content.category.id.in(categoryIds),
@@ -187,8 +180,6 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                         new DisplayDetailResult.ContentResult(
                             tuple.get(content.id),
                             tuple.get(content.imageUrl),
-                            tuple.get(content.width),
-                            tuple.get(content.height),
                             tuple.get(content.sortOrder)),
                     Collectors.toList())));
   }
@@ -252,7 +243,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         new DisplayDetailResult.LocationResult(
             base.get(display.location.placeName),
             base.get(display.location.latitude),
-            base.get(display.location.longitude)),
+            base.get(display.location.longitude),
+            base.get(display.location.roadAddress)),
         base.get(display.qnaAccount),
         base.get(display.contract),
         base.get(display.note),

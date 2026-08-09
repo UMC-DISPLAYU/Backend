@@ -108,13 +108,15 @@ public record DisplayDetailResult(
         invitations);
   }
 
-  public record LocationResult(String placeName, BigDecimal latitude, BigDecimal longitude) {
+  public record LocationResult(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {
 
     private static LocationResult from(Display display) {
       return new LocationResult(
           display.getLocation().placeName(),
           display.getLocation().latitude(),
-          display.getLocation().longitude());
+          display.getLocation().longitude(),
+          display.getLocation().roadAddress());
     }
   }
 
@@ -137,17 +139,11 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ImageResult(
-      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {
+  public record ImageResult(Long imageId, String imageUrl, String imageType, int sortOrder) {
 
     private static ImageResult from(DisplayImage image) {
       return new ImageResult(
-          image.getId(),
-          image.getImageUrl(),
-          image.getImageType().name(),
-          image.getWidth(),
-          image.getHeight(),
-          image.getSortOrder());
+          image.getId(), image.getImageUrl(), image.getImageType().name(), image.getSortOrder());
     }
   }
 
@@ -171,16 +167,10 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ContentResult(
-      Long contentId, String imageUrl, int width, int height, int sortOrder) {
+  public record ContentResult(Long contentId, String imageUrl, int sortOrder) {
 
     private static ContentResult from(DisplayContent content) {
-      return new ContentResult(
-          content.getId(),
-          content.getImageUrl(),
-          content.getWidth(),
-          content.getHeight(),
-          content.getSortOrder());
+      return new ContentResult(content.getId(), content.getImageUrl(), content.getSortOrder());
     }
   }
 

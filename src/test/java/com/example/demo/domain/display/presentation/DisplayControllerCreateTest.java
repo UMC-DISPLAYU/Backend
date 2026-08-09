@@ -48,10 +48,27 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.success.data.region").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.location.latitude").value(37.0063))
         .andExpect(jsonPath("$.success.data.location.longitude").value(127.2267))
+        .andExpect(jsonPath("$.success.data.location.roadAddress").value("경기도 안성시 대덕면 서동대로 4726"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].userId").value(user.getId()))
         .andExpect(jsonPath("$.success.data.teamMembers[0].displayNickname").value("전시 리더"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.teamMembers[0].accepted").value(true))
+        .andExpect(jsonPath("$.success.data.images.length()").value(3))
+        .andExpect(
+            jsonPath("$.success.data.images[0].imageUrl")
+                .value("https://cdn.displayu.com/posters/form.png"))
+        .andExpect(jsonPath("$.success.data.images[0].imageType").value("MAIN"))
+        .andExpect(jsonPath("$.success.data.images[0].sortOrder").value(0))
+        .andExpect(
+            jsonPath("$.success.data.images[1].imageUrl")
+                .value("https://cdn.displayu.com/display/detail-1.png"))
+        .andExpect(jsonPath("$.success.data.images[1].imageType").value("DETAIL"))
+        .andExpect(jsonPath("$.success.data.images[1].sortOrder").value(0))
+        .andExpect(
+            jsonPath("$.success.data.images[2].imageUrl")
+                .value("https://cdn.displayu.com/display/detail-2.png"))
+        .andExpect(jsonPath("$.success.data.images[2].imageType").value("DETAIL"))
+        .andExpect(jsonPath("$.success.data.images[2].sortOrder").value(1))
         .andExpect(jsonPath("$.error").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
   }
@@ -66,6 +83,22 @@ class DisplayControllerCreateTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody("ALL")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+  }
+
+  @Test
+  void createDisplayReturnsBadRequestWhenDisplayImageUrlHasMoreThanFourItems() throws Exception {
+    User user = userJpaRepository.save(user("홍길동"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBodyWithFiveDisplayImages()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
@@ -90,6 +123,10 @@ class DisplayControllerCreateTest {
         {
           "title": "FORM 2026",
           "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+          "displayImageUrl": [
+            "https://cdn.displayu.com/display/detail-1.png",
+            "https://cdn.displayu.com/display/detail-2.png"
+          ],
           "type": "GRADUATION",
           "fields": ["DESIGN", "MEDIA"],
           "region": "%s",
@@ -112,6 +149,41 @@ class DisplayControllerCreateTest {
         }
         """
         .formatted(region);
+  }
+
+  private static String requestBodyWithFiveDisplayImages() {
+    return """
+        {
+          "title": "FORM 2026",
+          "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+          "displayImageUrl": [
+            "https://cdn.displayu.com/display/detail-1.png",
+            "https://cdn.displayu.com/display/detail-2.png",
+            "https://cdn.displayu.com/display/detail-3.png",
+            "https://cdn.displayu.com/display/detail-4.png",
+            "https://cdn.displayu.com/display/detail-5.png"
+          ],
+          "type": "GRADUATION",
+          "fields": ["DESIGN", "MEDIA"],
+          "region": "SEOUL",
+          "schoolOrOrganization": "중앙대학교",
+          "departmentOrClub": "디자인학부",
+          "qnaAccount": "@displayu",
+          "displayNickname": "전시 리더",
+          "contract": "Instagram DM",
+          "subtitle": "중앙대학교 디자인학부 졸업전시",
+          "description": "디자인학부 학생들의 전시입니다.",
+          "startDate": "2026-05-28",
+          "endDate": "2026-06-05",
+          "openTime": "10:00",
+          "closeTime": "18:00",
+          "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+          "latitude": 37.0063,
+          "longitude": 127.2267,
+          "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
+          "precautions": "전시장 내 음료 반입 금지"
+        }
+        """;
   }
 
   private static User user(String name) {

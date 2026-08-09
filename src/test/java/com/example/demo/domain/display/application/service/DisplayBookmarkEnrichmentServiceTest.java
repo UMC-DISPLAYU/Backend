@@ -36,6 +36,8 @@ class DisplayBookmarkEnrichmentServiceTest {
         displayId,
         "전시 " + displayId,
         "https://cdn.displayu.com/posters/main.png",
+        "organization",
+        "department",
         LocalDate.of(2026, 7, 1),
         LocalDate.of(2026, 7, 10),
         9,

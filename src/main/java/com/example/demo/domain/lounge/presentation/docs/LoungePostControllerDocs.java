@@ -27,7 +27,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @SecurityRequirement(name = "Authorization")
 public interface LoungePostControllerDocs {
 
-  @Operation(summary = "라운지 게시글 생성", description = "라운지 게시글을 생성합니다.")
+  @Operation(
+      summary = "라운지 게시글 생성",
+      description = "라운지 게시글을 생성합니다. WORK_TIP과 COLLABORATION 카테고리는 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "201",
       description = "라운지 게시글 생성 성공",
@@ -74,7 +78,11 @@ public interface LoungePostControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 수정", description = "작성자가 라운지 게시글을 수정합니다.")
+  @Operation(
+      summary = "라운지 게시글 수정",
+      description = "작성자가 라운지 게시글을 수정합니다. WORK_TIP과 COLLABORATION 카테고리로 변경하려면 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작성자 권한 또는 작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 수정 성공",
@@ -148,7 +156,11 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<Void> deletePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 좋아요", description = "라운지 게시글에 좋아요를 추가합니다.")
+  @Operation(
+      summary = "라운지 게시글 좋아요",
+      description = "라운지 게시글에 좋아요를 추가합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 좋아요 성공",
@@ -178,7 +190,11 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostLikeResponse> likePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 좋아요 취소", description = "라운지 게시글 좋아요를 취소합니다.")
+  @Operation(
+      summary = "라운지 게시글 좋아요 취소",
+      description = "라운지 게시글 좋아요를 취소합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 좋아요 취소 성공",
@@ -208,7 +224,11 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 스크랩", description = "라운지 게시글을 스크랩합니다.")
+  @Operation(
+      summary = "라운지 게시글 스크랩",
+      description = "라운지 게시글을 스크랩합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 스크랩 성공",
@@ -238,7 +258,11 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostScrapResponse> scrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 스크랩 취소", description = "라운지 게시글 스크랩을 취소합니다.")
+  @Operation(
+      summary = "라운지 게시글 스크랩 취소",
+      description = "라운지 게시글 스크랩을 취소합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 스크랩 취소 성공",
@@ -268,7 +292,12 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 목록 조회", description = "라운지 게시글 목록을 커서 방식으로 조회합니다.")
+  @Operation(
+      summary = "라운지 게시글 목록 조회",
+      description =
+          "라운지 게시글 목록을 커서 방식으로 조회합니다. 카테고리를 생략하면 비회원과 미인증 회원에게는 공개 카테고리만 반환하며, WORK_TIP과 COLLABORATION 조회에는 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "작가 전용 카테고리 조회 시 로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 전용 카테고리 조회 시 작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 목록 조회 성공",
@@ -315,7 +344,8 @@ public interface LoungePostControllerDocs {
                           }
                           """)))
   ApiResponseBody<LoungePostCursorResponse> getPosts(
-      @Parameter(description = "라운지 게시글 카테고리. 없으면 전체 조회") @RequestParam(required = false)
+      @Parameter(description = "라운지 게시글 카테고리. 없으면 요청자가 접근 가능한 카테고리 전체 조회")
+          @RequestParam(required = false)
           LoungePostCategory category,
       @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -325,7 +355,11 @@ public interface LoungePostControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "라운지 게시글 상세 조회", description = "라운지 게시글 상세 정보를 조회합니다.")
+  @Operation(
+      summary = "라운지 게시글 상세 조회",
+      description = "라운지 게시글 상세 정보를 조회합니다. 작가 전용 카테고리 게시글은 작가 인증이 필요합니다.")
+  @ApiResponse(responseCode = "401", description = "작가 전용 게시글 조회 시 로그인 필요")
+  @ApiResponse(responseCode = "403", description = "작가 전용 게시글 조회 시 작가 인증 필요")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 상세 조회 성공",
@@ -370,7 +404,9 @@ public interface LoungePostControllerDocs {
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
-  @Operation(summary = "내 라운지 게시글 조회", description = "로그인 사용자가 작성한 게시글을 조회합니다.")
+  @Operation(
+      summary = "내 라운지 게시글 조회",
+      description = "로그인 사용자가 작성한 게시글 중 현재 접근 가능한 카테고리의 게시글을 조회합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "내 라운지 게시글 조회 성공",
@@ -425,7 +461,9 @@ public interface LoungePostControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "내 라운지 스크랩 조회", description = "로그인 사용자가 스크랩한 게시글을 조회합니다.")
+  @Operation(
+      summary = "내 라운지 스크랩 조회",
+      description = "로그인 사용자가 스크랩한 게시글 중 현재 접근 가능한 카테고리의 게시글을 조회합니다.")
   @ApiResponse(
       responseCode = "200",
       description = "내 라운지 스크랩 조회 성공",

@@ -35,13 +35,13 @@ public record DisplayDetailResponse(
     List<TeamMemberResponse> teamMembers,
     List<InvitationResponse> invitations) {
 
-  public record LocationResponse(String placeName, BigDecimal latitude, BigDecimal longitude) {}
+  public record LocationResponse(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
 
   public record PeriodResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}
 
-  public record ImageResponse(
-      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {}
+  public record ImageResponse(Long imageId, String imageUrl, String imageType, int sortOrder) {}
 
   public record ContentCategoryResponse(
       Long categoryId,
@@ -50,8 +50,7 @@ public record DisplayDetailResponse(
       int sortOrder,
       List<ContentResponse> contents) {}
 
-  public record ContentResponse(
-      Long contentId, String imageUrl, int width, int height, int sortOrder) {}
+  public record ContentResponse(Long contentId, String imageUrl, int sortOrder) {}
 
   public record TeamMemberResponse(
       Long teamMemberId, Long userId, String displayNickname, String role, boolean accepted) {}

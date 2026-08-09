@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -38,6 +40,7 @@ public interface PersonalArtworkQuestionApiDocs {
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
           likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
+          isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
           접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
   @ApiResponse(
@@ -63,11 +66,13 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "accessible": true,
                                     "canReply": false,
                                     "likeCount": 12,
+                                    "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
                                     "user": {
                                       "userId": 2,
-                                      "nickname": "관람객"
+                                      "nickname": "관람객",
+                                      "isCreator": false
                                     },
                                     "reply": {
                                       "personalQuestionReplyId": 1,
@@ -76,7 +81,8 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
-                                      "likeCount": 4
+                                      "likeCount": 4,
+                                      "isLiked": false
                                     }
                                   },
                                   {
@@ -86,6 +92,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "accessible": false,
                                     "canReply": false,
                                     "likeCount": null,
+                                    "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-07-23T17:15:00",
                                     "user": null,
@@ -93,7 +100,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                   }
                                 ],
                                 "nextCursorId": 3,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": true
                               }
                             },
@@ -134,6 +141,9 @@ public interface PersonalArtworkQuestionApiDocs {
       @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 질문 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
@@ -404,31 +414,6 @@ public interface PersonalArtworkQuestionApiDocs {
                                       }
                                     }
                                     """)))
-  @ApiResponse(
-      responseCode = "403",
-      description = "작품 소유자의 질문 작성 시도",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Personal artwork creator cannot write question",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
-                              "message": "작업자는 본인 작품에 질문을 작성할 수 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal-artworks/1/questions"
-                            }
-                          }
-                          """)))
   @ApiResponse(
       responseCode = "400",
       description = "질문 내용 검증 실패",

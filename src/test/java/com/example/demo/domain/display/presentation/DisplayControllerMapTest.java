@@ -58,6 +58,9 @@ class DisplayControllerMapTest {
         .andExpect(
             jsonPath("$.success.data.markers[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
+        .andExpect(
+            jsonPath("$.success.data.markers[0].schoolDepartmentName")
+                .value("organization department"))
         .andExpect(jsonPath("$.success.data.markers[0].isArchived").value(false))
         .andExpect(jsonPath("$.success.data.pagination.nextCursor").doesNotExist())
         .andExpect(jsonPath("$.success.data.pagination.size").value(20))

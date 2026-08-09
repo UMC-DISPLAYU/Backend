@@ -70,8 +70,6 @@ class DisplayContentPublicationServiceTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-draft.jpg",
-                    1200,
-                    800,
                     0,
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
@@ -104,8 +102,6 @@ class DisplayContentPublicationServiceTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-draft.jpg",
-                    1200,
-                    800,
                     0,
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
@@ -137,8 +133,6 @@ class DisplayContentPublicationServiceTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-draft.jpg",
-                    1200,
-                    800,
                     0,
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
@@ -171,15 +165,11 @@ class DisplayContentPublicationServiceTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-published.jpg",
-                    1200,
-                    800,
                     0,
                     DisplayContentStatus.PUBLISHED),
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-draft.jpg",
-                    1200,
-                    800,
                     1,
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
@@ -210,15 +200,11 @@ class DisplayContentPublicationServiceTest {
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-published.jpg",
-                    1200,
-                    800,
                     0,
                     DisplayContentStatus.PUBLISHED),
                 new DisplayContent(
                     null,
                     "https://cdn.displayu.com/display/content-draft.jpg",
-                    1200,
-                    800,
                     1,
                     DisplayContentStatus.DRAFT))));
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);

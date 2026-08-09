@@ -75,7 +75,8 @@ public class UpdateDisplayService {
           new DisplayLocation(
               command.placeName(),
               display.getLocation().latitude(),
-              display.getLocation().longitude()));
+              display.getLocation().longitude(),
+              display.getLocation().roadAddress()));
     }
 
     displayListCacheEvictionPort.evictAfterCommit();

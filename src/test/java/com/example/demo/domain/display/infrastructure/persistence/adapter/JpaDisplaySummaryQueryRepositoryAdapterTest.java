@@ -115,7 +115,7 @@ class JpaDisplaySummaryQueryRepositoryAdapterTest {
 
   private static DisplayImage image(
       String imageUrl, DisplayImageType imageType, int sortOrder, LocalDateTime deletedAt) {
-    return new DisplayImage(null, imageUrl, imageType, 1, 1, sortOrder, deletedAt);
+    return new DisplayImage(null, imageUrl, imageType, sortOrder, deletedAt);
   }
 
   private static BigDecimal bd(String value) {

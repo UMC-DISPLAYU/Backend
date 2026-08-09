@@ -41,6 +41,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 display.id,
                 display.title,
                 image.imageUrl,
+                display.organization,
+                display.department,
                 display.period.startDate,
                 display.period.endDate))
         .from(display)

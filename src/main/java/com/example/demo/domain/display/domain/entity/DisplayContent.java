@@ -32,12 +32,6 @@ public class DisplayContent extends BaseTimeEntity {
 
   private String imageUrl;
 
-  @Column(nullable = false)
-  private int width;
-
-  @Column(nullable = false)
-  private int height;
-
   @Column(name = "contentsSortOrder", nullable = false)
   private int sortOrder;
 
@@ -47,14 +41,13 @@ public class DisplayContent extends BaseTimeEntity {
 
   protected DisplayContent() {}
 
-  public DisplayContent(Long id, String imageUrl, int width, int height, int sortOrder) {
-    this(id, imageUrl, width, height, sortOrder, DisplayContentStatus.PUBLISHED);
+  public DisplayContent(Long id, String imageUrl, int sortOrder) {
+    this(id, imageUrl, sortOrder, DisplayContentStatus.PUBLISHED);
   }
 
-  public DisplayContent(
-      Long id, String imageUrl, int width, int height, int sortOrder, DisplayContentStatus status) {
+  public DisplayContent(Long id, String imageUrl, int sortOrder, DisplayContentStatus status) {
     this.id = id;
-    changeImageInfo(imageUrl, width, height);
+    changeImageUrl(imageUrl);
     changeSortOrder(sortOrder);
     this.status = Objects.requireNonNull(status, "status must not be null.");
   }
@@ -67,10 +60,8 @@ public class DisplayContent extends BaseTimeEntity {
     this.sortOrder = requireSortOrder(sortOrder);
   }
 
-  public void changeImageInfo(String imageUrl, int width, int height) {
+  public void changeImageUrl(String imageUrl) {
     this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
-    this.width = requirePositive(width, "width");
-    this.height = requirePositive(height, "height");
   }
 
   public void publish() {
@@ -80,13 +71,6 @@ public class DisplayContent extends BaseTimeEntity {
   private static String requireNonBlank(String value, String fieldName) {
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(fieldName + " must not be blank.");
-    }
-    return value;
-  }
-
-  private static int requirePositive(int value, String fieldName) {
-    if (value <= 0) {
-      throw new IllegalArgumentException(fieldName + " must be positive.");
     }
     return value;
   }

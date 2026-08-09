@@ -47,9 +47,7 @@ import lombok.Getter;
 @Table(name = "Display")
 public class Display extends BaseTimeEntity {
 
-  // 이미지 크기 입력 필드가 추가되기 전까지 대표 이미지의 임시 크기값으로 사용한다.
-  private static final int DEFAULT_MAIN_IMAGE_WIDTH = 1;
-  private static final int DEFAULT_MAIN_IMAGE_HEIGHT = 1;
+  private static final int MAX_DETAIL_IMAGE_COUNT = 4;
   private static final int MAIN_IMAGE_SORT_ORDER = 0;
 
   // 식별자와 소유자 정보: 전시 Aggregate의 정체성과 생성/관리 주체를 나타낸다.
@@ -98,7 +96,8 @@ public class Display extends BaseTimeEntity {
         column = @Column(name = "latitude", nullable = false, precision = 10, scale = 7)),
     @AttributeOverride(
         name = "longitude",
-        column = @Column(name = "longitude", nullable = false, precision = 10, scale = 7))
+        column = @Column(name = "longitude", nullable = false, precision = 10, scale = 7)),
+    @AttributeOverride(name = "roadAddress", column = @Column(name = "roadAddress"))
   })
   private DisplayLocation location;
 
@@ -275,6 +274,46 @@ public class Display extends BaseTimeEntity {
       DisplayPeriod period,
       ContentOpenPolicy artworkContentOpen,
       ContentOpenPolicy exhibitionContentOpen) {
+    return create(
+        ownerUserId,
+        title,
+        posterImageUrl,
+        List.of(),
+        subtitle,
+        content,
+        location,
+        qnaAccount,
+        note,
+        organization,
+        department,
+        contract,
+        displayType,
+        displayFields,
+        region,
+        period,
+        artworkContentOpen,
+        exhibitionContentOpen);
+  }
+
+  public static Display create(
+      UserId ownerUserId,
+      String title,
+      String posterImageUrl,
+      List<String> displayImageUrls,
+      String subtitle,
+      String content,
+      DisplayLocation location,
+      String qnaAccount,
+      String note,
+      String organization,
+      String department,
+      String contract,
+      DisplayType displayType,
+      List<DisplayField> displayFields,
+      DisplayRegion region,
+      DisplayPeriod period,
+      ContentOpenPolicy artworkContentOpen,
+      ContentOpenPolicy exhibitionContentOpen) {
     return new Display(
             null,
             ownerUserId,
@@ -294,20 +333,30 @@ public class Display extends BaseTimeEntity {
             DisplayStatus.DRAFT,
             null,
             null,
-            List.of(
-                new DisplayImage(
-                    null,
-                    posterImageUrl,
-                    DisplayImageType.MAIN,
-                    DEFAULT_MAIN_IMAGE_WIDTH,
-                    DEFAULT_MAIN_IMAGE_HEIGHT,
-                    MAIN_IMAGE_SORT_ORDER,
-                    null)),
+            toDisplayImages(posterImageUrl, displayImageUrls),
             List.of(),
             toFieldSelections(displayFields),
             List.of(),
             List.of())
         .withRegion(region);
+  }
+
+  private static List<DisplayImage> toDisplayImages(
+      String posterImageUrl, List<String> displayImageUrls) {
+    List<String> detailImageUrls = displayImageUrls == null ? List.of() : displayImageUrls;
+    if (detailImageUrls.size() > MAX_DETAIL_IMAGE_COUNT) {
+      throw new IllegalArgumentException(
+          "displayImageUrls must contain at most " + MAX_DETAIL_IMAGE_COUNT + " images.");
+    }
+
+    List<DisplayImage> displayImages = new ArrayList<>();
+    displayImages.add(
+        new DisplayImage(null, posterImageUrl, DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null));
+    for (int index = 0; index < detailImageUrls.size(); index++) {
+      displayImages.add(
+          new DisplayImage(null, detailImageUrls.get(index), DisplayImageType.DETAIL, index, null));
+    }
+    return displayImages;
   }
 
   public Display(
@@ -549,20 +598,19 @@ public class Display extends BaseTimeEntity {
     contentCategories.remove(category);
   }
 
-  public DisplayContent createContent(Long categoryId, String imageUrl, int width, int height) {
-    return createContent(categoryId, imageUrl, width, height, DisplayContentStatus.PUBLISHED);
+  public DisplayContent createContent(Long categoryId, String imageUrl) {
+    return createContent(categoryId, imageUrl, DisplayContentStatus.PUBLISHED);
   }
 
   public DisplayContent createContent(
-      Long categoryId, String imageUrl, int width, int height, DisplayContentStatus status) {
+      Long categoryId, String imageUrl, DisplayContentStatus status) {
     DisplayContentCategory category = findContentCategory(categoryId);
-    return category.createContent(imageUrl, width, height, status);
+    return category.createContent(imageUrl, status);
   }
 
-  public DisplayContent changeContent(
-      Long categoryId, Long contentId, String imageUrl, int width, int height) {
+  public DisplayContent changeContent(Long categoryId, Long contentId, String imageUrl) {
     DisplayContentCategory category = findContentCategory(categoryId);
-    return category.changeContent(contentId, imageUrl, width, height);
+    return category.changeContent(contentId, imageUrl);
   }
 
   public void removeContent(Long categoryId, Long contentId) {
@@ -632,13 +680,7 @@ public class Display extends BaseTimeEntity {
     if (mainImage == null) {
       addImage(
           new DisplayImage(
-              null,
-              posterImageUrl,
-              DisplayImageType.MAIN,
-              DEFAULT_MAIN_IMAGE_WIDTH,
-              DEFAULT_MAIN_IMAGE_HEIGHT,
-              MAIN_IMAGE_SORT_ORDER,
-              null));
+              null, posterImageUrl, DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null));
       return;
     }
 

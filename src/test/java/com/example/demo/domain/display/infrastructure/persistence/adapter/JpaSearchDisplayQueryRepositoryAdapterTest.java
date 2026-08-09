@@ -130,6 +130,8 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
         .doesNotContain("디자인 회화 전시", "회화 졸업전시", "디자인 동아리 전시", "디자인 경기 전시", "디자인 예정 전시", "디자인 초안");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
+    assertThat(results.getFirst().organization()).isEqualTo("organization");
+    assertThat(results.getFirst().department()).isEqualTo("department");
   }
 
   @Test
