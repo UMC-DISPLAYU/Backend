@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.result.DeleteDisplayContentCategoryResult;
 import com.example.demo.domain.display.application.result.DeleteDisplayContentResult;
 import com.example.demo.domain.display.application.result.DisplayContentCategoryResult;
@@ -28,10 +29,15 @@ public class DisplayContentCommandService {
 
   private final DisplayRepository displayRepository;
   private final Clock clock;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
-  public DisplayContentCommandService(DisplayRepository displayRepository, Clock clock) {
+  public DisplayContentCommandService(
+      DisplayRepository displayRepository,
+      Clock clock,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
     this.clock = clock;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
@@ -39,7 +45,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
         display.createContentCategory(command.name(), command.description());
     displayRepository.flush();
@@ -52,7 +58,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
         display.changeContentCategory(command.categoryId(), command.name(), command.description());
 
@@ -65,7 +71,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContentCategory(command.categoryId());
 
     return new DeleteDisplayContentCategoryResult(command.displayId(), command.categoryId());
@@ -76,7 +82,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContent content =
         display.createContent(
             command.categoryId(), command.imageUrl(), initialContentStatus(display));
@@ -90,7 +96,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContent content =
         display.changeContent(command.categoryId(), command.contentId(), command.imageUrl());
 
@@ -102,7 +108,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    validateContentEditor(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContent(command.categoryId(), command.contentId());
 
     return new DeleteDisplayContentResult(
@@ -115,7 +121,7 @@ public class DisplayContentCommandService {
 
     try {
       Display display = findDisplayWithOptimisticLock(command.displayId());
-      validateContentEditor(display, command.userId());
+      displayPermissionChecker.requireContentEditor(display, command.userId());
       List<DisplayContent> contents =
           display.reorderContents(command.categoryId(), command.orderedContentIds());
       displayRepository.flush();
@@ -136,12 +142,6 @@ public class DisplayContentCommandService {
     return displayRepository
         .findByIdWithOptimisticLock(displayId)
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
-  }
-
-  private void validateContentEditor(Display display, Long userId) {
-    if (!display.hasAcceptedTeamMember(userId)) {
-      throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED);
-    }
   }
 
   private DisplayContentStatus initialContentStatus(Display display) {
