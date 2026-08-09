@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AreaOfActivityPersistenceAdapter implements AreaOfActivityRepository {
+public class JpaAreaOfActivityRepositoryAdapter implements AreaOfActivityRepository {
 
   private final AreaOfActivityJpaRepository areaOfActivityJpaRepository;
 

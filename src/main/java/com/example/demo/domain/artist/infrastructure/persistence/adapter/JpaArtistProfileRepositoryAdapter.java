@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ArtistProfilePersistenceAdapter implements ArtistProfileRepository {
+public class JpaArtistProfileRepositoryAdapter implements ArtistProfileRepository {
 
   private final ArtistProfileJpaRepository artistProfileJpaRepository;
 
