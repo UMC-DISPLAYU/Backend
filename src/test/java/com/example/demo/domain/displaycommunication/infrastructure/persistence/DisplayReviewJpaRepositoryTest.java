@@ -35,6 +35,29 @@ class DisplayReviewJpaRepositoryTest {
   }
 
   @Test
+  void reviewsArePagedInAscendingOrderWithoutDuplicates() {
+    DisplayReview first =
+        displayReviewJpaRepository.saveAndFlush(DisplayReview.create(1L, 1L, "첫 번째 후기", List.of()));
+    DisplayReview second =
+        displayReviewJpaRepository.saveAndFlush(DisplayReview.create(1L, 2L, "두 번째 후기", List.of()));
+    DisplayReview third =
+        displayReviewJpaRepository.saveAndFlush(DisplayReview.create(1L, 3L, "세 번째 후기", List.of()));
+
+    List<DisplayReview> firstPage =
+        displayReviewJpaRepository.findByDisplayIdWithCursor(1L, null, PageRequest.of(0, 2));
+    List<DisplayReview> secondPage =
+        displayReviewJpaRepository.findByDisplayIdWithCursor(
+            1L, second.getDisplayReviewId(), PageRequest.of(0, 2));
+
+    assertThat(firstPage)
+        .extracting(DisplayReview::getDisplayReviewId)
+        .containsExactly(first.getDisplayReviewId(), second.getDisplayReviewId());
+    assertThat(secondPage)
+        .extracting(DisplayReview::getDisplayReviewId)
+        .containsExactly(third.getDisplayReviewId());
+  }
+
+  @Test
   void deletedReviewIsReturnedOnlyWhileActiveReplyExists() {
     DisplayReview deletedReview =
         displayReviewJpaRepository.saveAndFlush(DisplayReview.create(1L, 1L, "삭제할 후기", List.of()));
