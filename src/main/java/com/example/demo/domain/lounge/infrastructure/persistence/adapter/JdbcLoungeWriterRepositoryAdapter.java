@@ -27,12 +27,16 @@ public class JdbcLoungeWriterRepositoryAdapter implements LoungeWriterRepository
     return jdbcTemplate
         .query(
             """
-            SELECT userId, nickname
+            SELECT userId, nickname, profileImageUrl
             FROM `User`
             WHERE userId IN (:userIds)
             """,
             new MapSqlParameterSource("userIds", userIds),
-            (rs, rowNum) -> new LoungeWriter(rs.getLong("userId"), rs.getString("nickname"), null))
+            (rs, rowNum) ->
+                new LoungeWriter(
+                    rs.getLong("userId"),
+                    rs.getString("nickname"),
+                    rs.getString("profileImageUrl")))
         .stream()
         .collect(Collectors.toMap(LoungeWriter::userId, writer -> writer));
   }

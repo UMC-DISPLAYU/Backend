@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Lounge Comment", description = "라운지 댓글 API")
-@SecurityRequirement(name = "Authorization")
 public interface LoungeCommentControllerDocs {
 
   @Operation(
@@ -71,6 +70,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeCommentListResponse> createComment(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -121,6 +121,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeCommentListResponse> createReply(
       @PathVariable Long parentCommentId,
       @Valid @RequestBody LoungeCommentRequest loungeCommentRequest,
@@ -150,6 +151,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<Void> deleteComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
@@ -184,6 +186,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeCommentLikeResponse> likeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
@@ -218,6 +221,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeCommentLikeResponse> cancelLikeComment(
       @PathVariable Long loungeCommentId, AuthUser user, HttpServletRequest request);
 
@@ -395,6 +399,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostCursorResponse> getMyComments(
       @Parameter(description = "마지막 게시글의 최근 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,

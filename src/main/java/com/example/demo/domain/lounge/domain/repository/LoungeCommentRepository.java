@@ -8,10 +8,6 @@ import java.util.Optional;
 public interface LoungeCommentRepository {
   Optional<LoungeComment> findById(Long loungeCommentId);
 
-  List<LoungeComment> findActiveRootByCursor(Long loungePostId, Long cursorId, int limit);
-
-  List<LoungeComment> findActiveRepliesByCursor(Long parentCommentId, Long cursorId, int limit);
-
   long countActiveByLoungePostId(Long loungePostId);
 
   Map<Long, Long> countActiveByLoungePostIds(List<Long> loungePostIds);

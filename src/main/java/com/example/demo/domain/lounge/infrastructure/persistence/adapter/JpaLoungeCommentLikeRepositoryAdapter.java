@@ -21,7 +21,7 @@ public class JpaLoungeCommentLikeRepositoryAdapter implements LoungeCommentLikeR
 
   @Override
   public void saveIfAbsent(Long loungeCommentId, UserId userId) {
-    jpaRepository.insertIgnore(loungeCommentId, userId.value());
+    jpaRepository.insertIfAbsent(loungeCommentId, userId.value());
   }
 
   @Override
