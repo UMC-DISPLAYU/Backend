@@ -1,11 +1,10 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
-import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -17,10 +16,15 @@ public class ExitDisplayService {
 
   private final TeamMemberRepository teamMemberRepository;
   private final Clock clock;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
-  public ExitDisplayService(TeamMemberRepository teamMemberRepository, Clock clock) {
+  public ExitDisplayService(
+      TeamMemberRepository teamMemberRepository,
+      Clock clock,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.teamMemberRepository = teamMemberRepository;
     this.clock = clock;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
@@ -32,9 +36,7 @@ public class ExitDisplayService {
         teamMemberRepository
             .findActiveAcceptedByDisplayIdAndUserId(displayId, userId)
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_NOT_FOUND));
-    if (teamMember.getRole() == TeamMemberRole.TEAM_LEADER) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
+    displayPermissionChecker.requireExitAllowed(teamMember);
 
     teamMember.softDelete(LocalDateTime.now(clock));
   }

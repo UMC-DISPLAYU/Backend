@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.service;
 
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
@@ -28,18 +29,21 @@ public class InviteDisplayMemberService {
   private final TeamMemberRepository teamMemberRepository;
   private final UserRepository userRepository;
   private final DisplayMemberInvitationMapper mapper;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
   public InviteDisplayMemberService(
       DisplayRepository displayRepository,
       DisplayInvitationRepository invitationRepository,
       TeamMemberRepository teamMemberRepository,
       UserRepository userRepository,
-      DisplayMemberInvitationMapper mapper) {
+      DisplayMemberInvitationMapper mapper,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.userRepository = userRepository;
     this.mapper = mapper;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
@@ -51,7 +55,7 @@ public class InviteDisplayMemberService {
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
 
-    validateRequester(display, command.requesterUserId());
+    displayPermissionChecker.requireInvitationManager(display, command.requesterUserId());
     validateRole(command.role());
     validateInvitee(command.requesterUserId(), command.inviteeUserId());
     validateNotMember(display.getId(), command.inviteeUserId());
@@ -70,12 +74,6 @@ public class InviteDisplayMemberService {
       return mapper.toResult(invitationRepository.save(invitation));
     } catch (DataIntegrityViolationException e) {
       throw new BusinessException(DisplayErrorCode.PENDING_DISPLAY_INVITATION_EXISTS, e);
-    }
-  }
-
-  private void validateRequester(Display display, Long requesterUserId) {
-    if (!display.canInviteMember(requesterUserId)) {
-      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
     }
   }
 
