@@ -82,6 +82,38 @@ class DisplayArtworkPermissionCheckerTest {
   }
 
   @Test
+  void nonOwnerTeamLeaderCanEditArtwork() {
+    assertThatCode(() -> checker.requireArtworkEditor(TEAM_LEADER, display(), ARTWORK_ID))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void onlyDisplayLeaderCanEditArtworkRegisteredWithCreatorNameOnly() {
+    when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
+        .thenReturn(
+            List.of(new Creator(null, "accountless artist", false, true, null, ARTWORK_ID)));
+
+    assertThatCode(() -> checker.requireArtworkEditor(OWNER, display(), ARTWORK_ID))
+        .doesNotThrowAnyException();
+    assertThatThrownBy(() -> checker.requireArtworkEditor(ARTIST, display(), ARTWORK_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+    assertThatThrownBy(() -> checker.requireArtworkEditor(MEMBER, display(), ARTWORK_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+  }
+
+  @Test
+  void unauthenticatedUserCannotEditArtwork() {
+    assertThatThrownBy(() -> checker.requireArtworkEditor(null, display(), ARTWORK_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+  }
+
+  @Test
   void onlyOwnerCanEditArtworkOrder() {
     assertThatCode(() -> checker.requireArtworkOrderEditor(OWNER, display()))
         .doesNotThrowAnyException();
