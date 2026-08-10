@@ -1,11 +1,13 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository.ArtworkQuestionReplyLikeSnapshot;
+import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ public class ArtworkQuestionReplyLikeService {
 
   private final ArtworkQuestionReplyLikeRepository artworkQuestionReplyLikeRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
+  private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public ArtworkQuestionReplyLikeResult toggleQuestionReplyLike(
       ArtworkQuestionReplyLikeCommand command) {
@@ -27,8 +31,12 @@ public class ArtworkQuestionReplyLikeService {
     ArtworkQuestion question =
         artworkQuestionValidator.findActiveQuestionForUpdateOrThrow(command.questionId());
     artworkQuestionValidator.validateQuestionTarget(question, command.displayArtworkId());
-    artworkQuestionValidator.validateLikePermission(
-        question, command.displayArtworkId(), command.userId());
+    boolean isCreatorOrHandler =
+        creatorExistenceRepository
+            .findCreatorNameByDisplayArtworkIdAndUserId(
+                command.displayArtworkId(), command.userId())
+            .isPresent();
+    permissionChecker.requireQuestionAccessible(question, command.userId(), isCreatorOrHandler);
 
     ArtworkQuestionReply reply =
         artworkQuestionValidator.findActiveReplyForUpdateOrThrow(command.questionReplyId());

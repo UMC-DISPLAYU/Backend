@@ -5,7 +5,6 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -19,7 +18,6 @@ public class ArtworkQuestionValidator {
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
-  private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
 
   public ArtworkQuestion findQuestionOrThrow(Long questionId) {
@@ -32,19 +30,6 @@ public class ArtworkQuestionValidator {
     return artworkQuestionRepository
         .findActiveByIdForUpdate(questionId)
         .orElseThrow(() -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
-  }
-
-  public void validateLikePermission(
-      ArtworkQuestion artworkQuestion, Long displayArtworkId, Long userId) {
-    if (Boolean.TRUE.equals(artworkQuestion.getIsPublic())
-        || artworkQuestion.isWrittenBy(userId)
-        || creatorExistenceRepository
-            .findCreatorNameByDisplayArtworkIdAndUserId(displayArtworkId, userId)
-            .isPresent()) {
-      return;
-    }
-
-    throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
   }
 
   public void validateDisplayArtworkExists(Long displayArtworkId) {
@@ -81,24 +66,11 @@ public class ArtworkQuestionValidator {
     }
   }
 
-  public void validateWriter(ArtworkQuestion artworkQuestion, Long userId) {
-    if (!artworkQuestion.isWrittenBy(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
-    }
-  }
-
   public ArtworkQuestionReply findActiveReplyForUpdateOrThrow(Long questionReplyId) {
     return artworkQuestionReplyRepository
         .findActiveByIdForUpdate(questionReplyId)
         .orElseThrow(
             () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND));
-  }
-
-  public void validateAccessibleReply(ArtworkQuestionReply reply, Long questionId, Long creatorId) {
-    validateReplyTarget(reply, questionId);
-    if (!reply.isWrittenBy(creatorId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN);
-    }
   }
 
   public void validateReplyTarget(ArtworkQuestionReply reply, Long questionId) {

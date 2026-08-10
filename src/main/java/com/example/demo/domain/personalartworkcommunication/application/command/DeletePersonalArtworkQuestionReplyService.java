@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
@@ -19,13 +20,13 @@ public class DeletePersonalArtworkQuestionReplyService {
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
   public DeletedPersonalArtworkQuestionReplyResult deleteReply(
       DeletePersonalArtworkQuestionReplyCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
-    personalArtworkQuestionValidator.validatePersonalArtworkCreator(
-        command.personalArtworkId(), command.userId());
+    permissionChecker.requirePersonalArtworkOwner(command.personalArtworkId(), command.userId());
 
     PersonalArtworkQuestion question =
         personalArtworkQuestionRepository
@@ -39,8 +40,9 @@ public class DeletePersonalArtworkQuestionReplyService {
     PersonalArtworkQuestionReply reply =
         personalArtworkQuestionValidator.findActiveReplyForUpdateOrThrow(
             command.personalQuestionReplyId());
-    personalArtworkQuestionValidator.validateAccessibleReply(
-        reply, command.personalQuestionId(), command.userId());
+    personalArtworkQuestionValidator.validateReplyBelongsToQuestion(
+        reply, command.personalQuestionId());
+    permissionChecker.requirePersonalQuestionReplyWriter(reply, command.userId());
 
     reply.delete();
     PersonalArtworkQuestionReply savedReply = personalArtworkQuestionReplyRepository.save(reply);

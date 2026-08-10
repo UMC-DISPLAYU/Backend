@@ -47,7 +47,6 @@ class GetArtworkQuestionsServiceTest {
             artworkQuestionRepository,
             displayArtworkExistenceRepository,
             userExistenceRepository,
-            creatorExistenceRepository,
             artworkQuestionReplyRepository);
     service =
         new GetArtworkQuestionsService(
