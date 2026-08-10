@@ -1,0 +1,2 @@
+ALTER TABLE `ArtworkQuestion`
+    MODIFY COLUMN `content` VARCHAR(300) NOT NULL;
