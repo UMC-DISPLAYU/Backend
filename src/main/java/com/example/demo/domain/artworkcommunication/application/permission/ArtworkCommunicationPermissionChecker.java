@@ -56,4 +56,13 @@ public class ArtworkCommunicationPermissionChecker {
         .orElseThrow(
             () -> new BusinessException(ArtworkCommunicationErrorCode.QNA_CONTACT_FORBIDDEN));
   }
+
+  public ContactCreator requireQuestionReplyDeletionHandler(Long displayArtworkId, Long userId) {
+    return creatorExistenceRepository
+        .findContactCreatorByDisplayArtworkIdAndUserId(displayArtworkId, userId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN));
+  }
 }

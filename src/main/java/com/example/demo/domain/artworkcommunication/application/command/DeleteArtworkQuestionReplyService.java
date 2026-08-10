@@ -29,7 +29,7 @@ public class DeleteArtworkQuestionReplyService {
 
     Long creatorId =
         permissionChecker
-            .requireQnaHandler(command.displayArtworkId(), command.userId())
+            .requireQuestionReplyDeletionHandler(command.displayArtworkId(), command.userId())
             .creatorId();
 
     ArtworkQuestionReply reply =

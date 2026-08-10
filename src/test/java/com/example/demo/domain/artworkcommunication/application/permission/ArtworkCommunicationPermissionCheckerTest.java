@@ -97,6 +97,13 @@ class ArtworkCommunicationPermissionCheckerTest {
         ArtworkCommunicationErrorCode.QNA_CONTACT_FORBIDDEN);
   }
 
+  @Test
+  void requireQuestionReplyDeletionHandlerKeepsExistingForbiddenError() {
+    assertForbidden(
+        () -> checker.requireQuestionReplyDeletionHandler(DISPLAY_ARTWORK_ID, USER_ID),
+        ArtworkCommunicationErrorCode.ARTWORK_QUESTION_REPLY_FORBIDDEN);
+  }
+
   private void assertForbidden(Runnable invocation, ArtworkCommunicationErrorCode errorCode) {
     assertThatThrownBy(invocation::run)
         .isInstanceOfSatisfying(
