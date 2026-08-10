@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -20,14 +21,17 @@ public class UpdateDisplayService {
   private final DisplayRepository displayRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
   public UpdateDisplayService(
       DisplayRepository displayRepository,
       DisplayLikeRepository displayLikeRepository,
-      DisplayListCacheEvictionPort displayListCacheEvictionPort) {
+      DisplayListCacheEvictionPort displayListCacheEvictionPort,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
@@ -38,9 +42,7 @@ public class UpdateDisplayService {
         displayRepository
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-    if (!display.isTeamLeader(command.userId())) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
+    displayPermissionChecker.requireTeamLeader(display, command.userId());
 
     if (command.posterImageUrl() != null) {
       display.changePosterImageUrl(command.posterImageUrl());

@@ -22,7 +22,7 @@ public class ArtworkQuestion extends SoftDeleteBaseEntity {
   @Column(name = "questionId")
   private Long questionId;
 
-  @Column(name = "content", nullable = false)
+  @Column(name = "content", nullable = false, length = 300)
   private String content;
 
   @Column(name = "isPublic", nullable = false)

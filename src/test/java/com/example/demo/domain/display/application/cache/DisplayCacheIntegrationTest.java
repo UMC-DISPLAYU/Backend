@@ -13,6 +13,7 @@ import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery.Cursor;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
@@ -82,6 +83,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
       GetClosingSoonDisplaysService.class,
       CreateDisplayService.class,
       UpdateDisplayService.class,
+      DisplayPermissionChecker.class,
       DisplayListCacheVersion.class,
       DisplayListCacheEvictor.class
     })
