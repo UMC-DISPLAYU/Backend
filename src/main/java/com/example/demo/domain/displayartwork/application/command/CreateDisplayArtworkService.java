@@ -4,12 +4,12 @@ import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
-import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.global.error.BusinessException;
@@ -27,19 +27,19 @@ public class CreateDisplayArtworkService {
 
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
-  private final ArtistVerificationRepository artistVerificationRepository;
+  private final DisplayArtworkPermissionChecker permissionChecker;
   private final AuthorSetupService authorSetupService;
   private final Clock clock;
 
   public CreateDisplayArtworkService(
       DisplayRepository displayRepository,
       DisplayArtworkRepository displayArtworkRepository,
-      ArtistVerificationRepository artistVerificationRepository,
+      DisplayArtworkPermissionChecker permissionChecker,
       AuthorSetupService authorSetupService,
       Clock clock) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
-    this.artistVerificationRepository = artistVerificationRepository;
+    this.permissionChecker = permissionChecker;
     this.authorSetupService = authorSetupService;
     this.clock = clock;
   }
@@ -54,7 +54,7 @@ public class CreateDisplayArtworkService {
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
-    validateTeamMember(display, requesterUserId);
+    permissionChecker.requireArtworkRegistrant(requesterUserId, display);
     validateArtworkLimit(command.displayId());
 
     int nextWorkSortOrder =
@@ -92,23 +92,6 @@ public class CreateDisplayArtworkService {
                 command.qaHandlerUserIds()));
 
     return DisplayArtworkResult.of(savedDisplayArtwork, authorSetupResult);
-  }
-
-  private void validateTeamMember(Display display, Long requesterUserId) {
-    // 전시를 만든 소유자는 TeamMember로 등록되지 않으므로 소유자 여부도 함께 확인한다.
-    boolean isAcceptedTeamMember =
-        display.isOwner(requesterUserId)
-            || display.getTeamMembers().stream()
-                .anyMatch(
-                    teamMember ->
-                        teamMember.isAccepted()
-                            && teamMember.getUserId().value().equals(requesterUserId));
-    if (!isAcceptedTeamMember) {
-      throw new BusinessException(DisplayArtworkErrorCode.NOT_DISPLAY_TEAM_MEMBER);
-    }
-    if (!artistVerificationRepository.isVerifiedArtist(requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
-    }
   }
 
   private void validateArtworkLimit(Long displayId) {
