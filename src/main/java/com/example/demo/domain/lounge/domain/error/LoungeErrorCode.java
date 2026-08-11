@@ -5,7 +5,11 @@ import org.springframework.http.HttpStatus;
 
 public enum LoungeErrorCode implements BaseErrorCode {
   LOUNGE_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "LOUNGE_POST_NOT_FOUND", "라운지 게시글을 찾을 수 없습니다."),
+  LOUNGE_POST_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "LOUNGE_POST_LIKE_NOT_FOUND", "라운지 게시글 좋아요를 찾을 수 없습니다."),
   LOUNGE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "LOUNGE_COMMENT_NOT_FOUND", "라운지 댓글을 찾을 수 없습니다."),
+  LOUNGE_COMMENT_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "LOUNGE_COMMENT_LIKE_NOT_FOUND", "라운지 댓글 좋아요를 찾을 수 없습니다."),
   LOUNGE_ARTIST_VERIFICATION_REQUIRED(
       HttpStatus.FORBIDDEN, "LOUNGE_ARTIST_VERIFICATION_REQUIRED", "작가 인증이 필요합니다."),
   LOUNGE_POST_CONCURRENT_WRITE_CONFLICT(

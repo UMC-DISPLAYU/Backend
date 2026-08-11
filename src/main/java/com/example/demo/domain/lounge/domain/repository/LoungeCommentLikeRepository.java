@@ -9,7 +9,7 @@ public interface LoungeCommentLikeRepository {
 
   void saveIfAbsent(Long loungeCommentId, UserId userId);
 
-  void deleteByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId);
+  int deleteByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId);
 
   long countByLoungeCommentId(Long loungeCommentId);
 

@@ -27,7 +27,7 @@ public interface SpringDataLoungePostLikeJpaRepository extends JpaRepository<Lou
       DELETE FROM LoungePostLike postLike
       WHERE postLike.loungePostId = :loungePostId AND postLike.userId.value = :userId
       """)
-  void deleteByLoungePostIdAndUserId(
+  int deleteByLoungePostIdAndUserId(
       @Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
 
   long countByLoungePostId(Long loungePostId);

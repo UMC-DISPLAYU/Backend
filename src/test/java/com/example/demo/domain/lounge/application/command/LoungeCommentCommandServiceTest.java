@@ -88,9 +88,11 @@ class LoungeCommentCommandServiceTest {
   @Test
   void validatesCategoryAccessForCommentLikes() {
     LoungePost post = activePost();
-    LoungeComment comment = LoungeComment.createComment(1L, new UserId(2L), "댓글 내용");
+    LoungeComment comment =
+        new LoungeComment(2L, 1L, null, new UserId(2L), "댓글 내용", LoungeCommentStatus.ACTIVE);
     when(postRepository.findById(1L)).thenReturn(Optional.of(post));
     when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
+    when(commentLikeRepository.deleteByLoungeCommentIdAndUserId(2L, new UserId(3L))).thenReturn(1);
 
     service.likeComment(2L, 3L);
     service.cancelLikeComment(2L, 3L);
