@@ -11,6 +11,7 @@ public record ArtworkQuestionListResult(
       String content,
       Boolean isPublic,
       boolean accessible,
+      boolean isMine,
       boolean canReply,
       Long likeCount,
       boolean isLiked,
@@ -31,7 +32,8 @@ public record ArtworkQuestionListResult(
       LocalDateTime createdAt,
       List<ReplyImageResult> images,
       Long likeCount,
-      boolean isLiked) {}
+      boolean isLiked,
+      boolean isMine) {}
 
   public record QuestionImageResult(
       Long questionImageId, String imageUrl, int width, int height, int sortOrder) {}

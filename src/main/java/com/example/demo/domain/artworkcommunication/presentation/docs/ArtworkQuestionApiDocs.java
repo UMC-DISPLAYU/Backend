@@ -38,6 +38,7 @@ public interface ArtworkQuestionApiDocs {
           권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
 
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          isMine은 로그인 사용자가 해당 질문 또는 답변의 작성자인지를 나타내며, 비회원은 false입니다.
           canReply는 로그인 사용자가 현재 질문에 답변을 등록할 수 있는지를 나타내며,
           해당 작품의 isContact=true 담당 작가이고 질문 상태가 WAITING일 때만 true입니다.
           일반 참여 작가는 비공개 질문을 조회할 수 있지만 답변을 등록할 수 없습니다.
@@ -67,6 +68,7 @@ public interface ArtworkQuestionApiDocs {
                                     "content": "이 작품에서 사용한 재료가 궁금해요.",
                                     "isPublic": true,
                                     "accessible": true,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": 12,
                                     "isLiked": false,
@@ -95,7 +97,8 @@ public interface ArtworkQuestionApiDocs {
                                       "createdAt": "2026-06-30T22:10:00",
                                       "images": [],
                                       "likeCount": 4,
-                                      "isLiked": false
+                                      "isLiked": false,
+                                      "isMine": true
                                     }
                                   },
                                   {
@@ -103,6 +106,7 @@ public interface ArtworkQuestionApiDocs {
                                     "content": null,
                                     "isPublic": false,
                                     "accessible": false,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": null,
                                     "isLiked": false,

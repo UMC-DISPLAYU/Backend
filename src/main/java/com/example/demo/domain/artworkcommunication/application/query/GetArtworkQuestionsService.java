@@ -15,12 +15,14 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQue
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +55,12 @@ public class GetArtworkQuestionsService {
                 .findCreatorNameByDisplayArtworkIdAndUserId(
                     query.displayArtworkId(), query.userId())
                 .isPresent();
-    boolean isContact =
+    Optional<ContactCreator> contactCreator =
         query.userId() != null
-            && creatorExistenceRepository
-                .findContactCreatorByDisplayArtworkIdAndUserId(
-                    query.displayArtworkId(), query.userId())
-                .isPresent();
+            ? creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(
+                query.displayArtworkId(), query.userId())
+            : Optional.empty();
+    boolean isContact = contactCreator.isPresent();
 
     List<ArtworkQuestion> fetched =
         artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(
@@ -111,6 +113,7 @@ public class GetArtworkQuestionsService {
                         replyLikeCounts,
                         likedQuestionReplyIds,
                         query.userId(),
+                        contactCreator.map(ContactCreator::creatorId).orElse(null),
                         isParticipant,
                         isContact))
             .toList();
@@ -138,6 +141,7 @@ public class GetArtworkQuestionsService {
       Map<Long, Long> replyLikeCounts,
       Set<Long> likedQuestionReplyIds,
       Long userId,
+      Long currentCreatorId,
       boolean isParticipant,
       boolean isContact) {
     boolean accessible =
@@ -151,6 +155,7 @@ public class GetArtworkQuestionsService {
           question.getQuestionId(),
           null,
           question.getIsPublic(),
+          false,
           false,
           false,
           null,
@@ -178,7 +183,8 @@ public class GetArtworkQuestionsService {
                         firstReply,
                         creatorNameById,
                         replyLikeCounts,
-                        likedQuestionReplyIds))
+                        likedQuestionReplyIds,
+                        currentCreatorId))
             .orElse(null);
 
     return new ArtworkQuestionItemResult(
@@ -186,6 +192,7 @@ public class GetArtworkQuestionsService {
         question.getContent(),
         question.getIsPublic(),
         true,
+        Objects.equals(question.getUserId(), userId),
         canReply,
         questionLikeCounts.getOrDefault(question.getQuestionId(), 0L),
         likedQuestionIds.contains(question.getQuestionId()),
@@ -210,7 +217,8 @@ public class GetArtworkQuestionsService {
       ArtworkQuestionReply reply,
       Map<Long, String> creatorNameById,
       Map<Long, Long> replyLikeCounts,
-      Set<Long> likedQuestionReplyIds) {
+      Set<Long> likedQuestionReplyIds,
+      Long currentCreatorId) {
     Long creatorId = reply.getCreatorId();
     String creatorName = creatorId == null ? null : creatorNameById.get(creatorId);
     if (creatorName == null) {
@@ -235,7 +243,8 @@ public class GetArtworkQuestionsService {
                         image.getSortOrder()))
             .toList(),
         replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L),
-        likedQuestionReplyIds.contains(reply.getQueReplyId()));
+        likedQuestionReplyIds.contains(reply.getQueReplyId()),
+        Objects.equals(creatorId, currentCreatorId));
   }
 
   private Map<Long, String> findCreatorNamesById(

@@ -143,6 +143,7 @@ public class ArtworkQuestionPresentationMapper {
         result.content(),
         result.isPublic(),
         result.accessible(),
+        result.isMine(),
         result.canReply(),
         result.likeCount(),
         result.isLiked(),
@@ -189,6 +190,7 @@ public class ArtworkQuestionPresentationMapper {
                         image.sortOrder()))
             .toList(),
         result.likeCount(),
-        result.isLiked());
+        result.isLiked(),
+        result.isMine());
   }
 }
