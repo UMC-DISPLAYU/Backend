@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
@@ -21,14 +22,14 @@ class DeleteExhibitionMemoServiceTest {
       mock(ArchiveDisplayRepository.class);
   private final MemoRepository memoRepository = mock(MemoRepository.class);
   private final DeleteExhibitionMemoService service =
-      new DeleteExhibitionMemoService(archiveDisplayRepository, memoRepository);
+      new DeleteExhibitionMemoService(
+          archiveDisplayRepository, memoRepository, new MemoPermissionChecker());
 
   @Test
   void deletesExistingMemo() {
     ArchiveDisplay archiveDisplay = archiveDisplay(10L, 7L);
     Memo memo = Memo.createForDisplay("감상", null, 10L);
-    when(archiveDisplayRepository.findByIdAndUserId(10L, 7L))
-        .thenReturn(Optional.of(archiveDisplay));
+    when(archiveDisplayRepository.findById(10L)).thenReturn(Optional.of(archiveDisplay));
     when(memoRepository.findByArchiveDisplayIdAndDeletedAtIsNull(10L))
         .thenReturn(Optional.of(memo));
 
@@ -39,7 +40,7 @@ class DeleteExhibitionMemoServiceTest {
 
   @Test
   void rejectsArchiveDisplayNotOwnedByUser() {
-    when(archiveDisplayRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.empty());
+    when(archiveDisplayRepository.findById(10L)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.deleteExhibitionMemo(7L, 10L))
@@ -52,8 +53,7 @@ class DeleteExhibitionMemoServiceTest {
   @Test
   void rejectsWhenNoMemoExists() {
     ArchiveDisplay archiveDisplay = archiveDisplay(10L, 7L);
-    when(archiveDisplayRepository.findByIdAndUserId(10L, 7L))
-        .thenReturn(Optional.of(archiveDisplay));
+    when(archiveDisplayRepository.findById(10L)).thenReturn(Optional.of(archiveDisplay));
     when(memoRepository.findByArchiveDisplayIdAndDeletedAtIsNull(10L)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(BusinessException.class)

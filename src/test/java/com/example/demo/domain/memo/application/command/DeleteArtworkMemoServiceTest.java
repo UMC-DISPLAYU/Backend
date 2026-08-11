@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
@@ -20,13 +21,14 @@ class DeleteArtworkMemoServiceTest {
   private final ArchiveWorkRepository archiveWorkRepository = mock(ArchiveWorkRepository.class);
   private final MemoRepository memoRepository = mock(MemoRepository.class);
   private final DeleteArtworkMemoService service =
-      new DeleteArtworkMemoService(archiveWorkRepository, memoRepository);
+      new DeleteArtworkMemoService(
+          archiveWorkRepository, memoRepository, new MemoPermissionChecker());
 
   @Test
   void deletesExistingMemo() {
     ArchiveWork archiveWork = archiveWork(10L, 7L);
     Memo memo = Memo.createForWork("감상", null, 10L);
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L)).thenReturn(Optional.of(memo));
 
     service.deleteArtworkMemo(7L, 10L);
@@ -36,7 +38,7 @@ class DeleteArtworkMemoServiceTest {
 
   @Test
   void rejectsArchiveWorkNotOwnedByUser() {
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.empty());
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.deleteArtworkMemo(7L, 10L))
@@ -48,7 +50,7 @@ class DeleteArtworkMemoServiceTest {
   @Test
   void rejectsWhenNoMemoExists() {
     ArchiveWork archiveWork = archiveWork(10L, 7L);
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(BusinessException.class)
