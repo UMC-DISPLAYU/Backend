@@ -4,7 +4,7 @@ import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
-import com.example.demo.domain.displayartwork.application.command.ArtworkEditPermission;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.QaHandlerResult;
@@ -43,7 +43,7 @@ public class DisplayArtworkQueryService {
   private final CreatorRepository creatorRepository;
   private final DisplayArtworkLikeRepository displayArtworkLikeRepository;
   private final ArchiveWorkRepository archiveWorkRepository;
-  private final ArtworkEditPermission artworkEditPermission;
+  private final DisplayArtworkPermissionChecker permissionChecker;
 
   public DisplayArtworkQueryService(
       DisplayRepository displayRepository,
@@ -51,13 +51,13 @@ public class DisplayArtworkQueryService {
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
       ArchiveWorkRepository archiveWorkRepository,
-      ArtworkEditPermission artworkEditPermission) {
+      DisplayArtworkPermissionChecker permissionChecker) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.displayArtworkLikeRepository = displayArtworkLikeRepository;
     this.archiveWorkRepository = archiveWorkRepository;
-    this.artworkEditPermission = artworkEditPermission;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional(readOnly = true)
@@ -112,10 +112,8 @@ public class DisplayArtworkQueryService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    if (!artworkEditPermission.canEdit(
-        displayArtwork.getDisplay(), displayArtworkId, requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
-    }
+    permissionChecker.requireArtworkEditor(
+        requesterUserId, displayArtwork.getDisplay(), displayArtworkId);
 
     List<Creator> creators = creatorRepository.findByDisplayArtworkId(displayArtworkId);
     Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
