@@ -3,6 +3,7 @@ package com.example.demo.domain.personalartwork.application.command;
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
+import com.example.demo.domain.personalartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
 import com.example.demo.domain.personalartwork.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
@@ -16,14 +17,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class PersonalArtworkCommandService {
 
   private final PersonalArtworkRepository personalArtworkRepository;
+  private final ArtistVerificationRepository artistVerificationRepository;
 
-  public PersonalArtworkCommandService(PersonalArtworkRepository personalArtworkRepository) {
+  public PersonalArtworkCommandService(
+      PersonalArtworkRepository personalArtworkRepository,
+      ArtistVerificationRepository artistVerificationRepository) {
     this.personalArtworkRepository = personalArtworkRepository;
+    this.artistVerificationRepository = artistVerificationRepository;
   }
 
   @Transactional
   public Long createPersonalArtwork(Long ownerUserId, PersonalArtworkContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+
+    // 작가 인증은 작품을 새로 등록할 때 필요한 조건이다. 이미 등록한 작품을 관리하는 수정·삭제 경로에서는
+    // 요구하지 않는다. 요구하면 인증이 해제된 사용자가 자기 작품을 관리하지 못한다.
+    if (!artistVerificationRepository.isVerifiedArtist(ownerUserId)) {
+      throw new BusinessException(PersonalArtworkErrorCode.NOT_VERIFIED_ARTIST);
+    }
 
     PersonalArtwork personalArtwork =
         PersonalArtwork.create(

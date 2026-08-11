@@ -9,7 +9,10 @@ public enum PersonalArtworkErrorCode implements BaseErrorCode {
   AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED(
       HttpStatus.BAD_REQUEST,
       "AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED",
-      "작품 이미지(ARTWORK 타입)가 최소 1장 필요합니다.");
+      "작품 이미지(ARTWORK 타입)가 최소 1장 필요합니다."),
+  // 전시 출품작 등록과 같은 조건이므로 코드 문자열도 동일하게 두어 프론트가 한 분기로 처리할 수 있게 한다.
+  NOT_VERIFIED_ARTIST(
+      HttpStatus.FORBIDDEN, "NOT_VERIFIED_ARTIST", "작가 인증을 완료한 사용자만 개인 작품을 등록할 수 있습니다.");
 
   private final HttpStatus status;
   private final String code;

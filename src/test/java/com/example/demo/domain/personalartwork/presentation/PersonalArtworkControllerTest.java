@@ -6,6 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.domain.personalartwork.infrastructure.persistence.SpringDataPersonalArtworkJpaRepository;
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.type.Provider;
+import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,8 @@ class PersonalArtworkControllerTest {
 
   @Autowired private JwtFactory jwtFactory;
 
+  @Autowired private UserJpaRepository userJpaRepository;
+
   @Test
   void createPersonalArtworkReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
@@ -45,7 +50,7 @@ class PersonalArtworkControllerTest {
 
   @Test
   void createPersonalArtworkRecordsAuthenticatedUserId() throws Exception {
-    Long requesterUserId = 42L;
+    Long requesterUserId = insertUser(true);
 
     mockMvc
         .perform(
@@ -59,6 +64,40 @@ class PersonalArtworkControllerTest {
     assertThat(
             personalArtworkJpaRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(requesterUserId))
         .hasSize(1);
+  }
+
+  @Test
+  void createPersonalArtworkIsForbiddenForUnverifiedUser() throws Exception {
+    Long requesterUserId = insertUser(false);
+
+    mockMvc
+        .perform(
+            post("/api/v1/personal-artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(requesterUserId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequest()))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("NOT_VERIFIED_ARTIST"));
+
+    assertThat(
+            personalArtworkJpaRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(requesterUserId))
+        .isEmpty();
+  }
+
+  /** 개인 작품 등록은 작가 인증 여부를 User 테이블에서 확인하므로, 테스트에서도 실제 사용자 행이 필요하다. */
+  private Long insertUser(boolean verified) {
+    String uniqueValue = "personal-artwork-" + verified;
+    User user =
+        userJpaRepository.saveAndFlush(
+            User.builder()
+                .provider(Provider.Google)
+                .providerId(uniqueValue)
+                .name("테스트 사용자")
+                .nickname(uniqueValue)
+                .isVerified(verified)
+                .socialEmail(uniqueValue + "@example.com")
+                .build());
+    return user.getId();
   }
 
   private static String createRequest() {
