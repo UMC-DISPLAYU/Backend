@@ -8,7 +8,10 @@ import java.util.Set;
 
 public interface DisplayReviewReplyLikeRepository {
 
-  Optional<DisplayReviewReplyLikeSnapshot> toggleAndGetSnapshot(
+  Optional<DisplayReviewReplyLikeSnapshot> likeAndGetSnapshot(
+      Long displayReviewReplyId, Long userId);
+
+  Optional<DisplayReviewReplyLikeSnapshot> deleteAndGetSnapshot(
       Long displayReviewReplyId, Long userId);
 
   Map<Long, Long> countByDisplayReviewReplyIds(List<Long> displayReviewReplyIds);

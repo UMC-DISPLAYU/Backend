@@ -31,24 +31,32 @@ public interface DisplayReviewReplyLikeJpaRepository
             (createdAt, updatedAt, deletedAt, displayReviewReplyId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :displayReviewReplyId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            displayReviewReplyLikeId = displayReviewReplyLikeId
           """,
       nativeQuery = true)
-  void toggle(
+  void insertIfAbsent(
+      @Param("displayReviewReplyId") Long displayReviewReplyId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM DisplayReviewReplyLike replyLike
+      WHERE replyLike.displayReviewReplyId = :displayReviewReplyId
+        AND replyLike.userId = :userId
+      """)
+  int deleteByDisplayReviewReplyIdAndUserId(
       @Param("displayReviewReplyId") Long displayReviewReplyId, @Param("userId") Long userId);
 
   Optional<DisplayReviewReplyLike> findByDisplayReviewReplyIdAndUserId(
       Long displayReviewReplyId, Long userId);
 
-  long countByDisplayReviewReplyIdAndDeletedAtIsNull(Long displayReviewReplyId);
+  long countByDisplayReviewReplyId(Long displayReviewReplyId);
 
   @Query(
       """
       SELECT replyLike.displayReviewReplyId, COUNT(replyLike)
       FROM DisplayReviewReplyLike replyLike
       WHERE replyLike.displayReviewReplyId IN :displayReviewReplyIds
-        AND replyLike.deletedAt IS NULL
       GROUP BY replyLike.displayReviewReplyId
       """)
   List<Object[]> countByDisplayReviewReplyIds(
@@ -60,7 +68,6 @@ public interface DisplayReviewReplyLikeJpaRepository
       FROM DisplayReviewReplyLike replyLike
       WHERE replyLike.displayReviewReplyId IN :displayReviewReplyIds
         AND replyLike.userId = :userId
-        AND replyLike.deletedAt IS NULL
       """)
   List<Long> findLikedDisplayReviewReplyIds(
       @Param("displayReviewReplyIds") List<Long> displayReviewReplyIds,

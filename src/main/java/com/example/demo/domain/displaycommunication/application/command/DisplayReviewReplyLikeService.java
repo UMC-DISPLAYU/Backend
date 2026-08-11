@@ -19,7 +19,35 @@ public class DisplayReviewReplyLikeService {
   private final DisplayReviewValidator displayReviewValidator;
   private final DisplayReviewReplyLikeRepository displayReviewReplyLikeRepository;
 
-  public DisplayReviewReplyLikeResult toggleReviewReplyLike(DisplayReviewReplyLikeCommand command) {
+  public DisplayReviewReplyLikeResult likeReviewReply(DisplayReviewReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    DisplayReviewReplyLikeSnapshot snapshot =
+        displayReviewReplyLikeRepository
+            .likeAndGetSnapshot(command.displayReviewReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public DisplayReviewReplyLikeResult cancelReviewReplyLike(DisplayReviewReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    DisplayReviewReplyLikeSnapshot snapshot =
+        displayReviewReplyLikeRepository
+            .deleteAndGetSnapshot(command.displayReviewReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(DisplayReviewReplyLikeCommand command) {
     displayReviewValidator.validateDisplayExists(command.displayId());
     displayReviewValidator.validateUserExists(command.userId());
 
@@ -30,15 +58,9 @@ public class DisplayReviewReplyLikeService {
     DisplayReviewReply displayReviewReply =
         displayReviewValidator.findReplyOrThrow(command.displayReviewReplyId());
     displayReviewValidator.validateReplyTarget(displayReviewReply, command.displayReviewId());
+  }
 
-    DisplayReviewReplyLikeSnapshot snapshot =
-        displayReviewReplyLikeRepository
-            .toggleAndGetSnapshot(command.displayReviewReplyId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        DisplayCommunicationErrorCode.DISPLAY_REVIEW_REPLY_NOT_FOUND));
-
+  private DisplayReviewReplyLikeResult toResult(DisplayReviewReplyLikeSnapshot snapshot) {
     return new DisplayReviewReplyLikeResult(
         snapshot.displayReviewReplyId(),
         snapshot.liked(),

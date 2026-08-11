@@ -29,22 +29,30 @@ public interface DisplayReviewLikeJpaRepository extends JpaRepository<DisplayRev
             (createdAt, updatedAt, deletedAt, displayReviewId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :displayReviewId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            displayReviewLikeId = displayReviewLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("displayReviewId") Long displayReviewId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("displayReviewId") Long displayReviewId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM DisplayReviewLike reviewLike
+      WHERE reviewLike.displayReviewId = :displayReviewId
+        AND reviewLike.userId = :userId
+      """)
+  int deleteByDisplayReviewIdAndUserId(
+      @Param("displayReviewId") Long displayReviewId, @Param("userId") Long userId);
 
   Optional<DisplayReviewLike> findByDisplayReviewIdAndUserId(Long displayReviewId, Long userId);
 
-  long countByDisplayReviewIdAndDeletedAtIsNull(Long displayReviewId);
+  long countByDisplayReviewId(Long displayReviewId);
 
   @Query(
       """
       SELECT reviewLike.displayReviewId, COUNT(reviewLike)
       FROM DisplayReviewLike reviewLike
       WHERE reviewLike.displayReviewId IN :displayReviewIds
-        AND reviewLike.deletedAt IS NULL
       GROUP BY reviewLike.displayReviewId
       """)
   List<Object[]> countByDisplayReviewIds(@Param("displayReviewIds") List<Long> displayReviewIds);
@@ -55,7 +63,6 @@ public interface DisplayReviewLikeJpaRepository extends JpaRepository<DisplayRev
       FROM DisplayReviewLike reviewLike
       WHERE reviewLike.displayReviewId IN :displayReviewIds
         AND reviewLike.userId = :userId
-        AND reviewLike.deletedAt IS NULL
       """)
   List<Long> findLikedDisplayReviewIds(
       @Param("displayReviewIds") List<Long> displayReviewIds, @Param("userId") Long userId);
