@@ -63,6 +63,13 @@ public class PersonalArtworkQuestionValidator {
         personalArtworkQuestion, personalArtworkId);
   }
 
+  public void validateNotAnswered(PersonalArtworkQuestion personalArtworkQuestion) {
+    if (personalArtworkQuestion.isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
+  }
+
   public PersonalArtworkQuestion findActiveQuestionForUpdateOrThrow(Long personalQuestionId) {
     return personalArtworkQuestionRepository
         .findActiveByIdForUpdate(personalQuestionId)
