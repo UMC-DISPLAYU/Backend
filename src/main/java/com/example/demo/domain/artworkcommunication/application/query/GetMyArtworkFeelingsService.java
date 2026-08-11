@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetMyArtworkFeelingsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
   private final MyArtworkFeelingQueryRepository queryRepository;
 
+  @Transactional(readOnly = true)
   public MyArtworkFeelingListResult getMyFeelings(GetMyArtworkFeelingsQuery query) {
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<MyArtworkFeelingQueryItem> fetched =

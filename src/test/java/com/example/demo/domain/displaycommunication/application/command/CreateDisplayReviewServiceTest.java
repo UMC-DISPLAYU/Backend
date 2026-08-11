@@ -9,14 +9,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
+import com.example.demo.domain.display.application.result.DisplayReviewAccessResult;
+import com.example.demo.domain.display.application.usecase.GetDisplayReviewAccessUseCase;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayExistenceRepository;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.UserExistenceRepository;
@@ -27,6 +26,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,38 +35,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CreateDisplayReviewServiceTest {
-  @Mock private DisplayExistenceRepository displayExistenceRepository;
-  @Mock private DisplayReviewAccessRepository displayReviewAccessRepository;
+  @Mock private GetDisplayReviewAccessUseCase getDisplayReviewAccessUseCase;
   @Mock private DisplayReviewRepository displayReviewRepository;
   @Mock private DisplayReviewReplyRepository displayReviewReplyRepository;
   @Mock private UserExistenceRepository userExistenceRepository;
 
   private CreateDisplayReviewService service;
-  private DisplayReviewAccess ongoingAccess;
+  private DisplayReviewAccessResult ongoingAccess;
 
   @BeforeEach
   void setUp() {
     ongoingAccess =
-        new DisplayReviewAccess(
-            1L, LocalDate.of(2026, 7, 22), LocalDate.of(2026, 7, 24), true, false);
+        new DisplayReviewAccessResult(
+            1L, LocalDate.of(2026, 7, 22), LocalDate.of(2026, 7, 24), true, Set.of());
     lenient().when(userExistenceRepository.existsById(2L)).thenReturn(true);
     lenient()
-        .when(displayReviewAccessRepository.findByDisplayIdAndUserId(1L, 2L))
+        .when(getDisplayReviewAccessUseCase.getDisplayReviewAccess(1L))
         .thenReturn(Optional.of(ongoingAccess));
     Clock clock = Clock.fixed(Instant.parse("2026-07-23T00:00:00Z"), ZoneId.of("Asia/Seoul"));
     DisplayReviewValidator validator =
         new DisplayReviewValidator(
-            displayExistenceRepository,
-            displayReviewAccessRepository,
+            getDisplayReviewAccessUseCase,
             displayReviewRepository,
             displayReviewReplyRepository,
             userExistenceRepository,
             clock);
-    service =
-        new CreateDisplayReviewService(
-            validator,
-            new DisplayCommunicationPermissionChecker(displayReviewAccessRepository),
-            displayReviewRepository);
+    service = new CreateDisplayReviewService(validator, displayReviewRepository);
   }
 
   @Test
@@ -91,12 +85,14 @@ class CreateDisplayReviewServiceTest {
 
   @Test
   void createFailsWhenDisplayDoesNotExist() {
-    when(displayReviewAccessRepository.findByDisplayIdAndUserId(99L, 2L))
-        .thenReturn(Optional.empty());
+    when(getDisplayReviewAccessUseCase.getDisplayReviewAccess(99L)).thenReturn(Optional.empty());
 
     assertThatThrownBy(
             () -> service.create(new CreateDisplayReviewCommand(99L, 2L, "후기", List.of())))
-        .isInstanceOf(BusinessException.class);
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode()).isEqualTo(DisplayErrorCode.DISPLAY_NOT_FOUND));
 
     verify(displayReviewRepository, never()).save(any());
   }
@@ -104,8 +100,8 @@ class CreateDisplayReviewServiceTest {
   @Test
   void reviewCannotBeCreatedBeforeDisplayStarts() {
     mockAccess(
-        new DisplayReviewAccess(
-            1L, LocalDate.of(2026, 7, 24), LocalDate.of(2026, 7, 30), true, false));
+        new DisplayReviewAccessResult(
+            1L, LocalDate.of(2026, 7, 24), LocalDate.of(2026, 7, 30), true, Set.of()));
 
     assertBusinessError(
         new CreateDisplayReviewCommand(1L, 2L, "후기", List.of()),
@@ -115,8 +111,8 @@ class CreateDisplayReviewServiceTest {
   @Test
   void reviewCanBeCreatedOnDisplayStartDate() {
     mockAccess(
-        new DisplayReviewAccess(
-            1L, LocalDate.of(2026, 7, 23), LocalDate.of(2026, 7, 30), true, false));
+        new DisplayReviewAccessResult(
+            1L, LocalDate.of(2026, 7, 23), LocalDate.of(2026, 7, 30), true, Set.of()));
     when(displayReviewRepository.save(any(DisplayReview.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -130,8 +126,8 @@ class CreateDisplayReviewServiceTest {
   @Test
   void reviewCanBeCreatedAfterDisplayEnds() {
     mockAccess(
-        new DisplayReviewAccess(
-            1L, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 22), true, false));
+        new DisplayReviewAccessResult(
+            1L, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 22), true, Set.of()));
     when(displayReviewRepository.save(any(DisplayReview.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -145,8 +141,8 @@ class CreateDisplayReviewServiceTest {
   @Test
   void reviewCannotBeCreatedForUnpublishedDisplay() {
     mockAccess(
-        new DisplayReviewAccess(
-            1L, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 30), false, false));
+        new DisplayReviewAccessResult(
+            1L, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 30), false, Set.of()));
 
     assertBusinessError(
         new CreateDisplayReviewCommand(1L, 2L, "후기", List.of()),
@@ -210,9 +206,8 @@ class CreateDisplayReviewServiceTest {
         DisplayCommunicationErrorCode.USER_NOT_FOUND);
   }
 
-  private void mockAccess(DisplayReviewAccess access) {
-    when(displayReviewAccessRepository.findByDisplayIdAndUserId(1L, 2L))
-        .thenReturn(Optional.of(access));
+  private void mockAccess(DisplayReviewAccessResult access) {
+    when(getDisplayReviewAccessUseCase.getDisplayReviewAccess(1L)).thenReturn(Optional.of(access));
   }
 
   private void assertBusinessError(

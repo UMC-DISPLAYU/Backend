@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeletePersonalArtworkQuestionReplyService {
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
@@ -22,6 +21,7 @@ public class DeletePersonalArtworkQuestionReplyService {
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public DeletedPersonalArtworkQuestionReplyResult deleteReply(
       DeletePersonalArtworkQuestionReplyCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());

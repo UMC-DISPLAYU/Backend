@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
+import com.example.demo.domain.displaycommunication.application.permission.DisplayReviewPermissionChecker;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DeleteDisplayReviewReplyServiceTest {
 
   @Mock private DisplayReviewValidator displayReviewValidator;
-  @Mock private DisplayCommunicationPermissionChecker permissionChecker;
+  @Mock private DisplayReviewPermissionChecker permissionChecker;
   @Mock private DisplayReviewReplyRepository displayReviewReplyRepository;
   @InjectMocks private DeleteDisplayReviewReplyService service;
 
@@ -38,7 +38,7 @@ class DeleteDisplayReviewReplyServiceTest {
     verify(displayReviewValidator).findReviewIncludingDeletedOrThrow(10L);
     verify(displayReviewValidator).validateReviewTarget(deletedReview, 1L);
     verify(displayReviewValidator).validateReplyTarget(reply, 10L);
-    verify(permissionChecker).requireReviewReplyWriter(reply, 3L);
+    verify(permissionChecker).requireReplyWriter(reply, 3L);
     verify(displayReviewReplyRepository).save(reply);
   }
 }

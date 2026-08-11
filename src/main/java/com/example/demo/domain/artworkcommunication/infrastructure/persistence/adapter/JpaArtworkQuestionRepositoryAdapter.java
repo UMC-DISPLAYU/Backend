@@ -2,7 +2,7 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
-import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkQuestionJpaRepository;
+import com.example.demo.domain.artworkcommunication.infrastructure.persistence.SpringDataArtworkQuestionJpaRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JpaArtworkQuestionRepositoryAdapter implements ArtworkQuestionRepository {
 
-  private final ArtworkQuestionJpaRepository artworkQuestionJpaRepository;
+  private final SpringDataArtworkQuestionJpaRepository artworkQuestionJpaRepository;
 
   @Override
   public ArtworkQuestion save(ArtworkQuestion artworkQuestion) {

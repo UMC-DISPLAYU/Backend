@@ -14,13 +14,10 @@ public record MyDisplayReviewListResult(
       String content,
       LocalDateTime createdAt) {
 
-    public static MyDisplayReviewItemResult from(MyDisplayReviewQueryItem item) {
+    public static MyDisplayReviewItemResult from(
+        MyDisplayReviewQueryItem item, String displayName) {
       return new MyDisplayReviewItemResult(
-          item.displayReviewId(),
-          item.displayId(),
-          item.displayName(),
-          item.content(),
-          item.createdAt());
+          item.displayReviewId(), item.displayId(), displayName, item.content(), item.createdAt());
     }
   }
 }

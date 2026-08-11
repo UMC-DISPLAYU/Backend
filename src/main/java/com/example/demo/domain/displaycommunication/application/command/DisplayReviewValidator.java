@@ -1,13 +1,12 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
+import com.example.demo.domain.display.application.result.DisplayReviewAccessResult;
+import com.example.demo.domain.display.application.usecase.GetDisplayReviewAccessUseCase;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayExistenceRepository;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.UserExistenceRepository;
@@ -22,26 +21,25 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DisplayReviewValidator {
 
-  private final DisplayExistenceRepository displayExistenceRepository;
-  private final DisplayReviewAccessRepository displayReviewAccessRepository;
+  private final GetDisplayReviewAccessUseCase getDisplayReviewAccessUseCase;
   private final DisplayReviewRepository displayReviewRepository;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final Clock clock;
 
   public void validateDisplayExists(Long displayId) {
-    if (!displayExistenceRepository.existsById(displayId)) {
+    if (getDisplayReviewAccessUseCase.getDisplayReviewAccess(displayId).isEmpty()) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND);
     }
   }
 
-  public DisplayReviewAccess findDisplayAccessOrThrow(Long displayId) {
-    return displayReviewAccessRepository
-        .findByDisplayId(displayId)
+  public DisplayReviewAccessResult findDisplayAccessOrThrow(Long displayId) {
+    return getDisplayReviewAccessUseCase
+        .getDisplayReviewAccess(displayId)
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 
-  public void validateDisplayIsWritable(DisplayReviewAccess access) {
+  public void validateDisplayIsWritable(DisplayReviewAccessResult access) {
     LocalDate today = LocalDate.now(clock);
     boolean isStarted = !today.isBefore(access.startDate());
     if (!access.published() || !isStarted) {

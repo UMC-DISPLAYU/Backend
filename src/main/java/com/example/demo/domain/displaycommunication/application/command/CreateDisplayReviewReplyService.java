@@ -1,11 +1,10 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
-import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
+import com.example.demo.domain.display.application.result.DisplayReviewAccessResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
@@ -15,13 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateDisplayReviewReplyService {
   private final DisplayReviewValidator displayReviewValidator;
-  private final DisplayCommunicationPermissionChecker permissionChecker;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
 
+  @Transactional
   public DisplayReviewReplyResult create(CreateDisplayReviewReplyCommand command) {
     displayReviewValidator.validateUserExists(command.userId());
     displayReviewValidator.validateReplyContent(command.content());
@@ -32,8 +30,8 @@ public class CreateDisplayReviewReplyService {
 
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
-    DisplayReviewAccess displayAccess =
-        permissionChecker.requireDisplayAccess(command.displayId(), command.userId());
+    DisplayReviewAccessResult displayAccess =
+        displayReviewValidator.findDisplayAccessOrThrow(command.displayId());
 
     DisplayReviewReply saved =
         displayReviewReplyRepository.save(
@@ -44,8 +42,7 @@ public class CreateDisplayReviewReplyService {
         userExistenceRepository
             .findNicknameById(command.userId())
             .orElseThrow(() -> new BusinessException(DisplayCommunicationErrorCode.USER_NOT_FOUND));
-    boolean isTeamMember =
-        displayAccess.ownerUserId().equals(command.userId()) || displayAccess.acceptedTeamMember();
+    boolean isTeamMember = displayAccess.isOwnerOrAcceptedTeamMember(command.userId());
 
     return new DisplayReviewReplyResult(
         saved.getDisplayReviewReplyId(),

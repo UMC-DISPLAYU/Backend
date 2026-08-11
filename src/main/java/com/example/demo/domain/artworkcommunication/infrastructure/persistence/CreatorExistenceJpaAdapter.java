@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class CreatorExistenceJpaAdapter implements CreatorExistenceRepository {
 
-  private final CreatorExistenceJpaRepository repository;
+  private final SpringDataCreatorExistenceJpaRepository repository;
 
   @Override
   public Optional<String> findParticipantNameByDisplayArtworkIdAndUserId(
