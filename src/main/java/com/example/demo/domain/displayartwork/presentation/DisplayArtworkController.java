@@ -125,7 +125,8 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayArtworkResult result =
-        createDisplayArtworkService.createDisplayArtwork(requireUserId(user), request.toCommand());
+        createDisplayArtworkService.createDisplayArtwork(
+            requireUserId(user), mapper.toCommand(request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
@@ -136,7 +137,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     ReorderDisplayArtworksResult result =
-        reorderDisplayArtworksService.reorder(requireUserId(user), request.toCommand());
+        reorderDisplayArtworksService.reorder(requireUserId(user), mapper.toCommand(request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
