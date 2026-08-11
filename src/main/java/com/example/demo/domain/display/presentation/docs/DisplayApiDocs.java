@@ -32,13 +32,11 @@ public final class DisplayApiDocs {
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
-  public static final String HIDE_SUMMARY = "전시 숨김";
-  public static final String HIDE_DESCRIPTION =
-      "전시 팀장이 발행된 전시를 초안 상태로 되돌려 목록/지도/졸업/마감임박 조회에서 노출되지 않게 합니다. 이미 초안 상태인 전시는 성공 응답을 반환합니다.";
-  public static final String HIDE_REQUEST_DESCRIPTION = "전시 숨김 요청";
-  public static final String HIDE_REQUEST_EXAMPLE_NAME = "Display hide request";
-  public static final String HIDE_SUCCESS_DESCRIPTION = "전시 숨김 성공";
-  public static final String HIDE_SUCCESS_EXAMPLE_NAME = "Display hide success";
+  public static final String DELETE_SUMMARY = "전시 삭제";
+  public static final String DELETE_DESCRIPTION =
+      "전시 팀장이 삭제 기능으로 전시를 초안(DRAFT) 상태로 변경해 목록/지도/졸업/마감임박 조회에서 노출되지 않게 합니다. 물리 삭제는 하지 않으며, 이미 초안 상태인 전시는 성공 응답을 반환합니다.";
+  public static final String DELETE_SUCCESS_DESCRIPTION = "전시 삭제 성공";
+  public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display delete success";
 
   public static final String RESERVATION_SUMMARY = "전시 콘텐츠 공개 예약 수정";
   public static final String RESERVATION_DESCRIPTION =
@@ -444,14 +442,7 @@ public final class DisplayApiDocs {
       }
       """;
 
-  public static final String HIDE_REQUEST_EXAMPLE =
-      """
-      {
-        "displayId": 12
-      }
-      """;
-
-  public static final String HIDE_SUCCESS_EXAMPLE =
+  public static final String DELETE_SUCCESS_EXAMPLE =
       """
       {
         "resultType": "SUCCESS",
@@ -496,7 +487,7 @@ public final class DisplayApiDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
-          "path": "/api/v1/display/status"
+          "path": "/api/v1/display/12/draft"
         }
       }
       """;
