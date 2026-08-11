@@ -37,8 +37,23 @@ public class JpaMemoRepositoryAdapter implements MemoRepository {
   }
 
   @Override
+  public Optional<Memo> findByArchiveDisplayId(Long archiveDisplayId) {
+    return jpaRepository.findByArchiveDisplayId(archiveDisplayId);
+  }
+
+  @Override
+  public Optional<Memo> findByArchiveWorkId(Long archiveWorkId) {
+    return jpaRepository.findByArchiveWorkId(archiveWorkId);
+  }
+
+  @Override
   public Memo save(Memo memo) {
     // 유니크 제약 위반을 save() 호출 시점에 바로 감지하기 위해 flush 시점을 명시적으로 고정한다.
     return jpaRepository.saveAndFlush(memo);
+  }
+
+  @Override
+  public void delete(Memo memo) {
+    jpaRepository.delete(memo);
   }
 }

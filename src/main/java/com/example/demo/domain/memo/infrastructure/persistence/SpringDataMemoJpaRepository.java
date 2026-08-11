@@ -14,4 +14,8 @@ public interface SpringDataMemoJpaRepository extends JpaRepository<Memo, Long> {
   List<Memo> findByArchiveDisplayIdInAndDeletedAtIsNull(List<Long> archiveDisplayIds);
 
   List<Memo> findByArchiveWorkIdInAndDeletedAtIsNull(List<Long> archiveWorkIds);
+
+  Optional<Memo> findByArchiveDisplayId(Long archiveDisplayId);
+
+  Optional<Memo> findByArchiveWorkId(Long archiveWorkId);
 }
