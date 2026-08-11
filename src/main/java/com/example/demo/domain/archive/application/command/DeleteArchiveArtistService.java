@@ -23,14 +23,16 @@ public class DeleteArchiveArtistService {
   }
 
   @Transactional
-  public ArchiveArtistToggleResult deleteArchiveArtist(Long userId, Long artistProfileId) {
+  public ArchiveArtistToggleResult deleteArchiveArtist(Long userId, Long artistUserId) {
+    // artistUserId로 바로 찾는다 (ArtistProfile을 다시 조회하지 않음) — 작가가 이후 프로필을
+    // 삭제해도 저장해 둔 사용자가 계속 취소할 수 있어야 하기 때문이다.
     ArchiveArtist archiveArtist =
         archiveArtistRepository
-            .findByUserIdAndArtistProfileId(userId, artistProfileId)
+            .findByUserIdAndArtistUserId(userId, artistUserId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND));
     archivePermissionChecker.requireOwner(archiveArtist, userId);
 
     archiveArtistRepository.delete(archiveArtist);
-    return new ArchiveArtistToggleResult(artistProfileId, false);
+    return new ArchiveArtistToggleResult(artistUserId, false);
   }
 }

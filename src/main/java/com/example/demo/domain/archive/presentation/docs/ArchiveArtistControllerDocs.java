@@ -86,7 +86,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
-      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 userId", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
       HttpServletRequest request);
 
@@ -138,7 +138,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> deleteArchiveArtist(
-      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 userId", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
       HttpServletRequest request);
 
