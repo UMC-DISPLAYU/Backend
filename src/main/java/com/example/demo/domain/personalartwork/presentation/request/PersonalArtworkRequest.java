@@ -1,7 +1,5 @@
 package com.example.demo.domain.personalartwork.presentation.request;
 
-import com.example.demo.domain.personalartwork.application.command.PersonalArtworkContentCommand;
-import com.example.demo.domain.personalartwork.application.command.PersonalArtworkImageCommand;
 import com.example.demo.domain.personalartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.personalartwork.domain.type.ArtworkType;
 import jakarta.validation.Valid;
@@ -23,18 +21,6 @@ public record PersonalArtworkRequest(
     String point,
     @NotEmpty @Valid List<ImageRequest> images) {
 
-  public PersonalArtworkContentCommand toCommand() {
-    return new PersonalArtworkContentCommand(
-        artworkName,
-        content,
-        type,
-        productionYear,
-        materialMedia,
-        size,
-        point,
-        images.stream().map(ImageRequest::toCommand).toList());
-  }
-
   public record ImageRequest(
       @NotBlank String imageUrl,
       boolean isThumbnail,
@@ -42,11 +28,5 @@ public record PersonalArtworkRequest(
       @PositiveOrZero int sortOrder,
       String caption,
       @Positive int width,
-      @Positive int height) {
-
-    private PersonalArtworkImageCommand toCommand() {
-      return new PersonalArtworkImageCommand(
-          imageUrl, isThumbnail, imageType, sortOrder, caption, width, height);
-    }
-  }
+      @Positive int height) {}
 }

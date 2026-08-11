@@ -59,7 +59,7 @@ public class PersonalArtworkController implements PersonalArtworkControllerDocs 
       HttpServletRequest request) {
     Long personalArtworkId =
         personalArtworkCommandService.createPersonalArtwork(
-            requireUserId(user), personalArtworkRequest.toCommand());
+            requireUserId(user), mapper.toCommand(personalArtworkRequest));
     PersonalArtworkResult result =
         personalArtworkQueryService.getPersonalArtworkDetail(
             personalArtworkId, requireUserId(user));
@@ -95,7 +95,7 @@ public class PersonalArtworkController implements PersonalArtworkControllerDocs 
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     personalArtworkCommandService.updatePersonalArtwork(
-        personalArtworkId, requireUserId(user), personalArtworkRequest.toCommand());
+        personalArtworkId, requireUserId(user), mapper.toCommand(personalArtworkRequest));
     PersonalArtworkResult result =
         personalArtworkQueryService.getPersonalArtworkDetail(
             personalArtworkId, requireUserId(user));
