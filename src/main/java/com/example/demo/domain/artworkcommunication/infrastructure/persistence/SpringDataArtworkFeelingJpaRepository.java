@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ArtworkFeelingJpaRepository extends JpaRepository<ArtworkFeeling, Long> {
+public interface SpringDataArtworkFeelingJpaRepository extends JpaRepository<ArtworkFeeling, Long> {
 
   List<ArtworkFeeling> findByDisplayArtworkIdAndDeletedAtIsNullOrderByCreatedAtAsc(
       Long displayArtworkId);

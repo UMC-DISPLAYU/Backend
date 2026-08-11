@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ArtworkQuestionReplyLikeJpaRepository
+public interface SpringDataArtworkQuestionReplyLikeJpaRepository
     extends JpaRepository<ArtworkQuestionReplyLike, Long> {
 
   @Modifying(clearAutomatically = true, flushAutomatically = true)

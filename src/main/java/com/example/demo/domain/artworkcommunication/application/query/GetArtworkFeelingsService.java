@@ -11,9 +11,9 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFee
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository.UserProfile;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetArtworkFeelingsService {
   private static final int MAX_PAGE_SIZE = 50;
 
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  private final GetArtworkSummariesUseCase getArtworkSummariesUseCase;
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
   private final ArtworkFeelingLikeRepository artworkFeelingLikeRepository;
@@ -37,8 +36,11 @@ public class GetArtworkFeelingsService {
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkFeelingUserDisplayResolver userDisplayResolver;
 
+  @Transactional(readOnly = true)
   public ArtworkFeelingListResult getFeelings(GetArtworkFeelingsQuery query) {
-    if (!displayArtworkExistenceRepository.existsById(query.displayArtworkId())) {
+    if (getArtworkSummariesUseCase
+        .getArtworkSummaries(List.of(query.displayArtworkId()))
+        .isEmpty()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
     }
 

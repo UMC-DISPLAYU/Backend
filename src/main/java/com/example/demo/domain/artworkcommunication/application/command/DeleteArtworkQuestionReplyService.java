@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeleteArtworkQuestionReplyService {
 
   private final ArtworkQuestionRepository artworkQuestionRepository;
@@ -20,6 +19,7 @@ public class DeleteArtworkQuestionReplyService {
   private final ArtworkQuestionValidator artworkQuestionValidator;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public DeletedArtworkQuestionReplyResult deleteReply(DeleteArtworkQuestionReplyCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());

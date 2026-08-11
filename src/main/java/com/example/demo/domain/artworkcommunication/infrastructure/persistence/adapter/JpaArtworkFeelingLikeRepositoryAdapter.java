@@ -3,7 +3,7 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingLikeRepository.ArtworkFeelingLikeSnapshot;
-import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingLikeJpaRepository;
+import com.example.demo.domain.artworkcommunication.infrastructure.persistence.SpringDataArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLikeRepository {
 
-  private final ArtworkFeelingLikeJpaRepository artworkFeelingLikeJpaRepository;
+  private final SpringDataArtworkFeelingLikeJpaRepository artworkFeelingLikeJpaRepository;
 
   @Override
   public Optional<ArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(Long feelingId, Long userId) {

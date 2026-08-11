@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateArtworkFeelingReplyService {
 
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
@@ -25,6 +24,7 @@ public class CreateArtworkFeelingReplyService {
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
 
+  @Transactional
   public ArtworkFeelingReplyResult createFeelingReply(ArtworkFeelingReplyCommand command) {
 
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());

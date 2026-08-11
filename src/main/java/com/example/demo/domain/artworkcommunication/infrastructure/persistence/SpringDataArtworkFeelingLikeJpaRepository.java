@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ArtworkFeelingLikeJpaRepository extends JpaRepository<ArtworkFeelingLike, Long> {
+public interface SpringDataArtworkFeelingLikeJpaRepository
+    extends JpaRepository<ArtworkFeelingLike, Long> {
 
   @Query(
       value =

@@ -14,9 +14,10 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQue
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.type.AnswerStatus;
+import com.example.demo.domain.displayartwork.application.result.ArtworkSummaryResult;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GetArtworkQuestionsServiceTest {
 
-  @Mock private DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  @Mock private GetArtworkSummariesUseCase getArtworkSummariesUseCase;
   @Mock private ArtworkQuestionRepository artworkQuestionRepository;
   @Mock private ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
   @Mock private ArtworkQuestionLikeRepository artworkQuestionLikeRepository;
@@ -46,12 +47,11 @@ class GetArtworkQuestionsServiceTest {
     ArtworkQuestionValidator validator =
         new ArtworkQuestionValidator(
             artworkQuestionRepository,
-            displayArtworkExistenceRepository,
+            getArtworkSummariesUseCase,
             userExistenceRepository,
             artworkQuestionReplyRepository);
     service =
         new GetArtworkQuestionsService(
-            displayArtworkExistenceRepository,
             artworkQuestionRepository,
             artworkQuestionReplyRepository,
             artworkQuestionLikeRepository,
@@ -72,7 +72,8 @@ class GetArtworkQuestionsServiceTest {
     when(question.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 12, 0));
     when(question.getUserId()).thenReturn(2L);
 
-    when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
+    when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(1L)))
+        .thenReturn(List.of(mock(ArtworkSummaryResult.class)));
     when(artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(1L, null, 11))
         .thenReturn(List.of(question));
     when(artworkQuestionReplyRepository.findActiveByQuestionIds(List.of(10L)))
@@ -110,7 +111,8 @@ class GetArtworkQuestionsServiceTest {
     when(reply.getContent()).thenReturn("답변");
     when(reply.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 13, 0));
 
-    when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
+    when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(1L)))
+        .thenReturn(List.of(mock(ArtworkSummaryResult.class)));
     when(creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(1L, 2L))
         .thenReturn(Optional.of("답변 작가"));
     when(creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(1L, 2L))
@@ -145,7 +147,8 @@ class GetArtworkQuestionsServiceTest {
 
   @Test
   void pageSizeIsLimitedToFifty() {
-    when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
+    when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(1L)))
+        .thenReturn(List.of(mock(ArtworkSummaryResult.class)));
     when(artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(1L, null, 51))
         .thenReturn(List.of());
 
