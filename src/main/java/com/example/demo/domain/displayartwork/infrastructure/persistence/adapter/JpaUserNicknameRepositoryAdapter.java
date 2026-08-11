@@ -7,11 +7,11 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class UserNicknameJpaAdapter implements UserNicknameRepository {
+public class JpaUserNicknameRepositoryAdapter implements UserNicknameRepository {
 
   private final UserVerificationJpaRepository jpaRepository;
 
-  public UserNicknameJpaAdapter(UserVerificationJpaRepository jpaRepository) {
+  public JpaUserNicknameRepositoryAdapter(UserVerificationJpaRepository jpaRepository) {
     this.jpaRepository = jpaRepository;
   }
 
