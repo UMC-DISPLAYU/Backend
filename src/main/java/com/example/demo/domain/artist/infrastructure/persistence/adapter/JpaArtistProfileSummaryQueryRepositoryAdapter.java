@@ -58,6 +58,42 @@ public class JpaArtistProfileSummaryQueryRepositoryAdapter
         .toList();
   }
 
+  @Override
+  public List<ArtistProfileSummaryQueryResult> findByUserIdIn(List<Long> userIds) {
+    if (userIds.isEmpty()) {
+      return List.of();
+    }
+
+    List<Tuple> profiles =
+        queryFactory
+            .select(
+                artistProfile.id,
+                artistProfile.user.id,
+                artistProfile.artistName,
+                artistProfile.profileImageUrl)
+            .from(artistProfile)
+            .where(artistProfile.user.id.in(userIds))
+            .fetch();
+
+    List<Long> artistProfileIds =
+        profiles.stream().map(tuple -> tuple.get(artistProfile.id)).toList();
+    Map<Long, List<ActivityCategory>> fieldsByArtistProfileId =
+        findFieldsByArtistProfileId(artistProfileIds);
+
+    return profiles.stream()
+        .map(
+            tuple -> {
+              Long id = tuple.get(artistProfile.id);
+              return new ArtistProfileSummaryQueryResult(
+                  id,
+                  tuple.get(artistProfile.user.id),
+                  tuple.get(artistProfile.artistName),
+                  tuple.get(artistProfile.profileImageUrl),
+                  fieldsByArtistProfileId.getOrDefault(id, List.of()));
+            })
+        .toList();
+  }
+
   private Map<Long, List<ActivityCategory>> findFieldsByArtistProfileId(
       List<Long> artistProfileIds) {
     List<Tuple> rows =
