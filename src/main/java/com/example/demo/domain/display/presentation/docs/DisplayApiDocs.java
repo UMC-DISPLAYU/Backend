@@ -626,7 +626,7 @@ public final class DisplayApiDocs {
         "success": {
           "data": {
             "displayId": 12,
-            "invitationUrl": "https://displayu.co.kr/display/invitation/xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4"
+            "invitationUrl": "https://www.displayu.co.kr/display/invitation/xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4"
           }
         },
         "error": null,

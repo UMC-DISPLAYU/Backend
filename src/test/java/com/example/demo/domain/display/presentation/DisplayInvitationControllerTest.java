@@ -58,7 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class DisplayInvitationControllerTest {
 
-  private static final String INVITATION_BASE_URL = "https://displayu.co.kr/display/invitation/";
+  private static final String INVITATION_BASE_URL =
+      "https://www.displayu.co.kr/display/invitation/";
 
   @Autowired private MockMvc mockMvc;
 
