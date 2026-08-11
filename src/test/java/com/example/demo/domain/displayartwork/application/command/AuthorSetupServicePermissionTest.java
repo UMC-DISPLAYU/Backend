@@ -18,6 +18,7 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.entity.Creator;
@@ -52,13 +53,12 @@ class AuthorSetupServicePermissionTest {
   private final ArtistVerificationRepository artistVerificationRepository =
       mock(ArtistVerificationRepository.class);
   private final UserNicknameRepository userNicknameRepository = mock(UserNicknameRepository.class);
+  private final DisplayArtworkPermissionChecker permissionChecker =
+      new DisplayArtworkPermissionChecker(creatorRepository, artistVerificationRepository);
 
   private final AuthorSetupService service =
       new AuthorSetupService(
-          displayArtworkRepository,
-          creatorRepository,
-          artistVerificationRepository,
-          userNicknameRepository);
+          displayArtworkRepository, creatorRepository, userNicknameRepository, permissionChecker);
 
   @Test
   void 전시_대표자는_계정이_없는_작가의_작품을_대리_등록하고_본인을_QA_담당자로_지정할_수_있다() {

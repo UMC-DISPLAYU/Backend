@@ -56,7 +56,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       HttpServletRequest request) {
     Long loungeCommentId =
         loungeCommentCommandService.createComment(
-            loungePostId, user.userId(), loungeCommentRequest.toCommand());
+            loungePostId, user.userId(), mapper.toCommand(loungeCommentRequest));
     return ApiResponseBody.success(
         mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);
@@ -72,7 +72,7 @@ public class LoungeCommentController implements LoungeCommentControllerDocs {
       HttpServletRequest request) {
     Long loungeCommentId =
         loungeCommentCommandService.createReply(
-            parentCommentId, user.userId(), loungeCommentRequest.toCommand());
+            parentCommentId, user.userId(), mapper.toCommand(loungeCommentRequest));
     return ApiResponseBody.success(
         mapper.toResponse(loungeCommentQueryService.getComment(loungeCommentId, user.userId())),
         request);

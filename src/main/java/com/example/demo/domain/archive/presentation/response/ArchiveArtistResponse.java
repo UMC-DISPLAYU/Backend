@@ -1,6 +1,6 @@
 package com.example.demo.domain.archive.presentation.response;
 
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;

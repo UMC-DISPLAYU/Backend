@@ -15,9 +15,11 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
+import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
@@ -40,6 +42,9 @@ class CreateDisplayArtworkServiceTest {
       mock(DisplayArtworkRepository.class);
   private final ArtistVerificationRepository artistVerificationRepository =
       mock(ArtistVerificationRepository.class);
+  private final DisplayArtworkPermissionChecker permissionChecker =
+      new DisplayArtworkPermissionChecker(
+          mock(CreatorRepository.class), artistVerificationRepository);
   private final AuthorSetupService authorSetupService = mock(AuthorSetupService.class);
   private final Clock clock =
       Clock.fixed(Instant.parse("2026-08-01T15:00:00Z"), ZoneId.of("Asia/Seoul"));
@@ -47,7 +52,7 @@ class CreateDisplayArtworkServiceTest {
       new CreateDisplayArtworkService(
           displayRepository,
           displayArtworkRepository,
-          artistVerificationRepository,
+          permissionChecker,
           authorSetupService,
           clock);
 

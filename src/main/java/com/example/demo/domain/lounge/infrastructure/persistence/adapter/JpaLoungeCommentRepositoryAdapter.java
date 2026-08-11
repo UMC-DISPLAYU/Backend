@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,19 +22,6 @@ public class JpaLoungeCommentRepositoryAdapter implements LoungeCommentRepositor
   @Override
   public Optional<LoungeComment> findById(Long loungeCommentId) {
     return jpaRepository.findById(loungeCommentId);
-  }
-
-  @Override
-  public List<LoungeComment> findActiveRootByCursor(Long loungePostId, Long cursorId, int limit) {
-    return jpaRepository.findActiveRootByCursor(
-        loungePostId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
-  }
-
-  @Override
-  public List<LoungeComment> findActiveRepliesByCursor(
-      Long parentCommentId, Long cursorId, int limit) {
-    return jpaRepository.findActiveRepliesByCursor(
-        parentCommentId, LoungeCommentStatus.ACTIVE, cursorId, PageRequest.of(0, limit));
   }
 
   @Override

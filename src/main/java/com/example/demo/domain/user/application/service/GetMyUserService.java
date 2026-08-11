@@ -2,10 +2,10 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.result.MyUserResult;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.AuthErrorCode;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

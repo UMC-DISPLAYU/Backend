@@ -53,13 +53,13 @@ app:
     client:
       id: test-kakao-client-id
       secret: test-kakao-client-secret
-    redirect-uri: http://localhost:8080/api/auth/kakao/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/kakao/callback
 
   google:
     client:
       id: test-google-client-id
       secret: test-google-client-secret
-    redirect-uri: http://localhost:8080/api/auth/google/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/google/callback
 
   oauth:
     cookie-secure: false

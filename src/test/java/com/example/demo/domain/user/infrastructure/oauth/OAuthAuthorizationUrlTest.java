@@ -43,7 +43,7 @@ class OAuthAuthorizationUrlTest {
     GoogleOAuthProperties properties =
         new GoogleOAuthProperties(
             new GoogleOAuthProperties.Client("google-client-id", "google-client-secret"),
-            "http://localhost:8080/api/auth/google/callback");
+            "http://localhost:8080/api/v1/auth/google/callback");
     GoogleAuthorizationCodeClient client =
         new GoogleAuthorizationCodeClient(restTemplate, properties);
 
@@ -52,11 +52,11 @@ class OAuthAuthorizationUrlTest {
     assertThat(authorizationUrl)
         .startsWith("https://accounts.google.com/o/oauth2/v2/auth?")
         .contains("client_id=google-client-id")
-        .contains("redirect_uri=http://localhost:8080/api/auth/google/callback")
+        .contains("redirect_uri=http://localhost:8080/api/v1/auth/google/callback")
         .contains("response_type=code")
         .contains("scope=openid profile email")
         .contains("state=" + STATE)
-        .doesNotContain("/api/auth/kakao/callback");
+        .doesNotContain("/api/v1/auth/kakao/callback");
   }
 
   @Test
@@ -64,7 +64,7 @@ class OAuthAuthorizationUrlTest {
     KakaoOAuthProperties properties =
         new KakaoOAuthProperties(
             new KakaoOAuthProperties.Client("kakao-client-id", "kakao-client-secret"),
-            "http://localhost:8080/api/auth/kakao/callback");
+            "http://localhost:8080/api/v1/auth/kakao/callback");
     KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
 
     String authorizationUrl = UriUtils.decode(client.authorizationUrl(STATE), UTF_8);
@@ -72,11 +72,11 @@ class OAuthAuthorizationUrlTest {
     assertThat(authorizationUrl)
         .startsWith("https://kauth.kakao.com/oauth/authorize?")
         .contains("client_id=kakao-client-id")
-        .contains("redirect_uri=http://localhost:8080/api/auth/kakao/callback")
+        .contains("redirect_uri=http://localhost:8080/api/v1/auth/kakao/callback")
         .contains("response_type=code")
         .contains("scope=profile_nickname,account_email")
         .contains("state=" + STATE)
-        .doesNotContain("/api/auth/google/callback");
+        .doesNotContain("/api/v1/auth/google/callback");
   }
 
   @Test
@@ -85,7 +85,7 @@ class OAuthAuthorizationUrlTest {
     GoogleOAuthProperties properties =
         new GoogleOAuthProperties(
             new GoogleOAuthProperties.Client("google-client-id", "google-client-secret"),
-            "http://localhost:8080/api/auth/google/callback");
+            "http://localhost:8080/api/v1/auth/google/callback");
     GoogleAuthorizationCodeClient client =
         new GoogleAuthorizationCodeClient(restTemplate, properties);
     ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> requestCaptor =
@@ -105,7 +105,7 @@ class OAuthAuthorizationUrlTest {
     assertThat(form.getFirst("client_id")).isEqualTo("google-client-id");
     assertThat(form.getFirst("client_secret")).isEqualTo("google-client-secret");
     assertThat(form.getFirst("redirect_uri"))
-        .isEqualTo("http://localhost:8080/api/auth/google/callback");
+        .isEqualTo("http://localhost:8080/api/v1/auth/google/callback");
     assertThat(form.getFirst("code")).isEqualTo("authorization-code");
   }
 
@@ -116,7 +116,7 @@ class OAuthAuthorizationUrlTest {
             () ->
                 new GoogleOAuthProperties(
                     new GoogleOAuthProperties.Client("google-client-id", "google-client-secret"),
-                    "http://localhost:8080/api/auth/kakao/callback"))
+                    "http://localhost:8080/api/v1/auth/kakao/callback"))
         .withMessage("Google OAuth configuration is invalid.");
   }
 
@@ -126,7 +126,7 @@ class OAuthAuthorizationUrlTest {
     KakaoOAuthProperties properties =
         new KakaoOAuthProperties(
             new KakaoOAuthProperties.Client("kakao-client-id", "kakao-client-secret"),
-            "http://localhost:8080/api/auth/kakao/callback");
+            "http://localhost:8080/api/v1/auth/kakao/callback");
     KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
     ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> requestCaptor =
         ArgumentCaptor.forClass(HttpEntity.class);
@@ -145,7 +145,7 @@ class OAuthAuthorizationUrlTest {
     assertThat(form.getFirst("client_id")).isEqualTo("kakao-client-id");
     assertThat(form.getFirst("client_secret")).isEqualTo("kakao-client-secret");
     assertThat(form.getFirst("redirect_uri"))
-        .isEqualTo("http://localhost:8080/api/auth/kakao/callback");
+        .isEqualTo("http://localhost:8080/api/v1/auth/kakao/callback");
     assertThat(form.getFirst("code")).isEqualTo("authorization-code");
   }
 
@@ -156,7 +156,7 @@ class OAuthAuthorizationUrlTest {
             () ->
                 new KakaoOAuthProperties(
                     new KakaoOAuthProperties.Client("kakao-client-id", "kakao-client-secret"),
-                    "http://localhost:8080/api/auth/google/callback"))
+                    "http://localhost:8080/api/v1/auth/google/callback"))
         .withMessage("Kakao OAuth configuration is invalid.");
   }
 
@@ -166,7 +166,7 @@ class OAuthAuthorizationUrlTest {
     KakaoOAuthProperties properties =
         new KakaoOAuthProperties(
             new KakaoOAuthProperties.Client("kakao-client-id", null),
-            "http://localhost:8080/api/auth/kakao/callback");
+            "http://localhost:8080/api/v1/auth/kakao/callback");
     KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
     ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> requestCaptor =
         ArgumentCaptor.forClass(HttpEntity.class);
@@ -186,7 +186,7 @@ class OAuthAuthorizationUrlTest {
     KakaoOAuthProperties properties =
         new KakaoOAuthProperties(
             new KakaoOAuthProperties.Client("kakao-client-id", null),
-            "http://localhost:8080/api/auth/kakao/callback");
+            "http://localhost:8080/api/v1/auth/kakao/callback");
     KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
     ArgumentCaptor<HttpEntity<Void>> requestCaptor = ArgumentCaptor.forClass(HttpEntity.class);
     KakaoUserInfoResponse response =
@@ -214,7 +214,7 @@ class OAuthAuthorizationUrlTest {
     KakaoOAuthProperties properties =
         new KakaoOAuthProperties(
             new KakaoOAuthProperties.Client("kakao-client-id", null),
-            "http://localhost:8080/api/auth/kakao/callback");
+            "http://localhost:8080/api/v1/auth/kakao/callback");
     KakaoOAuthClient client = new KakaoOAuthClient(restTemplate, properties);
     String responseBody =
         """

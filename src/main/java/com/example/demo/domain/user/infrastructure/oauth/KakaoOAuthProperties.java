@@ -6,7 +6,7 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "app.kakao")
 public record KakaoOAuthProperties(Client client, String redirectUri) {
 
-  private static final String CALLBACK_PATH = "/api/auth/kakao/callback";
+  private static final String CALLBACK_PATH = "/api/v1/auth/kakao/callback";
 
   public KakaoOAuthProperties {
     if (client == null

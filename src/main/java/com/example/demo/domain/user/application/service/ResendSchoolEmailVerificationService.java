@@ -2,9 +2,9 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

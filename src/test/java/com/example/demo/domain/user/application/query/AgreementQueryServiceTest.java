@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.domain.entity.Agreement;
 import com.example.demo.domain.user.domain.entity.AgreementPolicy;
-import com.example.demo.domain.user.domain.enums.AgreementCode;
-import com.example.demo.domain.user.domain.enums.Type;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
+import com.example.demo.domain.user.domain.type.AgreementCode;
+import com.example.demo.domain.user.domain.type.Type;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;

@@ -4,7 +4,7 @@ import com.example.demo.domain.artist.application.query.ArtistProfileSummaryQuer
 import com.example.demo.domain.artist.application.query.ArtistProfileSummaryQueryResult;
 import com.example.demo.domain.artist.domain.aggregate.QArtistProfile;
 import com.example.demo.domain.artist.domain.entity.QAreaOfActivity;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

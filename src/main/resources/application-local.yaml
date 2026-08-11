@@ -40,12 +40,12 @@ app:
     client:
       id: ${KAKAO_CLIENT_ID}
       secret: ${KAKAO_CLIENT_SECRET:}
-    redirect-uri: http://localhost:8080/api/auth/kakao/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/kakao/callback
   google:
     client:
       id: ${GOOGLE_CLIENT_ID}
       secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: http://localhost:8080/api/auth/google/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/google/callback
   oauth:
     cookie-secure: false
   file:

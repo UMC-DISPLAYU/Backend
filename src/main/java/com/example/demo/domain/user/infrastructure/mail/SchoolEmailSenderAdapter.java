@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.infrastructure.mail;
 
+import com.example.demo.domain.user.application.port.SchoolEmailSenderPort;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SchoolEmailSenderAdapter {
+public class SchoolEmailSenderAdapter implements SchoolEmailSenderPort {
 
   private static final String SUBJECT = "[디스플레이유] 작가 인증 이메일 인증번호 안내";
   private static final String BODY_TEMPLATE =
@@ -33,6 +34,7 @@ public class SchoolEmailSenderAdapter {
 
   private final JavaMailSender javaMailSender;
 
+  @Override
   public void send(String schoolEmail, String verificationCode) {
 
     MimeMessage message = javaMailSender.createMimeMessage();

@@ -1,8 +1,8 @@
 package com.example.demo.domain.user.domain.entity;
 
-import com.example.demo.domain.user.domain.enums.AgreementCode;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
+import com.example.demo.domain.user.domain.type.AgreementCode;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Component;

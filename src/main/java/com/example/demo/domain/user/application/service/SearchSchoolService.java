@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.result.SchoolSearchResult;
-import com.example.demo.domain.user.domain.enums.University;
+import com.example.demo.domain.user.domain.type.University;
 import java.util.List;
 import org.springframework.stereotype.Service;
 

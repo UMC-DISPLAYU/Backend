@@ -1,6 +1,7 @@
 package com.example.demo.global.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,6 +44,20 @@ class SecurityConfigTest {
   void permitsDisplayReviewHeadRequestWithoutAuthentication(String path) throws Exception {
     mockMvc
         .perform(head(path))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "/api/v1/auth/kakao/login-url",
+        "/api/v1/auth/kakao/callback",
+        "/api/v1/auth/google/login-url",
+        "/api/v1/auth/google/callback"
+      })
+  void permitsOAuthRequestWithoutAuthentication(String path) throws Exception {
+    mockMvc
+        .perform(get(path))
         .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
   }
 }

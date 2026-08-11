@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.command;
 
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
@@ -16,15 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDisplayArtworkService {
 
   private final DisplayArtworkRepository displayArtworkRepository;
-  private final ArtworkEditPermission artworkEditPermission;
+  private final DisplayArtworkPermissionChecker permissionChecker;
   private final AuthorSetupService authorSetupService;
 
   public UpdateDisplayArtworkService(
       DisplayArtworkRepository displayArtworkRepository,
-      ArtworkEditPermission artworkEditPermission,
+      DisplayArtworkPermissionChecker permissionChecker,
       AuthorSetupService authorSetupService) {
     this.displayArtworkRepository = displayArtworkRepository;
-    this.artworkEditPermission = artworkEditPermission;
+    this.permissionChecker = permissionChecker;
     this.authorSetupService = authorSetupService;
   }
 
@@ -39,10 +40,8 @@ public class UpdateDisplayArtworkService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    if (!artworkEditPermission.canEdit(
-        artwork.getDisplay(), command.artworkId(), requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
-    }
+    permissionChecker.requireArtworkEditor(
+        requesterUserId, artwork.getDisplay(), command.artworkId());
 
     artwork.changeContent(
         command.artworkName(),
