@@ -22,8 +22,37 @@ public class PersonalArtworkQuestionLikeService {
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
-  public PersonalArtworkQuestionLikeResult toggleQuestionLike(
+  public PersonalArtworkQuestionLikeResult likeQuestion(
       PersonalArtworkQuestionLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkQuestionLikeSnapshot snapshot =
+        personalArtworkQuestionLikeRepository
+            .likeAndGetSnapshot(command.personalQuestionId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public PersonalArtworkQuestionLikeResult cancelQuestionLike(
+      PersonalArtworkQuestionLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkQuestionLikeSnapshot snapshot =
+        personalArtworkQuestionLikeRepository
+            .deleteAndGetSnapshot(command.personalQuestionId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(PersonalArtworkQuestionLikeCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
 
@@ -35,15 +64,9 @@ public class PersonalArtworkQuestionLikeService {
         personalArtworkExistenceRepository.existsByIdAndUserId(
             command.personalArtworkId(), command.userId());
     permissionChecker.requirePersonalQuestionAccessible(question, command.userId(), isOwner);
+  }
 
-    PersonalArtworkQuestionLikeSnapshot snapshot =
-        personalArtworkQuestionLikeRepository
-            .toggleAndGetSnapshot(command.personalQuestionId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
-
+  private PersonalArtworkQuestionLikeResult toResult(PersonalArtworkQuestionLikeSnapshot snapshot) {
     return new PersonalArtworkQuestionLikeResult(
         snapshot.personalQuestionId(),
         snapshot.liked(),

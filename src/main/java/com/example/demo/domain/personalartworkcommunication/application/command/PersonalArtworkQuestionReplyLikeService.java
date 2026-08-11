@@ -23,8 +23,38 @@ public class PersonalArtworkQuestionReplyLikeService {
   private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
-  public PersonalArtworkQuestionReplyLikeResult toggleReplyLike(
+  public PersonalArtworkQuestionReplyLikeResult likeReply(
       PersonalArtworkQuestionReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkQuestionReplyLikeSnapshot snapshot =
+        repository
+            .likeAndGetSnapshot(command.personalQuestionReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public PersonalArtworkQuestionReplyLikeResult cancelReplyLike(
+      PersonalArtworkQuestionReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkQuestionReplyLikeSnapshot snapshot =
+        repository
+            .deleteAndGetSnapshot(command.personalQuestionReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode
+                            .PERSONAL_QUESTION_REPLY_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(PersonalArtworkQuestionReplyLikeCommand command) {
     validator.validatePersonalArtworkExists(command.personalArtworkId());
     validator.validateUserExists(command.userId());
 
@@ -39,15 +69,10 @@ public class PersonalArtworkQuestionReplyLikeService {
     PersonalArtworkQuestionReply reply =
         validator.findActiveReplyForUpdateOrThrow(command.personalQuestionReplyId());
     validator.validateReplyBelongsToQuestion(reply, command.personalQuestionId());
+  }
 
-    PersonalArtworkQuestionReplyLikeSnapshot snapshot =
-        repository
-            .toggleAndGetSnapshot(command.personalQuestionReplyId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
-
+  private PersonalArtworkQuestionReplyLikeResult toResult(
+      PersonalArtworkQuestionReplyLikeSnapshot snapshot) {
     return new PersonalArtworkQuestionReplyLikeResult(
         snapshot.personalQuestionReplyId(),
         snapshot.liked(),

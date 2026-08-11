@@ -19,24 +19,32 @@ public interface PersonalArtworkQuestionReplyLikeJpaRepository
             (createdAt, updatedAt, deletedAt, personalQuestionReplyId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :personalQuestionReplyId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            personalQuestionReplyLikeId = personalQuestionReplyLikeId
           """,
       nativeQuery = true)
-  void toggle(
+  void insertIfAbsent(
+      @Param("personalQuestionReplyId") Long personalQuestionReplyId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM PersonalArtworkQuestionReplyLike replyLike
+      WHERE replyLike.personalQuestionReplyId = :personalQuestionReplyId
+        AND replyLike.userId = :userId
+      """)
+  int deleteByPersonalQuestionReplyIdAndUserId(
       @Param("personalQuestionReplyId") Long personalQuestionReplyId, @Param("userId") Long userId);
 
   Optional<PersonalArtworkQuestionReplyLike> findByPersonalQuestionReplyIdAndUserId(
       Long personalQuestionReplyId, Long userId);
 
-  long countByPersonalQuestionReplyIdAndDeletedAtIsNull(Long personalQuestionReplyId);
+  long countByPersonalQuestionReplyId(Long personalQuestionReplyId);
 
   @Query(
       """
       SELECT replyLike.personalQuestionReplyId, COUNT(replyLike)
       FROM PersonalArtworkQuestionReplyLike replyLike
       WHERE replyLike.personalQuestionReplyId IN :personalQuestionReplyIds
-        AND replyLike.deletedAt IS NULL
       GROUP BY replyLike.personalQuestionReplyId
       """)
   List<Object[]> countByPersonalQuestionReplyIds(
@@ -48,7 +56,6 @@ public interface PersonalArtworkQuestionReplyLikeJpaRepository
       FROM PersonalArtworkQuestionReplyLike replyLike
       WHERE replyLike.personalQuestionReplyId IN :personalQuestionReplyIds
         AND replyLike.userId = :userId
-        AND replyLike.deletedAt IS NULL
       """)
   List<Long> findLikedPersonalQuestionReplyIds(
       @Param("personalQuestionReplyIds") List<Long> personalQuestionReplyIds,

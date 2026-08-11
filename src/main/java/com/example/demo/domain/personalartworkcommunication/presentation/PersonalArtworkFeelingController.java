@@ -174,7 +174,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   @Override
   @PostMapping("/{personalFeelingId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 개인 작품 감상평 좋아요 등록 및 취소
+  // 개인 작품 감상평 좋아요 등록
   public ApiResponseBody<PersonalArtworkFeelingLikeResponse> feelingLike(
       @PathVariable Long personalArtworkId,
       @PathVariable Long personalFeelingId,
@@ -185,7 +185,27 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
             personalArtworkId, personalFeelingId, requireUserId(user));
 
     PersonalArtworkFeelingLikeResult result =
-        personalArtworkFeelingLikeService.toggleFeelingLike(command);
+        personalArtworkFeelingLikeService.likeFeeling(command);
+
+    PersonalArtworkFeelingLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @DeleteMapping("/{personalFeelingId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 개인 작품 감상평 좋아요 취소
+  public ApiResponseBody<PersonalArtworkFeelingLikeResponse> cancelFeelingLike(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalFeelingId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkFeelingLikeCommand command =
+        new PersonalArtworkFeelingLikeCommand(
+            personalArtworkId, personalFeelingId, requireUserId(user));
+
+    PersonalArtworkFeelingLikeResult result =
+        personalArtworkFeelingLikeService.cancelFeelingLike(command);
 
     PersonalArtworkFeelingLikeResponse response = mapper.toResponse(result);
 
@@ -195,7 +215,7 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
   @Override
   @PostMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 개인 작품 감상평 답변 좋아요 등록 및 취소
+  // 개인 작품 감상평 답변 좋아요 등록
   public ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @PathVariable Long personalArtworkId,
       @PathVariable Long personalFeelingId,
@@ -207,7 +227,28 @@ public class PersonalArtworkFeelingController implements PersonalArtworkFeelingA
             personalArtworkId, personalFeelingId, personalFeelingReplyId, requireUserId(user));
 
     PersonalArtworkFeelingReplyLikeResult result =
-        personalArtworkFeelingReplyLikeService.toggleReplyLike(command);
+        personalArtworkFeelingReplyLikeService.likeReply(command);
+
+    PersonalArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @DeleteMapping("/{personalFeelingId}/reply/{personalFeelingReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 개인 작품 감상평 답변 좋아요 취소
+  public ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> cancelFeelingReplyLike(
+      @PathVariable Long personalArtworkId,
+      @PathVariable Long personalFeelingId,
+      @PathVariable Long personalFeelingReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    PersonalArtworkFeelingReplyLikeCommand command =
+        new PersonalArtworkFeelingReplyLikeCommand(
+            personalArtworkId, personalFeelingId, personalFeelingReplyId, requireUserId(user));
+
+    PersonalArtworkFeelingReplyLikeResult result =
+        personalArtworkFeelingReplyLikeService.cancelReplyLike(command);
 
     PersonalArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
 

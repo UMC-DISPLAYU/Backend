@@ -20,26 +20,36 @@ public class JpaPersonalArtworkQuestionLikeRepositoryAdapter
   private final PersonalArtworkQuestionLikeJpaRepository personalArtworkQuestionLikeJpaRepository;
 
   @Override
-  public Optional<PersonalArtworkQuestionLikeSnapshot> toggleAndGetSnapshot(
+  public Optional<PersonalArtworkQuestionLikeSnapshot> likeAndGetSnapshot(
       Long personalQuestionId, Long userId) {
-    personalArtworkQuestionLikeJpaRepository.toggle(personalQuestionId, userId);
+    personalArtworkQuestionLikeJpaRepository.insertIfAbsent(personalQuestionId, userId);
 
     long likeCount =
-        personalArtworkQuestionLikeJpaRepository.countByPersonalQuestionIdAndDeletedAtIsNull(
-            personalQuestionId);
+        personalArtworkQuestionLikeJpaRepository.countByPersonalQuestionId(personalQuestionId);
     return personalArtworkQuestionLikeJpaRepository
         .findByPersonalQuestionIdAndUserId(personalQuestionId, userId)
         .map(questionLike -> toSnapshot(questionLike, likeCount));
   }
 
+  @Override
+  public Optional<PersonalArtworkQuestionLikeSnapshot> deleteAndGetSnapshot(
+      Long personalQuestionId, Long userId) {
+    int deleted =
+        personalArtworkQuestionLikeJpaRepository.deleteByPersonalQuestionIdAndUserId(
+            personalQuestionId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount =
+        personalArtworkQuestionLikeJpaRepository.countByPersonalQuestionId(personalQuestionId);
+    return Optional.of(
+        new PersonalArtworkQuestionLikeSnapshot(personalQuestionId, false, likeCount, null, null));
+  }
+
   private PersonalArtworkQuestionLikeSnapshot toSnapshot(
       PersonalArtworkQuestionLike questionLike, long likeCount) {
     return new PersonalArtworkQuestionLikeSnapshot(
-        questionLike.getPersonalQuestionId(),
-        !questionLike.isDeleted(),
-        likeCount,
-        questionLike.getCreatedAt(),
-        questionLike.getDeletedAt());
+        questionLike.getPersonalQuestionId(), true, likeCount, questionLike.getCreatedAt(), null);
   }
 
   @Override

@@ -8,7 +8,10 @@ import java.util.Set;
 
 public interface PersonalArtworkQuestionReplyLikeRepository {
 
-  Optional<PersonalArtworkQuestionReplyLikeSnapshot> toggleAndGetSnapshot(
+  Optional<PersonalArtworkQuestionReplyLikeSnapshot> likeAndGetSnapshot(
+      Long personalQuestionReplyId, Long userId);
+
+  Optional<PersonalArtworkQuestionReplyLikeSnapshot> deleteAndGetSnapshot(
       Long personalQuestionReplyId, Long userId);
 
   Map<Long, Long> countByPersonalQuestionReplyIds(List<Long> personalQuestionReplyIds);

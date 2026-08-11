@@ -19,23 +19,32 @@ public interface PersonalArtworkQuestionLikeJpaRepository
             (createdAt, updatedAt, deletedAt, personalQuestionId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :personalQuestionId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            personalQuestionLikeId = personalQuestionLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("personalQuestionId") Long personalQuestionId, @Param("userId") Long userId);
+  void insertIfAbsent(
+      @Param("personalQuestionId") Long personalQuestionId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM PersonalArtworkQuestionLike questionLike
+      WHERE questionLike.personalQuestionId = :personalQuestionId
+        AND questionLike.userId = :userId
+      """)
+  int deleteByPersonalQuestionIdAndUserId(
+      @Param("personalQuestionId") Long personalQuestionId, @Param("userId") Long userId);
 
   Optional<PersonalArtworkQuestionLike> findByPersonalQuestionIdAndUserId(
       Long personalQuestionId, Long userId);
 
-  long countByPersonalQuestionIdAndDeletedAtIsNull(Long personalQuestionId);
+  long countByPersonalQuestionId(Long personalQuestionId);
 
   @Query(
       """
       SELECT questionLike.personalQuestionId, COUNT(questionLike)
       FROM PersonalArtworkQuestionLike questionLike
       WHERE questionLike.personalQuestionId IN :personalQuestionIds
-        AND questionLike.deletedAt IS NULL
       GROUP BY questionLike.personalQuestionId
       """)
   List<Object[]> countByPersonalQuestionIds(
@@ -47,7 +56,6 @@ public interface PersonalArtworkQuestionLikeJpaRepository
       FROM PersonalArtworkQuestionLike questionLike
       WHERE questionLike.personalQuestionId IN :personalQuestionIds
         AND questionLike.userId = :userId
-        AND questionLike.deletedAt IS NULL
       """)
   List<Long> findLikedPersonalQuestionIds(
       @Param("personalQuestionIds") List<Long> personalQuestionIds, @Param("userId") Long userId);
