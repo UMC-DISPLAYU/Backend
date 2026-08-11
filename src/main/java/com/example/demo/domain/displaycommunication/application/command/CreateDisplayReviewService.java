@@ -1,5 +1,6 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
+import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult.ImageResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
@@ -13,11 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CreateDisplayReviewService {
   private final DisplayReviewValidator displayReviewValidator;
+  private final DisplayCommunicationPermissionChecker permissionChecker;
   private final DisplayReviewRepository displayReviewRepository;
 
   public DisplayReviewResult create(CreateDisplayReviewCommand command) {
     var displayAccess =
-        displayReviewValidator.findDisplayAccessOrThrow(command.displayId(), command.userId());
+        permissionChecker.requireDisplayAccess(command.displayId(), command.userId());
     displayReviewValidator.validateUserExists(command.userId());
     displayReviewValidator.validateDisplayIsWritable(displayAccess);
     displayReviewValidator.validateContent(command.content());

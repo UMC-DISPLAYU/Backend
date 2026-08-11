@@ -1,11 +1,10 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
-import com.example.demo.domain.display.domain.error.DisplayErrorCode;
+import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewReplyResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.error.DisplayCommunicationErrorCode;
-import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewAccessRepository.DisplayReviewAccess;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
 import com.example.demo.domain.displaycommunication.domain.repository.UserExistenceRepository;
@@ -19,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CreateDisplayReviewReplyService {
   private final DisplayReviewValidator displayReviewValidator;
+  private final DisplayCommunicationPermissionChecker permissionChecker;
   private final DisplayReviewReplyRepository displayReviewReplyRepository;
-  private final DisplayReviewAccessRepository displayReviewAccessRepository;
   private final UserExistenceRepository userExistenceRepository;
 
   public DisplayReviewReplyResult create(CreateDisplayReviewReplyCommand command) {
@@ -34,9 +33,7 @@ public class CreateDisplayReviewReplyService {
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
     DisplayReviewAccess displayAccess =
-        displayReviewAccessRepository
-            .findByDisplayIdAndUserId(command.displayId(), command.userId())
-            .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
+        permissionChecker.requireDisplayAccess(command.displayId(), command.userId());
 
     DisplayReviewReply saved =
         displayReviewReplyRepository.save(

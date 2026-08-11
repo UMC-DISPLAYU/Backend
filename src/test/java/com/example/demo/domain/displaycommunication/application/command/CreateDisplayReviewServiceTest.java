@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.displaycommunication.application.permission.DisplayCommunicationPermissionChecker;
 import com.example.demo.domain.displaycommunication.application.result.DisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview.ImageInfo;
@@ -61,7 +62,11 @@ class CreateDisplayReviewServiceTest {
             displayReviewReplyRepository,
             userExistenceRepository,
             clock);
-    service = new CreateDisplayReviewService(validator, displayReviewRepository);
+    service =
+        new CreateDisplayReviewService(
+            validator,
+            new DisplayCommunicationPermissionChecker(displayReviewAccessRepository),
+            displayReviewRepository);
   }
 
   @Test

@@ -1,13 +1,12 @@
 package com.example.demo.domain.personalartwork.application.command;
 
+import com.example.demo.domain.personalartwork.application.permission.PersonalArtworkPermissionChecker;
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
-import com.example.demo.domain.personalartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
 import com.example.demo.domain.personalartwork.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -17,13 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class PersonalArtworkCommandService {
 
   private final PersonalArtworkRepository personalArtworkRepository;
-  private final ArtistVerificationRepository artistVerificationRepository;
+  private final PersonalArtworkPermissionChecker permissionChecker;
 
   public PersonalArtworkCommandService(
       PersonalArtworkRepository personalArtworkRepository,
-      ArtistVerificationRepository artistVerificationRepository) {
+      PersonalArtworkPermissionChecker permissionChecker) {
     this.personalArtworkRepository = personalArtworkRepository;
-    this.artistVerificationRepository = artistVerificationRepository;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional
@@ -32,9 +31,7 @@ public class PersonalArtworkCommandService {
 
     // 작가 인증은 작품을 새로 등록할 때 필요한 조건이다. 이미 등록한 작품을 관리하는 수정·삭제 경로에서는
     // 요구하지 않는다. 요구하면 인증이 해제된 사용자가 자기 작품을 관리하지 못한다.
-    if (!artistVerificationRepository.isVerifiedArtist(ownerUserId)) {
-      throw new BusinessException(PersonalArtworkErrorCode.NOT_VERIFIED_ARTIST);
-    }
+    permissionChecker.requireVerifiedArtist(ownerUserId);
 
     PersonalArtwork personalArtwork =
         PersonalArtwork.create(
@@ -82,9 +79,7 @@ public class PersonalArtworkCommandService {
             .filter(artwork -> !artwork.isDeleted())
             .orElseThrow(
                 () -> new BusinessException(PersonalArtworkErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
-    if (!personalArtwork.isOwnedBy(requesterUserId)) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
+    permissionChecker.requireOwner(personalArtwork, requesterUserId);
     return personalArtwork;
   }
 
