@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.domain.entity.DisplayLike;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.vo.UserId;
@@ -30,16 +31,16 @@ public class DisplayLikeCommandService {
     validateDisplayExists(command.displayId());
     UserId userId = new UserId(command.userId());
 
-    DisplayLike displayLike =
-        displayLikeRepository
-            .findByDisplayIdAndUserId(command.displayId(), userId)
-            .map(this::restoreDeletedLike)
-            .orElseGet(() -> DisplayLike.create(command.displayId(), userId));
+    if (displayLikeRepository.findByDisplayIdAndUserId(command.displayId(), userId).isPresent()) {
+      return result(command.displayId());
+    }
+
+    DisplayLike displayLike = DisplayLike.create(command.displayId(), userId);
 
     try {
       displayLikeRepository.save(displayLike);
     } catch (DataIntegrityViolationException exception) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE, exception);
+      return result(command.displayId());
     }
 
     return result(command.displayId());
@@ -51,21 +52,11 @@ public class DisplayLikeCommandService {
     validateDisplayExists(command.displayId());
     UserId userId = new UserId(command.userId());
 
-    DisplayLike displayLike =
-        displayLikeRepository
-            .findByDisplayIdAndUserId(command.displayId(), userId)
-            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-
-    displayLike.cancel();
-    return result(command.displayId());
-  }
-
-  private DisplayLike restoreDeletedLike(DisplayLike displayLike) {
-    if (displayLike.isActive()) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE);
+    int deleted = displayLikeRepository.deleteByDisplayIdAndUserId(command.displayId(), userId);
+    if (deleted == 0) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LIKE_NOT_FOUND);
     }
-    displayLike.restore();
-    return displayLike;
+    return result(command.displayId());
   }
 
   private void validateDisplayExists(Long displayId) {
@@ -75,7 +66,6 @@ public class DisplayLikeCommandService {
   }
 
   private DisplayLikeResult result(Long displayId) {
-    return new DisplayLikeResult(
-        displayId, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(displayId));
+    return new DisplayLikeResult(displayId, displayLikeRepository.countByDisplayId(displayId));
   }
 }

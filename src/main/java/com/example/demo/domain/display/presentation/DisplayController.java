@@ -513,7 +513,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/like")
+  @DeleteMapping("/api/v1/display/like")
   @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(

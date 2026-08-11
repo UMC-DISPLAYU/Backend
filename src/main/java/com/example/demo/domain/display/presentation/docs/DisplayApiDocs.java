@@ -51,8 +51,7 @@ public final class DisplayApiDocs {
   public static final String LIKE_SUMMARY = "전시 좋아요";
   public static final String LIKE_DESCRIPTION = "인증된 사용자가 전시에 좋아요를 추가합니다.";
   public static final String LIKE_CANCEL_SUMMARY = "전시 좋아요 취소";
-  public static final String LIKE_CANCEL_DESCRIPTION =
-      "인증된 사용자가 전시 좋아요를 취소합니다. 물리 삭제하지 않고 deletedAt을 기록합니다.";
+  public static final String LIKE_CANCEL_DESCRIPTION = "인증된 사용자가 전시 좋아요를 취소합니다.";
   public static final String LIKE_STATUS_SUMMARY = "전시 좋아요 여부 조회";
   public static final String LIKE_STATUS_DESCRIPTION = "인증된 사용자 기준으로 해당 전시에 활성 좋아요를 눌렀는지 조회합니다.";
   public static final String LIKE_REQUEST_DESCRIPTION = "전시 좋아요 요청";
