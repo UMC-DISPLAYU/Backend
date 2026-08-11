@@ -4,8 +4,8 @@ import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
-import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
+import com.example.demo.domain.display.application.result.DisplayInvitationStatusResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
@@ -21,8 +21,8 @@ import com.example.demo.domain.display.presentation.request.CreateDisplayRequest
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
-import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
@@ -148,8 +148,12 @@ public class DisplayPresentationMapper {
     return new DisplayInvitationResponse(result.displayId(), result.invitationUrl());
   }
 
-  public DisplayInvitationDisableResponse toResponse(DisplayInvitationDisableResult result) {
-    return new DisplayInvitationDisableResponse(result.displayId(), result.invitationDisabledAt());
+  public DisplayInvitationStatusResponse toResponse(DisplayInvitationStatusResult result) {
+    return new DisplayInvitationStatusResponse(
+        result.displayId(),
+        result.enabled(),
+        result.invitationUrl(),
+        result.invitationDisabledAt());
   }
 
   public DisplayDetailResponse toResponse(DisplayDetailResult result) {

@@ -69,12 +69,12 @@ public final class DisplayApiDocs {
   public static final String INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME =
       "Display invitation issue success";
 
-  public static final String INVITATION_DISABLE_SUMMARY = "전시 초대 링크 비활성화";
+  public static final String INVITATION_DISABLE_SUMMARY = "전시 초대 링크 상태 변경";
   public static final String INVITATION_DISABLE_DESCRIPTION =
-      "전시 팀장이 초대 링크를 비활성화합니다. 토큰은 삭제하지 않고 비활성화 시각만 기록하며, 이미 비활성화된 링크도 성공 응답을 반환합니다.";
-  public static final String INVITATION_DISABLE_SUCCESS_DESCRIPTION = "전시 초대 링크 비활성화 성공";
+      "전시 팀장이 초대 링크 활성 상태를 변경합니다. enabled=true면 새 초대 링크를 발급하고, enabled=false면 현재 초대 링크를 비활성화합니다. 비활성화는 멱등하게 처리합니다.";
+  public static final String INVITATION_DISABLE_SUCCESS_DESCRIPTION = "전시 초대 링크 상태 변경 성공";
   public static final String INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME =
-      "Display invitation disable success";
+      "Display invitation status update success";
 
   public static final String INVITATION_DETAIL_SUMMARY = "초대 토큰으로 전시 조회";
   public static final String INVITATION_DETAIL_DESCRIPTION =
@@ -634,13 +634,15 @@ public final class DisplayApiDocs {
         "success": {
           "data": {
             "displayId": 12,
+            "enabled": false,
+            "invitationUrl": null,
             "invitationDisabledAt": "2026-07-17T23:30:00"
           }
         },
         "error": null,
         "meta": {
           "timestamp": "2026-07-17T23:30:00",
-          "path": "/api/v1/display/12/invitation/disable"
+          "path": "/api/v1/display/12/invitation"
         }
       }
       """;
