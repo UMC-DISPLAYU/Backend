@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeletePersonalArtworkQuestionService {
 
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
+  @Transactional
   public DeletedPersonalArtworkQuestionResult deleteQuestion(
       DeletePersonalArtworkQuestionCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());

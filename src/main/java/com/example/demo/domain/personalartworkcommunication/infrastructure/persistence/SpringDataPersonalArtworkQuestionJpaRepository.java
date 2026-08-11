@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PersonalArtworkQuestionJpaRepository
+public interface SpringDataPersonalArtworkQuestionJpaRepository
     extends JpaRepository<PersonalArtworkQuestion, Long> {
 
   Optional<PersonalArtworkQuestion> findByPersonalQuestionIdAndDeletedAtIsNull(

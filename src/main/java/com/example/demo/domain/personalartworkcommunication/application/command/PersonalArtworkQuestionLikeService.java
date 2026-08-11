@@ -4,7 +4,6 @@ import com.example.demo.domain.personalartworkcommunication.application.permissi
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository.PersonalArtworkQuestionLikeSnapshot;
 import com.example.demo.global.error.BusinessException;
@@ -14,14 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PersonalArtworkQuestionLikeService {
 
   private final PersonalArtworkQuestionLikeRepository personalArtworkQuestionLikeRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public PersonalArtworkQuestionLikeResult toggleQuestionLike(
       PersonalArtworkQuestionLikeCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
@@ -32,8 +30,7 @@ public class PersonalArtworkQuestionLikeService {
             command.personalQuestionId());
     personalArtworkQuestionValidator.validateQuestionTarget(question, command.personalArtworkId());
     boolean isOwner =
-        personalArtworkExistenceRepository.existsByIdAndUserId(
-            command.personalArtworkId(), command.userId());
+        permissionChecker.isPersonalArtworkOwner(command.personalArtworkId(), command.userId());
     permissionChecker.requirePersonalQuestionAccessible(question, command.userId(), isOwner);
 
     PersonalArtworkQuestionLikeSnapshot snapshot =
