@@ -13,6 +13,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +44,9 @@ class DeletePersonalArtworkQuestionServiceTest {
 
   @Test
   void answeredQuestionCannotBeDeleted() {
-    PersonalArtworkQuestion question = PersonalArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true);
-    question.answer(3L, "답변");
+    PersonalArtworkQuestion question =
+        PersonalArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true, List.of());
+    question.answer(3L, "답변", List.of());
     when(personalArtworkExistenceRepository.existsById(1L)).thenReturn(true);
     when(userExistenceRepository.existsById(2L)).thenReturn(true);
     when(personalArtworkQuestionRepository.findActiveByIdForUpdate(10L))

@@ -16,6 +16,8 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionReplyRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
@@ -25,9 +27,12 @@ import com.example.demo.domain.personalartworkcommunication.presentation.respons
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionUserResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.QuestionImageResponse;
+import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.ReplyImageResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,9 +58,18 @@ public class PersonalArtworkQuestionPresentationMapper {
       Long personalArtworkId, Long userId, CreatePersonalArtworkQuestionRequest request) {
 
     boolean isPublic = request.isPublic() == null || request.isPublic();
+    List<PersonalArtworkQuestion.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new PersonalArtworkQuestion.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
 
     return new PersonalArtworkQuestionCommand(
-        personalArtworkId, userId, request.content(), isPublic);
+        personalArtworkId, userId, request.content(), isPublic, images);
   }
 
   public PersonalArtworkQuestionReplyCommand toCommand(
@@ -63,8 +77,17 @@ public class PersonalArtworkQuestionPresentationMapper {
       Long personalQuestionId,
       Long userId,
       CreatePersonalArtworkQuestionReplyRequest request) {
+    List<PersonalArtworkQuestionReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new PersonalArtworkQuestionReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
     return new PersonalArtworkQuestionReplyCommand(
-        personalArtworkId, personalQuestionId, userId, request.content());
+        personalArtworkId, personalQuestionId, userId, request.content(), images);
   }
 
   public PersonalArtworkQuestionLikeCommand toLikeCommand(
@@ -85,7 +108,17 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.isPublic(),
         result.answerStatus(),
         result.createdAt(),
-        result.userId());
+        result.userId(),
+        result.images().stream()
+            .map(
+                image ->
+                    new PersonalArtworkQuestionResponse.ImageResponse(
+                        image.personalQuestionImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public DeletedPersonalArtworkQuestionResponse toResponse(
@@ -109,7 +142,17 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.personalQuestionId(),
         result.userId(),
         result.nickname(),
-        result.isCreator());
+        result.isCreator(),
+        result.images().stream()
+            .map(
+                image ->
+                    new PersonalArtworkQuestionReplyResponse.ImageResponse(
+                        image.personalQuestionReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public PersonalArtworkQuestionListResponse toResponse(PersonalArtworkQuestionListResult result) {
@@ -160,6 +203,16 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.isLiked(),
         result.answerStatus(),
         result.createdAt(),
+        result.images().stream()
+            .map(
+                image ->
+                    new QuestionImageResponse(
+                        image.personalQuestionImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList(),
         user,
         reply);
   }
@@ -173,6 +226,16 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.isCreator(),
         result.content(),
         result.createdAt(),
+        result.images().stream()
+            .map(
+                image ->
+                    new ReplyImageResponse(
+                        image.personalQuestionReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList(),
         result.likeCount(),
         result.isLiked(),
         result.isMine());

@@ -5,6 +5,8 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionUserResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.QuestionImageResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.ReplyImageResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
@@ -158,6 +160,7 @@ public class GetPersonalArtworkQuestionsService {
           false,
           question.getAnswerStatus(),
           question.getCreatedAt(),
+          List.of(),
           null,
           null);
     }
@@ -190,6 +193,16 @@ public class GetPersonalArtworkQuestionsService {
         likedQuestionIds.contains(question.getPersonalQuestionId()),
         question.getAnswerStatus(),
         question.getCreatedAt(),
+        question.getImages().stream()
+            .map(
+                image ->
+                    new QuestionImageResult(
+                        image.getPersonalQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         user,
         replyResult);
   }
@@ -208,6 +221,16 @@ public class GetPersonalArtworkQuestionsService {
         ownerUserId.equals(reply.getUserId()),
         reply.getContent(),
         reply.getCreatedAt(),
+        reply.getImages().stream()
+            .map(
+                image ->
+                    new ReplyImageResult(
+                        image.getPersonalQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         replyLikeCounts.getOrDefault(reply.getPersonalQuestionReplyId(), 0L),
         likedQuestionReplyIds.contains(reply.getPersonalQuestionReplyId()),
         Objects.equals(reply.getUserId(), userId));

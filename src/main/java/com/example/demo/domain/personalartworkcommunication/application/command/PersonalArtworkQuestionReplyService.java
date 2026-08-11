@@ -31,6 +31,7 @@ public class PersonalArtworkQuestionReplyService {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
     personalArtworkQuestionValidator.validateContent(command.content());
+    personalArtworkQuestionValidator.validateReplyImages(command.images());
     personalArtworkQuestionValidator.validatePersonalArtworkCreator(
         command.personalArtworkId(), command.userId());
 
@@ -46,7 +47,7 @@ public class PersonalArtworkQuestionReplyService {
         personalArtworkQuestion, command.personalArtworkId());
 
     PersonalArtworkQuestionReply questionReply =
-        personalArtworkQuestion.answer(command.userId(), command.content());
+        personalArtworkQuestion.answer(command.userId(), command.content(), command.images());
     PersonalArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(questionReply);
 
     boolean isCreator =
@@ -66,7 +67,17 @@ public class PersonalArtworkQuestionReplyService {
         savedQuestionReply.getPersonalQuestionId(),
         savedQuestionReply.getUserId(),
         nickname,
-        isCreator);
+        isCreator,
+        savedQuestionReply.getImages().stream()
+            .map(
+                image ->
+                    new PersonalArtworkQuestionReplyResult.ImageResult(
+                        image.getPersonalQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 
   private PersonalArtworkQuestionReply saveQuestionReplyOrThrow(

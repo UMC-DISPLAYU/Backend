@@ -21,6 +21,7 @@ public record PersonalArtworkQuestionListResponse(
       boolean isLiked,
       AnswerStatus answerStatus,
       LocalDateTime createdAt,
+      List<QuestionImageResponse> images,
       PersonalArtworkQuestionUserResponse user,
       PersonalArtworkQuestionReplyItemResponse reply) {}
 
@@ -34,7 +35,14 @@ public record PersonalArtworkQuestionListResponse(
       Boolean isCreator,
       String content,
       LocalDateTime createdAt,
+      List<ReplyImageResponse> images,
       Long likeCount,
       boolean isLiked,
       boolean isMine) {}
+
+  public record QuestionImageResponse(
+      Long personalQuestionImageId, String imageUrl, int width, int height, int sortOrder) {}
+
+  public record ReplyImageResponse(
+      Long personalQuestionReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
 }

@@ -8,6 +8,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,32 @@ public class PersonalArtworkQuestionValidator {
     if (content.length() > 300) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_CONTENT);
     }
+  }
+
+  public void validateImages(List<PersonalArtworkQuestion.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList());
+  }
+
+  public void validateReplyImages(List<PersonalArtworkQuestionReply.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList());
   }
 
   public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
@@ -139,4 +166,23 @@ public class PersonalArtworkQuestionValidator {
           PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
     }
   }
+
+  private void validateImageValues(List<ImageValue> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
+    }
+  }
+
+  private record ImageValue(String imageUrl, int width, int height) {}
 }

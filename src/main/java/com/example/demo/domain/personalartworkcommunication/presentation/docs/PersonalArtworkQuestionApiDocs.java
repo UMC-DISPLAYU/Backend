@@ -71,6 +71,15 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
+                                    "images": [
+                                      {
+                                        "personalQuestionImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "user": {
                                       "userId": 2,
                                       "nickname": "관람객",
@@ -83,6 +92,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
+                                      "images": [],
                                       "likeCount": 4,
                                       "isLiked": false,
                                       "isMine": true
@@ -99,6 +109,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-07-23T17:15:00",
+                                    "images": [],
                                     "user": null,
                                     "reply": null
                                   }
@@ -270,7 +281,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                 "personalQuestionId": 2,
                                 "userId": 1,
                                 "nickname": "작품소유자",
-                                "isCreator": true
+                                "isCreator": true,
+                                "images": [
+                                  {
+                                    "personalQuestionReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/question-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -408,7 +428,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                           "isPublic": true,
                                           "answerStatus": "WAITING",
                                           "createdAt": "2026-07-20T22:20:00",
-                                          "userId": 1
+                                          "userId": 1,
+                                          "images": [
+                                            {
+                                              "personalQuestionImageId": 1,
+                                              "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                              "width": 1200,
+                                              "height": 900,
+                                              "sortOrder": 0
+                                            }
+                                          ]
                                         }
                                       },
                                       "error": null,
