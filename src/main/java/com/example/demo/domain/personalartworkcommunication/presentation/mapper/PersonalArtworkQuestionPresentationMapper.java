@@ -3,17 +3,13 @@ package com.example.demo.domain.personalartworkcommunication.presentation.mapper
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionCommand;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyCommand;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyLikeCommand;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsQuery;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
-import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
-import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
@@ -22,14 +18,12 @@ import com.example.demo.domain.personalartworkcommunication.presentation.request
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
-import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionReplyItemResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.PersonalArtworkQuestionUserResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.QuestionImageResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse.ReplyImageResponse;
-import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import java.util.List;
@@ -94,17 +88,6 @@ public class PersonalArtworkQuestionPresentationMapper {
         personalArtworkId, personalQuestionId, userId, request.content(), images);
   }
 
-  public PersonalArtworkQuestionLikeCommand toLikeCommand(
-      Long personalArtworkId, Long personalQuestionId, Long userId) {
-    return new PersonalArtworkQuestionLikeCommand(personalArtworkId, personalQuestionId, userId);
-  }
-
-  public PersonalArtworkQuestionReplyLikeCommand toReplyLikeCommand(
-      Long personalArtworkId, Long personalQuestionId, Long personalQuestionReplyId, Long userId) {
-    return new PersonalArtworkQuestionReplyLikeCommand(
-        personalArtworkId, personalQuestionId, personalQuestionReplyId, userId);
-  }
-
   public PersonalArtworkQuestionResponse toResponse(PersonalArtworkQuestionResult result) {
     return new PersonalArtworkQuestionResponse(
         result.personalQuestionId(),
@@ -165,25 +148,6 @@ public class PersonalArtworkQuestionPresentationMapper {
         result.nextCursorId(),
         result.size(),
         result.hasNext());
-  }
-
-  public PersonalArtworkQuestionLikeResponse toResponse(PersonalArtworkQuestionLikeResult result) {
-    return new PersonalArtworkQuestionLikeResponse(
-        result.personalQuestionId(),
-        result.liked(),
-        result.likeCount(),
-        result.createdAt(),
-        result.deletedAt());
-  }
-
-  public PersonalArtworkQuestionReplyLikeResponse toResponse(
-      PersonalArtworkQuestionReplyLikeResult result) {
-    return new PersonalArtworkQuestionReplyLikeResponse(
-        result.personalQuestionReplyId(),
-        result.liked(),
-        result.likeCount(),
-        result.createdAt(),
-        result.deletedAt());
   }
 
   private PersonalArtworkQuestionItemResponse toQuestionItemResponse(
