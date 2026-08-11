@@ -97,8 +97,10 @@ public class PersonalArtworkQuestion extends SoftDeleteBaseEntity {
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
     }
 
+    PersonalArtworkQuestionReply reply =
+        PersonalArtworkQuestionReply.create(this.personalQuestionId, userId, content, images);
     this.answerStatus = AnswerStatus.ANSWERED;
-    return PersonalArtworkQuestionReply.create(this.personalQuestionId, userId, content, images);
+    return reply;
   }
 
   public List<PersonalArtworkQuestionImage> getImages() {
@@ -111,6 +113,15 @@ public class PersonalArtworkQuestion extends SoftDeleteBaseEntity {
 
   public void markWaiting() {
     this.answerStatus = AnswerStatus.WAITING;
+  }
+
+  @Override
+  public void delete() {
+    if (isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
+    super.delete();
   }
 
   public boolean isWrittenBy(Long userId) {

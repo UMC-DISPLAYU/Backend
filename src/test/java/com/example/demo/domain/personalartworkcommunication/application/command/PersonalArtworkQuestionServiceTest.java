@@ -61,6 +61,9 @@ class PersonalArtworkQuestionServiceTest {
     assertThat(result.content()).isEqualTo("작업자가 작성한 질문");
     assertThat(result.images()).hasSize(1);
     assertThat(result.images().get(0).imageUrl()).isEqualTo("https://image.test/question.jpg");
+    assertThat(result.images().get(0).width()).isEqualTo(800);
+    assertThat(result.images().get(0).height()).isEqualTo(600);
+    assertThat(result.images().get(0).sortOrder()).isZero();
     verify(personalArtworkExistenceRepository, never()).existsByIdAndUserId(any(), any());
     verify(personalArtworkQuestionRepository).save(any(PersonalArtworkQuestion.class));
   }

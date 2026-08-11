@@ -120,7 +120,7 @@ class GetArtworkQuestionsServiceTest {
         .thenReturn(List.of(reply));
     when(userExistenceRepository.findNicknamesByIds(Set.of(2L))).thenReturn(Map.of(2L, "질문자"));
     when(creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(1L, Set.of(2L)))
-        .thenReturn(Map.of());
+        .thenReturn(Map.of(2L, "답변 작가"));
     when(creatorExistenceRepository.findCreatorNamesByIds(Set.of(4L)))
         .thenReturn(Map.of(4L, "답변 작가"));
     when(artworkQuestionLikeRepository.countByQuestionIds(List.of(10L))).thenReturn(Map.of());
@@ -135,6 +135,7 @@ class GetArtworkQuestionsServiceTest {
         service.getQuestions(new GetArtworkQuestionsQuery(1L, null, 10, 2L));
 
     assertThat(result.questions().get(0).isMine()).isTrue();
+    assertThat(result.questions().get(0).user().isCreator()).isTrue();
     assertThat(result.questions().get(0).isLiked()).isTrue();
     assertThat(result.questions().get(0).reply().likeCount()).isEqualTo(2L);
     assertThat(result.questions().get(0).reply().isLiked()).isTrue();

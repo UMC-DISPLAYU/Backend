@@ -26,6 +26,7 @@ import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -71,7 +72,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
   public ApiResponseBody<PersonalArtworkQuestionResponse> createPersonalQuestion(
       @PathVariable Long personalArtworkId,
       @AuthenticationPrincipal AuthUser user,
-      @RequestBody CreatePersonalArtworkQuestionRequest request,
+      @Valid @RequestBody CreatePersonalArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionCommand command =
         mapper.toCommand(personalArtworkId, requireUserId(user), request);
@@ -92,7 +93,7 @@ public class PersonalArtworkQuestionController implements PersonalArtworkQuestio
       @PathVariable Long personalArtworkId,
       @PathVariable Long personalQuestionId,
       @AuthenticationPrincipal AuthUser user,
-      @RequestBody CreatePersonalArtworkQuestionReplyRequest request,
+      @Valid @RequestBody CreatePersonalArtworkQuestionReplyRequest request,
       HttpServletRequest httpServletRequest) {
     PersonalArtworkQuestionReplyCommand command =
         mapper.toCommand(personalArtworkId, personalQuestionId, requireUserId(user), request);

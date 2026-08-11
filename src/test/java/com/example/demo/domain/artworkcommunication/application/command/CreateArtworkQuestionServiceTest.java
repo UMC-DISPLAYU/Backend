@@ -64,6 +64,10 @@ class CreateArtworkQuestionServiceTest {
     assertThat(result.userId()).isEqualTo(2L);
     assertThat(result.content()).isEqualTo("작가가 작성한 질문");
     assertThat(result.images()).hasSize(1);
+    assertThat(result.images().get(0).imageUrl()).isEqualTo("https://image.test/question.jpg");
+    assertThat(result.images().get(0).width()).isEqualTo(800);
+    assertThat(result.images().get(0).height()).isEqualTo(600);
+    assertThat(result.images().get(0).sortOrder()).isZero();
     verify(creatorExistenceRepository, never())
         .findCreatorNameByDisplayArtworkIdAndUserId(any(), any());
     verify(artworkQuestionRepository).save(any(ArtworkQuestion.class));

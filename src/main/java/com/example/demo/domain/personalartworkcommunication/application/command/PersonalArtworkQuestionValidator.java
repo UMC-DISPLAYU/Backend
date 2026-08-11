@@ -52,7 +52,8 @@ public class PersonalArtworkQuestionValidator {
                         image == null
                             ? null
                             : new ImageValue(image.imageUrl(), image.width(), image.height()))
-                .toList());
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
   }
 
   public void validateReplyImages(List<PersonalArtworkQuestionReply.ImageInfo> images) {
@@ -65,7 +66,8 @@ public class PersonalArtworkQuestionValidator {
                         image == null
                             ? null
                             : new ImageValue(image.imageUrl(), image.width(), image.height()))
-                .toList());
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_REPLY_IMAGES);
   }
 
   public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
@@ -167,9 +169,10 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  private void validateImageValues(List<ImageValue> images) {
+  private void validateImageValues(
+      List<ImageValue> images, PersonalArtworkCommunicationErrorCode errorCode) {
     if (images == null || images.size() > 5) {
-      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
+      throw new BusinessException(errorCode);
     }
     if (images.stream()
         .anyMatch(
@@ -180,7 +183,7 @@ public class PersonalArtworkQuestionValidator {
                     || image.imageUrl().length() > 2048
                     || image.width() <= 0
                     || image.height() <= 0)) {
-      throw new BusinessException(PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
+      throw new BusinessException(errorCode);
     }
   }
 

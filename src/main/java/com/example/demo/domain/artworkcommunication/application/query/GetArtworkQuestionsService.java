@@ -244,7 +244,7 @@ public class GetArtworkQuestionsService {
             .toList(),
         replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L),
         likedQuestionReplyIds.contains(reply.getQueReplyId()),
-        Objects.equals(creatorId, currentCreatorId));
+        currentCreatorId != null && Objects.equals(creatorId, currentCreatorId));
   }
 
   private Map<Long, String> findCreatorNamesById(

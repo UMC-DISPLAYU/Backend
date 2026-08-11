@@ -64,8 +64,10 @@ public class PersonalArtworkQuestionPresentationMapper {
             : request.images().stream()
                 .map(
                     image ->
-                        new PersonalArtworkQuestion.ImageInfo(
-                            image.imageUrl(), image.width(), image.height()))
+                        image == null
+                            ? null
+                            : new PersonalArtworkQuestion.ImageInfo(
+                                image.imageUrl(), image.width(), image.height()))
                 .toList();
 
     return new PersonalArtworkQuestionCommand(
@@ -83,8 +85,10 @@ public class PersonalArtworkQuestionPresentationMapper {
             : request.images().stream()
                 .map(
                     image ->
-                        new PersonalArtworkQuestionReply.ImageInfo(
-                            image.imageUrl(), image.width(), image.height()))
+                        image == null
+                            ? null
+                            : new PersonalArtworkQuestionReply.ImageInfo(
+                                image.imageUrl(), image.width(), image.height()))
                 .toList();
     return new PersonalArtworkQuestionReplyCommand(
         personalArtworkId, personalQuestionId, userId, request.content(), images);

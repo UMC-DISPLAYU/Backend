@@ -26,8 +26,6 @@ public class DeletePersonalArtworkQuestionService {
 
     personalArtworkQuestionValidator.validateAccessiblePersonalQuestion(
         personalArtworkQuestion, command.personalArtworkId(), command.userId());
-    personalArtworkQuestionValidator.validateNotAnswered(personalArtworkQuestion);
-
     personalArtworkQuestion.delete();
     PersonalArtworkQuestion savedQuestion =
         personalArtworkQuestionRepository.save(personalArtworkQuestion);
