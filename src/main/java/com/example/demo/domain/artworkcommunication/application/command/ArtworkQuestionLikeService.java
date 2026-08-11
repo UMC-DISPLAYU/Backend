@@ -22,7 +22,31 @@ public class ArtworkQuestionLikeService {
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
-  public ArtworkQuestionLikeResult toggleQuestionLike(ArtworkQuestionLikeCommand command) {
+  public ArtworkQuestionLikeResult likeQuestion(ArtworkQuestionLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkQuestionLikeSnapshot snapshot =
+        artworkQuestionLikeRepository
+            .likeAndGetSnapshot(command.questionId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public ArtworkQuestionLikeResult cancelQuestionLike(ArtworkQuestionLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkQuestionLikeSnapshot snapshot =
+        artworkQuestionLikeRepository
+            .deleteAndGetSnapshot(command.questionId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(ArtworkQuestionLikeCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());
 
@@ -35,13 +59,9 @@ public class ArtworkQuestionLikeService {
                 command.displayArtworkId(), command.userId())
             .isPresent();
     permissionChecker.requireQuestionAccessible(question, command.userId(), isParticipant);
+  }
 
-    ArtworkQuestionLikeSnapshot snapshot =
-        artworkQuestionLikeRepository
-            .toggleAndGetSnapshot(command.questionId(), command.userId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.QUESTION_NOT_FOUND));
-
+  private ArtworkQuestionLikeResult toResult(ArtworkQuestionLikeSnapshot snapshot) {
     return new ArtworkQuestionLikeResult(
         snapshot.questionId(),
         snapshot.liked(),

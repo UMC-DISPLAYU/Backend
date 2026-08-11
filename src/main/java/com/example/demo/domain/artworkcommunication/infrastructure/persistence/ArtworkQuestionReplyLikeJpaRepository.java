@@ -19,23 +19,31 @@ public interface ArtworkQuestionReplyLikeJpaRepository
             (createdAt, updatedAt, deletedAt, questionReplyId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :questionReplyId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            questionReplyLikeId = questionReplyLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("questionReplyId") Long questionReplyId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("questionReplyId") Long questionReplyId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM ArtworkQuestionReplyLike replyLike
+      WHERE replyLike.questionReplyId = :questionReplyId
+        AND replyLike.userId = :userId
+      """)
+  int deleteByQuestionReplyIdAndUserId(
+      @Param("questionReplyId") Long questionReplyId, @Param("userId") Long userId);
 
   Optional<ArtworkQuestionReplyLike> findByQuestionReplyIdAndUserId(
       Long questionReplyId, Long userId);
 
-  long countByQuestionReplyIdAndDeletedAtIsNull(Long questionReplyId);
+  long countByQuestionReplyId(Long questionReplyId);
 
   @Query(
       """
       SELECT replyLike.questionReplyId, COUNT(replyLike)
       FROM ArtworkQuestionReplyLike replyLike
       WHERE replyLike.questionReplyId IN :questionReplyIds
-        AND replyLike.deletedAt IS NULL
       GROUP BY replyLike.questionReplyId
       """)
   List<Object[]> countByQuestionReplyIds(@Param("questionReplyIds") List<Long> questionReplyIds);
@@ -46,7 +54,6 @@ public interface ArtworkQuestionReplyLikeJpaRepository
       FROM ArtworkQuestionReplyLike replyLike
       WHERE replyLike.questionReplyId IN :questionReplyIds
         AND replyLike.userId = :userId
-        AND replyLike.deletedAt IS NULL
       """)
   List<Long> findLikedQuestionReplyIds(
       @Param("questionReplyIds") List<Long> questionReplyIds, @Param("userId") Long userId);

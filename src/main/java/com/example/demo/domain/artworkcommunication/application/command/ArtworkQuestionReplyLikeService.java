@@ -23,8 +23,35 @@ public class ArtworkQuestionReplyLikeService {
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
-  public ArtworkQuestionReplyLikeResult toggleQuestionReplyLike(
+  public ArtworkQuestionReplyLikeResult likeQuestionReply(ArtworkQuestionReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkQuestionReplyLikeSnapshot snapshot =
+        artworkQuestionReplyLikeRepository
+            .likeAndGetSnapshot(command.questionReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public ArtworkQuestionReplyLikeResult cancelQuestionReplyLike(
       ArtworkQuestionReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkQuestionReplyLikeSnapshot snapshot =
+        artworkQuestionReplyLikeRepository
+            .deleteAndGetSnapshot(command.questionReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        ArtworkCommunicationErrorCode.QUESTION_REPLY_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(ArtworkQuestionReplyLikeCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());
 
@@ -41,14 +68,9 @@ public class ArtworkQuestionReplyLikeService {
     ArtworkQuestionReply reply =
         artworkQuestionValidator.findActiveReplyForUpdateOrThrow(command.questionReplyId());
     artworkQuestionValidator.validateReplyTarget(reply, command.questionId());
+  }
 
-    ArtworkQuestionReplyLikeSnapshot snapshot =
-        artworkQuestionReplyLikeRepository
-            .toggleAndGetSnapshot(command.questionReplyId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(ArtworkCommunicationErrorCode.QUESTION_REPLY_NOT_FOUND));
-
+  private ArtworkQuestionReplyLikeResult toResult(ArtworkQuestionReplyLikeSnapshot snapshot) {
     return new ArtworkQuestionReplyLikeResult(
         snapshot.questionReplyId(),
         snapshot.liked(),

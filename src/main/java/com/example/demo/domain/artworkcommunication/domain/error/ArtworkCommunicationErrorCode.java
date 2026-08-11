@@ -8,8 +8,14 @@ public enum ArtworkCommunicationErrorCode implements BaseErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   FEELING_NOT_FOUND(HttpStatus.NOT_FOUND, "FEELING_NOT_FOUND", "감상평을 찾을 수 없습니다."),
   FEELING_REPLY_NOT_FOUND(HttpStatus.NOT_FOUND, "FEELING_REPLY_NOT_FOUND", "감상평 답변을 찾을 수 없습니다."),
+  FEELING_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "FEELING_LIKE_NOT_FOUND", "감상평 좋아요를 찾을 수 없습니다."),
+  FEELING_REPLY_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "FEELING_REPLY_LIKE_NOT_FOUND", "감상평 답변 좋아요를 찾을 수 없습니다."),
   QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "질문을 찾을 수 없습니다."),
   QUESTION_REPLY_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_REPLY_NOT_FOUND", "질문 답변을 찾을 수 없습니다."),
+  QUESTION_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_LIKE_NOT_FOUND", "질문 좋아요를 찾을 수 없습니다."),
+  QUESTION_REPLY_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "QUESTION_REPLY_LIKE_NOT_FOUND", "질문 답변 좋아요를 찾을 수 없습니다."),
   INVALID_FEELING_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_FEELING_CONTENT", "감상평 내용을 입력해주세요."),
   INVALID_FEELING_IMAGES(
       HttpStatus.BAD_REQUEST, "INVALID_FEELING_IMAGES", "감상평 이미지는 최대 5개의 유효한 이미지여야 합니다."),

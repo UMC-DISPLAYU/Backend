@@ -21,7 +21,33 @@ public class ArtworkFeelingReplyLikeService {
   private final ArtworkFeelingReplyLikeRepository artworkFeelingReplyLikeRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
 
-  public ArtworkFeelingReplyLikeResult toggleReplyLike(ArtworkFeelingReplyLikeCommand command) {
+  public ArtworkFeelingReplyLikeResult likeReply(ArtworkFeelingReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingReplyLikeSnapshot snapshot =
+        artworkFeelingReplyLikeRepository
+            .likeAndGetSnapshot(command.feelingReplyId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  public ArtworkFeelingReplyLikeResult cancelReplyLike(ArtworkFeelingReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingReplyLikeSnapshot snapshot =
+        artworkFeelingReplyLikeRepository
+            .deleteAndGetSnapshot(command.feelingReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        ArtworkCommunicationErrorCode.FEELING_REPLY_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(ArtworkFeelingReplyLikeCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
 
@@ -35,13 +61,9 @@ public class ArtworkFeelingReplyLikeService {
     ArtworkFeelingReply reply =
         artworkFeelingValidator.findActiveReplyForUpdateOrThrow(command.feelingReplyId());
     artworkFeelingValidator.validateReplyTarget(reply, command.feelingId());
+  }
 
-    ArtworkFeelingReplyLikeSnapshot snapshot =
-        artworkFeelingReplyLikeRepository
-            .toggleAndGetSnapshot(command.feelingReplyId(), command.userId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_REPLY_NOT_FOUND));
-
+  private ArtworkFeelingReplyLikeResult toResult(ArtworkFeelingReplyLikeSnapshot snapshot) {
     return new ArtworkFeelingReplyLikeResult(
         snapshot.feelingReplyId(),
         snapshot.liked(),

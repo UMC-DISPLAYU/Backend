@@ -18,22 +18,30 @@ public interface ArtworkQuestionLikeJpaRepository extends JpaRepository<ArtworkQ
             (createdAt, updatedAt, deletedAt, questionId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :questionId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            questionLikeId = questionLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("questionId") Long questionId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("questionId") Long questionId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM ArtworkQuestionLike questionLike
+      WHERE questionLike.questionId = :questionId
+        AND questionLike.userId = :userId
+      """)
+  int deleteByQuestionIdAndUserId(
+      @Param("questionId") Long questionId, @Param("userId") Long userId);
 
   Optional<ArtworkQuestionLike> findByQuestionIdAndUserId(Long questionId, Long userId);
 
-  long countByQuestionIdAndDeletedAtIsNull(Long questionId);
+  long countByQuestionId(Long questionId);
 
   @Query(
       """
       SELECT questionLike.questionId, COUNT(questionLike)
       FROM ArtworkQuestionLike questionLike
       WHERE questionLike.questionId IN :questionIds
-        AND questionLike.deletedAt IS NULL
       GROUP BY questionLike.questionId
       """)
   List<Object[]> countByQuestionIds(@Param("questionIds") List<Long> questionIds);
@@ -44,7 +52,6 @@ public interface ArtworkQuestionLikeJpaRepository extends JpaRepository<ArtworkQ
       FROM ArtworkQuestionLike questionLike
       WHERE questionLike.questionId IN :questionIds
         AND questionLike.userId = :userId
-        AND questionLike.deletedAt IS NULL
       """)
   List<Long> findLikedQuestionIds(
       @Param("questionIds") List<Long> questionIds, @Param("userId") Long userId);

@@ -141,7 +141,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   @Override
   @PostMapping("/{questionId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 질문 좋아요 등록 및 취소
+  // 질문 좋아요 등록
   public ApiResponseBody<ArtworkQuestionLikeResponse> questionLike(
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
@@ -150,7 +150,23 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
     ArtworkQuestionLikeCommand command =
         new ArtworkQuestionLikeCommand(artworkId, questionId, requireUserId(user));
 
-    ArtworkQuestionLikeResult result = artworkQuestionLikeService.toggleQuestionLike(command);
+    ArtworkQuestionLikeResult result = artworkQuestionLikeService.likeQuestion(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @DeleteMapping("/{questionId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 좋아요 취소
+  public ApiResponseBody<ArtworkQuestionLikeResponse> cancelQuestionLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionLikeCommand command =
+        new ArtworkQuestionLikeCommand(artworkId, questionId, requireUserId(user));
+
+    ArtworkQuestionLikeResult result = artworkQuestionLikeService.cancelQuestionLike(command);
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }
@@ -158,7 +174,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   @Override
   @PostMapping("/{questionId}/reply/{questionReplyId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 질문 답변 좋아요 등록 및 취소
+  // 질문 답변 좋아요 등록
   public ApiResponseBody<ArtworkQuestionReplyLikeResponse> questionReplyLike(
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
@@ -170,7 +186,26 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
             artworkId, questionId, questionReplyId, requireUserId(user));
 
     ArtworkQuestionReplyLikeResult result =
-        artworkQuestionReplyLikeService.toggleQuestionReplyLike(command);
+        artworkQuestionReplyLikeService.likeQuestionReply(command);
+
+    return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
+  }
+
+  @DeleteMapping("/{questionId}/reply/{questionReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 질문 답변 좋아요 취소
+  public ApiResponseBody<ArtworkQuestionReplyLikeResponse> cancelQuestionReplyLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long questionId,
+      @PathVariable Long questionReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkQuestionReplyLikeCommand command =
+        new ArtworkQuestionReplyLikeCommand(
+            artworkId, questionId, questionReplyId, requireUserId(user));
+
+    ArtworkQuestionReplyLikeResult result =
+        artworkQuestionReplyLikeService.cancelQuestionReplyLike(command);
 
     return ApiResponseBody.success(mapper.toResponse(result), httpServletRequest);
   }

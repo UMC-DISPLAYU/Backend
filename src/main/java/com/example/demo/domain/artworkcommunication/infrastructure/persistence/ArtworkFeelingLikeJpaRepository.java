@@ -28,22 +28,29 @@ public interface ArtworkFeelingLikeJpaRepository extends JpaRepository<ArtworkFe
           INSERT INTO ArtworkFeelingLike (createdAt, updatedAt, deletedAt, feelingId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :feelingId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            feelingLikeId = feelingLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("feelingId") Long feelingId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("feelingId") Long feelingId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM ArtworkFeelingLike feelingLike
+      WHERE feelingLike.feelingId = :feelingId
+        AND feelingLike.userId = :userId
+      """)
+  int deleteByFeelingIdAndUserId(@Param("feelingId") Long feelingId, @Param("userId") Long userId);
 
   Optional<ArtworkFeelingLike> findByFeelingIdAndUserId(Long feelingId, Long userId);
 
-  long countByFeelingIdAndDeletedAtIsNull(Long feelingId);
+  long countByFeelingId(Long feelingId);
 
   @Query(
       """
       SELECT feelingLike.feelingId, COUNT(feelingLike)
       FROM ArtworkFeelingLike feelingLike
       WHERE feelingLike.feelingId IN :feelingIds
-        AND feelingLike.deletedAt IS NULL
       GROUP BY feelingLike.feelingId
       """)
   List<Object[]> countByFeelingIds(@Param("feelingIds") List<Long> feelingIds);
@@ -54,7 +61,6 @@ public interface ArtworkFeelingLikeJpaRepository extends JpaRepository<ArtworkFe
       FROM ArtworkFeelingLike feelingLike
       WHERE feelingLike.feelingId IN :feelingIds
         AND feelingLike.userId = :userId
-        AND feelingLike.deletedAt IS NULL
       """)
   List<Long> findLikedFeelingIds(
       @Param("feelingIds") List<Long> feelingIds, @Param("userId") Long userId);

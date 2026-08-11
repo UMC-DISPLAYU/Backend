@@ -19,23 +19,30 @@ public class JpaArtworkFeelingLikeRepositoryAdapter implements ArtworkFeelingLik
   private final ArtworkFeelingLikeJpaRepository artworkFeelingLikeJpaRepository;
 
   @Override
-  public Optional<ArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(Long feelingId, Long userId) {
+  public Optional<ArtworkFeelingLikeSnapshot> likeAndGetSnapshot(Long feelingId, Long userId) {
     artworkFeelingLikeJpaRepository.lockByFeelingId(feelingId);
-    artworkFeelingLikeJpaRepository.toggle(feelingId, userId);
+    artworkFeelingLikeJpaRepository.insertIfAbsent(feelingId, userId);
 
-    long likeCount = artworkFeelingLikeJpaRepository.countByFeelingIdAndDeletedAtIsNull(feelingId);
+    long likeCount = artworkFeelingLikeJpaRepository.countByFeelingId(feelingId);
     return artworkFeelingLikeJpaRepository
         .findByFeelingIdAndUserId(feelingId, userId)
         .map(feelingLike -> toSnapshot(feelingLike, likeCount));
   }
 
+  @Override
+  public Optional<ArtworkFeelingLikeSnapshot> deleteAndGetSnapshot(Long feelingId, Long userId) {
+    artworkFeelingLikeJpaRepository.lockByFeelingId(feelingId);
+    int deleted = artworkFeelingLikeJpaRepository.deleteByFeelingIdAndUserId(feelingId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = artworkFeelingLikeJpaRepository.countByFeelingId(feelingId);
+    return Optional.of(new ArtworkFeelingLikeSnapshot(feelingId, false, likeCount, null, null));
+  }
+
   private ArtworkFeelingLikeSnapshot toSnapshot(ArtworkFeelingLike feelingLike, long likeCount) {
     return new ArtworkFeelingLikeSnapshot(
-        feelingLike.getFeelingId(),
-        !feelingLike.isDeleted(),
-        likeCount,
-        feelingLike.getCreatedAt(),
-        feelingLike.getDeletedAt());
+        feelingLike.getFeelingId(), true, likeCount, feelingLike.getCreatedAt(), null);
   }
 
   @Override

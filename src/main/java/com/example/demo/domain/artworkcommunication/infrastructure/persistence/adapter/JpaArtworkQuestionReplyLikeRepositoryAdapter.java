@@ -20,26 +20,38 @@ public class JpaArtworkQuestionReplyLikeRepositoryAdapter
   private final ArtworkQuestionReplyLikeJpaRepository artworkQuestionReplyLikeJpaRepository;
 
   @Override
-  public Optional<ArtworkQuestionReplyLikeSnapshot> toggleAndGetSnapshot(
+  public Optional<ArtworkQuestionReplyLikeSnapshot> likeAndGetSnapshot(
       Long questionReplyId, Long userId) {
-    artworkQuestionReplyLikeJpaRepository.toggle(questionReplyId, userId);
+    artworkQuestionReplyLikeJpaRepository.insertIfAbsent(questionReplyId, userId);
 
-    long likeCount =
-        artworkQuestionReplyLikeJpaRepository.countByQuestionReplyIdAndDeletedAtIsNull(
-            questionReplyId);
+    long likeCount = artworkQuestionReplyLikeJpaRepository.countByQuestionReplyId(questionReplyId);
     return artworkQuestionReplyLikeJpaRepository
         .findByQuestionReplyIdAndUserId(questionReplyId, userId)
         .map(questionReplyLike -> toSnapshot(questionReplyLike, likeCount));
+  }
+
+  @Override
+  public Optional<ArtworkQuestionReplyLikeSnapshot> deleteAndGetSnapshot(
+      Long questionReplyId, Long userId) {
+    int deleted =
+        artworkQuestionReplyLikeJpaRepository.deleteByQuestionReplyIdAndUserId(
+            questionReplyId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = artworkQuestionReplyLikeJpaRepository.countByQuestionReplyId(questionReplyId);
+    return Optional.of(
+        new ArtworkQuestionReplyLikeSnapshot(questionReplyId, false, likeCount, null, null));
   }
 
   private ArtworkQuestionReplyLikeSnapshot toSnapshot(
       ArtworkQuestionReplyLike questionReplyLike, long likeCount) {
     return new ArtworkQuestionReplyLikeSnapshot(
         questionReplyLike.getQuestionReplyId(),
-        !questionReplyLike.isDeleted(),
+        true,
         likeCount,
         questionReplyLike.getCreatedAt(),
-        questionReplyLike.getDeletedAt());
+        null);
   }
 
   @Override
