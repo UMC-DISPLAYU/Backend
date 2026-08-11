@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum DisplayErrorCode implements BaseErrorCode {
   DISPLAY_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_NOT_FOUND", "전시를 찾을 수 없습니다."),
+  DISPLAY_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_LIKE_NOT_FOUND", "전시 좋아요를 찾을 수 없습니다."),
   DISPLAY_INVITATION_NOT_ISSUED(
       HttpStatus.BAD_REQUEST, "DISPLAY_INVITATION_NOT_ISSUED", "초대 링크가 아직 발급되지 않았습니다."),
   INVALID_DISPLAY_INVITATION_TOKEN(

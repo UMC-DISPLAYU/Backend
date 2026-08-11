@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,6 +46,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -169,22 +171,28 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
-  void disableInvitationIsIdempotent() throws Exception {
+  void updateInvitationStatusDisablesInvitationIdempotently() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     String invitationUrl = invitationUrl(issue(display.getId()));
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.enabled").value(false))
+        .andExpect(jsonPath("$.success.data.invitationUrl").value(nullValue()))
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T14:30:00Z"));
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T14:30:00Z"));
 
@@ -199,14 +207,49 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
-  void disableInvitationFailsWhenRequesterIsNotOwnerOrTeamLeader() throws Exception {
+  void updateInvitationStatusEnablesInvitationWithNewUrl() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String oldInvitationUrl = invitationUrl(issue(display.getId()));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
+        .andExpect(status().isOk());
+
+    MvcResult result =
+        mockMvc
+            .perform(
+                patch("/api/v1/display/{displayId}/invitation", display.getId())
+                    .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"enabled\":true}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+            .andExpect(jsonPath("$.success.data.enabled").value(true))
+            .andExpect(jsonPath("$.success.data.invitationUrl").isString())
+            .andExpect(jsonPath("$.success.data.invitationDisabledAt").value(nullValue()))
+            .andReturn();
+
+    String newInvitationUrl =
+        JsonPath.read(result.getResponse().getContentAsString(), "$.success.data.invitationUrl");
+    assertThat(newInvitationUrl).startsWith(INVITATION_BASE_URL);
+    assertThat(newInvitationUrl).isNotEqualTo(oldInvitationUrl);
+  }
+
+  @Test
+  void updateInvitationStatusFailsWhenRequesterIsNotOwnerOrTeamLeader() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     issue(display.getId());
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
 
@@ -215,12 +258,15 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
-  void disableInvitationReturnsUnauthorizedWithoutAuthentication() throws Exception {
+  void updateInvitationStatusReturnsUnauthorizedWithoutAuthentication() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     issue(display.getId());
 
     mockMvc
-        .perform(patch("/api/v1/display/{displayId}/invitation/disable", display.getId()))
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -351,13 +397,15 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
-  void disableInvitationFailsWhenInvitationIsNotIssued() throws Exception {
+  void updateInvitationStatusFailsWhenInvitationIsNotIssued() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
 
     mockMvc
         .perform(
-            patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_NOT_ISSUED"));
   }

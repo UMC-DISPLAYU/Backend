@@ -6,7 +6,6 @@ import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkError
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkLikeRepository;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -30,17 +29,19 @@ public class PersonalArtworkLikeCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     validatePersonalArtworkExists(command.personalArtworkId());
 
+    if (personalArtworkLikeRepository
+        .findByPersonalArtworkIdAndUserId(command.personalArtworkId(), command.userId())
+        .isPresent()) {
+      return result(command.personalArtworkId(), true);
+    }
+
     PersonalArtworkLike personalArtworkLike =
-        personalArtworkLikeRepository
-            .findByPersonalArtworkIdAndUserId(command.personalArtworkId(), command.userId())
-            .map(this::restoreDeletedLike)
-            .orElseGet(
-                () -> PersonalArtworkLike.create(command.personalArtworkId(), command.userId()));
+        PersonalArtworkLike.create(command.personalArtworkId(), command.userId());
 
     try {
       personalArtworkLikeRepository.save(personalArtworkLike);
     } catch (DataIntegrityViolationException exception) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE, exception);
+      return result(command.personalArtworkId(), true);
     }
 
     return result(command.personalArtworkId(), true);
@@ -51,22 +52,13 @@ public class PersonalArtworkLikeCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     validatePersonalArtworkExists(command.personalArtworkId());
 
-    PersonalArtworkLike personalArtworkLike =
-        personalArtworkLikeRepository
-            .findByPersonalArtworkIdAndUserId(command.personalArtworkId(), command.userId())
-            .filter(PersonalArtworkLike::isActive)
-            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-
-    personalArtworkLike.cancel();
-    return result(command.personalArtworkId(), false);
-  }
-
-  private PersonalArtworkLike restoreDeletedLike(PersonalArtworkLike personalArtworkLike) {
-    if (personalArtworkLike.isActive()) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE);
+    int deleted =
+        personalArtworkLikeRepository.deleteByPersonalArtworkIdAndUserId(
+            command.personalArtworkId(), command.userId());
+    if (deleted == 0) {
+      throw new BusinessException(PersonalArtworkErrorCode.PERSONAL_ARTWORK_LIKE_NOT_FOUND);
     }
-    personalArtworkLike.restore();
-    return personalArtworkLike;
+    return result(command.personalArtworkId(), false);
   }
 
   private void validatePersonalArtworkExists(Long personalArtworkId) {
@@ -81,7 +73,6 @@ public class PersonalArtworkLikeCommandService {
     return new PersonalArtworkLikeResult(
         personalArtworkId,
         isLiked,
-        personalArtworkLikeRepository.countByPersonalArtworkIdAndDeletedAtIsNull(
-            personalArtworkId));
+        personalArtworkLikeRepository.countByPersonalArtworkId(personalArtworkId));
   }
 }

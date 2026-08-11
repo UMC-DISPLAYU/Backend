@@ -11,8 +11,6 @@ import com.example.demo.domain.artworkcommunication.application.result.ArtworkQu
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
@@ -37,8 +35,6 @@ public class GetArtworkQuestionsService {
 
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
-  private final ArtworkQuestionLikeRepository artworkQuestionLikeRepository;
-  private final ArtworkQuestionReplyLikeRepository artworkQuestionReplyLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
@@ -77,25 +73,10 @@ public class GetArtworkQuestionsService {
     Map<Long, String> nicknameByUserId = findQuestionUserNicknames(pageQuestions);
     Map<Long, String> creatorNameByUserId = findQuestionCreatorNames(pageQuestions, query);
     Map<Long, String> creatorNameById = findCreatorNamesById(repliesByQuestionId);
-    List<Long> questionIds = pageQuestions.stream().map(ArtworkQuestion::getQuestionId).toList();
-    List<Long> questionReplyIds =
-        repliesByQuestionId.values().stream()
-            .flatMap(List::stream)
-            .map(ArtworkQuestionReply::getQueReplyId)
-            .toList();
-    Map<Long, Long> questionLikeCounts =
-        artworkQuestionLikeRepository.countByQuestionIds(questionIds);
-    Set<Long> likedQuestionIds =
-        query.userId() == null
-            ? Set.of()
-            : artworkQuestionLikeRepository.findLikedQuestionIds(questionIds, query.userId());
-    Map<Long, Long> replyLikeCounts =
-        artworkQuestionReplyLikeRepository.countByQuestionReplyIds(questionReplyIds);
-    Set<Long> likedQuestionReplyIds =
-        query.userId() == null
-            ? Set.of()
-            : artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(
-                questionReplyIds, query.userId());
+    Map<Long, Long> questionLikeCounts = Map.of();
+    Set<Long> likedQuestionIds = Set.of();
+    Map<Long, Long> replyLikeCounts = Map.of();
+    Set<Long> likedQuestionReplyIds = Set.of();
 
     List<ArtworkQuestionItemResult> questions =
         pageQuestions.stream()

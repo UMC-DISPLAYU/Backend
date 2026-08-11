@@ -101,7 +101,11 @@ public class LoungePostCommandService {
     permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
-    loungePostLikeRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), likeUserId);
+    int deleted =
+        loungePostLikeRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), likeUserId);
+    if (deleted == 0) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_LIKE_NOT_FOUND);
+    }
 
     return new LoungePostLikeResult(
         loungePost.getId(),

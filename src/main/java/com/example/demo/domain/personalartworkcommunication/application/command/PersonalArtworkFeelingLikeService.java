@@ -18,8 +18,37 @@ public class PersonalArtworkFeelingLikeService {
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
   @Transactional
-  public PersonalArtworkFeelingLikeResult toggleFeelingLike(
+  public PersonalArtworkFeelingLikeResult likeFeeling(PersonalArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkFeelingLikeSnapshot snapshot =
+        personalArtworkFeelingLikeRepository
+            .likeAndGetSnapshot(command.personalFeelingId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  @Transactional
+  public PersonalArtworkFeelingLikeResult cancelFeelingLike(
       PersonalArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkFeelingLikeSnapshot snapshot =
+        personalArtworkFeelingLikeRepository
+            .deleteAndGetSnapshot(command.personalFeelingId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(PersonalArtworkFeelingLikeCommand command) {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkFeelingValidator.validateUserExists(command.userId());
 
@@ -27,15 +56,9 @@ public class PersonalArtworkFeelingLikeService {
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
     personalArtworkFeelingValidator.validateReplyTarget(
         personalArtworkFeeling, command.personalArtworkId());
+  }
 
-    PersonalArtworkFeelingLikeSnapshot snapshot =
-        personalArtworkFeelingLikeRepository
-            .toggleAndGetSnapshot(command.personalFeelingId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
-
+  private PersonalArtworkFeelingLikeResult toResult(PersonalArtworkFeelingLikeSnapshot snapshot) {
     return new PersonalArtworkFeelingLikeResult(
         snapshot.personalFeelingId(),
         snapshot.liked(),

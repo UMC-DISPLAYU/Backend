@@ -8,7 +8,9 @@ import java.util.Set;
 
 public interface ArtworkFeelingLikeRepository {
 
-  Optional<ArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(Long feelingId, Long userId);
+  Optional<ArtworkFeelingLikeSnapshot> likeAndGetSnapshot(Long feelingId, Long userId);
+
+  Optional<ArtworkFeelingLikeSnapshot> deleteAndGetSnapshot(Long feelingId, Long userId);
 
   Map<Long, Long> countByFeelingIds(List<Long> feelingIds);
 

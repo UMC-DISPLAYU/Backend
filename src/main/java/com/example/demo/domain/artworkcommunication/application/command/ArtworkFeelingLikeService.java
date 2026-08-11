@@ -20,19 +20,40 @@ public class ArtworkFeelingLikeService {
   private final ArtworkFeelingValidator artworkFeelingValidator;
 
   @Transactional
-  public ArtworkFeelingLikeResult artworkFeelingLike(ArtworkFeelingLikeCommand command) {
+  public ArtworkFeelingLikeResult likeFeeling(ArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingLikeSnapshot snapshot =
+        artworkFeelingLikeRepository
+            .likeAndGetSnapshot(command.feelingId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  @Transactional
+  public ArtworkFeelingLikeResult cancelFeelingLike(ArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingLikeSnapshot snapshot =
+        artworkFeelingLikeRepository
+            .deleteAndGetSnapshot(command.feelingId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(ArtworkFeelingLikeCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
 
     ArtworkFeeling artworkFeeling = findFeelingOrThrow(command.feelingId());
     artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
+  }
 
-    ArtworkFeelingLikeSnapshot snapshot =
-        artworkFeelingLikeRepository
-            .toggleAndGetSnapshot(command.feelingId(), command.userId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-
+  private ArtworkFeelingLikeResult toResult(ArtworkFeelingLikeSnapshot snapshot) {
     return new ArtworkFeelingLikeResult(
         snapshot.feelingId(),
         snapshot.liked(),

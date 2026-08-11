@@ -47,8 +47,7 @@ public class GetDisplayByInvitationService {
               display.validateInvitationAccessible();
               createPendingInvitationIfNeeded(display, requesterUserId);
               return DisplayDetailResult.from(
-                  display,
-                  displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
+                  display, displayLikeRepository.countByDisplayId(display.getId()));
             })
         .orElseThrow(
             () -> new BusinessException(DisplayErrorCode.INVALID_DISPLAY_INVITATION_TOKEN));

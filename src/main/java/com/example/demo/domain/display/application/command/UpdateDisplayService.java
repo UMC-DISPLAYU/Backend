@@ -83,7 +83,7 @@ public class UpdateDisplayService {
 
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()));
   }
 
   private String organization(

@@ -6,8 +6,6 @@ import static org.mockito.Mockito.mock;
 
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionReplyService;
 import com.example.demo.domain.personalartworkcommunication.application.command.DeletePersonalArtworkQuestionService;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionLikeService;
-import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyLikeService;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionReplyService;
 import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkQuestionService;
 import com.example.demo.domain.personalartworkcommunication.application.query.GetPersonalArtworkQuestionsService;
@@ -37,8 +35,6 @@ class PersonalArtworkQuestionControllerValidationTest {
             mock(DeletePersonalArtworkQuestionReplyService.class),
             mock(PersonalArtworkQuestionReplyService.class),
             mock(GetPersonalArtworkQuestionsService.class),
-            mock(PersonalArtworkQuestionLikeService.class),
-            mock(PersonalArtworkQuestionReplyLikeService.class),
             mock(PersonalArtworkQuestionPresentationMapper.class));
     executableValidator = Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
     getQuestions =

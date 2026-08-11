@@ -28,7 +28,7 @@ public interface SpringDataLoungeCommentLikeJpaRepository
       DELETE FROM LoungeCommentLike commentLike
       WHERE commentLike.loungeCommentId = :loungeCommentId AND commentLike.userId.value = :userId
       """)
-  void deleteByLoungeCommentIdAndUserId(
+  int deleteByLoungeCommentIdAndUserId(
       @Param("loungeCommentId") Long loungeCommentId, @Param("userId") Long userId);
 
   long countByLoungeCommentId(Long loungeCommentId);

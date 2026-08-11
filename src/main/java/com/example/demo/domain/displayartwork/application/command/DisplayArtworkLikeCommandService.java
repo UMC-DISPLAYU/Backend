@@ -6,7 +6,6 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkLikeRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -30,17 +29,19 @@ public class DisplayArtworkLikeCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     validateDisplayArtworkExists(command.displayArtworkId());
 
+    if (displayArtworkLikeRepository
+        .findByDisplayArtworkIdAndUserId(command.displayArtworkId(), command.userId())
+        .isPresent()) {
+      return result(command.displayArtworkId(), true);
+    }
+
     DisplayArtworkLike displayArtworkLike =
-        displayArtworkLikeRepository
-            .findByDisplayArtworkIdAndUserId(command.displayArtworkId(), command.userId())
-            .map(this::restoreDeletedLike)
-            .orElseGet(
-                () -> DisplayArtworkLike.create(command.displayArtworkId(), command.userId()));
+        DisplayArtworkLike.create(command.displayArtworkId(), command.userId());
 
     try {
       displayArtworkLikeRepository.save(displayArtworkLike);
     } catch (DataIntegrityViolationException exception) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE, exception);
+      return result(command.displayArtworkId(), true);
     }
 
     return result(command.displayArtworkId(), true);
@@ -51,21 +52,13 @@ public class DisplayArtworkLikeCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     validateDisplayArtworkExists(command.displayArtworkId());
 
-    DisplayArtworkLike displayArtworkLike =
-        displayArtworkLikeRepository
-            .findByDisplayArtworkIdAndUserId(command.displayArtworkId(), command.userId())
-            .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-
-    displayArtworkLike.cancel();
-    return result(command.displayArtworkId(), false);
-  }
-
-  private DisplayArtworkLike restoreDeletedLike(DisplayArtworkLike displayArtworkLike) {
-    if (displayArtworkLike.isActive()) {
-      throw new BusinessException(GlobalErrorCode.DUPLICATE_RESOURCE);
+    int deleted =
+        displayArtworkLikeRepository.deleteByDisplayArtworkIdAndUserId(
+            command.displayArtworkId(), command.userId());
+    if (deleted == 0) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_LIKE_NOT_FOUND);
     }
-    displayArtworkLike.restore();
-    return displayArtworkLike;
+    return result(command.displayArtworkId(), false);
   }
 
   private void validateDisplayArtworkExists(Long displayArtworkId) {
@@ -80,6 +73,6 @@ public class DisplayArtworkLikeCommandService {
     return new DisplayArtworkLikeResult(
         displayArtworkId,
         isLiked,
-        displayArtworkLikeRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId));
+        displayArtworkLikeRepository.countByDisplayArtworkId(displayArtworkId));
   }
 }

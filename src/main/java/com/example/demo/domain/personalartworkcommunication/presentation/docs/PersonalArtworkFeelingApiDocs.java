@@ -402,18 +402,16 @@ public interface PersonalArtworkFeelingApiDocs {
       @Valid CreatePersonalArtworkFeelingRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(
-      summary = "개인 작품 감상평 좋아요 등록 및 취소",
-      description = "좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.")
+  @Operation(summary = "개인 작품 감상평 좋아요 등록", description = "개인 작품 감상평 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "개인 작품 감상평 좋아요 상태 변경 성공",
+      description = "개인 작품 감상평 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
               examples =
                   @ExampleObject(
-                      name = "Personal artwork feeling like toggle success",
+                      name = "Personal artwork feeling like success",
                       value =
                           """
                           {
@@ -462,7 +460,7 @@ public interface PersonalArtworkFeelingApiDocs {
   @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<PersonalArtworkFeelingLikeResponse> feelingLike(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
-      @Parameter(description = "좋아요 상태를 변경할 감상평 ID", example = "1") Long personalFeelingId,
+      @Parameter(description = "좋아요를 등록할 감상평 ID", example = "1") Long personalFeelingId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
@@ -553,18 +551,16 @@ public interface PersonalArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(
-      summary = "개인 작품 감상평 답변 좋아요 등록 및 취소",
-      description = "좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.")
+  @Operation(summary = "개인 작품 감상평 답변 좋아요 등록", description = "개인 작품 감상평 답변 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "개인 작품 감상평 답변 좋아요 상태 변경 성공",
+      description = "개인 작품 감상평 답변 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
               examples =
                   @ExampleObject(
-                      name = "Personal artwork feeling reply like toggle success",
+                      name = "Personal artwork feeling reply like success",
                       value =
                           """
                           {
@@ -590,7 +586,7 @@ public interface PersonalArtworkFeelingApiDocs {
   ApiResponseBody<PersonalArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @Parameter(description = "감상평이 속한 개인 작품 ID", example = "1") Long personalArtworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "1") Long personalFeelingId,
-      @Parameter(description = "좋아요를 변경할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
+      @Parameter(description = "좋아요를 등록할 감상평 답변 ID", example = "1") Long personalFeelingReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }

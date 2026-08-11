@@ -19,8 +19,39 @@ public class PersonalArtworkFeelingReplyLikeService {
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
   @Transactional
-  public PersonalArtworkFeelingReplyLikeResult toggleReplyLike(
+  public PersonalArtworkFeelingReplyLikeResult likeReply(
       PersonalArtworkFeelingReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkFeelingReplyLikeSnapshot snapshot =
+        personalArtworkFeelingReplyLikeRepository
+            .likeAndGetSnapshot(command.personalFeelingReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  @Transactional
+  public PersonalArtworkFeelingReplyLikeResult cancelReplyLike(
+      PersonalArtworkFeelingReplyLikeCommand command) {
+    validateLikeTarget(command);
+
+    PersonalArtworkFeelingReplyLikeSnapshot snapshot =
+        personalArtworkFeelingReplyLikeRepository
+            .deleteAndGetSnapshot(command.personalFeelingReplyId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        PersonalArtworkCommunicationErrorCode
+                            .PERSONAL_FEELING_REPLY_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(PersonalArtworkFeelingReplyLikeCommand command) {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkFeelingValidator.validateUserExists(command.userId());
 
@@ -32,15 +63,10 @@ public class PersonalArtworkFeelingReplyLikeService {
         personalArtworkFeelingValidator.findActiveReplyForUpdateOrThrow(
             command.personalFeelingReplyId());
     personalArtworkFeelingValidator.validateReplyTarget(reply, command.personalFeelingId());
+  }
 
-    PersonalArtworkFeelingReplyLikeSnapshot snapshot =
-        personalArtworkFeelingReplyLikeRepository
-            .toggleAndGetSnapshot(command.personalFeelingReplyId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_REPLY_NOT_FOUND));
-
+  private PersonalArtworkFeelingReplyLikeResult toResult(
+      PersonalArtworkFeelingReplyLikeSnapshot snapshot) {
     return new PersonalArtworkFeelingReplyLikeResult(
         snapshot.personalFeelingReplyId(),
         snapshot.liked(),

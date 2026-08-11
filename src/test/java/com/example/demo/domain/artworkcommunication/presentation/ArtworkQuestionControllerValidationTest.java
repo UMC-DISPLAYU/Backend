@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 
-import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionLikeService;
-import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionReplyLikeService;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionReplyService;
 import com.example.demo.domain.artworkcommunication.application.command.CreateArtworkQuestionService;
 import com.example.demo.domain.artworkcommunication.application.command.DeleteArtworkQuestionReplyService;
@@ -37,8 +35,6 @@ class ArtworkQuestionControllerValidationTest {
             mock(GetArtworkQuestionsService.class),
             mock(DeleteArtworkQuestionService.class),
             mock(DeleteArtworkQuestionReplyService.class),
-            mock(ArtworkQuestionLikeService.class),
-            mock(ArtworkQuestionReplyLikeService.class),
             mock(ArtworkQuestionPresentationMapper.class));
     executableValidator = Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
     getQuestions =

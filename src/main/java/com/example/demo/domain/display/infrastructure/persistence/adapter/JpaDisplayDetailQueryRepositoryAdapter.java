@@ -94,7 +94,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             displayLike.id.count())
         .from(display)
         .leftJoin(displayLike)
-        .on(displayLike.displayId.eq(display.id), displayLike.deletedAt.isNull())
+        .on(displayLike.displayId.eq(display.id))
         .where(display.id.eq(displayId))
         .groupBy(display.id)
         .fetchOne();

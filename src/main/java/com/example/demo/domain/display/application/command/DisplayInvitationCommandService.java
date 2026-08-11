@@ -4,8 +4,8 @@ import com.example.demo.domain.display.application.permission.DisplayPermissionC
 import com.example.demo.domain.display.application.port.DisplayInvitationBaseUrlProvider;
 import com.example.demo.domain.display.application.port.DisplayInvitationTokenGenerator;
 import com.example.demo.domain.display.application.port.DisplayInvitationTokenHasher;
-import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
+import com.example.demo.domain.display.application.result.DisplayInvitationStatusResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
@@ -51,11 +51,20 @@ public class DisplayInvitationCommandService {
   }
 
   @Transactional
-  public DisplayInvitationDisableResult disableInvitation(Long requesterUserId, Long displayId) {
+  public DisplayInvitationStatusResult updateInvitationStatus(
+      Long requesterUserId, Long displayId, boolean enabled) {
     Display display = findDisplay(displayId);
     displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
+    if (enabled) {
+      String rawToken = tokenGenerator.generate();
+      display.issueInvitationToken(tokenHasher.hash(rawToken));
+      return new DisplayInvitationStatusResult(
+          display.getId(), true, invitationUrl(rawToken), display.getInvitationDisabledAt());
+    }
+
     display.disableInvitation(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
-    return new DisplayInvitationDisableResult(display.getId(), display.getInvitationDisabledAt());
+    return new DisplayInvitationStatusResult(
+        display.getId(), false, null, display.getInvitationDisabledAt());
   }
 
   private Display findDisplay(Long displayId) {

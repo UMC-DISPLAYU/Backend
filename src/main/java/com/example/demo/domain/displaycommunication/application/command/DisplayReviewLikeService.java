@@ -17,7 +17,35 @@ public class DisplayReviewLikeService {
   private final DisplayReviewLikeRepository displayReviewLikeRepository;
 
   @Transactional
-  public DisplayReviewLikeResult toggleReviewLike(DisplayReviewLikeCommand command) {
+  public DisplayReviewLikeResult likeReview(DisplayReviewLikeCommand command) {
+    validateLikeTarget(command);
+
+    DisplayReviewLikeSnapshot snapshot =
+        displayReviewLikeRepository
+            .likeAndGetSnapshot(command.displayReviewId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  @Transactional
+  public DisplayReviewLikeResult cancelReviewLike(DisplayReviewLikeCommand command) {
+    validateLikeTarget(command);
+
+    DisplayReviewLikeSnapshot snapshot =
+        displayReviewLikeRepository
+            .deleteAndGetSnapshot(command.displayReviewId(), command.userId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        DisplayCommunicationErrorCode.DISPLAY_REVIEW_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(DisplayReviewLikeCommand command) {
     displayReviewValidator.validateDisplayExists(command.displayId());
     displayReviewValidator.validateUserExists(command.userId());
 
@@ -25,14 +53,9 @@ public class DisplayReviewLikeService {
         displayReviewValidator.findReviewOrThrow(command.displayReviewId());
 
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
+  }
 
-    DisplayReviewLikeSnapshot snapshot =
-        displayReviewLikeRepository
-            .toggleAndGetSnapshot(command.displayReviewId(), command.userId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
-
+  private DisplayReviewLikeResult toResult(DisplayReviewLikeSnapshot snapshot) {
     return new DisplayReviewLikeResult(
         snapshot.displayReviewId(),
         snapshot.liked(),

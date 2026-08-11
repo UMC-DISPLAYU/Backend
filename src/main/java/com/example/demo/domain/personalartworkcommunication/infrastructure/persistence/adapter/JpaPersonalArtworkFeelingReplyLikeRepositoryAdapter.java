@@ -19,15 +19,28 @@ public class JpaPersonalArtworkFeelingReplyLikeRepositoryAdapter
   private final SpringDataPersonalArtworkFeelingReplyLikeJpaRepository repository;
 
   @Override
-  public Optional<PersonalArtworkFeelingReplyLikeSnapshot> toggleAndGetSnapshot(
+  public Optional<PersonalArtworkFeelingReplyLikeSnapshot> likeAndGetSnapshot(
       Long personalFeelingReplyId, Long userId) {
-    repository.toggle(personalFeelingReplyId, userId);
+    repository.insertIfAbsent(personalFeelingReplyId, userId);
 
-    long likeCount =
-        repository.countByPersonalFeelingReplyIdAndDeletedAtIsNull(personalFeelingReplyId);
+    long likeCount = repository.countByPersonalFeelingReplyId(personalFeelingReplyId);
     return repository
         .findByPersonalFeelingReplyIdAndUserId(personalFeelingReplyId, userId)
         .map(replyLike -> toSnapshot(replyLike, likeCount));
+  }
+
+  @Override
+  public Optional<PersonalArtworkFeelingReplyLikeSnapshot> deleteAndGetSnapshot(
+      Long personalFeelingReplyId, Long userId) {
+    int deleted =
+        repository.deleteByPersonalFeelingReplyIdAndUserId(personalFeelingReplyId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = repository.countByPersonalFeelingReplyId(personalFeelingReplyId);
+    return Optional.of(
+        new PersonalArtworkFeelingReplyLikeSnapshot(
+            personalFeelingReplyId, false, likeCount, null, null));
   }
 
   @Override
@@ -45,10 +58,6 @@ public class JpaPersonalArtworkFeelingReplyLikeRepositoryAdapter
   private PersonalArtworkFeelingReplyLikeSnapshot toSnapshot(
       PersonalArtworkFeelingReplyLike replyLike, long likeCount) {
     return new PersonalArtworkFeelingReplyLikeSnapshot(
-        replyLike.getPersonalFeelingReplyId(),
-        !replyLike.isDeleted(),
-        likeCount,
-        replyLike.getCreatedAt(),
-        replyLike.getDeletedAt());
+        replyLike.getPersonalFeelingReplyId(), true, likeCount, replyLike.getCreatedAt(), null);
   }
 }

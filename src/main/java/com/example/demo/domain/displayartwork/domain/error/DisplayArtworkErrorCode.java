@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 public enum DisplayArtworkErrorCode implements BaseErrorCode {
   DISPLAY_ARTWORK_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_ARTWORK_NOT_FOUND", "전시 출품작을 찾을 수 없습니다."),
+  DISPLAY_ARTWORK_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_ARTWORK_LIKE_NOT_FOUND", "전시 출품작 좋아요를 찾을 수 없습니다."),
   AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED(
       HttpStatus.BAD_REQUEST,
       "AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED",

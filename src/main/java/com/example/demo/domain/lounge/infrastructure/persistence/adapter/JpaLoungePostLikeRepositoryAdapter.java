@@ -24,8 +24,8 @@ public class JpaLoungePostLikeRepositoryAdapter implements LoungePostLikeReposit
   }
 
   @Override
-  public void deleteByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
-    jpaRepository.deleteByLoungePostIdAndUserId(loungePostId, userId.value());
+  public int deleteByLoungePostIdAndUserId(Long loungePostId, UserId userId) {
+    return jpaRepository.deleteByLoungePostIdAndUserId(loungePostId, userId.value());
   }
 
   @Override

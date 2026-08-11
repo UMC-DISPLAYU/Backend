@@ -155,7 +155,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   @Override
   @PostMapping("/{feelingId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 감상평 좋아요 등록 및 취소
+  // 감상평 좋아요 등록
   public ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
@@ -164,7 +164,25 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
     ArtworkFeelingLikeCommand command =
         new ArtworkFeelingLikeCommand(artworkId, feelingId, requireUserId(user));
 
-    ArtworkFeelingLikeResult result = artworkFeelingLikeService.artworkFeelingLike(command);
+    ArtworkFeelingLikeResult result = artworkFeelingLikeService.likeFeeling(command);
+
+    ArtworkFeelingLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @DeleteMapping("/{feelingId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 감상평 좋아요 취소
+  public ApiResponseBody<ArtworkFeelingLikeResponse> cancelFeelingLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingLikeCommand command =
+        new ArtworkFeelingLikeCommand(artworkId, feelingId, requireUserId(user));
+
+    ArtworkFeelingLikeResult result = artworkFeelingLikeService.cancelFeelingLike(command);
 
     ArtworkFeelingLikeResponse response = mapper.toResponse(result);
 
@@ -174,7 +192,7 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
   @Override
   @PostMapping("/{feelingId}/reply/{feelingReplyId}/like")
   @SecurityRequirement(name = "Authorization")
-  // 감상평 답변 좋아요 등록 및 취소
+  // 감상평 답변 좋아요 등록
   public ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @PathVariable Long artworkId,
       @PathVariable Long feelingId,
@@ -185,7 +203,27 @@ public class ArtworkFeelingController implements ArtworkFeelingApiDocs {
         new ArtworkFeelingReplyLikeCommand(
             artworkId, feelingId, feelingReplyId, requireUserId(user));
 
-    ArtworkFeelingReplyLikeResult result = artworkFeelingReplyLikeService.toggleReplyLike(command);
+    ArtworkFeelingReplyLikeResult result = artworkFeelingReplyLikeService.likeReply(command);
+
+    ArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
+
+    return ApiResponseBody.success(response, httpServletRequest);
+  }
+
+  @DeleteMapping("/{feelingId}/reply/{feelingReplyId}/like")
+  @SecurityRequirement(name = "Authorization")
+  // 감상평 답변 좋아요 취소
+  public ApiResponseBody<ArtworkFeelingReplyLikeResponse> cancelFeelingReplyLike(
+      @PathVariable Long artworkId,
+      @PathVariable Long feelingId,
+      @PathVariable Long feelingReplyId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpServletRequest) {
+    ArtworkFeelingReplyLikeCommand command =
+        new ArtworkFeelingReplyLikeCommand(
+            artworkId, feelingId, feelingReplyId, requireUserId(user));
+
+    ArtworkFeelingReplyLikeResult result = artworkFeelingReplyLikeService.cancelReplyLike(command);
 
     ArtworkFeelingReplyLikeResponse response = mapper.toResponse(result);
 

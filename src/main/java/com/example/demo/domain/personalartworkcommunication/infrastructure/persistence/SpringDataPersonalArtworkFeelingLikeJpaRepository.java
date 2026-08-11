@@ -31,23 +31,32 @@ public interface SpringDataPersonalArtworkFeelingLikeJpaRepository
             (createdAt, updatedAt, deletedAt, personalFeelingId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :personalFeelingId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            personalFeelingLikeId = personalFeelingLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("personalFeelingId") Long personalFeelingId, @Param("userId") Long userId);
+  void insertIfAbsent(
+      @Param("personalFeelingId") Long personalFeelingId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM PersonalArtworkFeelingLike feelingLike
+      WHERE feelingLike.personalFeelingId = :personalFeelingId
+        AND feelingLike.userId = :userId
+      """)
+  int deleteByPersonalFeelingIdAndUserId(
+      @Param("personalFeelingId") Long personalFeelingId, @Param("userId") Long userId);
 
   Optional<PersonalArtworkFeelingLike> findByPersonalFeelingIdAndUserId(
       Long personalFeelingId, Long userId);
 
-  long countByPersonalFeelingIdAndDeletedAtIsNull(Long personalFeelingId);
+  long countByPersonalFeelingId(Long personalFeelingId);
 
   @Query(
       """
       SELECT feelingLike.personalFeelingId, COUNT(feelingLike)
       FROM PersonalArtworkFeelingLike feelingLike
       WHERE feelingLike.personalFeelingId IN :personalFeelingIds
-        AND feelingLike.deletedAt IS NULL
       GROUP BY feelingLike.personalFeelingId
       """)
   List<Object[]> countByPersonalFeelingIds(
@@ -59,7 +68,6 @@ public interface SpringDataPersonalArtworkFeelingLikeJpaRepository
       FROM PersonalArtworkFeelingLike feelingLike
       WHERE feelingLike.personalFeelingId IN :personalFeelingIds
         AND feelingLike.userId = :userId
-        AND feelingLike.deletedAt IS NULL
       """)
   List<Long> findLikedPersonalFeelingIds(
       @Param("personalFeelingIds") List<Long> personalFeelingIds, @Param("userId") Long userId);

@@ -44,6 +44,6 @@ public class UpdateDisplayReservationService {
     display.changeOpenPolicy(command.artworkContentOpen(), command.exhibitionContentOpen());
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()));
   }
 }

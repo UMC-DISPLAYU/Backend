@@ -93,12 +93,11 @@ public class DisplayArtworkQueryService {
             .map(creator -> new QaHandlerResult(creator.getUserId(), creator.getCreatorName()))
             .toList();
 
-    long likeCount =
-        displayArtworkLikeRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId);
+    long likeCount = displayArtworkLikeRepository.countByDisplayArtworkId(displayArtworkId);
     // 비회원 조회를 허용하므로 requesterUserId가 없으면 사용자별 상태는 모두 false로 둔다.
     boolean isLiked =
         requesterUserId != null
-            && displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
+            && displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserId(
                 displayArtworkId, requesterUserId);
     boolean isArchived =
         requesterUserId != null

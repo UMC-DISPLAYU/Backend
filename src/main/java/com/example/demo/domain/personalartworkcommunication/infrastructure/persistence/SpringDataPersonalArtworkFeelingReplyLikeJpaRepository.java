@@ -19,24 +19,32 @@ public interface SpringDataPersonalArtworkFeelingReplyLikeJpaRepository
             (createdAt, updatedAt, deletedAt, personalFeelingReplyId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :personalFeelingReplyId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            personalFeelingReplyLikeId = personalFeelingReplyLikeId
           """,
       nativeQuery = true)
-  void toggle(
+  void insertIfAbsent(
+      @Param("personalFeelingReplyId") Long personalFeelingReplyId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM PersonalArtworkFeelingReplyLike replyLike
+      WHERE replyLike.personalFeelingReplyId = :personalFeelingReplyId
+        AND replyLike.userId = :userId
+      """)
+  int deleteByPersonalFeelingReplyIdAndUserId(
       @Param("personalFeelingReplyId") Long personalFeelingReplyId, @Param("userId") Long userId);
 
   Optional<PersonalArtworkFeelingReplyLike> findByPersonalFeelingReplyIdAndUserId(
       Long personalFeelingReplyId, Long userId);
 
-  long countByPersonalFeelingReplyIdAndDeletedAtIsNull(Long personalFeelingReplyId);
+  long countByPersonalFeelingReplyId(Long personalFeelingReplyId);
 
   @Query(
       """
       SELECT replyLike.personalFeelingReplyId, COUNT(replyLike)
       FROM PersonalArtworkFeelingReplyLike replyLike
       WHERE replyLike.personalFeelingReplyId IN :personalFeelingReplyIds
-        AND replyLike.deletedAt IS NULL
       GROUP BY replyLike.personalFeelingReplyId
       """)
   List<Object[]> countByPersonalFeelingReplyIds(
@@ -48,7 +56,6 @@ public interface SpringDataPersonalArtworkFeelingReplyLikeJpaRepository
       FROM PersonalArtworkFeelingReplyLike replyLike
       WHERE replyLike.personalFeelingReplyId IN :personalFeelingReplyIds
         AND replyLike.userId = :userId
-        AND replyLike.deletedAt IS NULL
       """)
   List<Long> findLikedPersonalFeelingReplyIds(
       @Param("personalFeelingReplyIds") List<Long> personalFeelingReplyIds,

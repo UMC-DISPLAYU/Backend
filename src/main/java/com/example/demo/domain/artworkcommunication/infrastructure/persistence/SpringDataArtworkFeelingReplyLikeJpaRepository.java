@@ -19,22 +19,30 @@ public interface SpringDataArtworkFeelingReplyLikeJpaRepository
             (createdAt, updatedAt, deletedAt, feelingReplyId, userId)
           VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, :feelingReplyId, :userId)
           ON DUPLICATE KEY UPDATE
-            updatedAt = CURRENT_TIMESTAMP,
-            deletedAt = IF(deletedAt IS NULL, CURRENT_TIMESTAMP, NULL)
+            feelingReplyLikeId = feelingReplyLikeId
           """,
       nativeQuery = true)
-  void toggle(@Param("feelingReplyId") Long feelingReplyId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("feelingReplyId") Long feelingReplyId, @Param("userId") Long userId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      DELETE FROM ArtworkFeelingReplyLike replyLike
+      WHERE replyLike.feelingReplyId = :feelingReplyId
+        AND replyLike.userId = :userId
+      """)
+  int deleteByFeelingReplyIdAndUserId(
+      @Param("feelingReplyId") Long feelingReplyId, @Param("userId") Long userId);
 
   Optional<ArtworkFeelingReplyLike> findByFeelingReplyIdAndUserId(Long feelingReplyId, Long userId);
 
-  long countByFeelingReplyIdAndDeletedAtIsNull(Long feelingReplyId);
+  long countByFeelingReplyId(Long feelingReplyId);
 
   @Query(
       """
       SELECT replyLike.feelingReplyId, COUNT(replyLike)
       FROM ArtworkFeelingReplyLike replyLike
       WHERE replyLike.feelingReplyId IN :feelingReplyIds
-        AND replyLike.deletedAt IS NULL
       GROUP BY replyLike.feelingReplyId
       """)
   List<Object[]> countByFeelingReplyIds(@Param("feelingReplyIds") List<Long> feelingReplyIds);
@@ -45,7 +53,6 @@ public interface SpringDataArtworkFeelingReplyLikeJpaRepository
       FROM ArtworkFeelingReplyLike replyLike
       WHERE replyLike.feelingReplyId IN :feelingReplyIds
         AND replyLike.userId = :userId
-        AND replyLike.deletedAt IS NULL
       """)
   List<Long> findLikedFeelingReplyIds(
       @Param("feelingReplyIds") List<Long> feelingReplyIds, @Param("userId") Long userId);

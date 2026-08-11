@@ -257,10 +257,10 @@ public interface DisplayReviewApiDocs {
       @Valid CreateDisplayReviewReplyRequest request,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 좋아요", description = "전시 후기 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "전시 후기 좋아요 등록", description = "전시 후기 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "전시 후기 좋아요 토글 성공",
+      description = "전시 후기 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -368,10 +368,10 @@ public interface DisplayReviewApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "전시 후기 답글 좋아요", description = "전시 후기 답글 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "전시 후기 답글 좋아요 등록", description = "전시 후기 답글 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "전시 후기 답글 좋아요 토글 성공",
+      description = "전시 후기 답글 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",

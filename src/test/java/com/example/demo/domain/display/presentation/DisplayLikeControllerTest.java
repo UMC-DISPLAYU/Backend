@@ -1,8 +1,8 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,7 +65,7 @@ class DisplayLikeControllerTest {
   }
 
   @Test
-  void likeDisplayReturnsConflictWhenAlreadyLiked() throws Exception {
+  void likeDisplayIsIdempotentWhenAlreadyLiked() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     mockMvc
         .perform(
@@ -81,13 +81,14 @@ class DisplayLikeControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("DUPLICATE_RESOURCE"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.likeCount").value(1));
   }
 
   @Test
-  void cancelLikeDisplaySoftDeletesLikeAndReturnsLikeCount() throws Exception {
+  void cancelLikeDisplayHardDeletesLikeAndReturnsLikeCount() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     mockMvc
         .perform(
@@ -99,7 +100,7 @@ class DisplayLikeControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
@@ -110,13 +111,11 @@ class DisplayLikeControllerTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/like"));
 
     assertThat(displayLikeJpaRepository.findByDisplayIdAndUserIdValue(display.getId(), 1L))
-        .get()
-        .extracting("deletedAt")
-        .isNotNull();
+        .isEmpty();
   }
 
   @Test
-  void cancelLikeDisplayIsIdempotentWhenAlreadyCanceled() throws Exception {
+  void cancelLikeDisplayReturnsNotFoundWhenAlreadyCanceled() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
     mockMvc
         .perform(
@@ -127,7 +126,7 @@ class DisplayLikeControllerTest {
         .andExpect(status().isOk());
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
@@ -135,12 +134,12 @@ class DisplayLikeControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.likeCount").value(0));
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_LIKE_NOT_FOUND"));
   }
 
   @Test
@@ -149,13 +148,13 @@ class DisplayLikeControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_LIKE_NOT_FOUND"));
   }
 
   @Test
@@ -178,7 +177,7 @@ class DisplayLikeControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))
         .andExpect(status().isUnauthorized())
@@ -234,7 +233,7 @@ class DisplayLikeControllerTest {
         .andExpect(status().isOk());
     mockMvc
         .perform(
-            patch("/api/v1/display/like")
+            delete("/api/v1/display/like")
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody(display.getId())))

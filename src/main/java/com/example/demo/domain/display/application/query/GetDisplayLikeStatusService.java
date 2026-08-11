@@ -28,10 +28,7 @@ public class GetDisplayLikeStatusService {
         .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
 
     boolean isLiked =
-        displayLikeRepository
-            .findByDisplayIdAndUserId(displayId, new UserId(userId))
-            .filter(displayLike -> displayLike.isActive())
-            .isPresent();
+        displayLikeRepository.findByDisplayIdAndUserId(displayId, new UserId(userId)).isPresent();
     return new DisplayLikeStatusResult(isLiked);
   }
 }
