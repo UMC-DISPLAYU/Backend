@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 public enum PersonalArtworkErrorCode implements BaseErrorCode {
   PERSONAL_ARTWORK_NOT_FOUND(
       HttpStatus.NOT_FOUND, "PERSONAL_ARTWORK_NOT_FOUND", "개인 작품을 찾을 수 없습니다."),
+  PERSONAL_ARTWORK_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "PERSONAL_ARTWORK_LIKE_NOT_FOUND", "개인 작품 좋아요를 찾을 수 없습니다."),
   AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED(
       HttpStatus.BAD_REQUEST,
       "AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED",
