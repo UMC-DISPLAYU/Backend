@@ -284,6 +284,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeCommentCursorResponse> getComments(
       @PathVariable Long loungePostId,
       @Parameter(description = "마지막으로 조회한 댓글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
@@ -343,6 +344,7 @@ public interface LoungeCommentControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungeReplyCursorResponse> getReplies(
       @PathVariable Long parentCommentId,
       @Parameter(description = "마지막으로 조회한 답글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)

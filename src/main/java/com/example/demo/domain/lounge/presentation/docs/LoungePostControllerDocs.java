@@ -351,6 +351,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostCursorResponse> getPosts(
       @Parameter(description = "라운지 게시글 카테고리. 없으면 요청자가 접근 가능한 카테고리 전체 조회")
           @RequestParam(required = false)
@@ -409,6 +410,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostDetailResponse> getPostDetail(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
