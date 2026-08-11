@@ -32,14 +32,8 @@ public enum PersonalArtworkCommunicationErrorCode implements BaseErrorCode {
       "개인 작품 감상평 답변 좋아요를 찾을 수 없습니다."),
   PERSONAL_QUESTION_NOT_FOUND(
       HttpStatus.NOT_FOUND, "PERSONAL_QUESTION_NOT_FOUND", "개인 작품 질문을 찾을 수 없습니다."),
-  PERSONAL_QUESTION_LIKE_NOT_FOUND(
-      HttpStatus.NOT_FOUND, "PERSONAL_QUESTION_LIKE_NOT_FOUND", "개인 작품 질문 좋아요를 찾을 수 없습니다."),
   PERSONAL_QUESTION_REPLY_NOT_FOUND(
       HttpStatus.NOT_FOUND, "PERSONAL_QUESTION_REPLY_NOT_FOUND", "개인 작품 질문 답변을 찾을 수 없습니다."),
-  PERSONAL_QUESTION_REPLY_LIKE_NOT_FOUND(
-      HttpStatus.NOT_FOUND,
-      "PERSONAL_QUESTION_REPLY_LIKE_NOT_FOUND",
-      "개인 작품 질문 답변 좋아요를 찾을 수 없습니다."),
   PERSONAL_QUESTION_ALREADY_ANSWERED(
       HttpStatus.BAD_REQUEST, "PERSONAL_QUESTION_ALREADY_ANSWERED", "이미 답변 완료된 질문입니다."),
   PERSONAL_QUESTION_REPLY_FORBIDDEN(
