@@ -23,7 +23,7 @@ class SecurityConfigTest {
   @Autowired private MockMvc mockMvc;
 
   @Test
-  void rejectsAccessTokenRefreshWithoutAuthentication() throws Exception {
+  void rejectsAccessTokenRefreshWithoutRefreshTokenCookie() throws Exception {
     mockMvc.perform(post("/api/v1/auth/refresh")).andExpect(status().isUnauthorized());
   }
 

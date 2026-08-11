@@ -49,7 +49,7 @@ class AuthControllerTest {
 
   AuthControllerTest() {
     JwtProperties jwtProperties = new JwtProperties();
-    jwtProperties.setRefreshExpiration(1209600000);
+    jwtProperties.setRefreshExpiration(7200000);
     jwtProperties.setSignupExpiration(600000);
     refreshTokenCookieManager = new RefreshTokenCookieManager(jwtProperties, false);
     signupTokenCookieManager = new SignupTokenCookieManager(jwtProperties, false);

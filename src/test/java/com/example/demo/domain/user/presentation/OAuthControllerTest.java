@@ -41,7 +41,7 @@ class OAuthControllerTest {
 
   private MockMvc createMockMvc(boolean cookieSecure) {
     JwtProperties jwtProperties = new JwtProperties();
-    jwtProperties.setRefreshExpiration(1209600000);
+    jwtProperties.setRefreshExpiration(7200000);
     jwtProperties.setSignupExpiration(600000);
     RefreshTokenCookieManager refreshTokenCookieManager =
         new RefreshTokenCookieManager(jwtProperties, cookieSecure);
