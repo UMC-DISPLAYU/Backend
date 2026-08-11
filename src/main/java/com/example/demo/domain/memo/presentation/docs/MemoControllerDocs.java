@@ -63,6 +63,38 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/12/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "저장된 전시를 찾을 수 없습니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ARCHIVE_DISPLAY_NOT_FOUND", "message": "저장된 전시를 찾을 수 없습니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/12/memo" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "메모 저장 중 충돌이 발생했습니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "MEMO_CONCURRENT_WRITE_CONFLICT", "message": "메모 저장 중 충돌이 발생했습니다. 다시 시도해주세요.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/12/memo" }
+                          }
+                          """)))
   ApiResponseBody<MemoResponse> upsertExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
       @Valid @RequestBody MemoRequest request,
@@ -103,6 +135,34 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/1/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      content =
+          @Content(
+              examples = {
+                @ExampleObject(
+                    name = "저장된 전시 없음",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": { "code": "ARCHIVE_DISPLAY_NOT_FOUND", "message": "저장된 전시를 찾을 수 없습니다.", "details": null },
+                          "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/1/memo" }
+                        }
+                        """),
+                @ExampleObject(
+                    name = "작성된 메모 없음",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": { "code": "MEMO_NOT_FOUND", "message": "작성된 메모를 찾을 수 없습니다.", "details": null },
+                          "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/exhibitions/1/memo" }
+                        }
+                        """)
+              }))
   ApiResponseBody<Void> deleteExhibitionMemo(
       @Parameter(description = "저장된 전시(ArchiveDisplay) ID", example = "1") @PathVariable @Positive Long archiveDisplayId,
       AuthUser user,
@@ -150,6 +210,38 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/7/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "저장된 작품을 찾을 수 없습니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ARCHIVE_WORK_NOT_FOUND", "message": "저장된 작품을 찾을 수 없습니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/7/memo" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "메모 저장 중 충돌이 발생했습니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "MEMO_CONCURRENT_WRITE_CONFLICT", "message": "메모 저장 중 충돌이 발생했습니다. 다시 시도해주세요.", "details": null },
+                            "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/7/memo" }
+                          }
+                          """)))
   ApiResponseBody<MemoResponse> upsertArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
       @Valid @RequestBody MemoRequest request,
@@ -190,6 +282,34 @@ public interface MemoControllerDocs {
                             "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/1/memo" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      content =
+          @Content(
+              examples = {
+                @ExampleObject(
+                    name = "저장된 작품 없음",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": { "code": "ARCHIVE_WORK_NOT_FOUND", "message": "저장된 작품을 찾을 수 없습니다.", "details": null },
+                          "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/1/memo" }
+                        }
+                        """),
+                @ExampleObject(
+                    name = "작성된 메모 없음",
+                    value =
+                        """
+                        {
+                          "resultType": "FAIL",
+                          "success": null,
+                          "error": { "code": "MEMO_NOT_FOUND", "message": "작성된 메모를 찾을 수 없습니다.", "details": null },
+                          "meta": { "timestamp": "2026-07-16T10:00:00", "path": "/api/v1/archives/artworks/1/memo" }
+                        }
+                        """)
+              }))
   ApiResponseBody<Void> deleteArtworkMemo(
       @Parameter(description = "저장된 작품(ArchiveWork) ID", example = "1") @PathVariable @Positive Long archiveWorkId,
       AuthUser user,
