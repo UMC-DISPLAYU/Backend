@@ -14,6 +14,7 @@ public record DisplayArtworkDetailResponse(
     List<ImageResponse> images,
     String artistName,
     Long artistUserId,
+    List<CoAuthorResponse> coAuthors,
     List<QaHandlerResponse> qaHandlers,
     ExhibitionInfoResponse exhibitionInfo,
     long likeCount,
@@ -21,6 +22,9 @@ public record DisplayArtworkDetailResponse(
     boolean isArchived) {
 
   public record QaHandlerResponse(Long userId, String name) {}
+
+  /** 계정 없이 이름만 입력한 공동 작업자는 userId가 null이다. 프로필 이동 가능 여부 판단에 사용한다. */
+  public record CoAuthorResponse(Long userId, String name) {}
 
   public record ImageResponse(
       Long imageId,

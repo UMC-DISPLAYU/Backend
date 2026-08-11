@@ -10,6 +10,7 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepository;
+import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
 import com.example.demo.global.error.BusinessException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,8 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthorSetupService {
 
+  // 작품 조회
   private final DisplayArtworkRepository displayArtworkRepository;
+  // Creator 행 저장/삭제
   private final CreatorRepository creatorRepository;
+  // userId → 닉네임 조회 (Creator 이름 채울 때 씀)
   private final UserNicknameRepository userNicknameRepository;
   private final DisplayArtworkPermissionChecker permissionChecker;
 
@@ -111,7 +115,7 @@ public class AuthorSetupService {
             null,
             command.artistName(),
             qaHandlerUserIds.contains(artistUserId),
-            true,
+            CreatorRole.LEAD_ARTIST,
             artistUserId,
             command.artworkId()));
     for (Long coAuthorUserId : coAuthorUserIds) {
@@ -120,15 +124,17 @@ public class AuthorSetupService {
               null,
               coAuthorNames.get(coAuthorUserId),
               qaHandlerUserIds.contains(coAuthorUserId),
-              false,
+              CreatorRole.CO_AUTHOR,
               coAuthorUserId,
               command.artworkId()));
     }
     for (String rawName : command.coAuthorRawNames()) {
-      creators.add(new Creator(null, rawName, false, false, null, command.artworkId()));
+      creators.add(
+          new Creator(null, rawName, false, CreatorRole.CO_AUTHOR, null, command.artworkId()));
     }
     // Q&A 답변 권한과 답변자 표기는 모두 Creator를 근거로 하므로, 작가가 아닌 전시 대표자를
     // 담당자로 지정한 경우에도 Creator를 남겨야 실제로 답변할 수 있다.
+    // 다만 이 사람은 작품의 작가가 아니므로 QA_ONLY로 표시해 작가 목록 조회에서 제외한다.
     for (Long qaHandlerUserId : qaHandlerUserIds) {
       if (!artistUserIds.contains(qaHandlerUserId)) {
         creators.add(
@@ -136,7 +142,7 @@ public class AuthorSetupService {
                 null,
                 resolveDisplayLeaderName(display, qaHandlerUserId),
                 true,
-                false,
+                CreatorRole.QA_ONLY,
                 qaHandlerUserId,
                 command.artworkId()));
       }
