@@ -1,6 +1,7 @@
 package com.example.demo.domain.artist.application.service;
 
 import com.example.demo.domain.artist.application.command.CreateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.entity.AreaOfActivity;
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
@@ -28,6 +29,7 @@ public class CreateArtistProfileService {
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
   private final ArtistProfileMapper artistProfileMapper;
+  private final ArtistPermissionChecker permissionChecker;
 
   @Transactional
   public ArtistProfile execute(Long userId, CreateArtistProfileCommand command) {
@@ -36,7 +38,7 @@ public class CreateArtistProfileService {
             .findById(userId)
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    validateVerifiedUser(user);
+    permissionChecker.requireProfileCreationEligible(user);
     validateActivityFields(command.getActivityCategories());
 
     if (artistProfileRepository.findByUser(user).isPresent()) {
@@ -68,16 +70,6 @@ public class CreateArtistProfileService {
                 areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
 
     return artistProfile;
-  }
-
-  private void validateVerifiedUser(User user) {
-    if (!user.isVerified()
-        || user.getSchoolEmail() == null
-        || user.getSchoolEmail().isBlank()
-        || user.getUnivName() == null
-        || user.getUnivName().isBlank()) {
-      throw new ArtistException(ArtistErrorCode.ARTIST_PROFILE_REQUIRES_VERIFIED_USER);
-    }
   }
 
   private void validateActivityFields(List<ActivityCategory> activityCategories) {

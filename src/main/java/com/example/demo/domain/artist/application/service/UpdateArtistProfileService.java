@@ -3,6 +3,7 @@ package com.example.demo.domain.artist.application.service;
 import static com.example.demo.global.util.StringNormalizer.normalize;
 
 import com.example.demo.domain.artist.application.command.UpdateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.entity.AreaOfActivity;
@@ -34,6 +35,7 @@ public class UpdateArtistProfileService {
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
   private final SchoolEmailValidator schoolEmailValidator;
+  private final ArtistPermissionChecker permissionChecker;
 
   @Transactional
   public UpdateArtistProfileResult execute(UpdateArtistProfileCommand command) {
@@ -42,9 +44,7 @@ public class UpdateArtistProfileService {
             .findById(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    if (!user.isVerified()) {
-      throw new UserException(UserErrorCode.ARTIST_VERIFICATION_REQUIRED);
-    }
+    permissionChecker.requireVerified(user);
 
     ArtistProfile profile =
         artistProfileRepository
