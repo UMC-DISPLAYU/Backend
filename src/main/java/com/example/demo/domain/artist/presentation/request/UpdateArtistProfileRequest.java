@@ -3,7 +3,6 @@ package com.example.demo.domain.artist.presentation.request;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.artist.domain.vo.ArtistName;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -14,7 +13,7 @@ public record UpdateArtistProfileRequest(
     @Schema(example = "https://cdn.example.com/images/user/profile.jpg")
         @Size(max = 2048) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String profileImageUrl,
     @Schema(description = "한글, 영문, 숫자만 사용한 2~15자 작가명", example = "maya")
-        @NotBlank @Pattern(regexp = ArtistName.PATTERN_VALUE, message = ArtistName.INVALID_MESSAGE) String artistName,
+        @NotNull(message = ArtistName.INVALID_MESSAGE) @Pattern(regexp = ArtistName.PATTERN_VALUE, message = ArtistName.INVALID_MESSAGE) String artistName,
     @Schema(example = "시각과 공간의 관계를 탐구하는 작가입니다.") @Size(max = 100) String introduction,
     @Schema(example = "[\"DESIGN\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
     @Schema(example = "https://portfolio.maya.com")
