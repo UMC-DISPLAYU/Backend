@@ -1,6 +1,6 @@
 package com.example.demo.domain.lounge.application.command;
 
-import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
+import com.example.demo.domain.lounge.application.permission.LoungePermissionChecker;
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
@@ -11,7 +11,6 @@ import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +21,17 @@ public class LoungeCommentCommandService {
   private final LoungePostRepository loungePostRepository;
   private final LoungeCommentRepository loungeCommentRepository;
   private final LoungeCommentLikeRepository loungeCommentLikeRepository;
-  private final LoungeAccessPolicy loungeAccessPolicy;
+  private final LoungePermissionChecker permissionChecker;
 
   public LoungeCommentCommandService(
       LoungePostRepository loungePostRepository,
       LoungeCommentRepository loungeCommentRepository,
       LoungeCommentLikeRepository loungeCommentLikeRepository,
-      LoungeAccessPolicy loungeAccessPolicy) {
+      LoungePermissionChecker permissionChecker) {
     this.loungePostRepository = loungePostRepository;
     this.loungeCommentRepository = loungeCommentRepository;
     this.loungeCommentLikeRepository = loungeCommentLikeRepository;
-    this.loungeAccessPolicy = loungeAccessPolicy;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional
@@ -40,7 +39,7 @@ public class LoungeCommentCommandService {
       Long loungePostId, Long authorUserId, LoungeCommentContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
     LoungePost loungePost = getActivePost(loungePostId);
-    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), authorUserId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), authorUserId);
 
     LoungeComment comment =
         LoungeComment.createComment(
@@ -56,7 +55,7 @@ public class LoungeCommentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
     LoungeComment parentComment = getComment(parentCommentId);
     LoungePost loungePost = getActivePost(parentComment.getLoungePostId());
-    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), authorUserId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), authorUserId);
 
     if (!parentComment.isRootComment()) {
       throw new BusinessException(LoungeErrorCode.INVALID_REPLY_TARGET);
@@ -78,7 +77,7 @@ public class LoungeCommentCommandService {
   public void deleteComment(Long loungeCommentId, Long requesterUserId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
     getActivePost(comment.getLoungePostId());
-    validateAuthor(comment, new UserId(requesterUserId));
+    permissionChecker.requireCommentWriter(comment, requesterUserId);
 
     comment.delete();
   }
@@ -87,7 +86,7 @@ public class LoungeCommentCommandService {
   public LoungeCommentLikeResult likeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
     LoungePost loungePost = getActivePost(comment.getLoungePostId());
-    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.saveIfAbsent(comment.getId(), likeUserId);
@@ -100,7 +99,7 @@ public class LoungeCommentCommandService {
   public LoungeCommentLikeResult cancelLikeComment(Long loungeCommentId, Long userId) {
     LoungeComment comment = getActiveComment(loungeCommentId);
     LoungePost loungePost = getActivePost(comment.getLoungePostId());
-    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), userId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
@@ -135,11 +134,5 @@ public class LoungeCommentCommandService {
                 (comment.isActive() && !comment.isDeleted())
                     || (comment.getStatus() == LoungeCommentStatus.DELETED && comment.isDeleted()))
         .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_NOT_FOUND));
-  }
-
-  private void validateAuthor(LoungeComment comment, UserId requesterUserId) {
-    if (!comment.getAuthorUserId().equals(requesterUserId)) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
   }
 }

@@ -1,5 +1,7 @@
-package com.example.demo.domain.lounge.application;
+package com.example.demo.domain.lounge.application.permission;
 
+import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
+import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
 import com.example.demo.domain.user.domain.aggregate.User;
@@ -11,15 +13,15 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LoungeAccessPolicy {
+public class LoungePermissionChecker {
 
   private final UserRepository userRepository;
 
-  public LoungeAccessPolicy(UserRepository userRepository) {
+  public LoungePermissionChecker(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
-  public void validateCategoryAccess(LoungePostCategory category, Long userId) {
+  public void requireCategoryAccess(LoungePostCategory category, Long userId) {
     if (!category.requiresArtistVerification()) {
       return;
     }
@@ -28,6 +30,18 @@ public class LoungeAccessPolicy {
     }
     if (!isVerifiedArtist(userId)) {
       throw new BusinessException(LoungeErrorCode.LOUNGE_ARTIST_VERIFICATION_REQUIRED);
+    }
+  }
+
+  public void requirePostWriter(LoungePost loungePost, Long userId) {
+    if (!loungePost.isAuthoredBy(userId)) {
+      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
+    }
+  }
+
+  public void requireCommentWriter(LoungeComment comment, Long userId) {
+    if (!comment.getAuthorUserId().value().equals(userId)) {
+      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
     }
   }
 

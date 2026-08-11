@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
+import com.example.demo.domain.lounge.application.permission.LoungePermissionChecker;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
 import com.example.demo.domain.lounge.domain.repository.LoungePostLikeRepository;
@@ -28,10 +28,10 @@ class LoungePostCommandServiceTest {
   private final LoungePostLikeRepository postLikeRepository = mock(LoungePostLikeRepository.class);
   private final LoungePostScrapRepository postScrapRepository =
       mock(LoungePostScrapRepository.class);
-  private final LoungeAccessPolicy loungeAccessPolicy = mock(LoungeAccessPolicy.class);
+  private final LoungePermissionChecker permissionChecker = mock(LoungePermissionChecker.class);
   private final LoungePostCommandService service =
       new LoungePostCommandService(
-          postRepository, postLikeRepository, postScrapRepository, loungeAccessPolicy);
+          postRepository, postLikeRepository, postScrapRepository, permissionChecker);
 
   @Test
   void updatePostUsesOptimisticLockAndSavesChanges() {
