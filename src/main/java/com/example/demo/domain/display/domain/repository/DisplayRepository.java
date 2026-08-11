@@ -16,6 +16,10 @@ public interface DisplayRepository {
 
   List<Display> findParticipatedDisplaysByUserId(Long userId);
 
+  List<Display> findPublishedCreatedDisplaysByUserId(Long userId);
+
+  List<Display> findPublishedParticipatedDisplaysByUserId(Long userId);
+
   List<Display> findAll();
 
   Display save(Display display);
