@@ -13,6 +13,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.C
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CREATE_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DELETE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DELETE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DELETE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DELETE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DELETE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_DISPLAY_ID_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.DETAIL_DISPLAY_ID_EXAMPLE;
@@ -41,14 +46,6 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_DESCRIPTION;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_DESCRIPTION;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_EXAMPLE;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_REQUEST_EXAMPLE_NAME;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_DESCRIPTION;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE_NAME;
-import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE;
@@ -130,6 +127,7 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
+import com.example.demo.domain.display.application.command.HideDisplayCommand;
 import com.example.demo.domain.display.application.command.HideDisplayService;
 import com.example.demo.domain.display.application.command.PublishDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayReservationService;
@@ -157,7 +155,6 @@ import com.example.demo.domain.display.presentation.request.DisplayLikeRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMapRequest;
 import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
-import com.example.demo.domain.display.presentation.request.HideDisplayRequest;
 import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
@@ -419,33 +416,36 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/status")
-  @Operation(summary = HIDE_SUMMARY, description = HIDE_DESCRIPTION)
+  @PatchMapping("/api/v1/display/{displayId}/draft")
+  @Operation(summary = DELETE_SUMMARY, description = DELETE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      description = HIDE_REQUEST_DESCRIPTION,
-      required = true,
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = HIDE_REQUEST_EXAMPLE_NAME, value = HIDE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
-      description = HIDE_SUCCESS_DESCRIPTION,
+      description = DELETE_SUCCESS_DESCRIPTION,
       content =
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(name = HIDE_SUCCESS_EXAMPLE_NAME, value = HIDE_SUCCESS_EXAMPLE)))
-  public ApiResponseBody<DisplayDetailResponse> hideDisplay(
-      @Valid @RequestBody HideDisplayRequest hideDisplayRequest,
+                  @ExampleObject(
+                      name = DELETE_SUCCESS_EXAMPLE_NAME,
+                      value = DELETE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> deleteDisplay(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
+    validateDisplayId(displayId);
     DisplayDetailResult result =
-        hideDisplayService.hideDisplay(hideDisplayRequest.toCommand(requireUserId(user)));
+        hideDisplayService.hideDisplay(new HideDisplayCommand(requireUserId(user), displayId));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  private void validateDisplayId(Long displayId) {
+    if (displayId == null || displayId <= 0) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
+    }
   }
 
   @PatchMapping("/api/v1/display/{displayId}/reservation")

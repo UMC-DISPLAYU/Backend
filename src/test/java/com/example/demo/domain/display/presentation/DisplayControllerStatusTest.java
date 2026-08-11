@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,15 +51,14 @@ class DisplayControllerStatusTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(display.getId())))
+            patch("/api/v1/display/{displayId}/draft", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.status").value("DRAFT"))
-        .andExpect(jsonPath("$.meta.path").value("/api/v1/display/status"));
+        .andExpect(
+            jsonPath("$.meta.path").value("/api/v1/display/%d/draft".formatted(display.getId())));
   }
 
   @Test
@@ -70,10 +68,8 @@ class DisplayControllerStatusTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(display.getId())))
+            patch("/api/v1/display/{displayId}/draft", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.status").value("DRAFT"));
@@ -87,10 +83,8 @@ class DisplayControllerStatusTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(display.getId())))
+            patch("/api/v1/display/{displayId}/draft", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
@@ -103,10 +97,7 @@ class DisplayControllerStatusTest {
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
-        .perform(
-            patch("/api/v1/display/status")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(display.getId())))
+        .perform(patch("/api/v1/display/{displayId}/draft", display.getId()))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -116,10 +107,8 @@ class DisplayControllerStatusTest {
   void hideDisplayReturnsNotFoundWhenDisplayDoesNotExist() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(999_999L)))
+            patch("/api/v1/display/{displayId}/draft", 999_999L)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
@@ -129,26 +118,20 @@ class DisplayControllerStatusTest {
   void hideDisplayReturnsBadRequestWhenDisplayIdIsInvalid() throws Exception {
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(-1L)))
+            patch("/api/v1/display/{displayId}/draft", -1L)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
   }
 
   @Test
-  void hideDisplayReturnsBadRequestWhenDisplayIdIsMissing() throws Exception {
+  void hideDisplayReturnsMethodNotAllowedWhenDisplayIdIsMissing() throws Exception {
     mockMvc
-        .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-        .andExpect(status().isBadRequest())
+        .perform(patch("/api/v1/display/draft").header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isMethodNotAllowed())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+        .andExpect(jsonPath("$.error.code").value("METHOD_NOT_ALLOWED"));
   }
 
   @Test
@@ -159,10 +142,8 @@ class DisplayControllerStatusTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/display/status")
-                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(hideRequest(display.getId())))
+            patch("/api/v1/display/{displayId}/draft", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk());
 
     mockMvc
@@ -173,15 +154,6 @@ class DisplayControllerStatusTest {
                 .param("size", "10"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.exhibitions", hasSize(0)));
-  }
-
-  private static String hideRequest(Long displayId) {
-    return """
-        {
-          "displayId": %d
-        }
-        """
-        .formatted(displayId);
   }
 
   private static Display displayWithTeamMembers() {
