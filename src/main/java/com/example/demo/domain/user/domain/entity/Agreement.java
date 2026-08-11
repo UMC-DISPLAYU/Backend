@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.domain.entity;
 
-import com.example.demo.domain.user.domain.enums.Type;
+import com.example.demo.domain.user.domain.type.Type;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDate;

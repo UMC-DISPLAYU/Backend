@@ -1,17 +1,17 @@
 package com.example.demo.domain.archive.infrastructure.persistence.adapter;
 
 import com.example.demo.domain.archive.domain.repository.ArchiveArtistProfileExistenceRepository;
-import com.example.demo.domain.archive.infrastructure.persistence.ArchiveArtistProfileExistenceJpaRepository;
+import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveArtistProfileExistenceJpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class ArchiveArtistProfileExistenceJpaAdapter
     implements ArchiveArtistProfileExistenceRepository {
 
-  private final ArchiveArtistProfileExistenceJpaRepository jpaRepository;
+  private final SpringDataArchiveArtistProfileExistenceJpaRepository jpaRepository;
 
   public ArchiveArtistProfileExistenceJpaAdapter(
-      ArchiveArtistProfileExistenceJpaRepository jpaRepository) {
+      SpringDataArchiveArtistProfileExistenceJpaRepository jpaRepository) {
     this.jpaRepository = jpaRepository;
   }
 

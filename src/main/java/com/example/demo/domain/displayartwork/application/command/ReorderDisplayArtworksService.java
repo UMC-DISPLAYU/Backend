@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.command;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
@@ -22,11 +23,15 @@ public class ReorderDisplayArtworksService {
 
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
+  private final DisplayArtworkPermissionChecker permissionChecker;
 
   public ReorderDisplayArtworksService(
-      DisplayRepository displayRepository, DisplayArtworkRepository displayArtworkRepository) {
+      DisplayRepository displayRepository,
+      DisplayArtworkRepository displayArtworkRepository,
+      DisplayArtworkPermissionChecker permissionChecker) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional
@@ -39,9 +44,7 @@ public class ReorderDisplayArtworksService {
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
-    if (!display.isOwner(requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
-    }
+    permissionChecker.requireArtworkOrderEditor(requesterUserId, display);
 
     List<DisplayArtwork> artworks =
         displayArtworkRepository.findAllByDisplayId(command.displayId());

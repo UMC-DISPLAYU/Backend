@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.demo.domain.user.application.query.AgreementQueryService;
 import com.example.demo.domain.user.application.result.AgreementResult;
-import com.example.demo.domain.user.domain.enums.Type;
+import com.example.demo.domain.user.domain.type.Type;
 import com.example.demo.domain.user.presentation.mapper.AgreementPresentationMapper;
 import java.time.LocalDate;
 import java.util.List;

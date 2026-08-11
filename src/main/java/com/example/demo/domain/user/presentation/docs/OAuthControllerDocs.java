@@ -96,7 +96,7 @@ public interface OAuthControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/auth/kakao/login-url" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/auth/kakao/login-url" }
       }
       """;
 
@@ -110,7 +110,7 @@ public interface OAuthControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/auth/google/login-url" }
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/auth/google/login-url" }
       }
       """;
 }

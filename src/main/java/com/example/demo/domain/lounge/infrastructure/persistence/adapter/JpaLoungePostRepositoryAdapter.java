@@ -24,6 +24,11 @@ public class JpaLoungePostRepositoryAdapter implements LoungePostRepository {
   }
 
   @Override
+  public Optional<LoungePost> findByIdWithOptimisticLock(Long loungePostId) {
+    return jpaRepository.findWithOptimisticLockById(loungePostId);
+  }
+
+  @Override
   public List<LoungePost> findActiveByCursor(
       List<LoungePostCategory> categories, Long cursorId, int limit) {
     return jpaRepository.findActiveByCategoriesAndCursor(
@@ -32,6 +37,6 @@ public class JpaLoungePostRepositoryAdapter implements LoungePostRepository {
 
   @Override
   public LoungePost save(LoungePost loungePost) {
-    return jpaRepository.save(loungePost);
+    return jpaRepository.saveAndFlush(loungePost);
   }
 }

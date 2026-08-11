@@ -1,8 +1,9 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.domain.enums.Provider;
-import com.example.demo.domain.user.exception.AuthErrorCode;
+import com.example.demo.domain.user.application.port.GoogleOAuthVerifierPort;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.oauth.dto.GoogleJwkKey;
 import com.example.demo.global.error.BusinessException;
 import com.nimbusds.jose.JWSVerifier;
@@ -23,13 +24,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GoogleOAuthVerifier {
+public class GoogleOAuthVerifier implements GoogleOAuthVerifierPort {
 
   @Value("${app.google.client.id}")
   private String googleClientId;
 
   private final GoogleJwkClient googleJwkClient;
 
+  @Override
   public SocialUserInfo verify(String idToken) {
 
     try {

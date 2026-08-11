@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayInvitationBaseUrlProvider;
 import com.example.demo.domain.display.application.port.DisplayInvitationTokenGenerator;
 import com.example.demo.domain.display.application.port.DisplayInvitationTokenHasher;
@@ -22,24 +23,27 @@ public class DisplayInvitationCommandService {
   private final DisplayInvitationTokenHasher tokenHasher;
   private final DisplayInvitationBaseUrlProvider baseUrlProvider;
   private final Clock clock;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
   public DisplayInvitationCommandService(
       DisplayRepository displayRepository,
       DisplayInvitationTokenGenerator tokenGenerator,
       DisplayInvitationTokenHasher tokenHasher,
       DisplayInvitationBaseUrlProvider baseUrlProvider,
-      Clock clock) {
+      Clock clock,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
     this.tokenGenerator = tokenGenerator;
     this.tokenHasher = tokenHasher;
     this.baseUrlProvider = baseUrlProvider;
     this.clock = clock;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
   public DisplayInvitationResult issueInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
-    validateRequester(display, requesterUserId);
+    displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
     String rawToken = tokenGenerator.generate();
     display.issueInvitationToken(tokenHasher.hash(rawToken));
     return new DisplayInvitationResult(display.getId(), invitationUrl(rawToken));
@@ -48,7 +52,7 @@ public class DisplayInvitationCommandService {
   @Transactional
   public DisplayInvitationDisableResult disableInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
-    validateRequester(display, requesterUserId);
+    displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
     display.disableInvitation(LocalDateTime.now(clock));
     return new DisplayInvitationDisableResult(display.getId(), display.getInvitationDisabledAt());
   }
@@ -57,12 +61,6 @@ public class DisplayInvitationCommandService {
     return displayRepository
         .findById(displayId)
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
-  }
-
-  private void validateRequester(Display display, Long requesterUserId) {
-    if (!display.isTeamLeader(requesterUserId)) {
-      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
-    }
   }
 
   private String invitationUrl(String rawToken) {

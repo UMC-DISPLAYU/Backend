@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ArtworkQuestionReplyLikeRepository {
 
@@ -11,6 +12,8 @@ public interface ArtworkQuestionReplyLikeRepository {
       Long questionReplyId, Long userId);
 
   Map<Long, Long> countByQuestionReplyIds(List<Long> questionReplyIds);
+
+  Set<Long> findLikedQuestionReplyIds(List<Long> questionReplyIds, Long userId);
 
   record ArtworkQuestionReplyLikeSnapshot(
       Long questionReplyId,

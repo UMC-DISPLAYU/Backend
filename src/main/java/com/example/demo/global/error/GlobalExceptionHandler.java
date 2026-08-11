@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -28,6 +29,15 @@ public class GlobalExceptionHandler {
     BaseErrorCode errorCode = exception.errorCode();
     logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), exception.getMessage(), null);
+    return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  @ExceptionHandler(OptimisticLockingFailureException.class)
+  public ResponseEntity<ApiResponseBody<Void>> handleOptimisticLockingFailureException(
+      OptimisticLockingFailureException exception, HttpServletRequest request) {
+    BaseErrorCode errorCode = GlobalErrorCode.CONFLICT;
+    logErrorResponse(errorCode, request);
+    ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
 

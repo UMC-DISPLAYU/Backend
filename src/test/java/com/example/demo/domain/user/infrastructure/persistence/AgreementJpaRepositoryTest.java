@@ -3,8 +3,8 @@ package com.example.demo.domain.user.infrastructure.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.demo.domain.user.domain.entity.Agreement;
-import com.example.demo.domain.user.domain.enums.AgreementCode;
-import com.example.demo.domain.user.domain.enums.Type;
+import com.example.demo.domain.user.domain.type.AgreementCode;
+import com.example.demo.domain.user.domain.type.Type;
 import com.example.demo.global.config.JpaAuditingConfig;
 import java.time.LocalDate;
 import java.util.Arrays;

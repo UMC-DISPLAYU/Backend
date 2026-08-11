@@ -4,12 +4,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ArtworkQuestionLikeRepository {
 
   Optional<ArtworkQuestionLikeSnapshot> toggleAndGetSnapshot(Long questionId, Long userId);
 
   Map<Long, Long> countByQuestionIds(List<Long> questionIds);
+
+  Set<Long> findLikedQuestionIds(List<Long> questionIds, Long userId);
 
   record ArtworkQuestionLikeSnapshot(
       Long questionId,

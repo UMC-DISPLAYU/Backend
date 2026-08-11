@@ -3,8 +3,8 @@ package com.example.demo.domain.artist.domain.aggregate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import com.example.demo.domain.artist.exception.ArtistErrorCode;
-import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
+import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.user.domain.aggregate.User;
 import org.junit.jupiter.api.Test;
 

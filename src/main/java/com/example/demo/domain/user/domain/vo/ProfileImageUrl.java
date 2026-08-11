@@ -2,8 +2,8 @@ package com.example.demo.domain.user.domain.vo;
 
 import static com.example.demo.global.util.StringNormalizer.normalize;
 
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 
 public record ProfileImageUrl(String value) {
 

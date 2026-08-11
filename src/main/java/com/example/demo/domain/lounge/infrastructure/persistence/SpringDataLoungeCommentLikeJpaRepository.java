@@ -14,11 +14,13 @@ public interface SpringDataLoungeCommentLikeJpaRepository
   @Query(
       value =
           """
-          INSERT IGNORE INTO LoungeCommentLike (loungeCommentId, userId)
-          VALUES (:loungeCommentId, :userId)
+          INSERT INTO LoungeCommentLike (createdAt, loungeCommentId, userId)
+          VALUES (CURRENT_TIMESTAMP, :loungeCommentId, :userId)
+          ON DUPLICATE KEY UPDATE
+            loungeCommentLikeId = loungeCommentLikeId
           """,
       nativeQuery = true)
-  void insertIgnore(@Param("loungeCommentId") Long loungeCommentId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("loungeCommentId") Long loungeCommentId, @Param("userId") Long userId);
 
   @Modifying
   @Query(

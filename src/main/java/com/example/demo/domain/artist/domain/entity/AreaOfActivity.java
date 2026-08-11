@@ -1,7 +1,7 @@
 package com.example.demo.domain.artist.domain.entity;
 
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

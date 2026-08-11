@@ -190,51 +190,6 @@ public final class UserApiDocs {
       }
       """;
 
-  public static final String MY_ARTIST_PROFILE_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "artistName": "김지원",
-            "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
-            "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
-            "status": "VERIFIED",
-            "schoolName": "중앙대학교 서울캠퍼스",
-            "externalLink": "https://portfolio.maya.com",
-            "fields": ["PAINTING", "ILLUSTRATION"]
-          }
-        },
-        "error": null,
-        "meta": {
-          "timestamp": "2026-07-16T20:00:00",
-          "path": "/api/v1/users/me/artist-profile"
-        }
-      }
-      """;
-
-  public static final String USER_ARTIST_PROFILE_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "artistName": "김지원",
-            "schoolName": "중앙대학교 서울캠퍼스",
-            "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
-            "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
-            "externalLink": "https://portfolio.maya.com",
-            "fields": ["PAINTING", "ILLUSTRATION"]
-          }
-        },
-        "error": null,
-        "meta": {
-          "timestamp": "2026-07-16T20:00:00",
-          "path": "/api/v1/users/15/artist-profile"
-        }
-      }
-      """;
-
   public static final String NICKNAME_CHECK_SUCCESS_EXAMPLE =
       """
       {
@@ -249,40 +204,6 @@ public final class UserApiDocs {
         "meta": {
           "timestamp": "2026-07-16T20:00:00",
           "path": "/api/v1/users/nickname/check"
-        }
-      }
-      """;
-
-  public static final String MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE =
-      """
-      {
-        "resultType": "FAIL",
-        "success": null,
-        "error": {
-          "code": "ARTIST_PROFILE_NOT_FOUND",
-          "message": "등록된 작가 프로필이 없습니다.",
-          "details": null
-        },
-        "meta": {
-          "timestamp": "2026-07-16T20:00:00",
-          "path": "/api/v1/users/me/artist-profile"
-        }
-      }
-      """;
-
-  public static final String USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE =
-      """
-      {
-        "resultType": "FAIL",
-        "success": null,
-        "error": {
-          "code": "ARTIST_PROFILE_NOT_FOUND",
-          "message": "해당 사용자의 작가 프로필이 존재하지 않습니다.",
-          "details": null
-        },
-        "meta": {
-          "timestamp": "2026-07-16T20:00:00",
-          "path": "/api/v1/users/15/artist-profile"
         }
       }
       """;

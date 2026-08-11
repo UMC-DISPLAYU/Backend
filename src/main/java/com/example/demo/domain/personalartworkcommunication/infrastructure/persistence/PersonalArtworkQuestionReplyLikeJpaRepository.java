@@ -41,4 +41,16 @@ public interface PersonalArtworkQuestionReplyLikeJpaRepository
       """)
   List<Object[]> countByPersonalQuestionReplyIds(
       @Param("personalQuestionReplyIds") List<Long> personalQuestionReplyIds);
+
+  @Query(
+      """
+      SELECT replyLike.personalQuestionReplyId
+      FROM PersonalArtworkQuestionReplyLike replyLike
+      WHERE replyLike.personalQuestionReplyId IN :personalQuestionReplyIds
+        AND replyLike.userId = :userId
+        AND replyLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedPersonalQuestionReplyIds(
+      @Param("personalQuestionReplyIds") List<Long> personalQuestionReplyIds,
+      @Param("userId") Long userId);
 }

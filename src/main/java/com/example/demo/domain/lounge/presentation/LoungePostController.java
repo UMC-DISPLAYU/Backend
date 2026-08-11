@@ -52,7 +52,7 @@ public class LoungePostController implements LoungePostControllerDocs {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     Long loungePostId =
-        loungePostCommandService.createPost(user.userId(), loungePostRequest.toCommand());
+        loungePostCommandService.createPost(user.userId(), mapper.toCommand(loungePostRequest));
     LoungePostDetailResult result =
         loungePostQueryService.getPostDetail(loungePostId, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
@@ -65,7 +65,8 @@ public class LoungePostController implements LoungePostControllerDocs {
       @RequestBody LoungePostRequest loungePostRequest,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    loungePostCommandService.updatePost(loungePostId, user.userId(), loungePostRequest.toCommand());
+    loungePostCommandService.updatePost(
+        loungePostId, user.userId(), mapper.toCommand(loungePostRequest));
     return ApiResponseBody.success(
         mapper.toResponse(loungePostQueryService.getPostDetail(loungePostId, user.userId())),
         request);

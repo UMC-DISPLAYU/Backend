@@ -11,7 +11,9 @@ import com.example.demo.domain.lounge.domain.repository.LoungePostScrapRepositor
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import jakarta.persistence.OptimisticLockException;
 import java.util.Objects;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,21 +57,31 @@ public class LoungePostCommandService {
       Long loungePostId, Long requesterUserId, LoungePostContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    LoungePost loungePost = getPost(loungePostId);
-    validateAuthor(loungePost, new UserId(requesterUserId));
-    loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), requesterUserId);
-    loungeAccessPolicy.validateCategoryAccess(command.category(), requesterUserId);
+    try {
+      LoungePost loungePost = getPostWithOptimisticLock(loungePostId);
+      validateAuthor(loungePost, new UserId(requesterUserId));
+      loungeAccessPolicy.validateCategoryAccess(loungePost.getCategory(), requesterUserId);
+      loungeAccessPolicy.validateCategoryAccess(command.category(), requesterUserId);
 
-    loungePost.changeContent(command.title(), command.content());
-    loungePost.replaceImages(command.postImageUrls());
-    loungePost.changeCategory(command.category());
+      loungePost.changeContent(command.title(), command.content());
+      loungePost.replaceImages(command.postImageUrls());
+      loungePost.changeCategory(command.category());
+      loungePostRepository.save(loungePost);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
+    }
   }
 
   @Transactional
   public void deletePost(Long loungePostId, Long requesterUserId) {
-    LoungePost loungePost = getPost(loungePostId);
-    validateAuthor(loungePost, new UserId(requesterUserId));
-    loungePost.delete();
+    try {
+      LoungePost loungePost = getPostWithOptimisticLock(loungePostId);
+      validateAuthor(loungePost, new UserId(requesterUserId));
+      loungePost.delete();
+      loungePostRepository.save(loungePost);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
+    }
   }
 
   @Transactional
@@ -139,6 +151,13 @@ public class LoungePostCommandService {
       throw new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND);
     }
     return loungePost;
+  }
+
+  private LoungePost getPostWithOptimisticLock(Long loungePostId) {
+    return loungePostRepository
+        .findByIdWithOptimisticLock(loungePostId)
+        .filter(loungePost -> !loungePost.isDeleted())
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 
   private void validateAuthor(LoungePost loungePost, UserId requesterUserId) {

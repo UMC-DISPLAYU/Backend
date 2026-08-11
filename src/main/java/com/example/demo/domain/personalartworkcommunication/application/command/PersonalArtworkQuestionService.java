@@ -19,8 +19,6 @@ public class PersonalArtworkQuestionService {
       PersonalArtworkQuestionCommand command) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
-    personalArtworkQuestionValidator.validateNotPersonalArtworkCreator(
-        command.personalArtworkId(), command.userId());
     personalArtworkQuestionValidator.validateContent(command.content());
 
     PersonalArtworkQuestion personalArtworkQuestion =

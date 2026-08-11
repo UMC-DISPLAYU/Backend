@@ -14,11 +14,12 @@ import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.repository.LoungeWriterRepository;
 import com.example.demo.domain.lounge.domain.type.LoungeCommentStatus;
 import com.example.demo.domain.lounge.domain.type.LoungePostCategory;
+import com.example.demo.domain.lounge.domain.vo.LoungeWriter;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.persistence.EntityManager;
@@ -139,6 +140,20 @@ class LoungePublicQueryControllerTest {
         .andExpect(jsonPath("$.success.data.replies[0].replyCount").doesNotExist())
         .andExpect(jsonPath("$.success.data.replies[0].isLiked").value(false))
         .andExpect(jsonPath("$.success.data.replies[0].isMyComment").value(false));
+  }
+
+  @Test
+  void postResponseIncludesWriterProfileImageUrl() throws Exception {
+    when(writerRepository.findByUserIds(anyList()))
+        .thenReturn(
+            Map.of(101L, new LoungeWriter(101L, "작성자", "https://cdn.example.com/profile.jpg")));
+
+    mockMvc
+        .perform(get("/api/v1/lounge/posts/{loungePostId}", post.getId()))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.success.data.writer.profileImageUrl")
+                .value("https://cdn.example.com/profile.jpg"));
   }
 
   @Test
@@ -426,6 +441,26 @@ class LoungePublicQueryControllerTest {
         .andExpect(jsonPath("$.success.data.imageUrls.length()").value(2))
         .andExpect(jsonPath("$.success.data.imageUrls[0]").value("created-image-1"))
         .andExpect(jsonPath("$.success.data.imageUrls[1]").value("created-image-2"));
+  }
+
+  @Test
+  void commentCreationReturnsEmptyImagesWhenImageUrlsAreOmitted() throws Exception {
+    when(tokenProvider.getUserId("test-token")).thenReturn(104L);
+
+    mockMvc
+        .perform(
+            post("/api/v1/lounge/posts/{loungePostId}/comments", post.getId())
+                .header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "content": "이미지가 없는 댓글"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.imageUrls").isArray())
+        .andExpect(jsonPath("$.success.data.imageUrls").isEmpty());
   }
 
   @Test

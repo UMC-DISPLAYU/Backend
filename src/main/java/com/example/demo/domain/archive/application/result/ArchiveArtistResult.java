@@ -2,7 +2,7 @@ package com.example.demo.domain.archive.application.result;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.artist.application.result.ArtistProfileSummaryResult;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.displayartwork.application.result.ArtistWorkStatsResult;
 import java.time.LocalDateTime;
 import java.util.List;

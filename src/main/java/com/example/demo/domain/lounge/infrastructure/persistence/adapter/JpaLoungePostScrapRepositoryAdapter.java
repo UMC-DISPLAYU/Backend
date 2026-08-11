@@ -20,7 +20,7 @@ public class JpaLoungePostScrapRepositoryAdapter implements LoungePostScrapRepos
 
   @Override
   public void saveIfAbsent(Long loungePostId, UserId userId) {
-    jpaRepository.insertIgnore(loungePostId, userId.value());
+    jpaRepository.insertIfAbsent(loungePostId, userId.value());
   }
 
   @Override

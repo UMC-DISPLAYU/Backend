@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.presentation.request;
 
-import com.example.demo.domain.user.domain.enums.AgreementCode;
+import com.example.demo.domain.user.domain.type.AgreementCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;

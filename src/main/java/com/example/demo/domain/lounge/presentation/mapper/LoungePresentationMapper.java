@@ -1,5 +1,7 @@
 package com.example.demo.domain.lounge.presentation.mapper;
 
+import com.example.demo.domain.lounge.application.command.LoungeCommentContentCommand;
+import com.example.demo.domain.lounge.application.command.LoungePostContentCommand;
 import com.example.demo.domain.lounge.application.result.LoungeCommentCursorResult;
 import com.example.demo.domain.lounge.application.result.LoungeCommentLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungeCommentListResult;
@@ -10,6 +12,8 @@ import com.example.demo.domain.lounge.application.result.LoungePostListResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.application.result.LoungeReplyCursorResult;
 import com.example.demo.domain.lounge.application.result.WriterView;
+import com.example.demo.domain.lounge.presentation.request.LoungeCommentRequest;
+import com.example.demo.domain.lounge.presentation.request.LoungePostRequest;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentCursorResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentLikeResponse;
 import com.example.demo.domain.lounge.presentation.response.LoungeCommentListResponse;
@@ -25,6 +29,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LoungePresentationMapper {
+
+  public LoungePostContentCommand toCommand(LoungePostRequest request) {
+    return new LoungePostContentCommand(
+        request.title(), request.postImageUrls(), request.content(), request.category());
+  }
+
+  public LoungeCommentContentCommand toCommand(LoungeCommentRequest request) {
+    return new LoungeCommentContentCommand(request.content(), request.imageUrls());
+  }
 
   public LoungePostListResponse toResponse(LoungePostListResult result) {
     return new LoungePostListResponse(

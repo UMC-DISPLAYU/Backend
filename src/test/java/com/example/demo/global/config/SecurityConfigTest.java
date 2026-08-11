@@ -1,5 +1,7 @@
 package com.example.demo.global.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,10 +33,31 @@ class SecurityConfigTest {
         "/api/v1/artworks/questions/me",
         "/api/v1/artworks/questions/received",
         "/api/v1/artworks/feelings/me",
-        "/api/v1/display/reviews/me",
-        "/api/v1/display/1/reviews/1"
+        "/api/v1/display/reviews/me"
       })
   void rejectsHeadRequestWithoutAuthentication(String path) throws Exception {
     mockMvc.perform(head(path)).andExpect(status().isUnauthorized());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"/api/v1/display/1/reviews", "/api/v1/display/1/reviews/1/replies"})
+  void permitsDisplayReviewHeadRequestWithoutAuthentication(String path) throws Exception {
+    mockMvc
+        .perform(head(path))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "/api/v1/auth/kakao/login-url",
+        "/api/v1/auth/kakao/callback",
+        "/api/v1/auth/google/login-url",
+        "/api/v1/auth/google/callback"
+      })
+  void permitsOAuthRequestWithoutAuthentication(String path) throws Exception {
+    mockMvc
+        .perform(get(path))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
   }
 }

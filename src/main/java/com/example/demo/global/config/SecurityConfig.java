@@ -116,9 +116,16 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.HEAD, "/api/v1/display/reviews/me")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/display/*/reviews/**")
-                    .authenticated()
+                    .permitAll()
                     .requestMatchers(HttpMethod.HEAD, "/api/v1/display/*/reviews/**")
-                    .authenticated()
+                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/auth/kakao/login-url",
+                        "/api/v1/auth/kakao/callback",
+                        "/api/v1/auth/google/login-url",
+                        "/api/v1/auth/google/callback")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
                     .authenticated()
                     .anyRequest()

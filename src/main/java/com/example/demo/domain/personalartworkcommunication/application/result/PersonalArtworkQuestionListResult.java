@@ -17,12 +17,14 @@ public record PersonalArtworkQuestionListResult(
       boolean accessible,
       boolean canReply,
       Long likeCount,
+      boolean isLiked,
       AnswerStatus answerStatus,
       LocalDateTime createdAt,
       PersonalArtworkQuestionUserResult user,
       PersonalArtworkQuestionReplyItemResult reply) {}
 
-  public record PersonalArtworkQuestionUserResult(Long userId, String nickname) {}
+  public record PersonalArtworkQuestionUserResult(
+      Long userId, String nickname, Boolean isCreator) {}
 
   public record PersonalArtworkQuestionReplyItemResult(
       Long personalQuestionReplyId,
@@ -31,5 +33,6 @@ public record PersonalArtworkQuestionListResult(
       Boolean isCreator,
       String content,
       LocalDateTime createdAt,
-      Long likeCount) {}
+      Long likeCount,
+      boolean isLiked) {}
 }

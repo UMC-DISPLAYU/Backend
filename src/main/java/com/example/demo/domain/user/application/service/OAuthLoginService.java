@@ -1,10 +1,10 @@
 package com.example.demo.domain.user.application.service;
 
+import com.example.demo.domain.user.application.port.GoogleAuthorizationCodeClientPort;
+import com.example.demo.domain.user.application.port.KakaoOAuthClientPort;
 import com.example.demo.domain.user.application.result.LoginResult;
-import com.example.demo.domain.user.domain.enums.Provider;
-import com.example.demo.domain.user.exception.AuthErrorCode;
-import com.example.demo.domain.user.infrastructure.oauth.GoogleAuthorizationCodeClient;
-import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthClient;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +16,8 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class OAuthLoginService {
 
-  private final KakaoOAuthClient kakaoOAuthClient;
-  private final GoogleAuthorizationCodeClient googleAuthorizationCodeClient;
+  private final KakaoOAuthClientPort kakaoOAuthClient;
+  private final GoogleAuthorizationCodeClientPort googleAuthorizationCodeClient;
   private final AuthService authService;
 
   public String authorizationUrl(Provider provider, String state) {

@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.command;
 
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
@@ -12,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteDisplayArtworkService {
 
   private final DisplayArtworkRepository displayArtworkRepository;
-  private final ArtworkEditPermission artworkEditPermission;
+  private final DisplayArtworkPermissionChecker permissionChecker;
 
   public DeleteDisplayArtworkService(
       DisplayArtworkRepository displayArtworkRepository,
-      ArtworkEditPermission artworkEditPermission) {
+      DisplayArtworkPermissionChecker permissionChecker) {
     this.displayArtworkRepository = displayArtworkRepository;
-    this.artworkEditPermission = artworkEditPermission;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional
@@ -31,9 +32,7 @@ public class DeleteDisplayArtworkService {
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
     // 전시 대표자, 작품의 작가, 공동 작업자만 삭제할 수 있다.
-    if (!artworkEditPermission.canEdit(artwork.getDisplay(), artworkId, requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ACTION);
-    }
+    permissionChecker.requireArtworkDeleter(requesterUserId, artwork.getDisplay(), artworkId);
 
     artwork.delete();
 
