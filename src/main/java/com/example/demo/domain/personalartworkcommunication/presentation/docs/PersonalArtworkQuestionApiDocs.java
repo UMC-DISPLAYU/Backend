@@ -38,6 +38,7 @@ public interface PersonalArtworkQuestionApiDocs {
           권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
 
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          isMine은 로그인 사용자가 해당 질문 또는 답변의 작성자인지를 나타내며, 비회원은 false입니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
           likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
           isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
@@ -64,6 +65,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": "색을 몇 번 겹쳐 칠했나요?",
                                     "isPublic": true,
                                     "accessible": true,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": 12,
                                     "isLiked": false,
@@ -82,7 +84,8 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
                                       "likeCount": 4,
-                                      "isLiked": false
+                                      "isLiked": false,
+                                      "isMine": true
                                     }
                                   },
                                   {
@@ -90,6 +93,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": null,
                                     "isPublic": false,
                                     "accessible": false,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": null,
                                     "isLiked": false,

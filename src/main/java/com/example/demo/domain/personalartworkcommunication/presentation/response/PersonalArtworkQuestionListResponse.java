@@ -15,6 +15,7 @@ public record PersonalArtworkQuestionListResponse(
       String content,
       Boolean isPublic,
       boolean accessible,
+      boolean isMine,
       boolean canReply,
       Long likeCount,
       boolean isLiked,
@@ -34,5 +35,6 @@ public record PersonalArtworkQuestionListResponse(
       String content,
       LocalDateTime createdAt,
       Long likeCount,
-      boolean isLiked) {}
+      boolean isLiked,
+      boolean isMine) {}
 }
