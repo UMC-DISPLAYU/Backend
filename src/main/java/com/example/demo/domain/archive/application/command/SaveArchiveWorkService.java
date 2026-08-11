@@ -3,9 +3,10 @@ package com.example.demo.domain.archive.application.command;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
-import com.example.demo.domain.archive.domain.repository.ArchiveDisplayArtworkExistenceRepository;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -15,20 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveWorkService {
 
   private final ArchiveWorkRepository archiveWorkRepository;
-  private final ArchiveDisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  private final GetArtworkSummariesUseCase getArtworkSummariesUseCase;
 
   public SaveArchiveWorkService(
       ArchiveWorkRepository archiveWorkRepository,
-      ArchiveDisplayArtworkExistenceRepository displayArtworkExistenceRepository) {
+      GetArtworkSummariesUseCase getArtworkSummariesUseCase) {
     this.archiveWorkRepository = archiveWorkRepository;
-    this.displayArtworkExistenceRepository = displayArtworkExistenceRepository;
+    this.getArtworkSummariesUseCase = getArtworkSummariesUseCase;
   }
 
   @Transactional
   public ArchiveWorkToggleResult saveArchiveWork(SaveArchiveWorkCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    if (!displayArtworkExistenceRepository.existsById(command.displayArtworkId())) {
+    boolean displayArtworkExists =
+        !getArtworkSummariesUseCase
+            .getArtworkSummaries(List.of(command.displayArtworkId()))
+            .isEmpty();
+    if (!displayArtworkExists) {
       throw new BusinessException(ArchiveErrorCode.DISPLAY_ARTWORK_NOT_FOUND);
     }
 
