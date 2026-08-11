@@ -17,6 +17,7 @@
 - Command/Query/Result record는 유스케이스명 또는 응답 의미를 붙인다: `CreateDisplayCommand`, `SearchDisplayQuery`, `DisplayDetailResult`.
 - Repository port는 domain에 `{Aggregate}Repository`, query port는 `{Feature}QueryRepository`를 사용한다.
 - Spring Data repository는 `SpringData{Name}JpaRepository`, 구현 adapter는 `Jpa{Name}RepositoryAdapter` 또는 `Jpa{Name}QueryRepositoryAdapter`를 사용한다.
+- 위 adapter 규칙은 `domain/repository`의 repository를 구현하는 경우에만 적용한다. `application/port`의 port를 구현하는 adapter는 port의 역할이 드러나게 명명한다. 예: `DisplayContentPublicationPort -> JpaDisplayContentPublicationAdapter`, `SchoolEmailSenderPort -> SchoolEmailSenderAdapter`, `DisplayListCacheEvictionPort -> DisplayListCacheEvictor`.
 - 상수는 `UPPER_SNAKE_CASE`, 임시 인증 값은 `TEMP_USER_ID`처럼 명확히 표시한다.
 
 ## 3. Controller & Swagger

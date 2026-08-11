@@ -254,7 +254,8 @@ class DisplayMemberInvitationControllerTest {
   void getMembersReturnsNonDeletedDisplayMembersWithUserState() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User member = user("member");
-    member.verifyAuthor("member@school.ac.kr", "중앙대학교");
+    member.verifySchoolEmail("member@school.ac.kr", "중앙대학교");
+    member.completeArtistVerification();
     userJpaRepository.save(member);
     User pending = userJpaRepository.save(user("pending"));
     User withdrawn = user("withdrawn");
@@ -408,7 +409,8 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void updateMyDisplayNicknameChangesAcceptedTeamMemberNickname() throws Exception {
     User leader = user("leader");
-    leader.verifyAuthor("leader@school.ac.kr", "중앙대학교");
+    leader.verifySchoolEmail("leader@school.ac.kr", "중앙대학교");
+    leader.completeArtistVerification();
     userJpaRepository.save(leader);
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
 

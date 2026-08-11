@@ -16,15 +16,15 @@ class ArtistPermissionCheckerTest {
   private final ArtistPermissionChecker checker = new ArtistPermissionChecker();
 
   @Test
-  void requireProfileCreationEligibleAllowsVerifiedUserWithSchoolInformation() {
-    User user = verifiedUser();
+  void requireProfileCreationEligibleAllowsSchoolVerifiedUserBeforeArtistProfileCreation() {
+    User user = schoolVerifiedUser();
 
     assertThatCode(() -> checker.requireProfileCreationEligible(user)).doesNotThrowAnyException();
   }
 
   @Test
   void requireProfileCreationEligibleRejectsIncompleteVerificationWithExistingErrorCode() {
-    User user = User.builder().isVerified(true).schoolEmail("student@du.ac.kr").build();
+    User user = User.builder().isVerified(false).schoolEmail("student@du.ac.kr").build();
 
     assertThatThrownBy(() -> checker.requireProfileCreationEligible(user))
         .isInstanceOfSatisfying(
@@ -46,9 +46,9 @@ class ArtistPermissionCheckerTest {
                     .isEqualTo(UserErrorCode.ARTIST_VERIFICATION_REQUIRED));
   }
 
-  private User verifiedUser() {
+  private User schoolVerifiedUser() {
     return User.builder()
-        .isVerified(true)
+        .isVerified(false)
         .schoolEmail("student@du.ac.kr")
         .univName("디유대학교")
         .build();
