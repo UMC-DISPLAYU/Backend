@@ -4,6 +4,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,7 +59,7 @@ public class SchoolEmailVerification extends BaseTimeEntity {
     this.univName = univName;
     this.verificationCode = verificationCode;
     this.expiresAt = expiresAt;
-    this.sentAt = LocalDateTime.now();
+    this.sentAt = LocalDateTime.now(ZoneOffset.UTC);
     this.verified = false;
     this.failedAttemptCount = 0;
   }
@@ -71,17 +72,17 @@ public class SchoolEmailVerification extends BaseTimeEntity {
         schoolEmail,
         univName,
         verificationCode,
-        LocalDateTime.now().plusMinutes(5)); // 인증코드 유효시간: 5분
+        LocalDateTime.now(ZoneOffset.UTC).plusMinutes(5)); // 인증코드 유효시간: 5분
   }
 
   public boolean isExpired() {
 
-    return !LocalDateTime.now().isBefore(expiresAt);
+    return !LocalDateTime.now(ZoneOffset.UTC).isBefore(expiresAt);
   }
 
   public boolean canResend() {
 
-    return LocalDateTime.now().isAfter(sentAt.plusMinutes(1)); // 재전송 쿨타임: 1분
+    return LocalDateTime.now(ZoneOffset.UTC).isAfter(sentAt.plusMinutes(1)); // 재전송 쿨타임: 1분
   }
 
   public boolean matchCode(String code) {
@@ -105,7 +106,7 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
   private void invalidate() {
 
-    this.expiresAt = LocalDateTime.now();
+    this.expiresAt = LocalDateTime.now(ZoneOffset.UTC);
   }
 
   public boolean isVerified() {

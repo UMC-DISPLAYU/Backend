@@ -13,6 +13,7 @@ import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class AcceptDisplayInvitationService {
       throw new BusinessException(DisplayErrorCode.ALREADY_DISPLAY_MEMBER);
     }
 
-    invitation.accept(LocalDateTime.now(clock));
+    invitation.accept(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     Display display = invitation.getDisplay();
     TeamMember teamMember = display.inviteeAsTeamMember(invitation, command.displayNickname());
 

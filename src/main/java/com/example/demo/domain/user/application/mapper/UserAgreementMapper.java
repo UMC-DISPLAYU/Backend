@@ -4,6 +4,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.Agreement;
 import com.example.demo.domain.user.domain.entity.UserAgreement;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +16,7 @@ public class UserAgreementMapper {
         .user(user)
         .agreement(agreement)
         .isAgreed(true)
-        .agreedAt(LocalDateTime.now())
+        .agreedAt(LocalDateTime.now(ZoneOffset.UTC))
         .build();
   }
 }
