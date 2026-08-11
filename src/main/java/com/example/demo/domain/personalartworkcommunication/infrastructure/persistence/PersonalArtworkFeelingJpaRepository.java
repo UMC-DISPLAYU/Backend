@@ -15,6 +15,15 @@ public interface PersonalArtworkFeelingJpaRepository
       SELECT feeling
       FROM PersonalArtworkFeeling feeling
       WHERE feeling.personalArtworkId = :personalArtworkId
+        AND (
+          feeling.deletedAt IS NULL
+          OR EXISTS (
+            SELECT reply.personalFeelingReplyId
+            FROM PersonalArtworkFeelingReply reply
+            WHERE reply.personalFeelingId = feeling.personalFeelingId
+              AND reply.deletedAt IS NULL
+          )
+        )
         AND (:cursorId IS NULL OR feeling.personalFeelingId > :cursorId)
       ORDER BY feeling.personalFeelingId ASC
       """)

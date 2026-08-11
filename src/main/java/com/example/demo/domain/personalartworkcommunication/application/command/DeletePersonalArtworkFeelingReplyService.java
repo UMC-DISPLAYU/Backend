@@ -23,7 +23,8 @@ public class DeletePersonalArtworkFeelingReplyService {
 
     PersonalArtworkFeeling feeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
-    personalArtworkFeelingValidator.validateReplyTarget(feeling, command.personalArtworkId());
+    personalArtworkFeelingValidator.validateReplyDeletionTarget(
+        feeling, command.personalArtworkId());
 
     PersonalArtworkFeelingReply reply =
         personalArtworkFeelingValidator.findActiveReplyForUpdateOrThrow(
