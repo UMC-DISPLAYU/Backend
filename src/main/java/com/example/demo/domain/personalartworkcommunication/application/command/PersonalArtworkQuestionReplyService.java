@@ -31,11 +31,12 @@ public class PersonalArtworkQuestionReplyService {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(command.personalArtworkId());
     personalArtworkQuestionValidator.validateUserExists(command.userId());
     personalArtworkQuestionValidator.validateContent(command.content());
+    personalArtworkQuestionValidator.validateReplyImages(command.images());
     permissionChecker.requirePersonalArtworkOwner(command.personalArtworkId(), command.userId());
 
     PersonalArtworkQuestion personalArtworkQuestion =
         personalArtworkQuestionRepository
-            .findActiveById(command.personalQuestionId())
+            .findActiveByIdForUpdate(command.personalQuestionId())
             .orElseThrow(
                 () ->
                     new BusinessException(
@@ -45,7 +46,7 @@ public class PersonalArtworkQuestionReplyService {
         personalArtworkQuestion, command.personalArtworkId());
 
     PersonalArtworkQuestionReply questionReply =
-        personalArtworkQuestion.answer(command.userId(), command.content());
+        personalArtworkQuestion.answer(command.userId(), command.content(), command.images());
     PersonalArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(questionReply);
 
     String nickname =
@@ -61,7 +62,17 @@ public class PersonalArtworkQuestionReplyService {
         savedQuestionReply.getPersonalQuestionId(),
         savedQuestionReply.getUserId(),
         nickname,
-        true);
+        true,
+        savedQuestionReply.getImages().stream()
+            .map(
+                image ->
+                    new PersonalArtworkQuestionReplyResult.ImageResult(
+                        image.getPersonalQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 
   private PersonalArtworkQuestionReply saveQuestionReplyOrThrow(

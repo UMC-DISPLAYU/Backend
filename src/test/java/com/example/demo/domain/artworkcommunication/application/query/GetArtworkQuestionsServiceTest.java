@@ -111,33 +111,36 @@ class GetArtworkQuestionsServiceTest {
     when(reply.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 13, 0));
 
     when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
-    when(creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(1L, 3L))
-        .thenReturn(Optional.empty());
-    when(creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(1L, 3L))
-        .thenReturn(Optional.empty());
+    when(creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(1L, 2L))
+        .thenReturn(Optional.of("답변 작가"));
+    when(creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(1L, 2L))
+        .thenReturn(Optional.of(new CreatorExistenceRepository.ContactCreator(4L, "답변 작가")));
     when(artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(1L, null, 11))
         .thenReturn(List.of(question));
     when(artworkQuestionReplyRepository.findActiveByQuestionIds(List.of(10L)))
         .thenReturn(List.of(reply));
     when(userExistenceRepository.findNicknamesByIds(Set.of(2L))).thenReturn(Map.of(2L, "질문자"));
     when(creatorExistenceRepository.findCreatorNamesByDisplayArtworkIdAndUserIds(1L, Set.of(2L)))
-        .thenReturn(Map.of());
+        .thenReturn(Map.of(2L, "답변 작가"));
     when(creatorExistenceRepository.findCreatorNamesByIds(Set.of(4L)))
         .thenReturn(Map.of(4L, "답변 작가"));
     when(artworkQuestionLikeRepository.countByQuestionIds(List.of(10L))).thenReturn(Map.of());
-    when(artworkQuestionLikeRepository.findLikedQuestionIds(List.of(10L), 3L))
+    when(artworkQuestionLikeRepository.findLikedQuestionIds(List.of(10L), 2L))
         .thenReturn(Set.of(10L));
     when(artworkQuestionReplyLikeRepository.countByQuestionReplyIds(List.of(20L)))
         .thenReturn(Map.of(20L, 2L));
-    when(artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(List.of(20L), 3L))
+    when(artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(List.of(20L), 2L))
         .thenReturn(Set.of(20L));
 
     ArtworkQuestionListResult result =
-        service.getQuestions(new GetArtworkQuestionsQuery(1L, null, 10, 3L));
+        service.getQuestions(new GetArtworkQuestionsQuery(1L, null, 10, 2L));
 
+    assertThat(result.questions().get(0).isMine()).isTrue();
+    assertThat(result.questions().get(0).user().isCreator()).isTrue();
     assertThat(result.questions().get(0).isLiked()).isTrue();
     assertThat(result.questions().get(0).reply().likeCount()).isEqualTo(2L);
     assertThat(result.questions().get(0).reply().isLiked()).isTrue();
+    assertThat(result.questions().get(0).reply().isMine()).isTrue();
   }
 
   @Test

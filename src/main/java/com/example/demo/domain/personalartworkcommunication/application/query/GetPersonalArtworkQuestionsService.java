@@ -5,6 +5,8 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionUserResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.QuestionImageResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.ReplyImageResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
@@ -17,6 +19,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Us
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -152,10 +155,12 @@ public class GetPersonalArtworkQuestionsService {
           question.getIsPublic(),
           false,
           false,
+          false,
           null,
           false,
           question.getAnswerStatus(),
           question.getCreatedAt(),
+          List.of(),
           null,
           null);
     }
@@ -170,18 +175,34 @@ public class GetPersonalArtworkQuestionsService {
         reply == null
             ? null
             : toReplyItem(
-                reply, nicknameByUserId, ownerUserId, replyLikeCounts, likedQuestionReplyIds);
+                reply,
+                nicknameByUserId,
+                ownerUserId,
+                userId,
+                replyLikeCounts,
+                likedQuestionReplyIds);
 
     return new PersonalArtworkQuestionItemResult(
         question.getPersonalQuestionId(),
         question.getContent(),
         question.getIsPublic(),
         true,
+        Objects.equals(question.getUserId(), userId),
         canReply,
         questionLikeCounts.getOrDefault(question.getPersonalQuestionId(), 0L),
         likedQuestionIds.contains(question.getPersonalQuestionId()),
         question.getAnswerStatus(),
         question.getCreatedAt(),
+        question.getImages().stream()
+            .map(
+                image ->
+                    new QuestionImageResult(
+                        image.getPersonalQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         user,
         replyResult);
   }
@@ -190,6 +211,7 @@ public class GetPersonalArtworkQuestionsService {
       PersonalArtworkQuestionReply reply,
       Map<Long, String> nicknameByUserId,
       Long ownerUserId,
+      Long userId,
       Map<Long, Long> replyLikeCounts,
       Set<Long> likedQuestionReplyIds) {
     return new PersonalArtworkQuestionReplyItemResult(
@@ -199,8 +221,19 @@ public class GetPersonalArtworkQuestionsService {
         ownerUserId.equals(reply.getUserId()),
         reply.getContent(),
         reply.getCreatedAt(),
+        reply.getImages().stream()
+            .map(
+                image ->
+                    new ReplyImageResult(
+                        image.getPersonalQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         replyLikeCounts.getOrDefault(reply.getPersonalQuestionReplyId(), 0L),
-        likedQuestionReplyIds.contains(reply.getPersonalQuestionReplyId()));
+        likedQuestionReplyIds.contains(reply.getPersonalQuestionReplyId()),
+        Objects.equals(reply.getUserId(), userId));
   }
 
   private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {

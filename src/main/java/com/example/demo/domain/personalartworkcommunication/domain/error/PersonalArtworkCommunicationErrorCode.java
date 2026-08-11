@@ -8,6 +8,10 @@ public enum PersonalArtworkCommunicationErrorCode implements BaseErrorCode {
   INVALID_FEELING_IMAGES(
       HttpStatus.BAD_REQUEST, "INVALID_FEELING_IMAGES", "감상평 이미지는 최대 5개의 유효한 이미지여야 합니다."),
   INVALID_QUESTION_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_QUESTION_CONTENT", "질문 내용을 입력해주세요."),
+  INVALID_QUESTION_IMAGES(
+      HttpStatus.BAD_REQUEST, "INVALID_QUESTION_IMAGES", "질문 이미지는 최대 5개의 유효한 이미지여야 합니다."),
+  INVALID_QUESTION_REPLY_IMAGES(
+      HttpStatus.BAD_REQUEST, "INVALID_QUESTION_REPLY_IMAGES", "질문 답변 이미지는 최대 5개의 유효한 이미지여야 합니다."),
   PERSONAL_ARTWORK_FEELING_FORBIDDEN(
       HttpStatus.FORBIDDEN, "PERSONAL_ARTWORK_FEELING_FORBIDDEN", "감상평에 대한 권한이 없습니다."),
   PERSONAL_ARTWORK_FEELING_REPLY_FORBIDDEN(

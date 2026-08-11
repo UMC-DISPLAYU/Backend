@@ -8,6 +8,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -41,11 +42,46 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
+  public void validateImages(List<PersonalArtworkQuestion.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
+  }
+
+  public void validateReplyImages(List<PersonalArtworkQuestionReply.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_REPLY_IMAGES);
+  }
+
   public void validateQuestionTarget(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
         personalArtworkQuestion, personalArtworkId);
+  }
+
+  public void validateNotAnswered(PersonalArtworkQuestion personalArtworkQuestion) {
+    if (personalArtworkQuestion.isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
   }
 
   public PersonalArtworkQuestion findActiveQuestionForUpdateOrThrow(Long personalQuestionId) {
@@ -89,4 +125,24 @@ public class PersonalArtworkQuestionValidator {
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND);
     }
   }
+
+  private void validateImageValues(
+      List<ImageValue> images, PersonalArtworkCommunicationErrorCode errorCode) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(errorCode);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(errorCode);
+    }
+  }
+
+  private record ImageValue(String imageUrl, int width, int height) {}
 }

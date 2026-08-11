@@ -1,18 +1,19 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
-import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion.ImageInfo;
+import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,14 +22,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class PersonalArtworkQuestionServiceTest {
+class DeletePersonalArtworkQuestionServiceTest {
 
-  @Mock private PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   @Mock private PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   @Mock private UserExistenceRepository userExistenceRepository;
   @Mock private PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
+  @Mock private PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
-  private PersonalArtworkQuestionService service;
+  private DeletePersonalArtworkQuestionService service;
 
   @BeforeEach
   void setUp() {
@@ -38,33 +39,32 @@ class PersonalArtworkQuestionServiceTest {
             userExistenceRepository,
             personalArtworkQuestionReplyRepository,
             personalArtworkQuestionRepository);
-    service = new PersonalArtworkQuestionService(personalArtworkQuestionRepository, validator);
+    service =
+        new DeletePersonalArtworkQuestionService(
+            validator,
+            new PersonalArtworkCommunicationPermissionChecker(personalArtworkExistenceRepository),
+            personalArtworkQuestionRepository);
   }
 
   @Test
-  void ownerCanCreateQuestionOnOwnArtwork() {
+  void answeredQuestionCannotBeDeleted() {
+    PersonalArtworkQuestion question =
+        PersonalArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true, List.of());
+    question.answer(3L, "답변", List.of());
     when(personalArtworkExistenceRepository.existsById(1L)).thenReturn(true);
     when(userExistenceRepository.existsById(2L)).thenReturn(true);
-    when(personalArtworkQuestionRepository.save(any(PersonalArtworkQuestion.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(personalArtworkQuestionRepository.findActiveByIdForUpdate(10L))
+        .thenReturn(java.util.Optional.of(question));
 
-    PersonalArtworkQuestionResult result =
-        service.createPersonalQuestion(
-            new PersonalArtworkQuestionCommand(
-                1L,
-                2L,
-                "작업자가 작성한 질문",
-                true,
-                List.of(new ImageInfo("https://image.test/question.jpg", 800, 600))));
+    assertThatThrownBy(
+            () -> service.deleteQuestion(new DeletePersonalArtworkQuestionCommand(1L, 10L, 2L)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                org.assertj.core.api.Assertions.assertThat(exception.errorCode())
+                    .isEqualTo(
+                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED));
 
-    assertThat(result.userId()).isEqualTo(2L);
-    assertThat(result.content()).isEqualTo("작업자가 작성한 질문");
-    assertThat(result.images()).hasSize(1);
-    assertThat(result.images().get(0).imageUrl()).isEqualTo("https://image.test/question.jpg");
-    assertThat(result.images().get(0).width()).isEqualTo(800);
-    assertThat(result.images().get(0).height()).isEqualTo(600);
-    assertThat(result.images().get(0).sortOrder()).isZero();
-    verify(personalArtworkExistenceRepository, never()).existsByIdAndUserId(any(), any());
-    verify(personalArtworkQuestionRepository).save(any(PersonalArtworkQuestion.class));
+    verify(personalArtworkQuestionRepository, never()).save(any(PersonalArtworkQuestion.class));
   }
 }

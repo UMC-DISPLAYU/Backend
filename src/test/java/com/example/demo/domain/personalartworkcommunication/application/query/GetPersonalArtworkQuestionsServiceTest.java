@@ -99,10 +99,12 @@ class GetPersonalArtworkQuestionsServiceTest {
     assertThat(result.size()).isEqualTo(10);
     assertThat(result.questions()).hasSize(1);
     assertThat(result.questions().get(0).user().isCreator()).isTrue();
+    assertThat(result.questions().get(0).isMine()).isTrue();
     assertThat(result.questions().get(0).isLiked()).isTrue();
     assertThat(result.questions().get(0).canReply()).isTrue();
     assertThat(result.questions().get(0).reply().likeCount()).isEqualTo(2L);
     assertThat(result.questions().get(0).reply().isLiked()).isTrue();
+    assertThat(result.questions().get(0).reply().isMine()).isTrue();
   }
 
   @Test
