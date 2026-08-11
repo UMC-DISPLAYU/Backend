@@ -20,9 +20,6 @@ import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -49,7 +46,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   public ApiResponseBody<ArtworkQuestionListResponse> getQuestions(
       @PathVariable Long artworkId,
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
+      @RequestParam(defaultValue = "10") int size,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpServletRequest) {
     ArtworkQuestionListResult result =
@@ -68,7 +65,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
   public ApiResponseBody<ArtworkQuestionResponse> createQuestion(
       @PathVariable Long artworkId,
       @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody CreateArtworkQuestionRequest request,
+      @RequestBody CreateArtworkQuestionRequest request,
       HttpServletRequest httpServletRequest) {
     CreateArtworkQuestionCommand command =
         mapper.toCommand(artworkId, requireUserId(user), request);
@@ -88,7 +85,7 @@ public class ArtworkQuestionController implements ArtworkQuestionApiDocs {
       @PathVariable Long artworkId,
       @PathVariable Long questionId,
       @AuthenticationPrincipal AuthUser user,
-      @Valid @RequestBody CreateArtworkQuestionReplyRequest request,
+      @RequestBody CreateArtworkQuestionReplyRequest request,
       HttpServletRequest httpServletRequest) {
     ArtworkQuestionReplyCommand command =
         mapper.toCommand(artworkId, questionId, requireUserId(user), request);

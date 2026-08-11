@@ -480,6 +480,31 @@ public interface ArtworkQuestionApiDocs {
                           }
                           """)))
   @ApiResponse(
+      responseCode = "400",
+      description = "답변이 등록된 질문은 삭제 불가",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Artwork question already answered",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "QUESTION_ALREADY_ANSWERED",
+                              "message": "이미 답변 완료된 질문입니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-11T13:00:00",
+                              "path": "/api/v1/artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
       responseCode = "403",
       description = "질문 삭제 권한 없음",
       content =

@@ -20,10 +20,11 @@ public class DeleteArtworkQuestionService {
     artworkQuestionValidator.validateUserExists(command.userId());
 
     ArtworkQuestion artworkQuestion =
-        artworkQuestionValidator.findQuestionOrThrow(command.questionId());
+        artworkQuestionValidator.findActiveQuestionForUpdateOrThrow(command.questionId());
 
     artworkQuestionValidator.validateQuestionTarget(artworkQuestion, command.displayArtworkId());
     artworkQuestionValidator.validateWriter(artworkQuestion, command.userId());
+    artworkQuestionValidator.validateNotAnswered(artworkQuestion);
 
     artworkQuestion.delete();
     ArtworkQuestion savedQuestion = artworkQuestionRepository.save(artworkQuestion);
