@@ -82,7 +82,12 @@ public class SchoolEmailVerification extends BaseTimeEntity {
 
   public boolean canResend() {
 
-    return LocalDateTime.now(ZoneOffset.UTC).isAfter(sentAt.plusMinutes(1)); // 재전송 쿨타임: 1분
+    return canResend(LocalDateTime.now(ZoneOffset.UTC));
+  }
+
+  boolean canResend(LocalDateTime now) {
+
+    return !now.isBefore(sentAt.plusMinutes(1)); // 재전송 쿨타임: 1분
   }
 
   public boolean matchCode(String code) {
