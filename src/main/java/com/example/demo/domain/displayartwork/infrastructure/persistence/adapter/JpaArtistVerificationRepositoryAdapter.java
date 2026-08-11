@@ -5,11 +5,11 @@ import com.example.demo.domain.displayartwork.infrastructure.persistence.UserVer
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ArtistVerificationJpaAdapter implements ArtistVerificationRepository {
+public class JpaArtistVerificationRepositoryAdapter implements ArtistVerificationRepository {
 
   private final UserVerificationJpaRepository jpaRepository;
 
-  public ArtistVerificationJpaAdapter(UserVerificationJpaRepository jpaRepository) {
+  public JpaArtistVerificationRepositoryAdapter(UserVerificationJpaRepository jpaRepository) {
     this.jpaRepository = jpaRepository;
   }
 
