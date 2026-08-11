@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.Comparator;
@@ -41,6 +42,15 @@ public class OpenApiConfig {
       if (openApi.getPaths() == null) {
         return;
       }
+
+      List.of(
+              "/api/v1/lounge/posts",
+              "/api/v1/lounge/posts/{loungePostId}",
+              "/api/v1/lounge/posts/{loungePostId}/comments",
+              "/api/v1/lounge/comments/{parentCommentId}/replies")
+          .forEach(
+              path ->
+                  openApi.getPaths().get(path).getGet().addSecurityItem(new SecurityRequirement()));
 
       Paths sortedPaths = new Paths();
 
