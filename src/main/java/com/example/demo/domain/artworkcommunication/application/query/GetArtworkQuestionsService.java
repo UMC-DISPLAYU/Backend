@@ -5,6 +5,8 @@ import com.example.demo.domain.artworkcommunication.application.result.ArtworkQu
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionReplyItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionUserResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.QuestionImageResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ReplyImageResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
@@ -155,6 +157,7 @@ public class GetArtworkQuestionsService {
           false,
           question.getAnswerStatus().name(),
           question.getCreatedAt(),
+          List.of(),
           null,
           null);
     }
@@ -188,6 +191,16 @@ public class GetArtworkQuestionsService {
         likedQuestionIds.contains(question.getQuestionId()),
         question.getAnswerStatus().name(),
         question.getCreatedAt(),
+        question.getImages().stream()
+            .map(
+                image ->
+                    new QuestionImageResult(
+                        image.getQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         user,
         reply);
   }
@@ -211,6 +224,16 @@ public class GetArtworkQuestionsService {
         creatorName != null,
         reply.getContent(),
         reply.getCreatedAt(),
+        reply.getImages().stream()
+            .map(
+                image ->
+                    new ReplyImageResult(
+                        image.getQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L),
         likedQuestionReplyIds.contains(reply.getQueReplyId()));
   }

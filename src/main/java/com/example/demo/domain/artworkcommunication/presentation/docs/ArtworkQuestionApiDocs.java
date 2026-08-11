@@ -72,6 +72,15 @@ public interface ArtworkQuestionApiDocs {
                                     "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-06-30T22:10:00",
+                                    "images": [
+                                      {
+                                        "questionImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "user": {
                                       "userId": 1,
                                       "nickname": "User1",
@@ -84,6 +93,7 @@ public interface ArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "캔버스에 유화를 사용했어요.",
                                       "createdAt": "2026-06-30T22:10:00",
+                                      "images": [],
                                       "likeCount": 4,
                                       "isLiked": false
                                     }
@@ -98,6 +108,7 @@ public interface ArtworkQuestionApiDocs {
                                     "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-06-30T22:15:00",
+                                    "images": [],
                                     "user": null,
                                     "reply": null
                                   }
@@ -269,7 +280,16 @@ public interface ArtworkQuestionApiDocs {
                                 "answerStatus": "WAITING",
                                 "createdAt": "2026-06-30T22:10:00",
                                 "displayArtworkId": 3,
-                                "userId": 27
+                                "userId": 27,
+                                "images": [
+                                  {
+                                    "questionImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -357,7 +377,16 @@ public interface ArtworkQuestionApiDocs {
                                 "createdAt": "2026-06-30T23:20:00",
                                 "questionId": 15,
                                 "creatorId": 4,
-                                "creatorName": "고상준"
+                                "creatorName": "고상준",
+                                "images": [
+                                  {
+                                    "questionReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/question-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,

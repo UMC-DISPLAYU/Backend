@@ -26,6 +26,7 @@ public class CreateArtworkQuestionReplyService {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());
     artworkQuestionValidator.validateContent(command.content());
+    artworkQuestionValidator.validateReplyImages(command.images());
 
     ArtworkQuestion artworkQuestion =
         artworkQuestionValidator.findQuestionOrThrow(command.questionId());
@@ -49,7 +50,17 @@ public class CreateArtworkQuestionReplyService {
         savedQuestionReply.getCreatedAt(),
         savedQuestionReply.getQuestionId(),
         contactCreator.creatorId(),
-        contactCreator.creatorName());
+        contactCreator.creatorName(),
+        savedQuestionReply.getImages().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionReplyResult.ImageResult(
+                        image.getQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 
   private ArtworkQuestionReply saveQuestionReplyOrThrow(
@@ -57,7 +68,10 @@ public class CreateArtworkQuestionReplyService {
     try {
       return artworkQuestionReplyRepository.save(
           ArtworkQuestionReply.create(
-              command.questionId(), command.content(), contactCreator.creatorId()));
+              command.questionId(),
+              command.content(),
+              contactCreator.creatorId(),
+              command.images()));
     } catch (DataIntegrityViolationException exception) {
       throw new BusinessException(ArtworkCommunicationErrorCode.QUESTION_ALREADY_ANSWERED);
     }

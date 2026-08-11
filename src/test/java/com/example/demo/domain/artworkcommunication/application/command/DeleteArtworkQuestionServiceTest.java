@@ -15,6 +15,7 @@ import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExi
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ class DeleteArtworkQuestionServiceTest {
 
   @Test
   void answeredQuestionCannotBeDeleted() {
-    ArtworkQuestion question = ArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true);
+    ArtworkQuestion question = ArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true, List.of());
     question.markAnswered();
     when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
     when(userExistenceRepository.existsById(2L)).thenReturn(true);

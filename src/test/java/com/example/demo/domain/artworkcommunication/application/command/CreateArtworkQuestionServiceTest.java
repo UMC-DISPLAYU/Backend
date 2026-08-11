@@ -8,11 +8,13 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion.ImageInfo;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,11 +52,18 @@ class CreateArtworkQuestionServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     ArtworkQuestionResult result =
-        service.createQuestion(new CreateArtworkQuestionCommand(1L, 2L, "작가가 작성한 질문", true));
+        service.createQuestion(
+            new CreateArtworkQuestionCommand(
+                1L,
+                2L,
+                "작가가 작성한 질문",
+                true,
+                List.of(new ImageInfo("https://image.test/question.jpg", 800, 600))));
 
     assertThat(result.displayArtworkId()).isEqualTo(1L);
     assertThat(result.userId()).isEqualTo(2L);
     assertThat(result.content()).isEqualTo("작가가 작성한 질문");
+    assertThat(result.images()).hasSize(1);
     verify(creatorExistenceRepository, never())
         .findCreatorNameByDisplayArtworkIdAndUserId(any(), any());
     verify(artworkQuestionRepository).save(any(ArtworkQuestion.class));
