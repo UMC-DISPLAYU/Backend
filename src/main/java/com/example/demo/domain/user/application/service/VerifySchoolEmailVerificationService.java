@@ -46,7 +46,9 @@ public class VerifySchoolEmailVerificationService {
     }
 
     verification.verify();
-    verification.getUser().verifyAuthor(verification.getSchoolEmail(), verification.getUnivName());
+    verification
+        .getUser()
+        .verifySchoolEmail(verification.getSchoolEmail(), verification.getUnivName());
 
     return new SchoolEmailConfirmVerificationResult(
         verification.getSchoolEmail(), verification.isVerified());
