@@ -60,8 +60,19 @@ public interface RefreshControllerDocs {
                 @ExampleObject(
                     name = "유효하지 않은 Refresh Token",
                     value = INVALID_REFRESH_TOKEN_EXAMPLE),
-                @ExampleObject(name = "만료된 Refresh Token", value = EXPIRED_REFRESH_TOKEN_EXAMPLE)
+                @ExampleObject(name = "만료된 Refresh Token", value = EXPIRED_REFRESH_TOKEN_EXAMPLE),
+                @ExampleObject(
+                    name = "저장된 Refresh Token 없음",
+                    value = REFRESH_TOKEN_NOT_FOUND_EXAMPLE),
+                @ExampleObject(name = "Access Token 전달", value = INVALID_ACCESS_TOKEN_EXAMPLE)
               }))
+  @ApiResponse(
+      responseCode = "403",
+      description = "탈퇴한 회원",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "탈퇴 회원", value = WITHDRAWAL_USER_EXAMPLE)))
   ApiResponseBody<RefreshResponse> refresh(
       @Parameter(hidden = true) String cookieRefreshToken, HttpServletRequest httpRequest);
 
@@ -101,6 +112,48 @@ public interface RefreshControllerDocs {
         "error": {
           "code": "EXPIRED_REFRESH_TOKEN",
           "message": "만료된 리프레시 토큰입니다.",
+          "details": null
+        },
+        "meta": { "timestamp": "2026-08-12T09:00:00", "path": "/api/v1/auth/refresh" }
+      }
+      """;
+
+  String REFRESH_TOKEN_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "REFRESH_TOKEN_NOT_FOUND",
+          "message": "저장된 리프레시 토큰을 찾을 수 없습니다.",
+          "details": null
+        },
+        "meta": { "timestamp": "2026-08-12T09:00:00", "path": "/api/v1/auth/refresh" }
+      }
+      """;
+
+  String INVALID_ACCESS_TOKEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "INVALID_ACCESS_TOKEN",
+          "message": "유효하지 않은 액세스 토큰입니다.",
+          "details": null
+        },
+        "meta": { "timestamp": "2026-08-12T09:00:00", "path": "/api/v1/auth/refresh" }
+      }
+      """;
+
+  String WITHDRAWAL_USER_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "WITHDRAWAL_USER",
+          "message": "탈퇴한 사용자입니다.",
           "details": null
         },
         "meta": { "timestamp": "2026-08-12T09:00:00", "path": "/api/v1/auth/refresh" }
