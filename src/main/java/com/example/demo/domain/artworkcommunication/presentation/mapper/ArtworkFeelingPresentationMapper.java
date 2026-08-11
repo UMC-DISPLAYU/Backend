@@ -6,6 +6,7 @@ import com.example.demo.domain.artworkcommunication.application.query.GetArtwork
 import com.example.demo.domain.artworkcommunication.application.query.GetArtworkFeelingsQuery;
 import com.example.demo.domain.artworkcommunication.application.result.*;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling.ImageInfo;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkFeelingRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.*;
@@ -41,7 +42,16 @@ public class ArtworkFeelingPresentationMapper {
 
   public ArtworkFeelingReplyCommand toCommand(
       Long artworkId, Long feelingId, Long userId, CreateArtworkFeelingReplyRequest request) {
-    return new ArtworkFeelingReplyCommand(artworkId, feelingId, userId, request.content());
+    List<ArtworkFeelingReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new ArtworkFeelingReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
+    return new ArtworkFeelingReplyCommand(artworkId, feelingId, userId, request.content(), images);
   }
 
   public ArtworkFeelingResponse toResponse(ArtworkFeelingResult result) {
@@ -77,7 +87,17 @@ public class ArtworkFeelingPresentationMapper {
         result.content(),
         result.feelingId(),
         result.userId(),
-        result.nickname());
+        result.nickname(),
+        result.images().stream()
+            .map(
+                image ->
+                    new ArtworkFeelingReplyResponse.ImageResponse(
+                        image.feelingReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public ArtworkFeelingListResponse toResponse(ArtworkFeelingListResult result) {
@@ -103,7 +123,17 @@ public class ArtworkFeelingPresentationMapper {
                             reply.user().profileImageUrl(),
                             reply.user().isCreator()),
                         reply.likeCount(),
-                        reply.isLiked()))
+                        reply.isLiked(),
+                        reply.images().stream()
+                            .map(
+                                image ->
+                                    new ArtworkFeelingReplyListResponse.ImageResponse(
+                                        image.feelingReplyImageId(),
+                                        image.imageUrl(),
+                                        image.width(),
+                                        image.height(),
+                                        image.sortOrder()))
+                            .toList()))
             .toList(),
         result.nextCursorId(),
         result.size(),

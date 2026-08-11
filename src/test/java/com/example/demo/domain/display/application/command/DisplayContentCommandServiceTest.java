@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
@@ -39,7 +40,7 @@ class DisplayContentCommandServiceTest {
   private final Clock clock =
       Clock.fixed(Instant.parse("2026-08-01T15:00:00Z"), ZoneId.of("Asia/Seoul"));
   private final DisplayContentCommandService service =
-      new DisplayContentCommandService(displayRepository, clock);
+      new DisplayContentCommandService(displayRepository, clock, new DisplayPermissionChecker());
 
   @Test
   void createContentCreatesDraftWhenDisplayIsDraftEvenAfterDisplayStarted() {
@@ -52,7 +53,7 @@ class DisplayContentCommandServiceTest {
 
     service.createContent(
         new CreateDisplayContentCommand(
-            2L, 1L, 1L, "https://cdn.displayu.com/display/content.jpg", 1200, 800));
+            2L, 1L, 1L, "https://cdn.displayu.com/display/content.jpg"));
 
     assertThat(category.getContents().getFirst().getStatus()).isEqualTo(DisplayContentStatus.DRAFT);
   }
@@ -86,12 +87,9 @@ class DisplayContentCommandServiceTest {
             "전시장 이미지입니다.",
             0,
             List.of(
-                new DisplayContent(
-                    1L, "https://cdn.displayu.com/display/content-1.jpg", 1440, 960, 0),
-                new DisplayContent(
-                    2L, "https://cdn.displayu.com/display/content-2.jpg", 1440, 960, 1),
-                new DisplayContent(
-                    3L, "https://cdn.displayu.com/display/content-3.jpg", 1440, 960, 2))));
+                new DisplayContent(1L, "https://cdn.displayu.com/display/content-1.jpg", 0),
+                new DisplayContent(2L, "https://cdn.displayu.com/display/content-2.jpg", 1),
+                new DisplayContent(3L, "https://cdn.displayu.com/display/content-3.jpg", 2))));
     return display;
   }
 

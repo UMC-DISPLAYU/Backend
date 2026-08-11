@@ -6,6 +6,7 @@ import com.example.demo.domain.archive.application.result.ArchiveArtistToggleRes
 import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorResult;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleResult;
+import com.example.demo.domain.archive.application.result.ArchivePersonalWorkToggleResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkCursorResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
@@ -15,6 +16,7 @@ import com.example.demo.domain.archive.presentation.response.ArchiveArtistToggle
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
+import com.example.demo.domain.archive.presentation.response.ArchivePersonalWorkToggleResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
@@ -25,10 +27,18 @@ public class ArchivePresentationMapper {
 
   public ArchiveDisplayResponse toResponse(ArchiveDisplayResult result) {
     return new ArchiveDisplayResponse(
+        result.posterImageUrl(),
+        result.status(),
+        result.title(),
+        result.organization(),
+        result.department(),
+        result.startedAt(),
+        result.endedAt(),
+        result.location(),
+        result.memo(),
         result.archiveDisplayId(),
         result.displayId(),
         result.userId(),
-        result.memo(),
         result.savedAt());
   }
 
@@ -48,10 +58,14 @@ public class ArchivePresentationMapper {
   public ArchiveWorkResponse toResponse(ArchiveWorkResult result) {
     // 도메인 용어(displayArtworkId) -> API 응답 용어(artworkId) 변환은 여기(Presentation Mapper)에서만 담당
     return new ArchiveWorkResponse(
+        result.artworkImageUrl(),
+        result.artworkName(),
+        result.artistName(),
+        result.memo(),
         result.archiveWorkId(),
         result.displayArtworkId(),
+        result.personalArtworkId(),
         result.userId(),
-        result.memo(),
         result.savedAt());
   }
 
@@ -68,10 +82,22 @@ public class ArchivePresentationMapper {
         result.hasNext());
   }
 
+  public ArchivePersonalWorkToggleResponse toResponse(ArchivePersonalWorkToggleResult result) {
+    return new ArchivePersonalWorkToggleResponse(result.personalArtworkId(), result.isArchived());
+  }
+
   public ArchiveArtistResponse toResponse(ArchiveArtistResult result) {
     // 도메인 용어(artistProfileId) -> API 응답 용어(artistId) 변환은 여기(Presentation Mapper)에서만 담당
     return new ArchiveArtistResponse(
-        result.archiveArtistId(), result.artistProfileId(), result.userId(), result.savedAt());
+        result.profileImageUrl(),
+        result.artistName(),
+        result.fields(),
+        result.artworkCount(),
+        result.exhibitionCount(),
+        result.archiveArtistId(),
+        result.artistProfileId(),
+        result.userId(),
+        result.savedAt());
   }
 
   public ArchiveArtistToggleResponse toResponse(ArchiveArtistToggleResult result) {

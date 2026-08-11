@@ -1,0 +1,11 @@
+ALTER TABLE DisplayContent
+    MODIFY COLUMN width INT NULL;
+
+ALTER TABLE DisplayContent
+    MODIFY COLUMN height INT NULL;
+
+ALTER TABLE DisplayImage
+    MODIFY COLUMN width INT NULL;
+
+ALTER TABLE DisplayImage
+    MODIFY COLUMN height INT NULL;

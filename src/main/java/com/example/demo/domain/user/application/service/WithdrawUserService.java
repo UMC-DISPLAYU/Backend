@@ -2,12 +2,13 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.WithdrawUserCommand;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class WithdrawUserService {
             .findById(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    user.withdraw(LocalDateTime.now(clock));
+    user.withdraw(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     refreshTokenRepository.findByUserId(command.userId()).ifPresent(refreshTokenRepository::delete);
   }
 }

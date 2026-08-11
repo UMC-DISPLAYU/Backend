@@ -22,4 +22,15 @@ public interface ArtworkQuestionLikeJpaRepository extends JpaRepository<ArtworkQ
       GROUP BY questionLike.questionId
       """)
   List<Object[]> countByQuestionIds(@Param("questionIds") List<Long> questionIds);
+
+  @Query(
+      """
+      SELECT questionLike.questionId
+      FROM ArtworkQuestionLike questionLike
+      WHERE questionLike.questionId IN :questionIds
+        AND questionLike.userId = :userId
+        AND questionLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedQuestionIds(
+      @Param("questionIds") List<Long> questionIds, @Param("userId") Long userId);
 }

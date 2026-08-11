@@ -41,6 +41,13 @@ public interface SchoolEmailVerificationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "발송 성공", value = SEND_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "선택한 학교와 학교 이메일 도메인 불일치",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "학교 웹메일 불일치", value = SEND_EMAIL_MISMATCH_EXAMPLE)))
   ApiResponseBody<Void> send(
       SchoolEmailVerificationRequest request, AuthUser user, HttpServletRequest httpRequest)
       throws IOException;
@@ -114,6 +121,20 @@ public interface SchoolEmailVerificationControllerDocs {
         },
         "error": null,
         "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/resend" }
+      }
+      """;
+
+  String SEND_EMAIL_MISMATCH_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "SCHOOL_EMAIL_DOMAIN_MISMATCH",
+          "message": "선택한 학교의 웹메일과 일치하지 않습니다.",
+          "details": null
+        },
+        "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/users/me/verification/email/send" }
       }
       """;
 

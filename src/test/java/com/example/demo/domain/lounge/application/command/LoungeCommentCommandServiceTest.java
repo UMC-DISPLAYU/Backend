@@ -3,10 +3,14 @@ package com.example.demo.domain.lounge.application.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.lounge.application.permission.LoungePermissionChecker;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
@@ -29,8 +33,10 @@ class LoungeCommentCommandServiceTest {
   private final LoungeCommentRepository commentRepository = mock(LoungeCommentRepository.class);
   private final LoungeCommentLikeRepository commentLikeRepository =
       mock(LoungeCommentLikeRepository.class);
+  private final LoungePermissionChecker permissionChecker = mock(LoungePermissionChecker.class);
   private final LoungeCommentCommandService service =
-      new LoungeCommentCommandService(postRepository, commentRepository, commentLikeRepository);
+      new LoungeCommentCommandService(
+          postRepository, commentRepository, commentLikeRepository, permissionChecker);
 
   @Test
   void createsCommentWithImages() {
@@ -50,6 +56,7 @@ class LoungeCommentCommandServiceTest {
 
     ArgumentCaptor<LoungeComment> captor = ArgumentCaptor.forClass(LoungeComment.class);
     verify(commentRepository).save(captor.capture());
+    verify(permissionChecker).requireCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 2L);
     assertThat(captor.getValue().getImageUrls()).containsExactlyElementsOf(imageUrls);
   }
 
@@ -74,7 +81,47 @@ class LoungeCommentCommandServiceTest {
 
     ArgumentCaptor<LoungeComment> captor = ArgumentCaptor.forClass(LoungeComment.class);
     verify(commentRepository).save(captor.capture());
+    verify(permissionChecker).requireCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 3L);
     assertThat(captor.getValue().getImageUrls()).containsExactlyElementsOf(imageUrls);
+  }
+
+  @Test
+  void validatesCategoryAccessForCommentLikes() {
+    LoungePost post = activePost();
+    LoungeComment comment = LoungeComment.createComment(1L, new UserId(2L), "댓글 내용");
+    when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+    when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
+
+    service.likeComment(2L, 3L);
+    service.cancelLikeComment(2L, 3L);
+
+    verify(permissionChecker, times(2)).requireCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
+  }
+
+  @Test
+  void accessDenialPreventsCommentWrites() {
+    LoungePost post = activePost();
+    LoungeComment comment =
+        new LoungeComment(2L, 1L, null, new UserId(2L), "댓글 내용", LoungeCommentStatus.ACTIVE);
+    BusinessException denied =
+        new BusinessException(LoungeErrorCode.LOUNGE_ARTIST_VERIFICATION_REQUIRED);
+    when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+    when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
+    doThrow(denied).when(permissionChecker).requireCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
+
+    assertThatThrownBy(
+            () ->
+                service.createComment(1L, 3L, new LoungeCommentContentCommand("댓글 내용", List.of())))
+        .isSameAs(denied);
+    assertThatThrownBy(
+            () -> service.createReply(2L, 3L, new LoungeCommentContentCommand("답글 내용", List.of())))
+        .isSameAs(denied);
+    assertThatThrownBy(() -> service.likeComment(2L, 3L)).isSameAs(denied);
+    assertThatThrownBy(() -> service.cancelLikeComment(2L, 3L)).isSameAs(denied);
+
+    verify(commentRepository, never()).save(any());
+    verify(commentLikeRepository, never()).saveIfAbsent(any(), any());
+    verify(commentLikeRepository, never()).deleteByLoungeCommentIdAndUserId(any(), any());
   }
 
   @Test
@@ -137,5 +184,15 @@ class LoungeCommentCommandServiceTest {
             BusinessException.class,
             exception ->
                 assertThat(exception.errorCode()).isEqualTo(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
+  }
+
+  private LoungePost activePost() {
+    return new LoungePost(
+        1L,
+        new UserId(1L),
+        "게시글 제목",
+        "게시글 내용",
+        LoungePostCategory.WORK_TIP,
+        LoungePostStatus.ACTIVE);
   }
 }

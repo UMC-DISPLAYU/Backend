@@ -1,18 +1,19 @@
 package com.example.demo.domain.artist.application.service;
 
 import com.example.demo.domain.artist.application.command.CreateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.entity.AreaOfActivity;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
+import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
-import com.example.demo.domain.artist.exception.ArtistErrorCode;
-import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class CreateArtistProfileService {
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
   private final ArtistProfileMapper artistProfileMapper;
+  private final ArtistPermissionChecker permissionChecker;
 
   @Transactional
   public ArtistProfile execute(Long userId, CreateArtistProfileCommand command) {
@@ -36,7 +38,7 @@ public class CreateArtistProfileService {
             .findById(userId)
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    validateVerifiedUser(user);
+    permissionChecker.requireProfileCreationEligible(user);
     validateActivityFields(command.getActivityCategories());
 
     if (artistProfileRepository.findByUser(user).isPresent()) {
@@ -68,16 +70,6 @@ public class CreateArtistProfileService {
                 areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
 
     return artistProfile;
-  }
-
-  private void validateVerifiedUser(User user) {
-    if (!user.isVerified()
-        || user.getSchoolEmail() == null
-        || user.getSchoolEmail().isBlank()
-        || user.getUnivName() == null
-        || user.getUnivName().isBlank()) {
-      throw new ArtistException(ArtistErrorCode.ARTIST_PROFILE_REQUIRES_VERIFIED_USER);
-    }
   }
 
   private void validateActivityFields(List<ActivityCategory> activityCategories) {

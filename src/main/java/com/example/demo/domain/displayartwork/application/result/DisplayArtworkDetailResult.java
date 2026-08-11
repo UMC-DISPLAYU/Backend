@@ -18,22 +18,27 @@ public record DisplayArtworkDetailResult(
     List<ImageResult> images,
     String artistName,
     Long artistUserId,
+    List<CoAuthorResult> coAuthors,
     List<QaHandlerResult> qaHandlers,
     ExhibitionInfoResult exhibitionInfo,
     long likeCount,
     boolean isLiked,
-    boolean isSaved) {
+    boolean isArchived) {
 
   public record QaHandlerResult(Long userId, String name) {}
+
+  /** 계정 없이 이름만 입력한 공동 작업자는 userId가 null이다. */
+  public record CoAuthorResult(Long userId, String name) {}
 
   public static DisplayArtworkDetailResult of(
       DisplayArtwork displayArtwork,
       String artistName,
       Long artistUserId,
+      List<CoAuthorResult> coAuthors,
       List<QaHandlerResult> qaHandlers,
       long likeCount,
       boolean isLiked,
-      boolean isSaved) {
+      boolean isArchived) {
     return new DisplayArtworkDetailResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
@@ -46,11 +51,12 @@ public record DisplayArtworkDetailResult(
         displayArtwork.getImages().stream().map(ImageResult::from).toList(),
         artistName,
         artistUserId,
+        coAuthors,
         qaHandlers,
         ExhibitionInfoResult.from(displayArtwork),
         likeCount,
         isLiked,
-        isSaved);
+        isArchived);
   }
 
   public record ImageResult(

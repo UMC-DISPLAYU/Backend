@@ -10,6 +10,8 @@ import com.example.demo.domain.artworkcommunication.application.result.ArtworkQu
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkQuestionResult;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
+import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionReplyRequest;
 import com.example.demo.domain.artworkcommunication.presentation.request.CreateArtworkQuestionRequest;
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionLikeResponse;
@@ -19,6 +21,7 @@ import com.example.demo.domain.artworkcommunication.presentation.response.Artwor
 import com.example.demo.domain.artworkcommunication.presentation.response.ArtworkQuestionResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionReplyResponse;
 import com.example.demo.domain.artworkcommunication.presentation.response.DeletedArtworkQuestionResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,17 +29,36 @@ public class ArtworkQuestionPresentationMapper {
 
   public CreateArtworkQuestionCommand toCommand(
       Long artworkId, Long userId, CreateArtworkQuestionRequest request) {
+    List<ArtworkQuestion.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new ArtworkQuestion.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
     return new CreateArtworkQuestionCommand(
-        artworkId, userId, request.content(), request.isPublic());
+        artworkId, userId, request.content(), request.isPublic(), images);
   }
 
   public ArtworkQuestionReplyCommand toCommand(
       Long artworkId, Long questionId, Long userId, CreateArtworkQuestionReplyRequest request) {
-    return new ArtworkQuestionReplyCommand(artworkId, questionId, userId, request.content());
+    List<ArtworkQuestionReply.ImageInfo> images =
+        request.images() == null
+            ? List.of()
+            : request.images().stream()
+                .map(
+                    image ->
+                        new ArtworkQuestionReply.ImageInfo(
+                            image.imageUrl(), image.width(), image.height()))
+                .toList();
+    return new ArtworkQuestionReplyCommand(
+        artworkId, questionId, userId, request.content(), images);
   }
 
-  public GetArtworkQuestionsQuery toQuery(Long artworkId, Long cursorId, Long userId) {
-    return new GetArtworkQuestionsQuery(artworkId, cursorId, userId);
+  public GetArtworkQuestionsQuery toQuery(Long artworkId, Long cursorId, int size, Long userId) {
+    return new GetArtworkQuestionsQuery(artworkId, cursorId, size, userId);
   }
 
   public ArtworkQuestionResponse toResponse(ArtworkQuestionResult result) {
@@ -47,7 +69,17 @@ public class ArtworkQuestionPresentationMapper {
         result.answerStatus(),
         result.createdAt(),
         result.displayArtworkId(),
-        result.userId());
+        result.userId(),
+        result.images().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionResponse.ImageResponse(
+                        image.questionImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public DeletedArtworkQuestionResponse toResponse(DeletedArtworkQuestionResult result) {
@@ -65,7 +97,17 @@ public class ArtworkQuestionPresentationMapper {
         result.createdAt(),
         result.questionId(),
         result.creatorId(),
-        result.creatorName());
+        result.creatorName(),
+        result.images().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionReplyResponse.ImageResponse(
+                        image.questionReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList());
   }
 
   public ArtworkQuestionListResponse toResponse(ArtworkQuestionListResult result) {
@@ -101,14 +143,26 @@ public class ArtworkQuestionPresentationMapper {
         result.content(),
         result.isPublic(),
         result.accessible(),
+        result.isMine(),
         result.canReply(),
         result.likeCount(),
+        result.isLiked(),
         result.answerStatus(),
         result.createdAt(),
+        result.images().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionListResponse.QuestionImageResponse(
+                        image.questionImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList(),
         result.user() == null
             ? null
             : new ArtworkQuestionListResponse.ArtworkQuestionUserResponse(
-                result.user().userId(), result.user().nickname()),
+                result.user().userId(), result.user().nickname(), result.user().isCreator()),
         toQuestionReplyItemResponse(result.reply()));
   }
 
@@ -125,6 +179,18 @@ public class ArtworkQuestionPresentationMapper {
         result.isCreator(),
         result.content(),
         result.createdAt(),
-        result.likeCount());
+        result.images().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionListResponse.ReplyImageResponse(
+                        image.questionReplyImageId(),
+                        image.imageUrl(),
+                        image.width(),
+                        image.height(),
+                        image.sortOrder()))
+            .toList(),
+        result.likeCount(),
+        result.isLiked(),
+        result.isMine());
   }
 }

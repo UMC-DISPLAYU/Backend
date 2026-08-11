@@ -4,6 +4,7 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ArtworkQuestionReplyLikeRepository {
 
@@ -15,4 +16,12 @@ public interface ArtworkQuestionReplyLikeRepository {
   long countByQuestionReplyIdAndDeletedAtIsNull(Long questionReplyId);
 
   Map<Long, Long> countByQuestionReplyIds(List<Long> questionReplyIds);
+  Set<Long> findLikedQuestionReplyIds(List<Long> questionReplyIds, Long userId);
+
+  record ArtworkQuestionReplyLikeSnapshot(
+      Long questionReplyId,
+      boolean liked,
+      long likeCount,
+      LocalDateTime createdAt,
+      LocalDateTime deletedAt) {}
 }

@@ -3,20 +3,21 @@ package com.example.demo.domain.artist.application.service;
 import static com.example.demo.global.util.StringNormalizer.normalize;
 
 import com.example.demo.domain.artist.application.command.UpdateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.entity.AreaOfActivity;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
+import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
-import com.example.demo.domain.artist.exception.ArtistErrorCode;
-import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
-import com.example.demo.domain.user.validator.SchoolEmailValidator;
 import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class UpdateArtistProfileService {
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
   private final SchoolEmailValidator schoolEmailValidator;
+  private final ArtistPermissionChecker permissionChecker;
 
   @Transactional
   public UpdateArtistProfileResult execute(UpdateArtistProfileCommand command) {
@@ -42,9 +44,7 @@ public class UpdateArtistProfileService {
             .findById(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-    if (!user.isVerified()) {
-      throw new UserException(UserErrorCode.ARTIST_VERIFICATION_REQUIRED);
-    }
+    permissionChecker.requireVerified(user);
 
     ArtistProfile profile =
         artistProfileRepository

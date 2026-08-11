@@ -36,10 +36,10 @@ class DisplayTest {
             "전시장 전경",
             "전시장 이미지",
             0,
-            List.of(new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0)));
+            List.of(new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 0)));
     display.addContentCategory(category);
 
-    DisplayContent content = display.createContent(1L, "https://cdn.displayu.com/2.jpg", 100, 100);
+    DisplayContent content = display.createContent(1L, "https://cdn.displayu.com/2.jpg");
 
     assertThat(content.getSortOrder()).isEqualTo(1);
   }
@@ -51,7 +51,7 @@ class DisplayTest {
         new DisplayContentCategory(1L, "전시장 전경", "전시장 이미지", 0, twentyContents());
     display.addContentCategory(category);
 
-    assertThatThrownBy(() -> display.createContent(1L, "https://cdn.displayu.com/21.jpg", 100, 100))
+    assertThatThrownBy(() -> display.createContent(1L, "https://cdn.displayu.com/21.jpg"))
         .isInstanceOfSatisfying(
             BusinessException.class,
             exception ->
@@ -63,8 +63,7 @@ class DisplayTest {
   void createContentFailsWhenCategoryDoesNotExist() {
     Display display = display();
 
-    assertThatThrownBy(
-            () -> display.createContent(999L, "https://cdn.displayu.com/1.jpg", 100, 100))
+    assertThatThrownBy(() -> display.createContent(999L, "https://cdn.displayu.com/1.jpg"))
         .isInstanceOfSatisfying(
             BusinessException.class,
             exception ->
@@ -82,9 +81,9 @@ class DisplayTest {
             "전시장 이미지",
             0,
             List.of(
-                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0),
-                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 100, 100, 1),
-                new DisplayContent(3L, "https://cdn.displayu.com/3.jpg", 100, 100, 2)));
+                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 0),
+                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 1),
+                new DisplayContent(3L, "https://cdn.displayu.com/3.jpg", 2)));
     display.addContentCategory(category);
 
     display.reorderContents(1L, List.of(3L, 1L, 2L));
@@ -104,8 +103,8 @@ class DisplayTest {
             "전시장 이미지",
             0,
             List.of(
-                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 100, 100, 0),
-                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 100, 100, 1)));
+                new DisplayContent(1L, "https://cdn.displayu.com/1.jpg", 0),
+                new DisplayContent(2L, "https://cdn.displayu.com/2.jpg", 1)));
     display.addContentCategory(category);
 
     assertThatThrownBy(() -> display.reorderContents(1L, List.of(1L, 1L)))
@@ -127,8 +126,6 @@ class DisplayTest {
                         null,
                         "https://cdn.displayu.com/posters/duplicate-main.png",
                         DisplayImageType.MAIN,
-                        1,
-                        1,
                         0,
                         null)))
         .isInstanceOfSatisfying(
@@ -215,11 +212,7 @@ class DisplayTest {
         .mapToObj(
             index ->
                 new DisplayContent(
-                    (long) index + 1,
-                    "https://cdn.displayu.com/" + (index + 1) + ".jpg",
-                    100,
-                    100,
-                    index))
+                    (long) index + 1, "https://cdn.displayu.com/" + (index + 1) + ".jpg", index))
         .toList();
   }
 }

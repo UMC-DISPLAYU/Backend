@@ -13,6 +13,7 @@ import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayService;
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery.Cursor;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
@@ -82,6 +83,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
       GetClosingSoonDisplaysService.class,
       CreateDisplayService.class,
       UpdateDisplayService.class,
+      DisplayPermissionChecker.class,
       DisplayListCacheVersion.class,
       DisplayListCacheEvictor.class
     })
@@ -301,6 +303,7 @@ class DisplayCacheIntegrationTest {
         1L,
         "전시",
         "https://cdn.displayu.com/posters/main.png",
+        List.of(),
         "부제",
         "설명",
         "전시장",
@@ -312,6 +315,7 @@ class DisplayCacheIntegrationTest {
         "중앙대학교",
         "디자인학부",
         "전시 리더",
+        null,
         DisplayType.GRADUATION,
         List.of(DisplayField.DESIGN),
         DisplayRegion.SEOUL,
@@ -333,6 +337,7 @@ class DisplayCacheIntegrationTest {
         List.of(DisplayField.DESIGN),
         "중앙대학교",
         "디자인학부",
+        null,
         null,
         "수정 부제",
         "수정 설명",

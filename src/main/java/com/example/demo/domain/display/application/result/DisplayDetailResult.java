@@ -22,6 +22,7 @@ public record DisplayDetailResult(
     String content,
     LocationResult location,
     String qnaAccount,
+    String contract,
     String note,
     String organization,
     String department,
@@ -29,7 +30,7 @@ public record DisplayDetailResult(
     List<String> displayFields,
     String region,
     long likeCount,
-    boolean isBookmarked,
+    boolean isArchived,
     PeriodResult period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -50,6 +51,7 @@ public record DisplayDetailResult(
         display.getContent(),
         LocationResult.from(display),
         display.getQnaAccount(),
+        display.getContract(),
         display.getNote(),
         display.getOrganization(),
         display.getDepartment(),
@@ -76,7 +78,7 @@ public record DisplayDetailResult(
             .toList());
   }
 
-  public DisplayDetailResult withBookmarked(boolean isBookmarked) {
+  public DisplayDetailResult withArchived(boolean isArchived) {
     return new DisplayDetailResult(
         displayId,
         ownerUserId,
@@ -85,6 +87,7 @@ public record DisplayDetailResult(
         content,
         location,
         qnaAccount,
+        contract,
         note,
         organization,
         department,
@@ -92,7 +95,7 @@ public record DisplayDetailResult(
         displayFields,
         region,
         likeCount,
-        isBookmarked,
+        isArchived,
         period,
         artworkContentOpen,
         exhibitionContentOpen,
@@ -105,13 +108,15 @@ public record DisplayDetailResult(
         invitations);
   }
 
-  public record LocationResult(String placeName, BigDecimal latitude, BigDecimal longitude) {
+  public record LocationResult(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {
 
     private static LocationResult from(Display display) {
       return new LocationResult(
           display.getLocation().placeName(),
           display.getLocation().latitude(),
-          display.getLocation().longitude());
+          display.getLocation().longitude(),
+          display.getLocation().roadAddress());
     }
   }
 
@@ -134,17 +139,11 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ImageResult(
-      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {
+  public record ImageResult(Long imageId, String imageUrl, String imageType, int sortOrder) {
 
     private static ImageResult from(DisplayImage image) {
       return new ImageResult(
-          image.getId(),
-          image.getImageUrl(),
-          image.getImageType().name(),
-          image.getWidth(),
-          image.getHeight(),
-          image.getSortOrder());
+          image.getId(), image.getImageUrl(), image.getImageType().name(), image.getSortOrder());
     }
   }
 
@@ -168,16 +167,10 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ContentResult(
-      Long contentId, String imageUrl, int width, int height, int sortOrder) {
+  public record ContentResult(Long contentId, String imageUrl, int sortOrder) {
 
     private static ContentResult from(DisplayContent content) {
-      return new ContentResult(
-          content.getId(),
-          content.getImageUrl(),
-          content.getWidth(),
-          content.getHeight(),
-          content.getSortOrder());
+      return new ContentResult(content.getId(), content.getImageUrl(), content.getSortOrder());
     }
   }
 

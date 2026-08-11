@@ -24,4 +24,15 @@ public interface ArtworkQuestionReplyLikeJpaRepository
       GROUP BY replyLike.questionReplyId
       """)
   List<Object[]> countByQuestionReplyIds(@Param("questionReplyIds") List<Long> questionReplyIds);
+
+  @Query(
+      """
+      SELECT replyLike.questionReplyId
+      FROM ArtworkQuestionReplyLike replyLike
+      WHERE replyLike.questionReplyId IN :questionReplyIds
+        AND replyLike.userId = :userId
+        AND replyLike.deletedAt IS NULL
+      """)
+  List<Long> findLikedQuestionReplyIds(
+      @Param("questionReplyIds") List<Long> questionReplyIds, @Param("userId") Long userId);
 }

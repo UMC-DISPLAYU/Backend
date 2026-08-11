@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.application.result;
 
-import com.example.demo.domain.user.domain.enums.Type;
+import com.example.demo.domain.user.domain.type.Type;
 import java.time.LocalDate;
 
 public record AgreementResult(

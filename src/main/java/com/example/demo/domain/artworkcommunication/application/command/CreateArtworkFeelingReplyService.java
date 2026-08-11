@@ -30,6 +30,7 @@ public class CreateArtworkFeelingReplyService {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
     artworkFeelingValidator.validateContent(command.content());
+    artworkFeelingValidator.validateReplyImages(command.images());
 
     ArtworkFeeling artworkFeeling =
         artworkFeelingRepository
@@ -41,10 +42,11 @@ public class CreateArtworkFeelingReplyService {
 
     ArtworkFeelingReply savedFeelingReply =
         artworkFeelingReplyRepository.save(
-            ArtworkFeelingReply.create(command.feelingId(), command.userId(), command.content()));
+            ArtworkFeelingReply.create(
+                command.feelingId(), command.userId(), command.content(), command.images()));
 
     Optional<String> creatorName =
-        creatorExistenceRepository.findCreatorNameByDisplayArtworkIdAndUserId(
+        creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(
             command.displayArtworkId(), command.userId());
     String nickname =
         creatorName.orElseGet(
@@ -60,6 +62,16 @@ public class CreateArtworkFeelingReplyService {
         savedFeelingReply.getContent(),
         savedFeelingReply.getFeelingId(),
         savedFeelingReply.getUserId(),
-        nickname);
+        nickname,
+        savedFeelingReply.getImages().stream()
+            .map(
+                image ->
+                    new ArtworkFeelingReplyResult.ImageResult(
+                        image.getFeelingReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }

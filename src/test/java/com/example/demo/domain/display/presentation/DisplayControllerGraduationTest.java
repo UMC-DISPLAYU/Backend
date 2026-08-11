@@ -48,12 +48,13 @@ class DisplayControllerGraduationTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].organization").value("organization"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].department").value("department"))
+        .andExpect(
+            jsonPath("$.success.data.exhibitions[0].schoolDepartmentName")
+                .value("organization department"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].startedAt").value("2026-05-20"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].endedAt").value("2026-05-28"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft", notNullValue()))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false))
         .andExpect(jsonPath("$.error").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/displays/graduation"));
   }

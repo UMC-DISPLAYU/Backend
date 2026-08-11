@@ -27,7 +27,7 @@ class DisplayBookmarkEnrichmentServiceTest {
     assertThat(repository.requestedUserId).isEqualTo(10L);
     assertThat(repository.requestedDisplayIds).containsExactly(1L, 2L, 3L);
     assertThat(enriched.exhibitions())
-        .extracting(SearchDisplayResult.ExhibitionResult::isBookmarked)
+        .extracting(SearchDisplayResult.ExhibitionResult::isArchived)
         .containsExactly(false, true, false);
   }
 
@@ -36,6 +36,8 @@ class DisplayBookmarkEnrichmentServiceTest {
         displayId,
         "전시 " + displayId,
         "https://cdn.displayu.com/posters/main.png",
+        "organization",
+        "department",
         LocalDate.of(2026, 7, 1),
         LocalDate.of(2026, 7, 10),
         9,
@@ -44,13 +46,18 @@ class DisplayBookmarkEnrichmentServiceTest {
 
   private static class FakeArchiveDisplayRepository implements ArchiveDisplayRepository {
 
-    private final List<Long> bookmarkedDisplayIds;
+    private final List<Long> archivedDisplayIds;
     private Long requestedUserId;
     private List<Long> requestedDisplayIds;
     private int bulkLookupCount;
 
-    private FakeArchiveDisplayRepository(List<Long> bookmarkedDisplayIds) {
-      this.bookmarkedDisplayIds = bookmarkedDisplayIds;
+    private FakeArchiveDisplayRepository(List<Long> archivedDisplayIds) {
+      this.archivedDisplayIds = archivedDisplayIds;
+    }
+
+    @Override
+    public Optional<ArchiveDisplay> findById(Long archiveDisplayId) {
+      return Optional.empty();
     }
 
     @Override
@@ -68,7 +75,7 @@ class DisplayBookmarkEnrichmentServiceTest {
       requestedUserId = userId;
       requestedDisplayIds = displayIds;
       bulkLookupCount++;
-      return bookmarkedDisplayIds;
+      return archivedDisplayIds;
     }
 
     @Override

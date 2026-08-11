@@ -1,0 +1,3 @@
+ALTER TABLE `DisplayReview`
+    DROP INDEX `UQ_DISPLAY_REVIEW_ACTIVE_USER`,
+    DROP COLUMN `activeReviewUserId`;

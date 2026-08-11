@@ -77,12 +77,11 @@ public class PersonalArtworkFeelingValidator {
     }
   }
 
-  public void validateAccessiblePersonalFeeling(
-      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId, Long userId) {
+  public void validateFeelingTarget(
+      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
     validateNotDeleted(personalArtworkFeeling);
     validatePersonalArtworkFeelingBelongsToPersonalArtwork(
         personalArtworkFeeling, personalArtworkId);
-    validateWriter(personalArtworkFeeling, userId);
   }
 
   public void validateReplyTarget(
@@ -93,6 +92,12 @@ public class PersonalArtworkFeelingValidator {
   }
 
   public void validateReplyListTarget(
+      PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
+    validatePersonalArtworkFeelingBelongsToPersonalArtwork(
+        personalArtworkFeeling, personalArtworkId);
+  }
+
+  public void validateReplyDeletionTarget(
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
     validatePersonalArtworkFeelingBelongsToPersonalArtwork(
         personalArtworkFeeling, personalArtworkId);
@@ -138,15 +143,6 @@ public class PersonalArtworkFeelingValidator {
     }
   }
 
-  public void validateAccessibleReply(
-      PersonalArtworkFeelingReply reply, Long personalFeelingId, Long userId) {
-    validateReplyTarget(reply, personalFeelingId);
-    if (!reply.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_FEELING_REPLY_FORBIDDEN);
-    }
-  }
-
   private void validateNotDeleted(PersonalArtworkFeeling personalArtworkFeeling) {
     if (personalArtworkFeeling.isDeleted()) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND);
@@ -157,13 +153,6 @@ public class PersonalArtworkFeelingValidator {
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
     if (!personalArtworkFeeling.belongsToArtwork(personalArtworkId)) {
       throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND);
-    }
-  }
-
-  private void validateWriter(PersonalArtworkFeeling personalArtworkFeeling, Long userId) {
-    if (!personalArtworkFeeling.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_FEELING_FORBIDDEN);
     }
   }
 }

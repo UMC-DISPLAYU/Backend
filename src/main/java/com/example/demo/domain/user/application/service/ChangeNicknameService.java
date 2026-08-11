@@ -3,12 +3,13 @@ package com.example.demo.domain.user.application.service;
 import com.example.demo.domain.user.application.command.ChangeNicknameCommand;
 import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,7 +43,8 @@ public class ChangeNicknameService {
     }
 
     try {
-      LocalDateTime nextChangeAvailableAt = user.changeNickname(nickname, LocalDateTime.now(clock));
+      LocalDateTime nextChangeAvailableAt =
+          user.changeNickname(nickname, LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
 
       userRepository.flush();
 

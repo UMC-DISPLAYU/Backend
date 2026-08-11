@@ -5,7 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface CreatorExistenceRepository {
-  Optional<String> findCreatorNameByDisplayArtworkIdAndUserId(Long displayArtworkId, Long userId);
+  Optional<String> findParticipantNameByDisplayArtworkIdAndUserId(
+      Long displayArtworkId, Long userId);
 
   Optional<ContactCreator> findContactCreatorByDisplayArtworkIdAndUserId(
       Long displayArtworkId, Long userId);

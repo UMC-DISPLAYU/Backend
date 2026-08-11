@@ -18,6 +18,7 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.entity.Creator;
@@ -28,6 +29,7 @@ import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRe
 import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,13 +54,12 @@ class AuthorSetupServicePermissionTest {
   private final ArtistVerificationRepository artistVerificationRepository =
       mock(ArtistVerificationRepository.class);
   private final UserNicknameRepository userNicknameRepository = mock(UserNicknameRepository.class);
+  private final DisplayArtworkPermissionChecker permissionChecker =
+      new DisplayArtworkPermissionChecker(creatorRepository, artistVerificationRepository);
 
   private final AuthorSetupService service =
       new AuthorSetupService(
-          displayArtworkRepository,
-          creatorRepository,
-          artistVerificationRepository,
-          userNicknameRepository);
+          displayArtworkRepository, creatorRepository, userNicknameRepository, permissionChecker);
 
   @Test
   void 전시_대표자는_계정이_없는_작가의_작품을_대리_등록하고_본인을_QA_담당자로_지정할_수_있다() {
@@ -68,13 +69,32 @@ class AuthorSetupServicePermissionTest {
     service.setup(LEADER, command(null, "고상준", List.of(), List.of("공동작업자"), LEADER));
 
     // 대표 작가가 계정이 없으므로, Q&A 담당자인 대표자가 Creator로 함께 저장돼야 답변할 수 있다.
+    // 이때 대표자는 작품의 작가가 아니므로 QA_ONLY로 저장돼 작가 목록 조회에서 제외된다.
     assertThat(savedCreators())
         .extracting(
-            Creator::getCreatorName, Creator::isLeader, Creator::isContact, Creator::getUserId)
+            Creator::getCreatorName,
+            Creator::getRole,
+            Creator::isLeader,
+            Creator::isContact,
+            Creator::getUserId)
         .containsExactly(
-            tuple("고상준", true, false, null),
-            tuple("공동작업자", false, false, null),
-            tuple("대표자", false, true, LEADER));
+            tuple("고상준", CreatorRole.LEAD_ARTIST, true, false, null),
+            tuple("공동작업자", CreatorRole.CO_AUTHOR, false, false, null),
+            tuple("대표자", CreatorRole.QA_ONLY, false, true, LEADER));
+  }
+
+  @Test
+  void QA_담당자로만_지정된_대표자는_공동_작업자로_집계되지_않는다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(anyLong())).thenReturn(true);
+
+    service.setup(LEADER, command(null, "고상준", List.of(), List.of("공동작업자"), LEADER));
+
+    // isLeader만으로는 공동 작업자와 QA 담당 전용을 구분할 수 없어 role로 판단한다.
+    assertThat(savedCreators())
+        .filteredOn(Creator::isCoAuthor)
+        .extracting(Creator::getCreatorName)
+        .containsExactly("공동작업자");
   }
 
   @Test

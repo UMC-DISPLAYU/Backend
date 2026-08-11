@@ -72,12 +72,15 @@ class DisplayControllerSearchTest {
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
         .andExpect(
+            jsonPath("$.success.data.exhibitions[0].schoolDepartmentName")
+                .value("organization department"))
+        .andExpect(
             jsonPath("$.success.data.exhibitions[0].startedAt")
                 .value(today.minusDays(1).toString()))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(5).toString()))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(5))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false))
         .andExpect(jsonPath("$.success.data.pagination.nextCursor", notNullValue()))
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
         .andExpect(jsonPath("$.success.data.pagination.hasNext").value(true))
@@ -86,7 +89,7 @@ class DisplayControllerSearchTest {
   }
 
   @Test
-  void searchDisplaysReturnsBookmarkedTrueWhenRequesterArchivedDisplay() throws Exception {
+  void searchDisplaysReturnsArchivedTrueWhenRequesterArchivedDisplay() throws Exception {
     LocalDate today = LocalDate.now(clock);
     Display display =
         jpaRepository.saveAndFlush(
@@ -102,7 +105,7 @@ class DisplayControllerSearchTest {
                 .param("size", "10"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.exhibitions[0].displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(true));
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(true));
   }
 
   @Test

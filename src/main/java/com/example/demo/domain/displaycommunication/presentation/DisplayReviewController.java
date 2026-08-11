@@ -61,7 +61,6 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @GetMapping
-  @SecurityRequirement(name = "Authorization")
   // 전시 후기 및 답글 목록 조회
   public ApiResponseBody<DisplayReviewListResponse> getReviews(
       @PathVariable Long displayId,
@@ -80,7 +79,6 @@ public class DisplayReviewController implements DisplayReviewApiDocs {
 
   @Override
   @GetMapping("/{displayReviewId}/replies")
-  @SecurityRequirement(name = "Authorization")
   // 전시 후기 답글 목록 조회
   public ApiResponseBody<DisplayReviewReplyListResponse> getReviewReplies(
       @PathVariable Long displayId,

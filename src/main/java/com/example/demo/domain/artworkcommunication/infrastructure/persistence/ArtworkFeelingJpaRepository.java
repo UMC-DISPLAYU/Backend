@@ -17,6 +17,15 @@ public interface ArtworkFeelingJpaRepository extends JpaRepository<ArtworkFeelin
       SELECT feeling
       FROM ArtworkFeeling feeling
       WHERE feeling.displayArtworkId = :displayArtworkId
+        AND (
+          feeling.deletedAt IS NULL
+          OR EXISTS (
+            SELECT reply.feelingReplyId
+            FROM ArtworkFeelingReply reply
+            WHERE reply.feelingId = feeling.feelingId
+              AND reply.deletedAt IS NULL
+          )
+        )
         AND (:cursorId IS NULL OR feeling.feelingId > :cursorId)
       ORDER BY feeling.feelingId ASC
       """)

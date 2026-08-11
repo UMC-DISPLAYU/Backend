@@ -6,23 +6,15 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DUPLICA
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_ARTIST_PROFILE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_ARTIST_PROFILE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
-import com.example.demo.domain.artist.presentation.request.UpdateArtistProfileRequest;
-import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
-import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
-import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
 import com.example.demo.domain.user.presentation.request.UpdateMyProfileRequest;
 import com.example.demo.domain.user.presentation.request.UserSearchRequest;
@@ -139,7 +131,7 @@ public interface UserControllerDocs {
           """
           로그인한 사용자의 닉네임을 변경합니다.
 
-          - 닉네임은 한글, 영문, 숫자로 5~15자여야 합니다.
+          - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
           - 공백과 특수문자는 사용할 수 없습니다.
           - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
           """)
@@ -188,66 +180,13 @@ public interface UserControllerDocs {
   ApiResponseBody<ChangeNicknameResponse> changeNickname(
       AuthUser user, ChangeNicknameRequest request, HttpServletRequest httpRequest);
 
-  @Operation(summary = "내 작가 프로필 조회", description = "로그인한 사용자의 작가 프로필을 조회합니다.")
-  @ApiResponse(
-      responseCode = "200",
-      description = "내 작가 프로필 조회 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(name = "조회 성공", value = MY_ARTIST_PROFILE_SUCCESS_EXAMPLE)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "작가 프로필 없음",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "프로필 없음", value = MY_ARTIST_PROFILE_NOT_FOUND_EXAMPLE)))
-  @ApiResponse(responseCode = "401", description = "Access Token verification failed")
-  @SecurityRequirement(name = "Authorization")
-  ApiResponseBody<MyArtistProfileResponse> getMyArtistProfile(
-      AuthUser user, HttpServletRequest httpRequest);
-
-  @Operation(summary = "본인 작가 프로필 수정", description = "작가 인증이 완료된 사용자의 작가 프로필을 수정합니다.")
-  @ApiResponse(responseCode = "200", description = "작가 프로필 수정 성공")
-  @ApiResponse(responseCode = "400", description = "요청 필드 검증 실패")
-  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
-  @ApiResponse(responseCode = "403", description = "작가 인증이 완료되지 않은 사용자")
-  @ApiResponse(responseCode = "404", description = "사용자 또는 작가 프로필이 존재하지 않음")
-  @ApiResponse(responseCode = "409", description = "작가명 중복")
-  @SecurityRequirement(name = "Authorization")
-  ApiResponseBody<UpdateArtistProfileResponse> updateMyArtistProfile(
-      AuthUser user, UpdateArtistProfileRequest request, HttpServletRequest httpRequest);
-
-  @Operation(summary = "특정 사용자 작가 프로필 조회", description = "특정 사용자의 작가 프로필을 조회합니다.")
-  @ApiResponse(
-      responseCode = "200",
-      description = "특정 사용자 작가 프로필 조회 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "조회 성공", value = USER_ARTIST_PROFILE_SUCCESS_EXAMPLE)))
-  @ApiResponse(
-      responseCode = "404",
-      description = "작가 프로필 없음",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "프로필 없음", value = USER_ARTIST_PROFILE_NOT_FOUND_EXAMPLE)))
-  ApiResponseBody<UserArtistProfileResponse> getUserArtistProfile(
-      @Parameter(description = "조회할 사용자 ID", required = true, example = "15") Long userId,
-      HttpServletRequest httpRequest);
-
   @Operation(
       summary = "닉네임 중복 확인",
       description =
           """
                   닉네임의 사용 가능 여부를 확인합니다.
 
-                  - 닉네임은 한글, 영문, 숫자로 5~15자여야 합니다.
+                  - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
                   - 공백과 특수문자는 사용할 수 없습니다.
                   - 이미 사용 중인 닉네임은 isAvailable=false를 반환합니다.
                   """)

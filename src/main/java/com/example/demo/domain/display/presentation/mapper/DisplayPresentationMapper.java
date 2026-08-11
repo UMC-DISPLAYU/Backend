@@ -7,6 +7,7 @@ import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
+import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
@@ -23,11 +24,13 @@ import com.example.demo.domain.display.presentation.response.DisplayDetailRespon
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
+import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,6 +41,7 @@ public class DisplayPresentationMapper {
         ownerUserId,
         request.title(),
         request.posterImageUrl(),
+        request.displayImageUrls() == null ? List.of() : request.displayImageUrls(),
         request.subtitle(),
         request.description(),
         request.locationName(),
@@ -49,6 +53,7 @@ public class DisplayPresentationMapper {
         organization(request),
         department(request),
         request.displayNickname(),
+        request.contract(),
         toDisplayType(request.type()),
         request.fields().stream().map(this::toDisplayField).toList(),
         toDisplayRegion(request.region()),
@@ -73,6 +78,7 @@ public class DisplayPresentationMapper {
         request.schoolOrOrganization(),
         request.departmentOrClub(),
         request.hostOrganizationName(),
+        request.contract(),
         request.subtitle(),
         request.description(),
         request.startDate(),
@@ -134,6 +140,10 @@ public class DisplayPresentationMapper {
     return new DisplayLikeResponse(result.displayId(), result.likeCount());
   }
 
+  public DisplayLikeStatusResponse toResponse(DisplayLikeStatusResult result) {
+    return new DisplayLikeStatusResponse(result.isLiked());
+  }
+
   public DisplayInvitationResponse toResponse(DisplayInvitationResult result) {
     return new DisplayInvitationResponse(result.displayId(), result.invitationUrl());
   }
@@ -151,6 +161,7 @@ public class DisplayPresentationMapper {
         result.content(),
         toResponse(result.location()),
         result.qnaAccount(),
+        result.contract(),
         result.note(),
         result.organization(),
         result.department(),
@@ -158,7 +169,7 @@ public class DisplayPresentationMapper {
         result.displayFields(),
         result.region(),
         result.likeCount(),
-        result.isBookmarked(),
+        result.isArchived(),
         toResponse(result.period()),
         result.artworkContentOpen(),
         result.exhibitionContentOpen(),
@@ -186,12 +197,11 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        result.organization(),
-        result.department(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -200,12 +210,11 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        result.organization(),
-        result.department(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -214,10 +223,11 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -228,9 +238,10 @@ public class DisplayPresentationMapper {
         result.endDate(),
         result.locationName(),
         result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.latitude(),
         result.longitude(),
-        result.isBookmarked());
+        result.isArchived());
   }
 
   private MyDisplayListResponse.MyDisplayResponse toResponse(
@@ -250,7 +261,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.LocationResponse toResponse(
       DisplayDetailResult.LocationResult result) {
     return new DisplayDetailResponse.LocationResponse(
-        result.placeName(), result.latitude(), result.longitude());
+        result.placeName(), result.latitude(), result.longitude(), result.roadAddress());
   }
 
   private DisplayDetailResponse.PeriodResponse toResponse(DisplayDetailResult.PeriodResult result) {
@@ -260,12 +271,7 @@ public class DisplayPresentationMapper {
 
   private DisplayDetailResponse.ImageResponse toResponse(DisplayDetailResult.ImageResult result) {
     return new DisplayDetailResponse.ImageResponse(
-        result.imageId(),
-        result.imageUrl(),
-        result.imageType(),
-        result.width(),
-        result.height(),
-        result.sortOrder());
+        result.imageId(), result.imageUrl(), result.imageType(), result.sortOrder());
   }
 
   private DisplayDetailResponse.ContentCategoryResponse toResponse(
@@ -281,7 +287,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.ContentResponse toResponse(
       DisplayDetailResult.ContentResult result) {
     return new DisplayDetailResponse.ContentResponse(
-        result.contentId(), result.imageUrl(), result.width(), result.height(), result.sortOrder());
+        result.contentId(), result.imageUrl(), result.sortOrder());
   }
 
   private DisplayDetailResponse.TeamMemberResponse toResponse(
@@ -298,6 +304,22 @@ public class DisplayPresentationMapper {
       DisplayDetailResult.InvitationResult result) {
     return new DisplayDetailResponse.InvitationResponse(
         result.invitationId(), result.inviterUserId(), result.inviteeUserId(), result.createdAt());
+  }
+
+  private String schoolDepartmentName(String organization, String department) {
+    String trimmedOrganization = trimToEmpty(organization);
+    String trimmedDepartment = trimToEmpty(department);
+    if (trimmedOrganization.isBlank()) {
+      return trimmedDepartment;
+    }
+    if (trimmedDepartment.isBlank()) {
+      return trimmedOrganization;
+    }
+    return trimmedOrganization + " " + trimmedDepartment;
+  }
+
+  private String trimToEmpty(String value) {
+    return value == null ? "" : value.trim();
   }
 
   private String organization(CreateDisplayRequest request) {

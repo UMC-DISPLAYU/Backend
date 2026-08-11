@@ -4,9 +4,10 @@ import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
-import com.example.demo.domain.displayartwork.application.command.ArtworkEditPermission;
+import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
+import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.CoAuthorResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult.QaHandlerResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkEditResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkListResult;
@@ -43,7 +44,7 @@ public class DisplayArtworkQueryService {
   private final CreatorRepository creatorRepository;
   private final DisplayArtworkLikeRepository displayArtworkLikeRepository;
   private final ArchiveWorkRepository archiveWorkRepository;
-  private final ArtworkEditPermission artworkEditPermission;
+  private final DisplayArtworkPermissionChecker permissionChecker;
 
   public DisplayArtworkQueryService(
       DisplayRepository displayRepository,
@@ -51,13 +52,13 @@ public class DisplayArtworkQueryService {
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
       ArchiveWorkRepository archiveWorkRepository,
-      ArtworkEditPermission artworkEditPermission) {
+      DisplayArtworkPermissionChecker permissionChecker) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.displayArtworkLikeRepository = displayArtworkLikeRepository;
     this.archiveWorkRepository = archiveWorkRepository;
-    this.artworkEditPermission = artworkEditPermission;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional(readOnly = true)
@@ -79,6 +80,13 @@ public class DisplayArtworkQueryService {
     Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
     String artistName = leader.map(Creator::getCreatorName).orElse(null);
     Long artistUserId = leader.map(Creator::getUserId).orElse(null);
+    // QnA 담당자로만 지정된 전시 대표자는 작품의 작가가 아니므로 공동 작업자 목록에서 제외한다.
+    // 계정 없이 이름만 입력한 공동 작업자는 userId가 null로 내려가고, 프론트는 이 값으로 프로필 이동 가능 여부를 판단한다.
+    List<CoAuthorResult> coAuthors =
+        creators.stream()
+            .filter(Creator::isCoAuthor)
+            .map(creator -> new CoAuthorResult(creator.getUserId(), creator.getCreatorName()))
+            .toList();
     List<QaHandlerResult> qaHandlers =
         creators.stream()
             .filter(Creator::isContact)
@@ -92,14 +100,21 @@ public class DisplayArtworkQueryService {
         requesterUserId != null
             && displayArtworkLikeRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
                 displayArtworkId, requesterUserId);
-    boolean isSaved =
+    boolean isArchived =
         requesterUserId != null
             && archiveWorkRepository
                 .findByUserIdAndDisplayArtworkId(requesterUserId, displayArtworkId)
                 .isPresent();
 
     return DisplayArtworkDetailResult.of(
-        displayArtwork, artistName, artistUserId, qaHandlers, likeCount, isLiked, isSaved);
+        displayArtwork,
+        artistName,
+        artistUserId,
+        coAuthors,
+        qaHandlers,
+        likeCount,
+        isLiked,
+        isArchived);
   }
 
   /** 수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위해 공동 작업자까지 포함해 조회한다. */
@@ -112,16 +127,15 @@ public class DisplayArtworkQueryService {
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
-    if (!artworkEditPermission.canEdit(
-        displayArtwork.getDisplay(), displayArtworkId, requesterUserId)) {
-      throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
-    }
+    permissionChecker.requireArtworkEditor(
+        requesterUserId, displayArtwork.getDisplay(), displayArtworkId);
 
     List<Creator> creators = creatorRepository.findByDisplayArtworkId(displayArtworkId);
     Optional<Creator> leader = creators.stream().filter(Creator::isLeader).findFirst();
+    // QnA 담당자로만 지정된 전시 대표자도 Creator로 남아 있어 !isLeader로는 걸러지지 않는다. role로 판단한다.
     List<DisplayArtworkEditResult.CoAuthorResult> coAuthors =
         creators.stream()
-            .filter(creator -> !creator.isLeader())
+            .filter(Creator::isCoAuthor)
             .map(
                 creator ->
                     new DisplayArtworkEditResult.CoAuthorResult(

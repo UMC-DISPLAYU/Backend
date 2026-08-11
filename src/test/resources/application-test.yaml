@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: demo-test
-
   datasource:
     url: jdbc:h2:mem:displayu_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
@@ -37,27 +34,32 @@ springdoc:
   swagger-ui:
     enabled: false
 
+management:
+  server:
+    port: 0
+
 frontend:
   base-url: https://www.displayu.co.kr
   allowed-origins: http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app
 
 
 app:
+  environment: test
   display:
     invitation:
-      base-url: https://displayu.co.kr/display/invitation
+      base-url: https://www.displayu.co.kr/display/invitation
 
   kakao:
     client:
       id: test-kakao-client-id
       secret: test-kakao-client-secret
-    redirect-uri: http://localhost:8080/api/auth/kakao/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/kakao/callback
 
   google:
     client:
       id: test-google-client-id
       secret: test-google-client-secret
-    redirect-uri: http://localhost:8080/api/auth/google/callback
+    redirect-uri: http://localhost:8080/api/v1/auth/google/callback
 
   oauth:
     cookie-secure: false

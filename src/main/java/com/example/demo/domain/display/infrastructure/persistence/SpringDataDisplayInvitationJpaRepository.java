@@ -22,4 +22,7 @@ public interface SpringDataDisplayInvitationJpaRepository
 
   List<DisplayInvitation> findByInviteeUserIdValueAndStatusAndDeletedAtIsNullOrderByIdDesc(
       Long inviteeUserId, DisplayInvitationStatus status);
+
+  List<DisplayInvitation> findByDisplayIdAndInviteeUserIdValueAndStatusAndDeletedAtIsNull(
+      Long displayId, Long inviteeUserId, DisplayInvitationStatus status);
 }

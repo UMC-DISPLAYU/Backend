@@ -1,6 +1,6 @@
 spring:
   application:
-    name: demo
+    name: displayu-backend
   threads:
     virtual:
       enabled: true
@@ -11,10 +11,25 @@ springdoc:
   swagger-ui:
     enabled: false
 
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${app.environment:default}
+    distribution:
+      slo:
+        http.server.requests: 100ms,300ms,1s,3s
+
 app:
   display:
     invitation:
-      base-url: https://displayu.co.kr/display/invitation
+      base-url: https://www.displayu.co.kr/display/invitation
 
   kakao:
     client:

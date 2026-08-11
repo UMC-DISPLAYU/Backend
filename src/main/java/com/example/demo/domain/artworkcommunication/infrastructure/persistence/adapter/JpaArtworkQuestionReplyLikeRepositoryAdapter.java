@@ -5,6 +5,8 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQue
 import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkQuestionReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -42,5 +44,15 @@ public class JpaArtworkQuestionReplyLikeRepositoryAdapter
 
     return artworkQuestionReplyLikeJpaRepository.countByQuestionReplyIds(questionReplyIds).stream()
         .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+  }
+
+  @Override
+  public Set<Long> findLikedQuestionReplyIds(List<Long> questionReplyIds, Long userId) {
+    if (questionReplyIds.isEmpty()) {
+      return Set.of();
+    }
+
+    return Set.copyOf(
+        artworkQuestionReplyLikeJpaRepository.findLikedQuestionReplyIds(questionReplyIds, userId));
   }
 }

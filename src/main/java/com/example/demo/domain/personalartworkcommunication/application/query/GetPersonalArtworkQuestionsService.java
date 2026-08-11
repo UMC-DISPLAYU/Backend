@@ -5,6 +5,8 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionReplyItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.PersonalArtworkQuestionUserResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.QuestionImageResult;
+import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionListResult.ReplyImageResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
@@ -17,6 +19,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Us
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetPersonalArtworkQuestionsService {
 
-  private static final int PAGE_SIZE = 3;
+  private static final int MAX_PAGE_SIZE = 50;
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
@@ -42,6 +45,7 @@ public class GetPersonalArtworkQuestionsService {
 
   public PersonalArtworkQuestionListResult getQuestions(GetPersonalArtworkQuestionsQuery query) {
     personalArtworkQuestionValidator.validatePersonalArtworkExists(query.personalArtworkId());
+    int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     Long ownerUserId =
         personalArtworkExistenceRepository
             .findOwnerUserIdById(query.personalArtworkId())
@@ -52,26 +56,39 @@ public class GetPersonalArtworkQuestionsService {
 
     List<PersonalArtworkQuestion> fetched =
         personalArtworkQuestionRepository.findActiveByPersonalArtworkIdWithCursor(
-            query.personalArtworkId(), query.cursorId(), PAGE_SIZE + 1);
-    boolean hasNext = fetched.size() > PAGE_SIZE;
-    List<PersonalArtworkQuestion> pageQuestions = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+            query.personalArtworkId(), query.cursorId(), pageSize + 1);
+    boolean hasNext = fetched.size() > pageSize;
+    List<PersonalArtworkQuestion> pageQuestions = hasNext ? fetched.subList(0, pageSize) : fetched;
 
     if (pageQuestions.isEmpty()) {
-      return new PersonalArtworkQuestionListResult(List.of(), null, PAGE_SIZE, false);
+      return new PersonalArtworkQuestionListResult(List.of(), null, pageSize, false);
     }
 
     Map<Long, PersonalArtworkQuestionReply> replyByQuestionId =
         findRepliesByQuestionId(pageQuestions);
     Set<Long> userIds = collectUserIds(pageQuestions, replyByQuestionId.values());
     Map<Long, String> nicknameByUserId = userExistenceRepository.findNicknamesByIds(userIds);
+    List<Long> questionIds =
+        pageQuestions.stream().map(PersonalArtworkQuestion::getPersonalQuestionId).toList();
+    List<Long> questionReplyIds =
+        replyByQuestionId.values().stream()
+            .map(PersonalArtworkQuestionReply::getPersonalQuestionReplyId)
+            .toList();
     Map<Long, Long> questionLikeCounts =
-        personalArtworkQuestionLikeRepository.countByPersonalQuestionIds(
-            pageQuestions.stream().map(PersonalArtworkQuestion::getPersonalQuestionId).toList());
+        personalArtworkQuestionLikeRepository.countByPersonalQuestionIds(questionIds);
+    Set<Long> likedQuestionIds =
+        query.userId() == null
+            ? Set.of()
+            : personalArtworkQuestionLikeRepository.findLikedPersonalQuestionIds(
+                questionIds, query.userId());
     Map<Long, Long> replyLikeCounts =
         personalArtworkQuestionReplyLikeRepository.countByPersonalQuestionReplyIds(
-            replyByQuestionId.values().stream()
-                .map(PersonalArtworkQuestionReply::getPersonalQuestionReplyId)
-                .toList());
+            questionReplyIds);
+    Set<Long> likedQuestionReplyIds =
+        query.userId() == null
+            ? Set.of()
+            : personalArtworkQuestionReplyLikeRepository.findLikedPersonalQuestionReplyIds(
+                questionReplyIds, query.userId());
 
     List<PersonalArtworkQuestionItemResult> questions =
         pageQuestions.stream()
@@ -84,11 +101,13 @@ public class GetPersonalArtworkQuestionsService {
                         ownerUserId,
                         query.userId(),
                         questionLikeCounts,
-                        replyLikeCounts))
+                        likedQuestionIds,
+                        replyLikeCounts,
+                        likedQuestionReplyIds))
             .toList();
 
     Long nextCursorId = hasNext ? questions.get(questions.size() - 1).personalQuestionId() : null;
-    return new PersonalArtworkQuestionListResult(questions, nextCursorId, PAGE_SIZE, hasNext);
+    return new PersonalArtworkQuestionListResult(questions, nextCursorId, pageSize, hasNext);
   }
 
   private Map<Long, PersonalArtworkQuestionReply> findRepliesByQuestionId(
@@ -121,7 +140,9 @@ public class GetPersonalArtworkQuestionsService {
       Long ownerUserId,
       Long userId,
       Map<Long, Long> questionLikeCounts,
-      Map<Long, Long> replyLikeCounts) {
+      Set<Long> likedQuestionIds,
+      Map<Long, Long> replyLikeCounts,
+      Set<Long> likedQuestionReplyIds) {
     boolean isOwner = ownerUserId.equals(userId);
     boolean accessible =
         Boolean.TRUE.equals(question.getIsPublic()) || question.isWrittenBy(userId) || isOwner;
@@ -134,29 +155,54 @@ public class GetPersonalArtworkQuestionsService {
           question.getIsPublic(),
           false,
           false,
+          false,
           null,
+          false,
           question.getAnswerStatus(),
           question.getCreatedAt(),
+          List.of(),
           null,
           null);
     }
 
     PersonalArtworkQuestionUserResult user =
         new PersonalArtworkQuestionUserResult(
-            question.getUserId(), findNicknameOrThrow(nicknameByUserId, question.getUserId()));
+            question.getUserId(),
+            findNicknameOrThrow(nicknameByUserId, question.getUserId()),
+            ownerUserId.equals(question.getUserId()));
 
     PersonalArtworkQuestionReplyItemResult replyResult =
-        reply == null ? null : toReplyItem(reply, nicknameByUserId, ownerUserId, replyLikeCounts);
+        reply == null
+            ? null
+            : toReplyItem(
+                reply,
+                nicknameByUserId,
+                ownerUserId,
+                userId,
+                replyLikeCounts,
+                likedQuestionReplyIds);
 
     return new PersonalArtworkQuestionItemResult(
         question.getPersonalQuestionId(),
         question.getContent(),
         question.getIsPublic(),
         true,
+        Objects.equals(question.getUserId(), userId),
         canReply,
         questionLikeCounts.getOrDefault(question.getPersonalQuestionId(), 0L),
+        likedQuestionIds.contains(question.getPersonalQuestionId()),
         question.getAnswerStatus(),
         question.getCreatedAt(),
+        question.getImages().stream()
+            .map(
+                image ->
+                    new QuestionImageResult(
+                        image.getPersonalQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         user,
         replyResult);
   }
@@ -165,7 +211,9 @@ public class GetPersonalArtworkQuestionsService {
       PersonalArtworkQuestionReply reply,
       Map<Long, String> nicknameByUserId,
       Long ownerUserId,
-      Map<Long, Long> replyLikeCounts) {
+      Long userId,
+      Map<Long, Long> replyLikeCounts,
+      Set<Long> likedQuestionReplyIds) {
     return new PersonalArtworkQuestionReplyItemResult(
         reply.getPersonalQuestionReplyId(),
         reply.getUserId(),
@@ -173,7 +221,19 @@ public class GetPersonalArtworkQuestionsService {
         ownerUserId.equals(reply.getUserId()),
         reply.getContent(),
         reply.getCreatedAt(),
-        replyLikeCounts.getOrDefault(reply.getPersonalQuestionReplyId(), 0L));
+        reply.getImages().stream()
+            .map(
+                image ->
+                    new ReplyImageResult(
+                        image.getPersonalQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
+        replyLikeCounts.getOrDefault(reply.getPersonalQuestionReplyId(), 0L),
+        likedQuestionReplyIds.contains(reply.getPersonalQuestionReplyId()),
+        Objects.equals(reply.getUserId(), userId));
   }
 
   private String findNicknameOrThrow(Map<Long, String> nicknameByUserId, Long userId) {

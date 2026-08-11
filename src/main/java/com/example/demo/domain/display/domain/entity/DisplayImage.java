@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -40,12 +41,6 @@ public class DisplayImage extends BaseTimeEntity {
   private DisplayImageType imageType;
 
   @Column(nullable = false)
-  private int width;
-
-  @Column(nullable = false)
-  private int height;
-
-  @Column(nullable = false)
   private int sortOrder;
 
   private LocalDateTime deletedAt;
@@ -56,15 +51,11 @@ public class DisplayImage extends BaseTimeEntity {
       Long id,
       String imageUrl,
       DisplayImageType imageType,
-      int width,
-      int height,
       int sortOrder,
       LocalDateTime deletedAt) {
     this.id = id;
     this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
     this.imageType = Objects.requireNonNull(imageType, "imageType must not be null.");
-    this.width = requirePositive(width, "width");
-    this.height = requirePositive(height, "height");
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
     this.deletedAt = deletedAt;
   }
@@ -82,7 +73,7 @@ public class DisplayImage extends BaseTimeEntity {
   }
 
   public void delete() {
-    this.deletedAt = LocalDateTime.now();
+    this.deletedAt = LocalDateTime.now(ZoneOffset.UTC);
   }
 
   public void restore() {
@@ -96,13 +87,6 @@ public class DisplayImage extends BaseTimeEntity {
   private static String requireNonBlank(String value, String fieldName) {
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(fieldName + " must not be blank.");
-    }
-    return value;
-  }
-
-  private static int requirePositive(int value, String fieldName) {
-    if (value <= 0) {
-      throw new IllegalArgumentException(fieldName + " must be positive.");
     }
     return value;
   }

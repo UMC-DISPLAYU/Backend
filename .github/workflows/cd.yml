@@ -22,6 +22,12 @@ env:
   EC2_PORT: ${{ secrets.EC2_PORT || '22' }}
   MYSQL_IMAGE: ${{ secrets.MYSQL_IMAGE || 'mysql:8.0' }}
   FLYWAY_IMAGE: ${{ secrets.FLYWAY_IMAGE || 'flyway/flyway:11' }}
+  ALLOY_IMAGE: grafana/alloy:v1.18.0
+  ALLOY_CONTAINER_NAME: displayu-alloy
+  ALLOY_NETWORK: displayu-monitoring
+  ALLOY_INSTANCE: ${{ secrets.ALLOY_INSTANCE || 'displayu-ec2' }}
+  DOCKER_SOCKET_PROXY_IMAGE: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
+  DOCKER_SOCKET_PROXY_CONTAINER_NAME: displayu-docker-proxy
   TEMP_DB_NAME: displayu_migration_precheck
   APPLICATION_JAR: build/libs/demo-0.0.1-SNAPSHOT.jar
   PRODUCTION_DB_TUNNEL_PORT: "13306"
@@ -556,10 +562,10 @@ jobs:
           MAIL_PASSWORD: precheck
           GOOGLE_CLIENT_ID: precheck-google-client-id
           GOOGLE_CLIENT_SECRET: precheck-google-client-secret
-          GOOGLE_REDIRECT_URI: http://localhost:8080/api/auth/google/callback
+          GOOGLE_REDIRECT_URI: http://localhost:8080/api/v1/auth/google/callback
           KAKAO_CLIENT_ID: precheck-kakao-client-id
           KAKAO_CLIENT_SECRET: precheck-kakao-client-secret
-          KAKAO_REDIRECT_URI: http://localhost:8080/api/auth/kakao/callback
+          KAKAO_REDIRECT_URI: http://localhost:8080/api/v1/auth/kakao/callback
           FRONTEND_BASE_URL: https://www.displayu.co.kr
           JWT_SECRET: precheck-jwt-secret-precheck-jwt-secret-precheck-jwt-secret
           AWS_REGION: ap-northeast-2
@@ -705,6 +711,11 @@ jobs:
       - production-migrate
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
@@ -740,6 +751,8 @@ jobs:
           RUNTIME_CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
           RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS: ${{ secrets.PRESIGNED_URL_EXPIRATION_SECONDS || '3600' }}
         run: |
+          umask 0277
+
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
             printf 'SPRING_FLYWAY_ENABLED=false\n'
@@ -769,11 +782,43 @@ jobs:
             printf 'PRESIGNED_URL_EXPIRATION_SECONDS=%s\n' "$RUNTIME_PRESIGNED_URL_EXPIRATION_SECONDS"
           } > .env.deploy
 
-      - name: Copy runtime env file to EC2
+      - name: Prepare Alloy env file
+        env:
+          DEPLOY_ENVIRONMENT: ${{ secrets.SPRING_PROFILES_ACTIVE || 'dev' }}
+          GRAFANA_PROMETHEUS_URL: ${{ secrets.GRAFANA_PROMETHEUS_URL }}
+          GRAFANA_PROMETHEUS_USERNAME: ${{ secrets.GRAFANA_PROMETHEUS_USERNAME }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
+          GRAFANA_CLOUD_API_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
         run: |
-          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p ~/displayu-backend"
+          set -euo pipefail
+          umask 0277
+
+          for name in GRAFANA_PROMETHEUS_URL GRAFANA_PROMETHEUS_USERNAME GRAFANA_LOKI_URL GRAFANA_LOKI_USERNAME GRAFANA_CLOUD_API_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty."
+              exit 1
+            fi
+          done
+
+          {
+            printf 'DEPLOY_ENVIRONMENT=%s\n' "$DEPLOY_ENVIRONMENT"
+            printf 'ALLOY_INSTANCE=%s\n' "$ALLOY_INSTANCE"
+            printf 'GRAFANA_PROMETHEUS_URL=%s\n' "$GRAFANA_PROMETHEUS_URL"
+            printf 'GRAFANA_PROMETHEUS_USERNAME=%s\n' "$GRAFANA_PROMETHEUS_USERNAME"
+            printf 'GRAFANA_LOKI_URL=%s\n' "$GRAFANA_LOKI_URL"
+            printf 'GRAFANA_LOKI_USERNAME=%s\n' "$GRAFANA_LOKI_USERNAME"
+            printf 'GRAFANA_CLOUD_API_TOKEN=%s\n' "$GRAFANA_CLOUD_API_TOKEN"
+          } > .env.alloy
+
+      - name: Copy deployment files to EC2
+        run: |
+          chmod 600 .env.deploy .env.alloy
+          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "mkdir -p ~/displayu-backend/monitoring"
           scp -i ~/.ssh/deploy_key -P "$EC2_PORT" .env.deploy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/.env"
-          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "chmod 600 ~/displayu-backend/.env"
+          scp -i ~/.ssh/deploy_key -P "$EC2_PORT" .env.alloy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/.env.alloy"
+          scp -i ~/.ssh/deploy_key -P "$EC2_PORT" monitoring/alloy/config.alloy "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/displayu-backend/monitoring/config.alloy"
+          ssh -i ~/.ssh/deploy_key -p "$EC2_PORT" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "chmod 600 ~/displayu-backend/.env ~/displayu-backend/.env.alloy"
 
       - name: Deploy on EC2
         run: |
@@ -783,10 +828,17 @@ jobs:
              # Required deployment values
              APP_DIR=\"\$HOME/displayu-backend\"
              ENV_FILE=\"\$APP_DIR/.env\"
+             ALLOY_ENV_FILE=\"\$APP_DIR/.env.alloy\"
+             ALLOY_CONFIG_FILE=\"\$APP_DIR/monitoring/config.alloy\"
              ECR_REPOSITORY=\"$ECR_REPOSITORY\"
              IMAGE_TAG=\"$IMAGE_TAG\"
              CONTAINER_NAME=\"$CONTAINER_NAME\"
              APP_PORT=\"$APP_PORT\"
+             ALLOY_IMAGE=\"$ALLOY_IMAGE\"
+             ALLOY_CONTAINER_NAME=\"$ALLOY_CONTAINER_NAME\"
+             ALLOY_NETWORK=\"$ALLOY_NETWORK\"
+             DOCKER_SOCKET_PROXY_IMAGE=\"$DOCKER_SOCKET_PROXY_IMAGE\"
+             DOCKER_SOCKET_PROXY_CONTAINER_NAME=\"$DOCKER_SOCKET_PROXY_CONTAINER_NAME\"
              ECR_ACCOUNT_ID=\$(aws sts get-caller-identity --query Account --output text)
              ECR_REGISTRY=\"\$ECR_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com\"
              IMAGE_URI=\"\$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG\"
@@ -802,6 +854,10 @@ jobs:
              fi
              if [ ! -f \"\$ENV_FILE\" ]; then
                echo \"Runtime env file is missing: \$ENV_FILE\"
+               exit 1
+             fi
+             if [ ! -f \"\$ALLOY_ENV_FILE\" ] || [ ! -f \"\$ALLOY_CONFIG_FILE\" ]; then
+               echo \"Alloy deployment files are missing.\"
                exit 1
              fi
              if ! command -v docker >/dev/null 2>&1; then
@@ -830,6 +886,12 @@ jobs:
 
              # Pull the image built by this workflow
              docker pull \"\$IMAGE_URI\"
+             docker pull \"\$ALLOY_IMAGE\"
+             docker pull \"\$DOCKER_SOCKET_PROXY_IMAGE\"
+
+             if ! docker network inspect \"\$ALLOY_NETWORK\" >/dev/null 2>&1; then
+               docker network create \"\$ALLOY_NETWORK\" >/dev/null
+             fi
 
              # Replace the running container
              if docker ps -a --format '{{.Names}}' | grep -Fxq \"\$CONTAINER_NAME\"; then
@@ -841,9 +903,49 @@ jobs:
              docker run -d \
                --name \"\$CONTAINER_NAME\" \
                --restart unless-stopped \
+               --network \"\$ALLOY_NETWORK\" \
+               --network-alias displayu-backend \
+               --label alloy.logs=displayu-backend \
+               --log-opt max-size=10m \
+               --log-opt max-file=5 \
                --env-file \"\$ENV_FILE\" \
                -p \"\$APP_PORT:8080\" \
                \"\$IMAGE_URI\"
+
+             if docker ps -a --format '{{.Names}}' | grep -Fxq \"\$ALLOY_CONTAINER_NAME\"; then
+               docker stop \"\$ALLOY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+               docker rm \"\$ALLOY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+             fi
+
+             if docker ps -a --format '{{.Names}}' | grep -Fxq \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\"; then
+               docker stop \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+               docker rm \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" >/dev/null 2>&1 || true
+             fi
+
+             docker run -d \
+               --name \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" \
+               --restart unless-stopped \
+               --network \"\$ALLOY_NETWORK\" \
+               --network-alias docker-proxy \
+               --env CONTAINERS=1 \
+               --env NETWORKS=1 \
+               --env POST=0 \
+               --log-opt max-size=10m \
+               --log-opt max-file=3 \
+               -v /var/run/docker.sock:/var/run/docker.sock:ro \
+               \"\$DOCKER_SOCKET_PROXY_IMAGE\"
+
+             docker run -d \
+               --name \"\$ALLOY_CONTAINER_NAME\" \
+               --restart unless-stopped \
+               --network \"\$ALLOY_NETWORK\" \
+               --env-file \"\$ALLOY_ENV_FILE\" \
+               --log-opt max-size=10m \
+               --log-opt max-file=3 \
+               -v \"\$ALLOY_CONFIG_FILE:/etc/alloy/config.alloy:ro\" \
+               -v displayu-alloy-data:/var/lib/alloy/data \
+               \"\$ALLOY_IMAGE\" \
+               run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
 
              # Verify the new container starts and stays healthy/running
              success_count=0
@@ -851,10 +953,13 @@ jobs:
              for attempt in \$(seq 1 \"\$max_attempts\"); do
                status=\$(docker inspect -f '{{.State.Status}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
                health=\$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \"\$CONTAINER_NAME\" 2>/dev/null || echo missing)
+               alloy_status=\$(docker inspect -f '{{.State.Status}}' \"\$ALLOY_CONTAINER_NAME\" 2>/dev/null || echo missing)
+               proxy_status=\$(docker inspect -f '{{.State.Status}}' \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" 2>/dev/null || echo missing)
 
-               echo \"Container check \$attempt/\$max_attempts: status=\$status health=\$health\"
+               echo \"Container check \$attempt/\$max_attempts: app=\$status health=\$health alloy=\$alloy_status proxy=\$proxy_status\"
 
-               if [ \"\$status\" = \"running\" ] && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
+               if [ \"\$status\" = \"running\" ] && [ \"\$alloy_status\" = \"running\" ] && [ \"\$proxy_status\" = \"running\" ] \
+                 && { [ \"\$health\" = \"healthy\" ] || [ \"\$health\" = \"none\" ]; }; then
                  success_count=\$((success_count + 1))
                  if [ \"\$success_count\" -ge 2 ]; then
                    docker image prune -af >/dev/null
@@ -868,6 +973,16 @@ jobs:
                if [ \"\$status\" = \"exited\" ] || [ \"\$status\" = \"dead\" ] || [ \"\$status\" = \"missing\" ]; then
                  echo \"Container failed during startup. Recent logs:\"
                  docker logs --tail 120 \"\$CONTAINER_NAME\" || true
+                 exit 1
+               fi
+               if [ \"\$alloy_status\" = \"exited\" ] || [ \"\$alloy_status\" = \"dead\" ] || [ \"\$alloy_status\" = \"missing\" ]; then
+                 echo \"Alloy failed during startup. Recent logs:\"
+                 docker logs --tail 120 \"\$ALLOY_CONTAINER_NAME\" || true
+                 exit 1
+               fi
+               if [ \"\$proxy_status\" = \"exited\" ] || [ \"\$proxy_status\" = \"dead\" ] || [ \"\$proxy_status\" = \"missing\" ]; then
+                 echo \"Docker Socket Proxy failed during startup. Recent logs:\"
+                 docker logs --tail 120 \"\$DOCKER_SOCKET_PROXY_CONTAINER_NAME\" || true
                  exit 1
                fi
 

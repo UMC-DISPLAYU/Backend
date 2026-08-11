@@ -8,7 +8,10 @@ import java.util.Optional;
 public interface LoungePostRepository {
   Optional<LoungePost> findById(Long loungePostId);
 
-  List<LoungePost> findActiveByCursor(LoungePostCategory category, Long cursorId, int limit);
+  Optional<LoungePost> findByIdWithOptimisticLock(Long loungePostId);
+
+  List<LoungePost> findActiveByCursor(
+      List<LoungePostCategory> categories, Long cursorId, int limit);
 
   LoungePost save(LoungePost loungePost);
 }

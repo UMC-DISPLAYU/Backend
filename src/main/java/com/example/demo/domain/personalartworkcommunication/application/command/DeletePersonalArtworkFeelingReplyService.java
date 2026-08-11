@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingReplyResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
@@ -15,6 +16,7 @@ public class DeletePersonalArtworkFeelingReplyService {
 
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
   public DeletedPersonalArtworkFeelingReplyResult deleteReply(
       DeletePersonalArtworkFeelingReplyCommand command) {
@@ -23,13 +25,14 @@ public class DeletePersonalArtworkFeelingReplyService {
 
     PersonalArtworkFeeling feeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
-    personalArtworkFeelingValidator.validateReplyTarget(feeling, command.personalArtworkId());
+    personalArtworkFeelingValidator.validateReplyDeletionTarget(
+        feeling, command.personalArtworkId());
 
     PersonalArtworkFeelingReply reply =
         personalArtworkFeelingValidator.findActiveReplyForUpdateOrThrow(
             command.personalFeelingReplyId());
-    personalArtworkFeelingValidator.validateAccessibleReply(
-        reply, command.personalFeelingId(), command.userId());
+    personalArtworkFeelingValidator.validateReplyTarget(reply, command.personalFeelingId());
+    permissionChecker.requirePersonalFeelingReplyWriter(reply, command.userId());
 
     reply.delete();
     PersonalArtworkFeelingReply saved = personalArtworkFeelingReplyRepository.save(reply);

@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -10,12 +11,11 @@ public record ClosingSoonDisplayResponse(
       Long displayId,
       String title,
       String posterImageUrl,
-      String organization,
-      String department,
+      String schoolDepartmentName,
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isBookmarked) {}
+      @JsonProperty("isArchived") boolean isArchived) {}
 
   public record CursorPaginationResponse(String nextCursor, int size, boolean hasNext) {}
 }

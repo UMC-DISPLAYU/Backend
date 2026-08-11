@@ -14,9 +14,11 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
       LocalDate endDate,
       String locationName,
       String posterImageUrl,
+      String organization,
+      String department,
       BigDecimal latitude,
       BigDecimal longitude,
-      boolean isBookmarked) {
+      boolean isArchived) {
 
     public static MarkerResult from(DisplayMapQueryResult queryResult) {
       return new MarkerResult(
@@ -26,12 +28,14 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           queryResult.endDate(),
           queryResult.locationName(),
           queryResult.posterImageUrl(),
+          queryResult.organization(),
+          queryResult.department(),
           queryResult.latitude(),
           queryResult.longitude(),
           false);
     }
 
-    public MarkerResult withBookmarked(boolean isBookmarked) {
+    public MarkerResult withArchived(boolean isArchived) {
       return new MarkerResult(
           displayId,
           title,
@@ -39,9 +43,11 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           endDate,
           locationName,
           posterImageUrl,
+          organization,
+          department,
           latitude,
           longitude,
-          isBookmarked);
+          isArchived);
     }
   }
 

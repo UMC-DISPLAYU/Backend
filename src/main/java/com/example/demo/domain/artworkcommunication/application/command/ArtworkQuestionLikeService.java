@@ -1,9 +1,12 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionLikeResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository.ArtworkQuestionLikeSnapshot;
+import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,8 @@ public class ArtworkQuestionLikeService {
 
   private final ArtworkQuestionLikeRepository artworkQuestionLikeRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
+  private final CreatorExistenceRepository creatorExistenceRepository;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public ArtworkQuestionLikeResult like(ArtworkQuestionLikeCommand command) {
     validateQuestion(command);
@@ -61,6 +66,12 @@ public class ArtworkQuestionLikeService {
     artworkQuestionValidator.validateLikePermission(
         question, command.displayArtworkId(), command.userId());
   }
+    boolean isParticipant =
+        creatorExistenceRepository
+            .findParticipantNameByDisplayArtworkIdAndUserId(
+                command.displayArtworkId(), command.userId())
+            .isPresent();
+    permissionChecker.requireQuestionAccessible(question, command.userId(), isParticipant);
 
   private ArtworkQuestionLike restoreDeletedLike(ArtworkQuestionLike questionLike) {
     if (!questionLike.isDeleted()) {

@@ -54,15 +54,16 @@ class DisplayControllerClosingSoonTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].organization").value("organization"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].department").value("department"))
+        .andExpect(
+            jsonPath("$.success.data.exhibitions[0].schoolDepartmentName")
+                .value("organization department"))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].startedAt")
                 .value(today.minusDays(3).toString()))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(2).toString()))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(2))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false))
         .andExpect(
             jsonPath("$.success.data.pagination.nextCursor")
                 .value(startsWith(today.plusDays(2) + ":")))

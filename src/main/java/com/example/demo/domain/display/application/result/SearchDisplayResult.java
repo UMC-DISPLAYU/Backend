@@ -11,25 +11,37 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       Long displayId,
       String title,
       String posterImageUrl,
+      String organization,
+      String department,
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isBookmarked) {
+      boolean isArchived) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
           queryResult.displayId(),
           queryResult.title(),
           queryResult.posterImageUrl(),
+          queryResult.organization(),
+          queryResult.department(),
           queryResult.startedAt(),
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false);
     }
 
-    public ExhibitionResult withBookmarked(boolean isBookmarked) {
+    public ExhibitionResult withArchived(boolean isArchived) {
       return new ExhibitionResult(
-          displayId, title, posterImageUrl, startedAt, endedAt, dayLeft, isBookmarked);
+          displayId,
+          title,
+          posterImageUrl,
+          organization,
+          department,
+          startedAt,
+          endedAt,
+          dayLeft,
+          isArchived);
     }
   }
 

@@ -1,7 +1,6 @@
 package com.example.demo.domain.archive.presentation.docs;
 
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveDisplayResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -54,6 +53,38 @@ public interface ArchiveDisplayControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "존재하지 않는 전시입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "DISPLAY_NOT_FOUND", "message": "존재하지 않는 전시입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 저장한 전시입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ALREADY_ARCHIVED_DISPLAY", "message": "이미 저장한 전시입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
+                          }
+                          """)))
   ApiResponseBody<ArchiveDisplayToggleResponse> saveArchiveDisplay(
       @Parameter(description = "전시 ID", example = "1") @PathVariable @Positive Long exhibitionId,
       AuthUser user,
@@ -91,38 +122,9 @@ public interface ArchiveDisplayControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
-  ApiResponseBody<ArchiveDisplayToggleResponse> deleteArchiveDisplay(
-      @Parameter(description = "전시 ID", example = "1") @PathVariable @Positive Long exhibitionId,
-      AuthUser user,
-      HttpServletRequest request);
-
-  @Operation(summary = "저장된 전시 상세 조회", description = "저장 기록 ID로 저장된 전시 상세를 조회합니다.")
-  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
-      responseCode = "200",
-      content =
-          @Content(
-              examples =
-                  @ExampleObject(
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "archiveDisplayId": 1,
-                                "displayId": 1,
-                                "userId": 1,
-                                "memo": "여기 조명이 인상적이었다.",
-                                "savedAt": "2026-07-13T01:49:28"
-                              }
-                            },
-                            "error": null,
-                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
-                          }
-                          """)))
-  @ApiResponse(
-      responseCode = "401",
+      responseCode = "404",
+      description = "저장된 전시를 찾을 수 없습니다.",
       content =
           @Content(
               examples =
@@ -132,12 +134,12 @@ public interface ArchiveDisplayControllerDocs {
                           {
                             "resultType": "FAIL",
                             "success": null,
-                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "error": { "code": "ARCHIVE_DISPLAY_NOT_FOUND", "message": "저장된 전시를 찾을 수 없습니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/exhibitions/1" }
                           }
                           """)))
-  ApiResponseBody<ArchiveDisplayResponse> getArchiveDisplayDetail(
-      @Parameter(description = "저장된 전시(아카이브 기록) ID", example = "1") @PathVariable @Positive Long savedExhibitionId,
+  ApiResponseBody<ArchiveDisplayToggleResponse> deleteArchiveDisplay(
+      @Parameter(description = "전시 ID", example = "1") @PathVariable @Positive Long exhibitionId,
       AuthUser user,
       HttpServletRequest request);
 
@@ -157,6 +159,14 @@ public interface ArchiveDisplayControllerDocs {
                               "data": {
                                 "displays": [
                                   {
+                                    "posterImageUrl": "https://cdn.displayu.co.kr/posters/5.png",
+                                    "status": "ENDED",
+                                    "title": "syzygy",
+                                    "organization": "건국대학교",
+                                    "department": "디자인학과",
+                                    "startedAt": "2026-05-28",
+                                    "endedAt": "2026-06-05",
+                                    "location": "건국대학교 디자인관 310관 갤러리",
                                     "archiveDisplayId": 2,
                                     "displayId": 5,
                                     "userId": 1,
@@ -164,6 +174,14 @@ public interface ArchiveDisplayControllerDocs {
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
                                   {
+                                    "posterImageUrl": "https://cdn.displayu.co.kr/posters/3.png",
+                                    "status": "ENDED",
+                                    "title": "형태의 침묵",
+                                    "organization": "중앙대학교",
+                                    "department": "디자인학부",
+                                    "startedAt": "2026-04-03",
+                                    "endedAt": "2026-04-05",
+                                    "location": "중앙대학교 310관 갤러리",
                                     "archiveDisplayId": 1,
                                     "displayId": 3,
                                     "userId": 1,

@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.infrastructure.persistence.adapter;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveWorkJpaRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,11 @@ public class JpaArchiveWorkRepositoryAdapter implements ArchiveWorkRepository {
   }
 
   @Override
+  public Optional<ArchiveWork> findById(Long archiveWorkId) {
+    return jpaRepository.findById(archiveWorkId);
+  }
+
+  @Override
   public Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId) {
     return jpaRepository.findByIdAndUserId(archiveWorkId, userId);
   }
@@ -29,9 +35,9 @@ public class JpaArchiveWorkRepositoryAdapter implements ArchiveWorkRepository {
 
   @Override
   public List<ArchiveWork> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
-      Long userId, Long cursorId, int limit) {
+      Long userId, LocalDateTime cursorSavedAt, Long cursorSignedId, int limit) {
     return jpaRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
-        userId, cursorId, PageRequest.of(0, limit));
+        userId, cursorSavedAt, cursorSignedId, PageRequest.of(0, limit));
   }
 
   @Override

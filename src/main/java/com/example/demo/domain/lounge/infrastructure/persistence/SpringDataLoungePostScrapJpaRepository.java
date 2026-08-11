@@ -14,11 +14,13 @@ public interface SpringDataLoungePostScrapJpaRepository
   @Query(
       value =
           """
-          INSERT IGNORE INTO LoungePostScrap (loungePostId, userId)
-          VALUES (:loungePostId, :userId)
+          INSERT INTO LoungePostScrap (createdAt, loungePostId, userId)
+          VALUES (CURRENT_TIMESTAMP, :loungePostId, :userId)
+          ON DUPLICATE KEY UPDATE
+            loungePostScrapId = loungePostScrapId
           """,
       nativeQuery = true)
-  void insertIgnore(@Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
+  void insertIfAbsent(@Param("loungePostId") Long loungePostId, @Param("userId") Long userId);
 
   @Modifying
   @Query(

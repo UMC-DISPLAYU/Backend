@@ -24,7 +24,7 @@ import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisp
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataTeamMemberJpaRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import com.jayway.jsonpath.JsonPath;
@@ -169,7 +169,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationId").value(invitationId))
         .andExpect(jsonPath("$.success.data.status").value("ACCEPTED"))
-        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T18:00:00"));
+        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T09:00:00Z"));
 
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.ACCEPTED);
@@ -230,7 +230,7 @@ class DisplayMemberInvitationControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.status").value("REJECTED"))
-        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T18:00:00"));
+        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T09:00:00Z"));
 
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.REJECTED);
@@ -329,16 +329,17 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
-  void getMembersReturnsAcceptedDisplayMembersWithoutAuthentication() throws Exception {
-    User leader = userJpaRepository.save(user("leader"));
-    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
-
+  void getMembersReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(get("/api/v1/displays/{displayId}/members", display.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
         .andExpect(jsonPath("$.success.data.members.length()").value(1));
+        .perform(get("/api/v1/display/{displayId}/members", 1L))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
   @Test
@@ -365,7 +366,7 @@ class DisplayMemberInvitationControllerTest {
             .filter(teamMember -> teamMember.getUserId().value().equals(member.getId()))
             .findFirst()
             .orElseThrow();
-    assertThat(exitedMember.getDeletedAt()).isEqualTo(LocalDateTime.of(2026, 7, 22, 18, 0));
+    assertThat(exitedMember.getDeletedAt()).isEqualTo(LocalDateTime.of(2026, 7, 22, 9, 0));
     assertThat(
             teamMemberJpaRepository
                 .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
@@ -533,12 +534,13 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].organization").value("organization"))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].department").value("department"))
+        .andExpect(
+            jsonPath("$.success.data.exhibitions[0].schoolDepartmentName")
+                .value("organization department"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].startedAt").value("2026-05-28"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].endedAt").value("2026-06-05"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(-47))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].isBookmarked").value(false));
+        .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false));
   }
 
   @Test

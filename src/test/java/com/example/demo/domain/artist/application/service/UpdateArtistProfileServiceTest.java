@@ -8,18 +8,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.artist.application.command.UpdateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
+import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
-import com.example.demo.domain.artist.exception.ArtistErrorCode;
-import com.example.demo.domain.artist.exception.ArtistException;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
-import com.example.demo.domain.user.validator.SchoolEmailValidator;
+import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,11 @@ class UpdateArtistProfileServiceTest {
   private final SchoolEmailValidator schoolEmailValidator = mock(SchoolEmailValidator.class);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository, artistProfileRepository, areaOfActivityRepository, schoolEmailValidator);
+          userRepository,
+          artistProfileRepository,
+          areaOfActivityRepository,
+          schoolEmailValidator,
+          new ArtistPermissionChecker());
 
   @Test
   void updatesArtistProfileInOneFlow() {
@@ -61,6 +66,8 @@ class UpdateArtistProfileServiceTest {
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
     assertThat(profile.getUnivName()).isEqualTo("한양대학교");
+    assertThat(result.profileImageUrl())
+        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
     assertThat(result.artistName()).isEqualTo("newName");
     assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);

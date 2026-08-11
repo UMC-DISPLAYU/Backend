@@ -1,8 +1,11 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionLikeResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionLike;
+import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -18,6 +21,8 @@ public class PersonalArtworkQuestionLikeService {
 
   private final PersonalArtworkQuestionLikeRepository personalArtworkQuestionLikeRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
+  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
   public PersonalArtworkQuestionLikeResult like(PersonalArtworkQuestionLikeCommand command) {
     validateQuestion(command);
@@ -65,6 +70,10 @@ public class PersonalArtworkQuestionLikeService {
     personalArtworkQuestionValidator.validateLikePermission(
         question, command.personalArtworkId(), command.userId());
   }
+    boolean isOwner =
+        personalArtworkExistenceRepository.existsByIdAndUserId(
+            command.personalArtworkId(), command.userId());
+    permissionChecker.requirePersonalQuestionAccessible(question, command.userId(), isOwner);
 
   private PersonalArtworkQuestionLike restoreDeletedLike(PersonalArtworkQuestionLike questionLike) {
     if (!questionLike.isDeleted()) {

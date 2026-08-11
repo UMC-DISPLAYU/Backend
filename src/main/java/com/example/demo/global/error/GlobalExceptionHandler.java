@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 @Slf4j
@@ -25,7 +27,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleBusinessException(
       BusinessException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = exception.errorCode();
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), exception.getMessage(), null);
+    return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  @ExceptionHandler(OptimisticLockingFailureException.class)
+  public ResponseEntity<ApiResponseBody<Void>> handleOptimisticLockingFailureException(
+      OptimisticLockingFailureException exception, HttpServletRequest request) {
+    BaseErrorCode errorCode = GlobalErrorCode.CONFLICT;
+    logErrorResponse(errorCode, request);
+    ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
 
@@ -38,6 +50,7 @@ public class GlobalExceptionHandler {
             .toList();
 
     BaseErrorCode errorCode = GlobalErrorCode.INVALID_INPUT_VALUE;
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), details);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
@@ -54,6 +67,7 @@ public class GlobalExceptionHandler {
             .toList();
 
     BaseErrorCode errorCode = GlobalErrorCode.INVALID_INPUT_VALUE;
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), details);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
@@ -62,6 +76,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleMethodArgumentTypeMismatchException(
       MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.INVALID_TYPE_VALUE;
+    logErrorResponse(errorCode, request);
     ErrorBody error =
         new ErrorBody(
             errorCode.getCode(),
@@ -74,6 +89,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleMissingServletRequestParameterException(
       MissingServletRequestParameterException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.MISSING_REQUIRED_VALUE;
+    logErrorResponse(errorCode, request);
     ErrorBody error =
         new ErrorBody(
             errorCode.getCode(),
@@ -87,6 +103,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleUnsatisfiedServletRequestParameterException(
       UnsatisfiedServletRequestParameterException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.MISSING_REQUIRED_VALUE;
+    logErrorResponse(errorCode, request);
     ErrorBody error =
         new ErrorBody(
             errorCode.getCode(),
@@ -99,6 +116,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleHttpMessageNotReadableException(
       HttpMessageNotReadableException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.MALFORMED_JSON;
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
@@ -107,6 +125,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleHttpRequestMethodNotSupportedException(
       HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.METHOD_NOT_ALLOWED;
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
@@ -115,6 +134,16 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponseBody<Void>> handleHttpMediaTypeNotSupportedException(
       HttpMediaTypeNotSupportedException exception, HttpServletRequest request) {
     BaseErrorCode errorCode = GlobalErrorCode.UNSUPPORTED_MEDIA_TYPE;
+    logErrorResponse(errorCode, request);
+    ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
+    return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ApiResponseBody<Void>> handleNoResourceFoundException(
+      NoResourceFoundException exception, HttpServletRequest request) {
+    BaseErrorCode errorCode = GlobalErrorCode.NOT_FOUND;
+    logErrorResponse(errorCode, request);
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
   }
@@ -126,6 +155,24 @@ public class GlobalExceptionHandler {
     BaseErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
     ErrorBody error = new ErrorBody(errorCode.getCode(), errorCode.getMessage(), null);
     return ResponseEntity.status(errorCode.getStatus()).body(ApiResponseBody.fail(error, request));
+  }
+
+  private void logErrorResponse(BaseErrorCode errorCode, HttpServletRequest request) {
+    String message = "HTTP error response. status={} code={} method={} uri={}";
+    Object[] arguments = {
+      errorCode.getStatus().value(),
+      errorCode.getCode(),
+      request.getMethod(),
+      request.getRequestURI()
+    };
+
+    if (errorCode.getStatus().value() == 404) {
+      log.info(message, arguments);
+    } else if (errorCode.getStatus().is4xxClientError()) {
+      log.warn(message, arguments);
+    } else {
+      log.error(message, arguments);
+    }
   }
 
   public record FieldErrorDetail(String field, String message) {}

@@ -41,6 +41,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 display.id,
                 display.title,
                 image.imageUrl,
+                display.organization,
+                display.department,
                 display.period.startDate,
                 display.period.endDate))
         .from(display)
@@ -95,7 +97,12 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
       case UPCOMING -> display.period.startDate.gt(today);
       case ONGOING -> display.period.startDate.loe(today).and(display.period.endDate.goe(today));
       case ENDED -> display.period.endDate.lt(today);
-      case CLOSING_SOON -> display.period.endDate.between(today, today.plusDays(3));
+      case CLOSING_SOON ->
+          display
+              .period
+              .startDate
+              .loe(today)
+              .and(display.period.endDate.between(today, today.plusDays(3)));
     };
   }
 

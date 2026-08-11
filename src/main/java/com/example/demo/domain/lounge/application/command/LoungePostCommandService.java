@@ -1,5 +1,6 @@
 package com.example.demo.domain.lounge.application.command;
 
+import com.example.demo.domain.lounge.application.permission.LoungePermissionChecker;
 import com.example.demo.domain.lounge.application.result.LoungePostLikeResult;
 import com.example.demo.domain.lounge.application.result.LoungePostScrapResult;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
@@ -9,8 +10,9 @@ import com.example.demo.domain.lounge.domain.repository.LoungePostRepository;
 import com.example.demo.domain.lounge.domain.repository.LoungePostScrapRepository;
 import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
+import jakarta.persistence.OptimisticLockException;
 import java.util.Objects;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,19 +21,23 @@ public class LoungePostCommandService {
   private final LoungePostRepository loungePostRepository;
   private final LoungePostLikeRepository loungePostLikeRepository;
   private final LoungePostScrapRepository loungePostScrapRepository;
+  private final LoungePermissionChecker permissionChecker;
 
   public LoungePostCommandService(
       LoungePostRepository loungePostRepository,
       LoungePostLikeRepository loungePostLikeRepository,
-      LoungePostScrapRepository loungePostScrapRepository) {
+      LoungePostScrapRepository loungePostScrapRepository,
+      LoungePermissionChecker permissionChecker) {
     this.loungePostRepository = loungePostRepository;
     this.loungePostLikeRepository = loungePostLikeRepository;
     this.loungePostScrapRepository = loungePostScrapRepository;
+    this.permissionChecker = permissionChecker;
   }
 
   @Transactional
   public Long createPost(Long authorUserId, LoungePostContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+    permissionChecker.requireCategoryAccess(command.category(), authorUserId);
 
     LoungePost loungePost =
         LoungePost.create(
@@ -50,24 +56,37 @@ public class LoungePostCommandService {
       Long loungePostId, Long requesterUserId, LoungePostContentCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    LoungePost loungePost = getPost(loungePostId);
-    validateAuthor(loungePost, new UserId(requesterUserId));
+    try {
+      LoungePost loungePost = getPostWithOptimisticLock(loungePostId);
+      permissionChecker.requirePostWriter(loungePost, requesterUserId);
+      permissionChecker.requireCategoryAccess(loungePost.getCategory(), requesterUserId);
+      permissionChecker.requireCategoryAccess(command.category(), requesterUserId);
 
-    loungePost.changeContent(command.title(), command.content());
-    loungePost.replaceImages(command.postImageUrls());
-    loungePost.changeCategory(command.category());
+      loungePost.changeContent(command.title(), command.content());
+      loungePost.replaceImages(command.postImageUrls());
+      loungePost.changeCategory(command.category());
+      loungePostRepository.save(loungePost);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
+    }
   }
 
   @Transactional
   public void deletePost(Long loungePostId, Long requesterUserId) {
-    LoungePost loungePost = getPost(loungePostId);
-    validateAuthor(loungePost, new UserId(requesterUserId));
-    loungePost.delete();
+    try {
+      LoungePost loungePost = getPostWithOptimisticLock(loungePostId);
+      permissionChecker.requirePostWriter(loungePost, requesterUserId);
+      loungePost.delete();
+      loungePostRepository.save(loungePost);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_POST_CONCURRENT_WRITE_CONFLICT, e);
+    }
   }
 
   @Transactional
   public LoungePostLikeResult likePost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungePostLikeRepository.saveIfAbsent(loungePost.getId(), likeUserId);
@@ -79,6 +98,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostLikeResult cancelLikePost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
     loungePostLikeRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), likeUserId);
@@ -92,6 +112,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostScrapResult scrapPost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId scrapUserId = new UserId(userId);
 
     loungePostScrapRepository.saveIfAbsent(loungePost.getId(), scrapUserId);
@@ -105,6 +126,7 @@ public class LoungePostCommandService {
   @Transactional
   public LoungePostScrapResult cancelScrapPost(Long loungePostId, Long userId) {
     LoungePost loungePost = getActivePost(loungePostId);
+    permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId scrapUserId = new UserId(userId);
 
     loungePostScrapRepository.deleteByLoungePostIdAndUserId(loungePost.getId(), scrapUserId);
@@ -130,9 +152,10 @@ public class LoungePostCommandService {
     return loungePost;
   }
 
-  private void validateAuthor(LoungePost loungePost, UserId requesterUserId) {
-    if (!loungePost.isAuthoredBy(requesterUserId.value())) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
+  private LoungePost getPostWithOptimisticLock(Long loungePostId) {
+    return loungePostRepository
+        .findByIdWithOptimisticLock(loungePostId)
+        .filter(loungePost -> !loungePost.isDeleted())
+        .orElseThrow(() -> new BusinessException(LoungeErrorCode.LOUNGE_POST_NOT_FOUND));
   }
 }

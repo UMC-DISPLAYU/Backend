@@ -58,11 +58,26 @@ public class ArtworkFeelingValidator {
     }
   }
 
-  public void validateAccessibleFeeling(
-      ArtworkFeeling artworkFeeling, Long displayArtworkId, Long userId) {
+  public void validateReplyImages(List<ArtworkFeelingReply.ImageInfo> images) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(ArtworkCommunicationErrorCode.INVALID_FEELING_IMAGES);
+    }
+  }
+
+  public void validateFeelingTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
     validateNotDeleted(artworkFeeling);
     validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
-    validateWriter(artworkFeeling, userId);
   }
 
   public void validateReplyTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
@@ -71,6 +86,10 @@ public class ArtworkFeelingValidator {
   }
 
   public void validateReplyListTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
+    validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
+  }
+
+  public void validateReplyDeletionTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
     validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
   }
 
@@ -99,13 +118,6 @@ public class ArtworkFeelingValidator {
     }
   }
 
-  public void validateAccessibleReply(ArtworkFeelingReply reply, Long feelingId, Long userId) {
-    validateReplyTarget(reply, feelingId);
-    if (!reply.isWrittenBy(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_REPLY_FORBIDDEN);
-    }
-  }
-
   private void validateNotDeleted(ArtworkFeeling artworkFeeling) {
     if (artworkFeeling.isDeleted()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
@@ -116,12 +128,6 @@ public class ArtworkFeelingValidator {
       ArtworkFeeling artworkFeeling, Long displayArtworkId) {
     if (!artworkFeeling.belongsToArtwork(displayArtworkId)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND);
-    }
-  }
-
-  private void validateWriter(ArtworkFeeling artworkFeeling, Long userId) {
-    if (!artworkFeeling.isWrittenBy(userId)) {
-      throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_FEELING_FORBIDDEN);
     }
   }
 }

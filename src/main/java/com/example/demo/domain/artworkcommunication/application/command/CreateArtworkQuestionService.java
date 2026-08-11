@@ -18,13 +18,16 @@ public class CreateArtworkQuestionService {
   public ArtworkQuestionResult createQuestion(CreateArtworkQuestionCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());
-    artworkQuestionValidator.validateNotArtworkCreator(
-        command.displayArtworkId(), command.userId());
     artworkQuestionValidator.validateContent(command.content());
+    artworkQuestionValidator.validateImages(command.images());
 
     ArtworkQuestion artworkQuestion =
         ArtworkQuestion.create(
-            command.displayArtworkId(), command.userId(), command.content(), command.isPublic());
+            command.displayArtworkId(),
+            command.userId(),
+            command.content(),
+            command.isPublic(),
+            command.images());
 
     ArtworkQuestion savedQuestion = artworkQuestionRepository.save(artworkQuestion);
 
@@ -35,6 +38,16 @@ public class CreateArtworkQuestionService {
         savedQuestion.getAnswerStatus(),
         savedQuestion.getCreatedAt(),
         savedQuestion.getDisplayArtworkId(),
-        savedQuestion.getUserId());
+        savedQuestion.getUserId(),
+        savedQuestion.getImages().stream()
+            .map(
+                image ->
+                    new ArtworkQuestionResult.ImageResult(
+                        image.getQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList());
   }
 }

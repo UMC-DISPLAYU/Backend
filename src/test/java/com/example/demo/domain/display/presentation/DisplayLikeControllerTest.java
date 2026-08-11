@@ -2,6 +2,8 @@ package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -158,6 +160,99 @@ class DisplayLikeControllerTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void getDisplayLikeStatusReturnsTrueWhenActiveLikeExists() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    mockMvc
+        .perform(
+            post("/api/v1/display/like")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody(display.getId())))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/isliked", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.isLiked").value(true))
+        .andExpect(jsonPath("$.error").doesNotExist())
+        .andExpect(
+            jsonPath("$.meta.path").value("/api/v1/display/" + display.getId() + "/isliked"));
+  }
+
+  @Test
+  void getDisplayLikeStatusReturnsFalseWhenLikeDoesNotExist() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/isliked", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.isLiked").value(false));
+  }
+
+  @Test
+  void getDisplayLikeStatusReturnsFalseWhenLikeIsCanceled() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    mockMvc
+        .perform(
+            post("/api/v1/display/like")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody(display.getId())))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            patch("/api/v1/display/like")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody(display.getId())))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/isliked", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.isLiked").value(false));
+  }
+
+  @Test
+  void getDisplayLikeStatusReturnsUnauthorizedWithoutAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+
+    mockMvc
+        .perform(get("/api/v1/display/{displayId}/isliked", display.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void getDisplayLikeStatusReturnsNotFoundWhenDisplayDoesNotExist() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/isliked", 999_999L)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
+  }
+
+  private static String requestBody(Long displayId) {
+    return """
+        {
+          "displayId": %d
+        }
+        """
+        .formatted(displayId);
   }
 
   private String bearer(Long userId) {

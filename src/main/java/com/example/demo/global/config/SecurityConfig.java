@@ -36,6 +36,98 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.GET, "/api/v1/agreements")
                     .permitAll()
+                    .requestMatchers(
+                        "/api/v1/users/me/**", "/api/v1/artists/me/**", "/api/v1/archives/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/users/search")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/users/search")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/lounge/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/lounge/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/lounge/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/lounge/me/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/lounge/me/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/display/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/display/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/display/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/display/**")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/display/me",
+                        "/api/v1/display/*/members",
+                        "/api/v1/display-invitations",
+                        "/api/v1/display-invitations/me")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.HEAD,
+                        "/api/v1/display/me",
+                        "/api/v1/display/*/members",
+                        "/api/v1/display-invitations",
+                        "/api/v1/display-invitations/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/display-invitations/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/display-invitations/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/display-invitations/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/artworks/**")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/artworks/*/edit",
+                        "/api/v1/artworks/questions/me",
+                        "/api/v1/artworks/questions/received",
+                        "/api/v1/artworks/feelings/me")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.HEAD,
+                        "/api/v1/artworks/*/edit",
+                        "/api/v1/artworks/questions/me",
+                        "/api/v1/artworks/questions/received",
+                        "/api/v1/artworks/feelings/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/personal-artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/personal-artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/personal-artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/personal-artworks/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/display/reviews/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/display/reviews/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/display/*/reviews/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.HEAD, "/api/v1/display/*/reviews/**")
+                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/auth/kakao/login-url",
+                        "/api/v1/auth/kakao/callback",
+                        "/api/v1/auth/google/login-url",
+                        "/api/v1/auth/google/callback")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
+                    .authenticated()
                     .anyRequest()
                     .permitAll())
         .exceptionHandling(

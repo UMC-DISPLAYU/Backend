@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.service.DisplayContentPublicationService;
@@ -19,16 +20,19 @@ public class PublishDisplayService {
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayContentPublicationService displayContentPublicationService;
+  private final DisplayPermissionChecker displayPermissionChecker;
 
   public PublishDisplayService(
       DisplayRepository displayRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      DisplayContentPublicationService displayContentPublicationService) {
+      DisplayContentPublicationService displayContentPublicationService,
+      DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayContentPublicationService = displayContentPublicationService;
+    this.displayPermissionChecker = displayPermissionChecker;
   }
 
   @Transactional
@@ -39,9 +43,7 @@ public class PublishDisplayService {
         displayRepository
             .findById(command.displayId())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-    if (!display.isTeamLeader(command.userId())) {
-      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    }
+    displayPermissionChecker.requireTeamLeader(display, command.userId());
 
     display.publish();
     displayContentPublicationService.publishForDisplay(display.getId());

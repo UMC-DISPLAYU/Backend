@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -54,7 +55,7 @@ public class DisplayLike extends BaseTimeEntity {
 
   public void cancel() {
     if (isActive()) {
-      this.deletedAt = LocalDateTime.now();
+      this.deletedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
   }
 

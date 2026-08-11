@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public record DisplayDetailResponse(
     String content,
     LocationResponse location,
     String qnaAccount,
+    String contract,
     String note,
     String organization,
     String department,
@@ -21,7 +23,7 @@ public record DisplayDetailResponse(
     List<String> displayFields,
     String region,
     long likeCount,
-    boolean isBookmarked,
+    @JsonProperty("isArchived") boolean isArchived,
     PeriodResponse period,
     String artworkContentOpen,
     String exhibitionContentOpen,
@@ -33,13 +35,13 @@ public record DisplayDetailResponse(
     List<TeamMemberResponse> teamMembers,
     List<InvitationResponse> invitations) {
 
-  public record LocationResponse(String placeName, BigDecimal latitude, BigDecimal longitude) {}
+  public record LocationResponse(
+      String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
 
   public record PeriodResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}
 
-  public record ImageResponse(
-      Long imageId, String imageUrl, String imageType, int width, int height, int sortOrder) {}
+  public record ImageResponse(Long imageId, String imageUrl, String imageType, int sortOrder) {}
 
   public record ContentCategoryResponse(
       Long categoryId,
@@ -48,8 +50,7 @@ public record DisplayDetailResponse(
       int sortOrder,
       List<ContentResponse> contents) {}
 
-  public record ContentResponse(
-      Long contentId, String imageUrl, int width, int height, int sortOrder) {}
+  public record ContentResponse(Long contentId, String imageUrl, int sortOrder) {}
 
   public record TeamMemberResponse(
       Long teamMemberId, Long userId, String displayNickname, String role, boolean accepted) {}

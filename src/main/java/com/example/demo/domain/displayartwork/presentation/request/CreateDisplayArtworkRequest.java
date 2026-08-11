@@ -1,9 +1,6 @@
 package com.example.demo.domain.displayartwork.presentation.request;
 
-import com.example.demo.domain.displayartwork.application.command.ArtworkImageCommand;
-import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkCommand;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
-import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,39 +25,6 @@ public record CreateDisplayArtworkRequest(
     @Valid @NotNull CoAuthorsRequest coAuthors,
     @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
 
-  public CreateDisplayArtworkCommand toCommand() {
-    return new CreateDisplayArtworkCommand(
-        displayId,
-        artworkName,
-        content,
-        toArtworkType(type),
-        productionYear,
-        materialMedia,
-        size,
-        point,
-        images.stream().map(ImageRequest::toCommand).toList(),
-        artistName,
-        artistUserId,
-        coAuthors.userIds(),
-        coAuthors.rawNames(),
-        qaHandlerUserIds);
-  }
-
-  private static ArtworkType toArtworkType(Field field) {
-    return switch (field) {
-      case PAINTING -> ArtworkType.PAINTING;
-      case DESIGN -> ArtworkType.DESIGN;
-      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
-      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
-      case MEDIA -> ArtworkType.MEDIA;
-      case CRAFT -> ArtworkType.CRAFT;
-      case SCULPTURE -> ArtworkType.SCULPTURE;
-      case FASHION -> ArtworkType.FASHION;
-      case COMPLEX -> ArtworkType.COMPLEX;
-      case ETC -> ArtworkType.ETC;
-    };
-  }
-
   public enum Field {
     PAINTING,
     DESIGN,
@@ -81,13 +45,7 @@ public record CreateDisplayArtworkRequest(
       @PositiveOrZero int sortOrder,
       String caption,
       @Positive int width,
-      @Positive int height) {
-
-    private ArtworkImageCommand toCommand() {
-      return new ArtworkImageCommand(
-          imageUrl, isThumbnail, imageType, sortOrder, caption, width, height);
-    }
-  }
+      @Positive int height) {}
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
 

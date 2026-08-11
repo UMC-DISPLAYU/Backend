@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -36,8 +38,10 @@ public interface PersonalArtworkQuestionApiDocs {
           권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
 
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          isMine은 로그인 사용자가 해당 질문 또는 답변의 작성자인지를 나타내며, 비회원은 false입니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
           likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
+          isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
           접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
   @ApiResponse(
@@ -61,13 +65,25 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": "색을 몇 번 겹쳐 칠했나요?",
                                     "isPublic": true,
                                     "accessible": true,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": 12,
+                                    "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
+                                    "images": [
+                                      {
+                                        "personalQuestionImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "user": {
                                       "userId": 2,
-                                      "nickname": "관람객"
+                                      "nickname": "관람객",
+                                      "isCreator": false
                                     },
                                     "reply": {
                                       "personalQuestionReplyId": 1,
@@ -76,7 +92,10 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
-                                      "likeCount": 4
+                                      "images": [],
+                                      "likeCount": 4,
+                                      "isLiked": false,
+                                      "isMine": true
                                     }
                                   },
                                   {
@@ -84,16 +103,19 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": null,
                                     "isPublic": false,
                                     "accessible": false,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": null,
+                                    "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-07-23T17:15:00",
+                                    "images": [],
                                     "user": null,
                                     "reply": null
                                   }
                                 ],
                                 "nextCursorId": 3,
-                                "size": 3,
+                                "size": 10,
                                 "hasNext": true
                               }
                             },
@@ -134,6 +156,9 @@ public interface PersonalArtworkQuestionApiDocs {
       @Parameter(description = "다음 페이지 조회를 위한 마지막 질문 ID. 첫 요청이면 전달하지 않음", example = "3")
           @RequestParam(required = false)
           @Positive Long cursorId,
+      @Parameter(description = "한 번에 불러올 질문 개수", example = "10")
+          @RequestParam(defaultValue = "10")
+          @Min(1) @Max(50) int size,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
@@ -277,7 +302,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                 "personalQuestionId": 2,
                                 "userId": 1,
                                 "nickname": "작품소유자",
-                                "isCreator": true
+                                "isCreator": true,
+                                "images": [
+                                  {
+                                    "personalQuestionReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/question-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -415,7 +449,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                           "isPublic": true,
                                           "answerStatus": "WAITING",
                                           "createdAt": "2026-07-20T22:20:00",
-                                          "userId": 1
+                                          "userId": 1,
+                                          "images": [
+                                            {
+                                              "personalQuestionImageId": 1,
+                                              "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                              "width": 1200,
+                                              "height": 900,
+                                              "sortOrder": 0
+                                            }
+                                          ]
                                         }
                                       },
                                       "error": null,
@@ -425,31 +468,6 @@ public interface PersonalArtworkQuestionApiDocs {
                                       }
                                     }
                                     """)))
-  @ApiResponse(
-      responseCode = "403",
-      description = "작품 소유자의 질문 작성 시도",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Personal artwork creator cannot write question",
-                      value =
-                          """
-                          {
-                            "resultType": "FAIL",
-                            "success": null,
-                            "error": {
-                              "code": "CREATOR_CANNOT_WRITE_QUESTION",
-                              "message": "작업자는 본인 작품에 질문을 작성할 수 없습니다.",
-                              "details": null
-                            },
-                            "meta": {
-                              "timestamp": "2026-07-20T22:20:00",
-                              "path": "/api/v1/personal-artworks/1/questions"
-                            }
-                          }
-                          """)))
   @ApiResponse(
       responseCode = "400",
       description = "질문 내용 검증 실패",
@@ -537,6 +555,31 @@ public interface PersonalArtworkQuestionApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-22T20:00:00",
+                              "path": "/api/v1/personal-artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "답변이 등록된 질문은 삭제 불가",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question already answered",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_QUESTION_ALREADY_ANSWERED",
+                              "message": "이미 답변 완료된 질문입니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-11T12:00:00",
                               "path": "/api/v1/personal-artworks/3/questions/15"
                             }
                           }

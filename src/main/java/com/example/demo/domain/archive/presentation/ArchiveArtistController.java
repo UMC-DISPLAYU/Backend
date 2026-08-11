@@ -3,15 +3,12 @@ package com.example.demo.domain.archive.presentation;
 import com.example.demo.domain.archive.application.command.DeleteArchiveArtistService;
 import com.example.demo.domain.archive.application.command.SaveArchiveArtistCommand;
 import com.example.demo.domain.archive.application.command.SaveArchiveArtistService;
-import com.example.demo.domain.archive.application.query.GetArchiveArtistDetailService;
 import com.example.demo.domain.archive.application.query.GetArchivedArtistsService;
 import com.example.demo.domain.archive.application.result.ArchiveArtistCursorResult;
-import com.example.demo.domain.archive.application.result.ArchiveArtistResult;
 import com.example.demo.domain.archive.application.result.ArchiveArtistToggleResult;
 import com.example.demo.domain.archive.presentation.docs.ArchiveArtistControllerDocs;
 import com.example.demo.domain.archive.presentation.mapper.ArchivePresentationMapper;
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveArtistResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveArtistToggleResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -35,19 +32,16 @@ public class ArchiveArtistController implements ArchiveArtistControllerDocs {
 
   private final SaveArchiveArtistService saveArchiveArtistService;
   private final DeleteArchiveArtistService deleteArchiveArtistService;
-  private final GetArchiveArtistDetailService getArchiveArtistDetailService;
   private final GetArchivedArtistsService getArchivedArtistsService;
   private final ArchivePresentationMapper mapper;
 
   public ArchiveArtistController(
       SaveArchiveArtistService saveArchiveArtistService,
       DeleteArchiveArtistService deleteArchiveArtistService,
-      GetArchiveArtistDetailService getArchiveArtistDetailService,
       GetArchivedArtistsService getArchivedArtistsService,
       ArchivePresentationMapper mapper) {
     this.saveArchiveArtistService = saveArchiveArtistService;
     this.deleteArchiveArtistService = deleteArchiveArtistService;
-    this.getArchiveArtistDetailService = getArchiveArtistDetailService;
     this.getArchivedArtistsService = getArchivedArtistsService;
     this.mapper = mapper;
   }
@@ -73,17 +67,6 @@ public class ArchiveArtistController implements ArchiveArtistControllerDocs {
       HttpServletRequest request) {
     ArchiveArtistToggleResult result =
         deleteArchiveArtistService.deleteArchiveArtist(requireUserId(user), artistId);
-    return ApiResponseBody.success(mapper.toResponse(result), request);
-  }
-
-  @GetMapping("/api/v1/archives/artists/{savedArtistId}")
-  @Override
-  public ApiResponseBody<ArchiveArtistResponse> getArchiveArtistDetail(
-      @PathVariable Long savedArtistId,
-      @AuthenticationPrincipal AuthUser user,
-      HttpServletRequest request) {
-    ArchiveArtistResult result =
-        getArchiveArtistDetailService.getArchiveArtistDetail(requireUserId(user), savedArtistId);
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 

@@ -2,6 +2,7 @@ package com.example.demo.domain.memo.application.command;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.application.result.MemoResult;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
@@ -17,11 +18,15 @@ public class UpsertExhibitionMemoService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
   private final MemoRepository memoRepository;
+  private final MemoPermissionChecker memoPermissionChecker;
 
   public UpsertExhibitionMemoService(
-      ArchiveDisplayRepository archiveDisplayRepository, MemoRepository memoRepository) {
+      ArchiveDisplayRepository archiveDisplayRepository,
+      MemoRepository memoRepository,
+      MemoPermissionChecker memoPermissionChecker) {
     this.archiveDisplayRepository = archiveDisplayRepository;
     this.memoRepository = memoRepository;
+    this.memoPermissionChecker = memoPermissionChecker;
   }
 
   @Transactional
@@ -30,8 +35,9 @@ public class UpsertExhibitionMemoService {
 
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findByIdAndUserId(command.archiveDisplayId(), command.userId())
+            .findById(command.archiveDisplayId())
             .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
+    memoPermissionChecker.requireArchiveOwner(archiveDisplay, command.userId());
 
     Memo memo =
         memoRepository

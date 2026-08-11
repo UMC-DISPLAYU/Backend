@@ -15,9 +15,10 @@ public record DisplayMapResponse(
       LocalDate endDate,
       String locationName,
       String posterImageUrl,
+      String schoolDepartmentName,
       BigDecimal latitude,
       BigDecimal longitude,
-      @JsonProperty("isBookmarked") boolean isBookmarked) {}
+      @JsonProperty("isArchived") boolean isArchived) {}
 
   public record CursorPaginationResponse(Long nextCursor, int size, boolean hasNext) {}
 }

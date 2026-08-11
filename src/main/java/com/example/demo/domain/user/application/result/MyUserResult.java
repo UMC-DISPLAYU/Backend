@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.application.result;
 
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 
 public record MyUserResult(
     Long id,

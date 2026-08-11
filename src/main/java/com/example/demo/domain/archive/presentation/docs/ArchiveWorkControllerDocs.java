@@ -1,7 +1,6 @@
 package com.example.demo.domain.archive.presentation.docs;
 
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
-import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -46,6 +45,38 @@ public interface ArchiveWorkControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "존재하지 않는 작품입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "DISPLAY_ARTWORK_NOT_FOUND", "message": "존재하지 않는 작품입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 저장한 작품입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ALREADY_ARCHIVED_WORK", "message": "이미 저장한 작품입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
+                          }
+                          """)))
   ApiResponseBody<ArchiveWorkToggleResponse> saveArchiveWork(
       @Parameter(description = "작품 ID", example = "1") @PathVariable @Positive Long artworkId,
       AuthUser user,
@@ -76,23 +107,9 @@ public interface ArchiveWorkControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
                           }
                           """)))
-  ApiResponseBody<ArchiveWorkToggleResponse> deleteArchiveWork(
-      @Parameter(description = "작품 ID", example = "1") @PathVariable @Positive Long artworkId,
-      AuthUser user,
-      HttpServletRequest request);
-
-  @Operation(summary = "저장된 작품 상세 조회", description = "저장 기록 ID로 저장된 작품 상세를 조회합니다.")
-  @SecurityRequirement(name = "Authorization")
   @ApiResponse(
-      responseCode = "200",
-      description = "저장된 작품 상세 조회 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "상세 조회 성공", value = ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE)))
-  @ApiResponse(
-      responseCode = "401",
+      responseCode = "404",
+      description = "저장된 작품을 찾을 수 없습니다.",
       content =
           @Content(
               examples =
@@ -102,12 +119,12 @@ public interface ArchiveWorkControllerDocs {
                           {
                             "resultType": "FAIL",
                             "success": null,
-                            "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "error": { "code": "ARCHIVE_WORK_NOT_FOUND", "message": "저장된 작품을 찾을 수 없습니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
                           }
                           """)))
-  ApiResponseBody<ArchiveWorkResponse> getArchiveWorkDetail(
-      @Parameter(description = "저장된 작품(아카이브 기록) ID", example = "1") @PathVariable @Positive Long savedArtworkId,
+  ApiResponseBody<ArchiveWorkToggleResponse> deleteArchiveWork(
+      @Parameter(description = "작품 ID", example = "1") @PathVariable @Positive Long artworkId,
       AuthUser user,
       HttpServletRequest request);
 
@@ -137,9 +154,11 @@ public interface ArchiveWorkControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveWorkCursorResponse> getArchivedWorks(
-      @Parameter(description = "마지막으로 조회한 저장 기록 ID. 첫 요청이면 전달하지 않음")
+      @Parameter(
+              description =
+                  "다음 페이지 조회용 커서. 응답의 nextCursorId를 그대로 전달하면 되는 opaque 값이며, 첫 요청이면 전달하지 않음")
           @RequestParam(required = false)
-          @Positive Long cursorId,
+          Long cursorId,
       @Parameter(description = "한 번에 불러올 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
@@ -174,24 +193,6 @@ public interface ArchiveWorkControllerDocs {
       }
       """;
 
-  String ARCHIVE_WORK_DETAIL_SUCCESS_EXAMPLE =
-      """
-      {
-        "resultType": "SUCCESS",
-        "success": {
-          "data": {
-            "archiveWorkId": 1,
-            "artworkId": 1,
-            "userId": 1,
-            "memo": "이 작품의 색감이 좋았다.",
-            "savedAt": "2026-07-13T01:49:28"
-          }
-        },
-        "error": null,
-        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks/1" }
-      }
-      """;
-
   String ARCHIVE_WORK_LIST_SUCCESS_EXAMPLE =
       """
       {
@@ -200,10 +201,25 @@ public interface ArchiveWorkControllerDocs {
           "data": {
             "works": [
               {
+                "artworkImageUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
+                "artworkName": "작은 정원",
+                "artistName": null,
+                "memo": null,
+                "archiveWorkId": 2,
+                "artworkId": null,
+                "personalArtworkId": 1,
+                "userId": 1,
+                "savedAt": "2026-08-11T09:10:00"
+              },
+              {
+                "artworkImageUrl": "https://cdn.displayu.co.kr/artworks/1/thumb.jpg",
+                "artworkName": "FORM 2026",
+                "artistName": "고상준",
+                "memo": "이 작품의 색감이 좋았다.",
                 "archiveWorkId": 1,
                 "artworkId": 1,
+                "personalArtworkId": null,
                 "userId": 1,
-                "memo": "이 작품의 색감이 좋았다.",
                 "savedAt": "2026-07-13T01:49:28"
               }
             ],
@@ -213,7 +229,7 @@ public interface ArchiveWorkControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks" }
+        "meta": { "timestamp": "2026-08-11T09:10:00", "path": "/api/v1/archives/artworks" }
       }
       """;
 }

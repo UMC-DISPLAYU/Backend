@@ -3,6 +3,7 @@ package com.example.demo.domain.display.presentation.request;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -16,6 +17,7 @@ public record UpdateDisplayRequest(
     String schoolOrOrganization,
     String departmentOrClub,
     String hostOrganizationName,
+    @Size(max = 50) String contract,
     String subtitle,
     String description,
     LocalDate startDate,

@@ -10,14 +10,15 @@ import static org.mockito.Mockito.when;
 import com.example.demo.domain.user.application.command.ChangeNicknameCommand;
 import com.example.demo.domain.user.application.result.ChangeNicknameResult;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,7 @@ class ChangeNicknameServiceTest {
     assertThat(user.getNickname()).isEqualTo(NEW_NICKNAME);
     assertThat(result.nickname()).isEqualTo(NEW_NICKNAME);
     assertThat(result.nextNicknameChangeAvailableAt())
-        .isEqualTo(LocalDateTime.now(CLOCK).plusDays(30));
+        .isEqualTo(LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).plusDays(30));
   }
 
   @Test
@@ -50,7 +51,8 @@ class ChangeNicknameServiceTest {
         User.builder()
             .id(USER_ID)
             .nickname("User1")
-            .nicknameChangeAt(LocalDateTime.now(CLOCK).minusDays(30))
+            .nicknameChangeAt(
+                LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).minusDays(30))
             .build();
     prepareUser(user);
 
@@ -65,7 +67,8 @@ class ChangeNicknameServiceTest {
         User.builder()
             .id(USER_ID)
             .nickname("User1")
-            .nicknameChangeAt(LocalDateTime.now(CLOCK).minusDays(29))
+            .nicknameChangeAt(
+                LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).minusDays(29))
             .build();
     prepareUser(user);
 

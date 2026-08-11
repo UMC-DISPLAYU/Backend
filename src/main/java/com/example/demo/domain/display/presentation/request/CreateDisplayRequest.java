@@ -1,11 +1,13 @@
 package com.example.demo.domain.display.presentation.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,6 +16,7 @@ import java.util.List;
 public record CreateDisplayRequest(
     @NotBlank String title,
     @NotBlank String posterImageUrl,
+    @JsonProperty("displayImageUrl") @Size(max = 4) List<@NotBlank String> displayImageUrls,
     @NotNull Type type,
     @NotEmpty List<Field> fields,
     @NotNull Region region,
@@ -21,6 +24,7 @@ public record CreateDisplayRequest(
     String departmentOrClub,
     @NotBlank String qnaAccount,
     @NotBlank String displayNickname,
+    @Size(max = 50) String contract,
     String subtitle,
     String description,
     @NotNull LocalDate startDate,

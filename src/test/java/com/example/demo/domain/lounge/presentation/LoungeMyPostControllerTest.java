@@ -144,7 +144,7 @@ class LoungeMyPostControllerTest {
             title,
             List.of(title + " 이미지"),
             title + " 내용",
-            LoungePostCategory.WORK_TIP));
+            LoungePostCategory.DISPLAY_REVIEW));
   }
 
   private void assertPaginationBoundaries(String url) throws Exception {
