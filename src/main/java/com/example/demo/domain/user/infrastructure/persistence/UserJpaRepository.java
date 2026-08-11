@@ -1,7 +1,7 @@
 package com.example.demo.domain.user.infrastructure.persistence;
 
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

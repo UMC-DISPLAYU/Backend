@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.infrastructure.oauth;
 
+import com.example.demo.domain.user.application.port.GoogleAuthorizationCodeClientPort;
 import com.example.demo.domain.user.infrastructure.oauth.dto.OAuthTokenResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -15,7 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @Slf4j
-public class GoogleAuthorizationCodeClient {
+public class GoogleAuthorizationCodeClient implements GoogleAuthorizationCodeClientPort {
 
   private static final String AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth";
   private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -29,6 +30,7 @@ public class GoogleAuthorizationCodeClient {
     this.properties = properties;
   }
 
+  @Override
   public String authorizationUrl(String state) {
     log.info(
         "Google OAuth authorization URL created. responseType=code, redirectUri={}, "
@@ -46,6 +48,7 @@ public class GoogleAuthorizationCodeClient {
         .toUriString();
   }
 
+  @Override
   public String exchangeCode(String code) {
     MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
     form.add("grant_type", "authorization_code");

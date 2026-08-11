@@ -1,4 +1,4 @@
-package com.example.demo.domain.artist.exception;
+package com.example.demo.domain.artist.domain.error;
 
 import com.example.demo.global.error.BaseErrorCode;
 import lombok.Getter;

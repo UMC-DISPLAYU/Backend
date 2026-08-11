@@ -5,18 +5,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.user.domain.enums.Provider;
-import com.example.demo.domain.user.exception.AuthErrorCode;
-import com.example.demo.domain.user.infrastructure.oauth.GoogleAuthorizationCodeClient;
-import com.example.demo.domain.user.infrastructure.oauth.KakaoOAuthClient;
+import com.example.demo.domain.user.application.port.GoogleAuthorizationCodeClientPort;
+import com.example.demo.domain.user.application.port.KakaoOAuthClientPort;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.global.error.BusinessException;
 import org.junit.jupiter.api.Test;
 
 class OAuthLoginServiceTest {
 
-  private final KakaoOAuthClient kakaoOAuthClient = mock(KakaoOAuthClient.class);
-  private final GoogleAuthorizationCodeClient googleAuthorizationCodeClient =
-      mock(GoogleAuthorizationCodeClient.class);
+  private final KakaoOAuthClientPort kakaoOAuthClient = mock(KakaoOAuthClientPort.class);
+  private final GoogleAuthorizationCodeClientPort googleAuthorizationCodeClient =
+      mock(GoogleAuthorizationCodeClientPort.class);
   private final AuthService authService = mock(AuthService.class);
   private final OAuthLoginService service =
       new OAuthLoginService(kakaoOAuthClient, googleAuthorizationCodeClient, authService);

@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.query.UserSearchQueryRepository;
 import com.example.demo.domain.user.application.query.UserSearchQueryResult;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

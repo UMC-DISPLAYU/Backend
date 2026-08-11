@@ -1,7 +1,7 @@
 package com.example.demo.domain.artist.application.result;
 
 import com.example.demo.domain.artist.application.query.ArtistProfileSummaryQueryResult;
-import com.example.demo.domain.artist.domain.enums.ActivityCategory;
+import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import java.util.List;
 
 public record ArtistProfileSummaryResult(

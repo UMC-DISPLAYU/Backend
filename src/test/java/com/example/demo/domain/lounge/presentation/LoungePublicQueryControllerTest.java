@@ -19,7 +19,7 @@ import com.example.demo.domain.lounge.domain.vo.UserId;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungeCommentJpaRepository;
 import com.example.demo.domain.lounge.infrastructure.persistence.SpringDataLoungePostJpaRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.TokenProvider;
 import jakarta.persistence.EntityManager;

@@ -3,7 +3,7 @@ package com.example.demo.global.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.demo.domain.user.application.auth.SocialUserInfo;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import org.junit.jupiter.api.Test;
 
 class TokenProviderTest {

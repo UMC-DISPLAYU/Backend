@@ -1,4 +1,4 @@
-package com.example.demo.domain.artist.domain.enums;
+package com.example.demo.domain.artist.domain.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

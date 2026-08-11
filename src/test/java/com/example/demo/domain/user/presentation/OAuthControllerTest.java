@@ -16,7 +16,7 @@ import com.example.demo.domain.user.application.auth.SocialUserInfo;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.application.service.OAuthLoginService;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
 import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.global.error.GlobalExceptionHandler;
@@ -66,7 +66,7 @@ class OAuthControllerTest {
         .thenReturn("https://kauth.kakao.com/oauth/authorize?state=state");
 
     mockMvc
-        .perform(get("/api/auth/kakao/login-url"))
+        .perform(get("/api/v1/auth/kakao/login-url"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.success.data.authorizationUrl")
@@ -84,7 +84,7 @@ class OAuthControllerTest {
 
     secureMockMvc
         .perform(
-            get("/api/auth/kakao/login-url")
+            get("/api/v1/auth/kakao/login-url")
                 .header(HttpHeaders.ORIGIN, "https://display-frontend-five.vercel.app"))
         .andExpect(status().isOk())
         .andExpect(
@@ -107,7 +107,7 @@ class OAuthControllerTest {
         .thenReturn("https://accounts.google.com/o/oauth2/v2/auth?state=state");
 
     mockMvc
-        .perform(get("/api/auth/google/login-url"))
+        .perform(get("/api/v1/auth/google/login-url"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.success.data.authorizationUrl")
@@ -122,7 +122,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/google/login-url")
+            get("/api/v1/auth/google/login-url")
                 .header(HttpHeaders.ORIGIN, "https://display-frontend-five.vercel.app"))
         .andExpect(status().isOk())
         .andExpect(
@@ -142,7 +142,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/kakao/callback")
+            get("/api/v1/auth/kakao/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
@@ -167,7 +167,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/google/callback")
+            get("/api/v1/auth/google/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
@@ -199,7 +199,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/google/callback")
+            get("/api/v1/auth/google/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("google_oauth_state", "state")))
@@ -232,7 +232,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/kakao/callback")
+            get("/api/v1/auth/kakao/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(new Cookie("kakao_oauth_state", "state")))
@@ -251,7 +251,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/google/callback")
+            get("/api/v1/auth/google/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(
@@ -281,7 +281,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/google/callback")
+            get("/api/v1/auth/google/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(
@@ -298,7 +298,7 @@ class OAuthControllerTest {
 
     mockMvc
         .perform(
-            get("/api/auth/kakao/callback")
+            get("/api/v1/auth/kakao/callback")
                 .param("code", "authorization-code")
                 .param("state", "state")
                 .cookie(

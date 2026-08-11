@@ -1,8 +1,8 @@
-package com.example.demo.domain.user.validator;
+package com.example.demo.domain.user.domain.service;
 
-import com.example.demo.domain.user.domain.enums.University;
-import com.example.demo.domain.user.exception.UserErrorCode;
-import com.example.demo.domain.user.exception.UserException;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
+import com.example.demo.domain.user.domain.type.University;
 import org.springframework.stereotype.Component;
 
 @Component

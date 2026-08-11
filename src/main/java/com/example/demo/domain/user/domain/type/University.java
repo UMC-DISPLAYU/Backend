@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.domain.enums;
+package com.example.demo.domain.user.domain.type;
 
 import java.util.Arrays;
 import java.util.Comparator;

@@ -17,7 +17,7 @@ import com.example.demo.domain.user.application.result.SignupResult;
 import com.example.demo.domain.user.application.service.AuthService;
 import com.example.demo.domain.user.application.service.UserService;
 import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.enums.Provider;
+import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.presentation.cookie.RefreshTokenCookieManager;
 import com.example.demo.domain.user.presentation.cookie.SignupTokenCookieManager;
 import com.example.demo.domain.user.presentation.response.SignupResponse;
