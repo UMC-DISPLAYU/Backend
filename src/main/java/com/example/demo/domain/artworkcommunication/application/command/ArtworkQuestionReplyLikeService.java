@@ -31,12 +31,12 @@ public class ArtworkQuestionReplyLikeService {
     ArtworkQuestion question =
         artworkQuestionValidator.findActiveQuestionForUpdateOrThrow(command.questionId());
     artworkQuestionValidator.validateQuestionTarget(question, command.displayArtworkId());
-    boolean isCreatorOrHandler =
+    boolean isParticipant =
         creatorExistenceRepository
-            .findCreatorNameByDisplayArtworkIdAndUserId(
+            .findParticipantNameByDisplayArtworkIdAndUserId(
                 command.displayArtworkId(), command.userId())
             .isPresent();
-    permissionChecker.requireQuestionAccessible(question, command.userId(), isCreatorOrHandler);
+    permissionChecker.requireQuestionAccessible(question, command.userId(), isParticipant);
 
     ArtworkQuestionReply reply =
         artworkQuestionValidator.findActiveReplyForUpdateOrThrow(command.questionReplyId());

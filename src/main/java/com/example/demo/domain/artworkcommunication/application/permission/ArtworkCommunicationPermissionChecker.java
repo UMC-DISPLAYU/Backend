@@ -36,12 +36,17 @@ public class ArtworkCommunicationPermissionChecker {
   }
 
   public void requireQuestionAccessible(
-      ArtworkQuestion question, Long viewerUserId, boolean isCreatorOrHandler) {
-    if (!Boolean.TRUE.equals(question.getIsPublic())
-        && !question.isWrittenBy(viewerUserId)
-        && !isCreatorOrHandler) {
+      ArtworkQuestion question, Long viewerUserId, boolean isParticipant) {
+    if (!isQuestionAccessible(question, viewerUserId, isParticipant)) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_QUESTION_FORBIDDEN);
     }
+  }
+
+  public boolean isQuestionAccessible(
+      ArtworkQuestion question, Long viewerUserId, boolean isParticipant) {
+    return Boolean.TRUE.equals(question.getIsPublic())
+        || question.isWrittenBy(viewerUserId)
+        || isParticipant;
   }
 
   public void requireQuestionReplyWriter(ArtworkQuestionReply reply, Long creatorId) {

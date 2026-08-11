@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionValidator;
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
@@ -57,7 +58,8 @@ class GetArtworkQuestionsServiceTest {
             artworkQuestionReplyLikeRepository,
             userExistenceRepository,
             creatorExistenceRepository,
-            validator);
+            validator,
+            new ArtworkCommunicationPermissionChecker(creatorExistenceRepository));
   }
 
   @Test
@@ -109,7 +111,7 @@ class GetArtworkQuestionsServiceTest {
     when(reply.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 8, 9, 13, 0));
 
     when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
-    when(creatorExistenceRepository.findCreatorNameByDisplayArtworkIdAndUserId(1L, 3L))
+    when(creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(1L, 3L))
         .thenReturn(Optional.empty());
     when(creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(1L, 3L))
         .thenReturn(Optional.empty());

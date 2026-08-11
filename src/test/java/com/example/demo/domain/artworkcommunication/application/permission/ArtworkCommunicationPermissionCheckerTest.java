@@ -55,11 +55,19 @@ class ArtworkCommunicationPermissionCheckerTest {
   }
 
   @Test
-  void requireQuestionAccessibleAllowsPrivateQuestionForCreatorOrHandler() {
+  void requireQuestionAccessibleAllowsPrivateQuestionForParticipant() {
     ArtworkQuestion question = mock(ArtworkQuestion.class);
 
     assertThatCode(() -> checker.requireQuestionAccessible(question, USER_ID, true))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void isQuestionAccessibleUsesSamePolicyAsRequiredAccess() {
+    ArtworkQuestion question = mock(ArtworkQuestion.class);
+
+    assertThat(checker.isQuestionAccessible(question, USER_ID, true)).isTrue();
+    assertThat(checker.isQuestionAccessible(question, USER_ID, false)).isFalse();
   }
 
   @Test
