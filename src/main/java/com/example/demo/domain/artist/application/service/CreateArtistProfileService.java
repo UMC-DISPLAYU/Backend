@@ -69,6 +69,8 @@ public class CreateArtistProfileService {
             category ->
                 areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
 
+    user.completeArtistVerification();
+
     return artistProfile;
   }
 

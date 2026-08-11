@@ -70,6 +70,9 @@ class SchoolEmailVerificationServiceTest {
 
     assertThat(verification.isVerified()).isTrue();
     assertThat(verification.getFailedAttemptCount()).isZero();
+    assertThat(verification.getUser().getSchoolEmail()).isEqualTo(SCHOOL_EMAIL);
+    assertThat(verification.getUser().getUnivName()).isEqualTo(UNIV_NAME);
+    assertThat(verification.getUser().isVerified()).isFalse();
   }
 
   @Test

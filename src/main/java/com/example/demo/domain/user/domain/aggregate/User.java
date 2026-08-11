@@ -70,10 +70,13 @@ public class User extends BaseTimeEntity {
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
-  public void verifyAuthor(String schoolEmail, String univName) {
-    this.isVerified = true;
+  public void verifySchoolEmail(String schoolEmail, String univName) {
     this.schoolEmail = schoolEmail;
     this.univName = univName;
+  }
+
+  public void completeArtistVerification() {
+    this.isVerified = true;
   }
 
   public void withdraw(LocalDateTime withdrawnAt) {

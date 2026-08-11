@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 public class ArtistPermissionChecker {
 
   public void requireProfileCreationEligible(User user) {
-    if (!user.isVerified()
-        || user.getSchoolEmail() == null
+    if (user.getSchoolEmail() == null
         || user.getSchoolEmail().isBlank()
         || user.getUnivName() == null
         || user.getUnivName().isBlank()) {
