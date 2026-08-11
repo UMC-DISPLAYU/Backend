@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.application.command;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
+import com.example.demo.domain.archive.domain.repository.ArchiveDisplayExistenceRepository;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.Objects;
@@ -14,14 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveDisplayService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
+  private final ArchiveDisplayExistenceRepository displayExistenceRepository;
 
-  public SaveArchiveDisplayService(ArchiveDisplayRepository archiveDisplayRepository) {
+  public SaveArchiveDisplayService(
+      ArchiveDisplayRepository archiveDisplayRepository,
+      ArchiveDisplayExistenceRepository displayExistenceRepository) {
     this.archiveDisplayRepository = archiveDisplayRepository;
+    this.displayExistenceRepository = displayExistenceRepository;
   }
 
   @Transactional
   public ArchiveDisplayToggleResult saveArchiveDisplay(SaveArchiveDisplayCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+
+    if (!displayExistenceRepository.existsById(command.displayId())) {
+      throw new BusinessException(ArchiveErrorCode.DISPLAY_NOT_FOUND);
+    }
 
     boolean alreadyArchived =
         archiveDisplayRepository

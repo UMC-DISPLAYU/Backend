@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.application.command;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
+import com.example.demo.domain.archive.domain.repository.ArchiveDisplayArtworkExistenceRepository;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.Objects;
@@ -14,14 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveWorkService {
 
   private final ArchiveWorkRepository archiveWorkRepository;
+  private final ArchiveDisplayArtworkExistenceRepository displayArtworkExistenceRepository;
 
-  public SaveArchiveWorkService(ArchiveWorkRepository archiveWorkRepository) {
+  public SaveArchiveWorkService(
+      ArchiveWorkRepository archiveWorkRepository,
+      ArchiveDisplayArtworkExistenceRepository displayArtworkExistenceRepository) {
     this.archiveWorkRepository = archiveWorkRepository;
+    this.displayArtworkExistenceRepository = displayArtworkExistenceRepository;
   }
 
   @Transactional
   public ArchiveWorkToggleResult saveArchiveWork(SaveArchiveWorkCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+
+    if (!displayArtworkExistenceRepository.existsById(command.displayArtworkId())) {
+      throw new BusinessException(ArchiveErrorCode.DISPLAY_ARTWORK_NOT_FOUND);
+    }
 
     boolean alreadyArchived =
         archiveWorkRepository
