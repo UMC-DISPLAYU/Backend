@@ -9,7 +9,9 @@ public interface DisplayArtworkLikeRepository {
 
   DisplayArtworkLike save(DisplayArtworkLike displayArtworkLike);
 
-  long countByDisplayArtworkIdAndDeletedAtIsNull(Long displayArtworkId);
+  int deleteByDisplayArtworkIdAndUserId(Long displayArtworkId, Long userId);
 
-  boolean existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(Long displayArtworkId, Long userId);
+  long countByDisplayArtworkId(Long displayArtworkId);
+
+  boolean existsByDisplayArtworkIdAndUserId(Long displayArtworkId, Long userId);
 }

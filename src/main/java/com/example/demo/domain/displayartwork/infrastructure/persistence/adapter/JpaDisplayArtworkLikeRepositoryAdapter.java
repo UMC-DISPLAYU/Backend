@@ -28,14 +28,17 @@ public class JpaDisplayArtworkLikeRepositoryAdapter implements DisplayArtworkLik
   }
 
   @Override
-  public long countByDisplayArtworkIdAndDeletedAtIsNull(Long displayArtworkId) {
-    return jpaRepository.countByDisplayArtworkIdAndDeletedAtIsNull(displayArtworkId);
+  public int deleteByDisplayArtworkIdAndUserId(Long displayArtworkId, Long userId) {
+    return jpaRepository.deleteByDisplayArtworkIdAndUserId(displayArtworkId, userId);
   }
 
   @Override
-  public boolean existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
-      Long displayArtworkId, Long userId) {
-    return jpaRepository.existsByDisplayArtworkIdAndUserIdAndDeletedAtIsNull(
-        displayArtworkId, userId);
+  public long countByDisplayArtworkId(Long displayArtworkId) {
+    return jpaRepository.countByDisplayArtworkId(displayArtworkId);
+  }
+
+  @Override
+  public boolean existsByDisplayArtworkIdAndUserId(Long displayArtworkId, Long userId) {
+    return jpaRepository.existsByDisplayArtworkIdAndUserId(displayArtworkId, userId);
   }
 }
