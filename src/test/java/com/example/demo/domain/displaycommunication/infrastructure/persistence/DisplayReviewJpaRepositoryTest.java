@@ -18,8 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 @Import(JpaAuditingConfig.class)
 class DisplayReviewJpaRepositoryTest {
 
-  @Autowired private DisplayReviewJpaRepository displayReviewJpaRepository;
-  @Autowired private DisplayReviewReplyJpaRepository displayReviewReplyJpaRepository;
+  @Autowired private SpringDataDisplayReviewJpaRepository displayReviewJpaRepository;
+  @Autowired private SpringDataDisplayReviewReplyJpaRepository displayReviewReplyJpaRepository;
 
   @Test
   void activeReviewIsReturnedWithoutActiveReplies() {

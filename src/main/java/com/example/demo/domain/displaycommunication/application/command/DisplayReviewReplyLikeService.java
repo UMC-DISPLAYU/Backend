@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DisplayReviewReplyLikeService {
 
   private final DisplayReviewValidator displayReviewValidator;
   private final DisplayReviewReplyLikeRepository displayReviewReplyLikeRepository;
 
+  @Transactional
   public DisplayReviewReplyLikeResult toggleReviewReplyLike(DisplayReviewReplyLikeCommand command) {
     displayReviewValidator.validateDisplayExists(command.displayId());
     displayReviewValidator.validateUserExists(command.userId());
