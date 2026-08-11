@@ -19,6 +19,7 @@ import com.example.demo.domain.displayartwork.domain.entity.Creator;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
+import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,7 +54,9 @@ class DisplayArtworkPermissionCheckerTest {
   @Test
   void unrelatedTeamMemberCannotEditArtwork() {
     when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
-        .thenReturn(List.of(new Creator(null, "artist", false, true, ARTIST, ARTWORK_ID)));
+        .thenReturn(
+            List.of(
+                new Creator(null, "artist", false, CreatorRole.LEAD_ARTIST, ARTIST, ARTWORK_ID)));
 
     assertThatThrownBy(() -> checker.requireArtworkEditor(MEMBER, display(), ARTWORK_ID))
         .isInstanceOf(BusinessException.class)
@@ -64,7 +67,9 @@ class DisplayArtworkPermissionCheckerTest {
   @Test
   void unrelatedTeamMemberCannotDeleteArtwork() {
     when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
-        .thenReturn(List.of(new Creator(null, "artist", false, true, ARTIST, ARTWORK_ID)));
+        .thenReturn(
+            List.of(
+                new Creator(null, "artist", false, CreatorRole.LEAD_ARTIST, ARTIST, ARTWORK_ID)));
 
     assertThatThrownBy(() -> checker.requireArtworkDeleter(MEMBER, display(), ARTWORK_ID))
         .isInstanceOf(BusinessException.class)
@@ -75,7 +80,9 @@ class DisplayArtworkPermissionCheckerTest {
   @Test
   void creatorCanEditArtwork() {
     when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
-        .thenReturn(List.of(new Creator(null, "artist", false, true, ARTIST, ARTWORK_ID)));
+        .thenReturn(
+            List.of(
+                new Creator(null, "artist", false, CreatorRole.LEAD_ARTIST, ARTIST, ARTWORK_ID)));
 
     assertThatCode(() -> checker.requireArtworkEditor(ARTIST, display(), ARTWORK_ID))
         .doesNotThrowAnyException();
@@ -91,7 +98,9 @@ class DisplayArtworkPermissionCheckerTest {
   void onlyDisplayLeaderCanEditArtworkRegisteredWithCreatorNameOnly() {
     when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
         .thenReturn(
-            List.of(new Creator(null, "accountless artist", false, true, null, ARTWORK_ID)));
+            List.of(
+                new Creator(
+                    null, "accountless artist", false, CreatorRole.LEAD_ARTIST, null, ARTWORK_ID)));
 
     assertThatCode(() -> checker.requireArtworkEditor(OWNER, display(), ARTWORK_ID))
         .doesNotThrowAnyException();

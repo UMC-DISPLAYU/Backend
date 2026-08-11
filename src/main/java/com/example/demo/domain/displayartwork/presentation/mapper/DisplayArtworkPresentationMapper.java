@@ -15,6 +15,7 @@ import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplay
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.CoAuthorResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkEditResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
@@ -124,6 +125,9 @@ public class DisplayArtworkPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.artistName(),
         result.artistUserId(),
+        result.coAuthors().stream()
+            .map(coAuthor -> new CoAuthorResponse(coAuthor.userId(), coAuthor.name()))
+            .toList(),
         result.qaHandlers().stream()
             .map(handler -> new QaHandlerResponse(handler.userId(), handler.name()))
             .toList(),
