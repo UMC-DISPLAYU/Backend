@@ -25,7 +25,11 @@ class GetArtistProfileServiceTest {
   @Test
   void returnsIntroductionExternalLinkAndProfileImage() {
     User user =
-        User.builder().id(1L).profileImageUrl("https://cdn.example.com/profile.jpg").build();
+        User.builder()
+            .id(1L)
+            .profileImageUrl("https://cdn.example.com/profile.jpg")
+            .isVerified(true)
+            .build();
     ArtistProfile profile =
         ArtistProfile.create(
             user, "maya", "artist@du.ac.kr", "덕성여자대학교", "https://portfolio.maya.com");
@@ -38,6 +42,7 @@ class GetArtistProfileServiceTest {
 
     assertThat(result.profileImageUrl()).isEqualTo("https://cdn.example.com/artist-profile.jpg");
     assertThat(result.artistName()).isEqualTo("maya");
+    assertThat(result.isVerified()).isTrue();
     assertThat(result.introduction()).isEqualTo("시각과 공간의 관계를 탐구하는 작가입니다.");
     assertThat(result.externalLink()).isEqualTo("https://portfolio.maya.com");
   }

@@ -30,7 +30,8 @@ public class ArtistProfileMapper {
         profile.getArtistName(),
         profile.getSchoolEmail(),
         profile.getUnivName(),
-        activityFields);
+        activityFields,
+        profile.getUser().isVerified());
   }
 
   public MyArtistProfileResponse toMyResponse(ArtistProfileResult result) {
@@ -41,7 +42,8 @@ public class ArtistProfileMapper {
         "VERIFIED",
         result.schoolName(),
         result.externalLink(),
-        result.fields());
+        result.fields(),
+        result.isVerified());
   }
 
   public UserArtistProfileResponse toUserResponse(ArtistProfileResult result) {
