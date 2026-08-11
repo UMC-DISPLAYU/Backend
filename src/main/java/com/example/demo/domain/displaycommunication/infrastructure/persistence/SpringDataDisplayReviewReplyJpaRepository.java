@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface DisplayReviewReplyJpaRepository extends JpaRepository<DisplayReviewReply, Long> {
+public interface SpringDataDisplayReviewReplyJpaRepository
+    extends JpaRepository<DisplayReviewReply, Long> {
 
   @Query(
       """

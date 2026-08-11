@@ -10,14 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateDisplayReviewService {
   private final DisplayReviewValidator displayReviewValidator;
   private final DisplayReviewRepository displayReviewRepository;
 
+  @Transactional
   public DisplayReviewResult create(CreateDisplayReviewCommand command) {
-    var displayAccess =
-        displayReviewValidator.findDisplayAccessOrThrow(command.displayId(), command.userId());
+    var displayAccess = displayReviewValidator.findDisplayAccessOrThrow(command.displayId());
     displayReviewValidator.validateUserExists(command.userId());
     displayReviewValidator.validateDisplayIsWritable(displayAccess);
     displayReviewValidator.validateContent(command.content());

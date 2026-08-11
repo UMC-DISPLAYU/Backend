@@ -2,7 +2,7 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReplyLike;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyLikeRepository;
-import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyLikeJpaRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 public class JpaDisplayReviewReplyLikeRepositoryAdapter
     implements DisplayReviewReplyLikeRepository {
 
-  private final DisplayReviewReplyLikeJpaRepository repository;
+  private final SpringDataDisplayReviewReplyLikeJpaRepository repository;
 
   @Override
   public Optional<DisplayReviewReplyLikeSnapshot> toggleAndGetSnapshot(

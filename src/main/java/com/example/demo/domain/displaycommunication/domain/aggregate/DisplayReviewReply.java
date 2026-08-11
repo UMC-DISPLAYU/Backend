@@ -4,7 +4,9 @@ import com.example.demo.domain.displaycommunication.domain.entity.DisplayReviewR
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 
@@ -29,6 +31,7 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
   @OneToMany(mappedBy = "displayReviewReply", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   @BatchSize(size = 50)
+  @Getter(AccessLevel.NONE)
   private final List<DisplayReviewReplyImage> images = new ArrayList<>();
 
   protected DisplayReviewReply() {}
@@ -57,6 +60,10 @@ public class DisplayReviewReply extends SoftDeleteBaseEntity {
 
   public boolean isWrittenBy(Long userId) {
     return this.userId.equals(userId);
+  }
+
+  public List<DisplayReviewReplyImage> getImages() {
+    return Collections.unmodifiableList(images);
   }
 
   public record ImageInfo(String imageUrl, int width, int height) {}
