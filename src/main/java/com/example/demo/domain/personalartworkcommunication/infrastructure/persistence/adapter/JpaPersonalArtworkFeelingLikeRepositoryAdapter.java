@@ -2,7 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingLikeRepository;
-import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingLikeJpaRepository;
+import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.SpringDataPersonalArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,18 +16,31 @@ import org.springframework.stereotype.Repository;
 public class JpaPersonalArtworkFeelingLikeRepositoryAdapter
     implements PersonalArtworkFeelingLikeRepository {
 
-  private final PersonalArtworkFeelingLikeJpaRepository repository;
+  private final SpringDataPersonalArtworkFeelingLikeJpaRepository repository;
 
   @Override
-  public Optional<PersonalArtworkFeelingLikeSnapshot> toggleAndGetSnapshot(
+  public Optional<PersonalArtworkFeelingLikeSnapshot> likeAndGetSnapshot(
       Long personalFeelingId, Long userId) {
     repository.lockByPersonalFeelingId(personalFeelingId);
-    repository.toggle(personalFeelingId, userId);
+    repository.insertIfAbsent(personalFeelingId, userId);
 
-    long likeCount = repository.countByPersonalFeelingIdAndDeletedAtIsNull(personalFeelingId);
+    long likeCount = repository.countByPersonalFeelingId(personalFeelingId);
     return repository
         .findByPersonalFeelingIdAndUserId(personalFeelingId, userId)
         .map(feelingLike -> toSnapshot(feelingLike, likeCount));
+  }
+
+  @Override
+  public Optional<PersonalArtworkFeelingLikeSnapshot> deleteAndGetSnapshot(
+      Long personalFeelingId, Long userId) {
+    repository.lockByPersonalFeelingId(personalFeelingId);
+    int deleted = repository.deleteByPersonalFeelingIdAndUserId(personalFeelingId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = repository.countByPersonalFeelingId(personalFeelingId);
+    return Optional.of(
+        new PersonalArtworkFeelingLikeSnapshot(personalFeelingId, false, likeCount, null, null));
   }
 
   @Override
@@ -44,10 +57,6 @@ public class JpaPersonalArtworkFeelingLikeRepositoryAdapter
   private PersonalArtworkFeelingLikeSnapshot toSnapshot(
       PersonalArtworkFeelingLike feelingLike, long likeCount) {
     return new PersonalArtworkFeelingLikeSnapshot(
-        feelingLike.getPersonalFeelingId(),
-        !feelingLike.isDeleted(),
-        likeCount,
-        feelingLike.getCreatedAt(),
-        feelingLike.getDeletedAt());
+        feelingLike.getPersonalFeelingId(), true, likeCount, feelingLike.getCreatedAt(), null);
   }
 }

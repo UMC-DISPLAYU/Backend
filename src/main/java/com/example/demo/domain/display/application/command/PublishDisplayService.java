@@ -49,6 +49,6 @@ public class PublishDisplayService {
     displayContentPublicationService.publishForDisplay(display.getId());
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()));
   }
 }

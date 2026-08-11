@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateArtworkQuestionReplyService {
 
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public ArtworkQuestionReplyResult createQuestionReply(ArtworkQuestionReplyCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());

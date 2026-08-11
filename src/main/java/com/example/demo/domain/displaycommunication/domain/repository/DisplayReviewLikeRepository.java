@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface DisplayReviewLikeRepository {
-  Optional<DisplayReviewLikeSnapshot> toggleAndGetSnapshot(Long displayReviewId, Long userId);
+  Optional<DisplayReviewLikeSnapshot> likeAndGetSnapshot(Long displayReviewId, Long userId);
+
+  Optional<DisplayReviewLikeSnapshot> deleteAndGetSnapshot(Long displayReviewId, Long userId);
 
   Map<Long, Long> countByDisplayReviewIds(List<Long> displayReviewIds);
 

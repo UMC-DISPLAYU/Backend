@@ -13,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PersonalArtworkFeelingReplyService {
 
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
+  @Transactional
   public PersonalArtworkFeelingReplyResult createFeelingReply(
       PersonalArtworkFeelingReplyCommand command) {
 

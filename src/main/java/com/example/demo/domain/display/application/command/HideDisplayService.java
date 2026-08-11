@@ -44,6 +44,6 @@ public class HideDisplayService {
     display.changeToDraft();
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()));
   }
 }

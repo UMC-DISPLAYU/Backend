@@ -13,26 +13,47 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ArtworkFeelingLikeService {
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingLikeRepository artworkFeelingLikeRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
 
-  public ArtworkFeelingLikeResult artworkFeelingLike(ArtworkFeelingLikeCommand command) {
+  @Transactional
+  public ArtworkFeelingLikeResult likeFeeling(ArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingLikeSnapshot snapshot =
+        artworkFeelingLikeRepository
+            .likeAndGetSnapshot(command.feelingId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  @Transactional
+  public ArtworkFeelingLikeResult cancelFeelingLike(ArtworkFeelingLikeCommand command) {
+    validateLikeTarget(command);
+
+    ArtworkFeelingLikeSnapshot snapshot =
+        artworkFeelingLikeRepository
+            .deleteAndGetSnapshot(command.feelingId(), command.userId())
+            .orElseThrow(
+                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_LIKE_NOT_FOUND));
+
+    return toResult(snapshot);
+  }
+
+  private void validateLikeTarget(ArtworkFeelingLikeCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());
 
     ArtworkFeeling artworkFeeling = findFeelingOrThrow(command.feelingId());
     artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
+  }
 
-    ArtworkFeelingLikeSnapshot snapshot =
-        artworkFeelingLikeRepository
-            .toggleAndGetSnapshot(command.feelingId(), command.userId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
-
+  private ArtworkFeelingLikeResult toResult(ArtworkFeelingLikeSnapshot snapshot) {
     return new ArtworkFeelingLikeResult(
         snapshot.feelingId(),
         snapshot.liked(),

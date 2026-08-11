@@ -1,9 +1,10 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkAccessResult;
+import com.example.demo.domain.personalartwork.application.usecase.GetPersonalArtworkAccessUseCase;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
@@ -16,15 +17,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PersonalArtworkQuestionValidator {
 
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final GetPersonalArtworkAccessUseCase getPersonalArtworkAccessUseCase;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
   public void validatePersonalArtworkExists(Long personalArtworkId) {
-    if (!personalArtworkExistenceRepository.existsById(personalArtworkId)) {
-      throw new BusinessException(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND);
-    }
+    findPersonalArtworkAccessOrThrow(personalArtworkId);
+  }
+
+  public PersonalArtworkAccessResult findPersonalArtworkAccessOrThrow(Long personalArtworkId) {
+    return getPersonalArtworkAccessUseCase
+        .getPersonalArtworkAccess(personalArtworkId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
   }
 
   public void validateUserExists(Long userId) {

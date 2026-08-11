@@ -2,7 +2,7 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReplyLike;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyLikeRepository;
-import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingReplyLikeJpaRepository;
+import com.example.demo.domain.artworkcommunication.infrastructure.persistence.SpringDataArtworkFeelingReplyLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,27 +16,35 @@ import org.springframework.stereotype.Repository;
 public class JpaArtworkFeelingReplyLikeRepositoryAdapter
     implements ArtworkFeelingReplyLikeRepository {
 
-  private final ArtworkFeelingReplyLikeJpaRepository repository;
+  private final SpringDataArtworkFeelingReplyLikeJpaRepository repository;
 
   @Override
-  public Optional<ArtworkFeelingReplyLikeSnapshot> toggleAndGetSnapshot(
+  public Optional<ArtworkFeelingReplyLikeSnapshot> likeAndGetSnapshot(
       Long feelingReplyId, Long userId) {
-    repository.toggle(feelingReplyId, userId);
+    repository.insertIfAbsent(feelingReplyId, userId);
 
-    long likeCount = repository.countByFeelingReplyIdAndDeletedAtIsNull(feelingReplyId);
+    long likeCount = repository.countByFeelingReplyId(feelingReplyId);
     return repository
         .findByFeelingReplyIdAndUserId(feelingReplyId, userId)
         .map(replyLike -> toSnapshot(replyLike, likeCount));
   }
 
+  @Override
+  public Optional<ArtworkFeelingReplyLikeSnapshot> deleteAndGetSnapshot(
+      Long feelingReplyId, Long userId) {
+    int deleted = repository.deleteByFeelingReplyIdAndUserId(feelingReplyId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = repository.countByFeelingReplyId(feelingReplyId);
+    return Optional.of(
+        new ArtworkFeelingReplyLikeSnapshot(feelingReplyId, false, likeCount, null, null));
+  }
+
   private ArtworkFeelingReplyLikeSnapshot toSnapshot(
       ArtworkFeelingReplyLike replyLike, long likeCount) {
     return new ArtworkFeelingReplyLikeSnapshot(
-        replyLike.getFeelingReplyId(),
-        !replyLike.isDeleted(),
-        likeCount,
-        replyLike.getCreatedAt(),
-        replyLike.getDeletedAt());
+        replyLike.getFeelingReplyId(), true, likeCount, replyLike.getCreatedAt(), null);
   }
 
   @Override

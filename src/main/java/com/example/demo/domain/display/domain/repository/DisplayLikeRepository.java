@@ -10,5 +10,7 @@ public interface DisplayLikeRepository {
 
   DisplayLike save(DisplayLike displayLike);
 
-  long countByDisplayIdAndDeletedAtIsNull(Long displayId);
+  int deleteByDisplayIdAndUserId(Long displayId, UserId userId);
+
+  long countByDisplayId(Long displayId);
 }

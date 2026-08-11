@@ -4,9 +4,7 @@ import com.example.demo.domain.personalartworkcommunication.presentation.request
 import com.example.demo.domain.personalartworkcommunication.presentation.request.CreatePersonalArtworkQuestionRequest;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.DeletedPersonalArtworkQuestionResponse;
-import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionListResponse;
-import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyLikeResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionReplyResponse;
 import com.example.demo.domain.personalartworkcommunication.presentation.response.PersonalArtworkQuestionResponse;
 import com.example.demo.global.response.ApiResponseBody;
@@ -40,8 +38,7 @@ public interface PersonalArtworkQuestionApiDocs {
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
           isMine은 로그인 사용자가 해당 질문 또는 답변의 작성자인지를 나타내며, 비회원은 false입니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
-          likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
-          isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
+          질문/답변 좋아요 기능은 제공하지 않으므로 likeCount는 0, isLiked는 false입니다.
           접근할 수 없는 비공개 질문은 likeCount도 null로 마스킹합니다.
           """)
   @ApiResponse(
@@ -67,7 +64,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "accessible": true,
                                     "isMine": false,
                                     "canReply": false,
-                                    "likeCount": 12,
+                                    "likeCount": 0,
                                     "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
@@ -93,7 +90,7 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
                                       "images": [],
-                                      "likeCount": 4,
+                                      "likeCount": 0,
                                       "isLiked": false,
                                       "isMine": true
                                     }
@@ -159,103 +156,6 @@ public interface PersonalArtworkQuestionApiDocs {
       @Parameter(description = "한 번에 불러올 질문 개수", example = "10")
           @RequestParam(defaultValue = "10")
           @Min(1) @Max(50) int size,
-      @Parameter(hidden = true) AuthUser user,
-      HttpServletRequest httpServletRequest);
-
-  @Operation(
-      summary = "개인 작품 질문 좋아요 등록 및 취소",
-      description =
-          """
-          로그인 사용자가 개인 작품 질문의 좋아요 상태를 변경합니다.
-          좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.
-          공개 질문은 모든 로그인 사용자가 처리할 수 있습니다.
-          비공개 질문은 질문 작성자 또는 개인 작품 소유자만 처리할 수 있습니다.
-          동시 요청은 질문 단위 비관적 쓰기 락으로 처리합니다.
-          """)
-  @ApiResponse(
-      responseCode = "200",
-      description = "개인 작품 질문 좋아요 상태 변경 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Personal artwork question like success",
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "personalQuestionId": 15,
-                                "liked": true,
-                                "likeCount": 12,
-                                "createdAt": "2026-08-04T12:00:00",
-                                "deletedAt": null
-                              }
-                            },
-                            "error": null,
-                            "meta": {
-                              "timestamp": "2026-08-04T12:00:00",
-                              "path": "/api/v1/personal-artworks/3/questions/15/like"
-                            }
-                          }
-                          """)))
-  @ApiResponse(responseCode = "401", description = "로그인 필요")
-  @ApiResponse(responseCode = "403", description = "비공개 질문 접근 권한 없음")
-  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자 또는 질문 없음")
-  ApiResponseBody<PersonalArtworkQuestionLikeResponse> questionLike(
-      @Parameter(description = "질문이 등록된 개인 작품 ID", example = "3") Long personalArtworkId,
-      @Parameter(description = "좋아요 상태를 변경할 개인 작품 질문 ID", example = "15") Long personalQuestionId,
-      @Parameter(hidden = true) AuthUser user,
-      HttpServletRequest httpServletRequest);
-
-  @Operation(
-      summary = "개인 작품 질문 답변 좋아요 등록 및 취소",
-      description =
-          """
-          로그인 사용자가 개인 작품 질문 답변의 좋아요 상태를 변경합니다.
-          좋아요가 없거나 취소된 상태면 등록하고, 등록된 상태면 취소합니다.
-          부모 질문이 공개이면 모든 로그인 사용자가 처리할 수 있습니다.
-          부모 질문이 비공개이면 질문 작성자 또는 개인 작품 소유자만 처리할 수 있습니다.
-          동시 요청은 부모 질문과 질문 답변에 비관적 쓰기 락을 적용해 처리합니다.
-          """)
-  @ApiResponse(
-      responseCode = "200",
-      description = "개인 작품 질문 답변 좋아요 상태 변경 성공",
-      content =
-          @Content(
-              mediaType = "application/json",
-              examples =
-                  @ExampleObject(
-                      name = "Personal artwork question reply like success",
-                      value =
-                          """
-                          {
-                            "resultType": "SUCCESS",
-                            "success": {
-                              "data": {
-                                "personalQuestionReplyId": 8,
-                                "liked": true,
-                                "likeCount": 4,
-                                "createdAt": "2026-08-04T12:00:00",
-                                "deletedAt": null
-                              }
-                            },
-                            "error": null,
-                            "meta": {
-                              "timestamp": "2026-08-04T12:00:00",
-                              "path": "/api/v1/personal-artworks/3/questions/15/reply/8/like"
-                            }
-                          }
-                          """)))
-  @ApiResponse(responseCode = "401", description = "로그인 필요")
-  @ApiResponse(responseCode = "403", description = "비공개 질문 접근 권한 없음")
-  @ApiResponse(responseCode = "404", description = "개인 작품, 사용자, 질문 또는 질문 답변 없음")
-  ApiResponseBody<PersonalArtworkQuestionReplyLikeResponse> questionReplyLike(
-      @Parameter(description = "질문이 등록된 개인 작품 ID", example = "3") Long personalArtworkId,
-      @Parameter(description = "부모 질문 ID", example = "15") Long personalQuestionId,
-      @Parameter(description = "좋아요 상태를 변경할 질문 답변 ID", example = "8") Long personalQuestionReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 

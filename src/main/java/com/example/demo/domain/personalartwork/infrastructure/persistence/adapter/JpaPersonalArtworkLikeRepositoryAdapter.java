@@ -28,7 +28,12 @@ public class JpaPersonalArtworkLikeRepositoryAdapter implements PersonalArtworkL
   }
 
   @Override
-  public long countByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId) {
-    return jpaRepository.countByPersonalArtworkIdAndDeletedAtIsNull(personalArtworkId);
+  public int deleteByPersonalArtworkIdAndUserId(Long personalArtworkId, Long userId) {
+    return jpaRepository.deleteByPersonalArtworkIdAndUserId(personalArtworkId, userId);
+  }
+
+  @Override
+  public long countByPersonalArtworkId(Long personalArtworkId) {
+    return jpaRepository.countByPersonalArtworkId(personalArtworkId);
   }
 }

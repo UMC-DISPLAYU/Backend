@@ -22,12 +22,10 @@ public class JpaMyDisplayReviewQueryRepositoryAdapter implements MyDisplayReview
             SELECT new com.example.demo.domain.displaycommunication.application.query.MyDisplayReviewQueryItem(
                 review.displayReviewId,
                 review.displayId,
-                display.title,
                 review.content,
                 review.createdAt
             )
             FROM DisplayReview review
-            JOIN DisplayReferenceJpaEntity display ON display.displayId = review.displayId
             WHERE review.userId = :userId
               AND review.deletedAt IS NULL
               AND (:cursorId IS NULL OR review.displayReviewId < :cursorId)

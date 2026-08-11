@@ -3,6 +3,7 @@ package com.example.demo.domain.artworkcommunication.application.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,8 +14,9 @@ import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunic
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.displayartwork.application.result.ArtworkSummaryResult;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DeleteArtworkQuestionServiceTest {
 
   @Mock private ArtworkQuestionRepository artworkQuestionRepository;
-  @Mock private DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  @Mock private GetArtworkSummariesUseCase getArtworkSummariesUseCase;
   @Mock private UserExistenceRepository userExistenceRepository;
   @Mock private CreatorExistenceRepository creatorExistenceRepository;
   @Mock private ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
@@ -40,7 +42,7 @@ class DeleteArtworkQuestionServiceTest {
     ArtworkQuestionValidator validator =
         new ArtworkQuestionValidator(
             artworkQuestionRepository,
-            displayArtworkExistenceRepository,
+            getArtworkSummariesUseCase,
             userExistenceRepository,
             artworkQuestionReplyRepository);
     service =
@@ -54,7 +56,8 @@ class DeleteArtworkQuestionServiceTest {
   void answeredQuestionCannotBeDeleted() {
     ArtworkQuestion question = ArtworkQuestion.create(1L, 2L, "답변이 등록된 질문", true, List.of());
     question.markAnswered();
-    when(displayArtworkExistenceRepository.existsById(1L)).thenReturn(true);
+    when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(1L)))
+        .thenReturn(List.of(mock(ArtworkSummaryResult.class)));
     when(userExistenceRepository.existsById(2L)).thenReturn(true);
     when(artworkQuestionRepository.findActiveByIdForUpdate(10L)).thenReturn(Optional.of(question));
 

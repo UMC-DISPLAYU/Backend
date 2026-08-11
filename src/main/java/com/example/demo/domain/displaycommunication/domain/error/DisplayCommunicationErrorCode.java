@@ -6,8 +6,12 @@ import org.springframework.http.HttpStatus;
 public enum DisplayCommunicationErrorCode implements BaseErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
   DISPLAY_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_NOT_FOUND", "전시 후기를 찾을 수 없습니다."),
+  DISPLAY_REVIEW_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_LIKE_NOT_FOUND", "전시 후기 좋아요를 찾을 수 없습니다."),
   DISPLAY_REVIEW_REPLY_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_REPLY_NOT_FOUND", "전시 후기 답글을 찾을 수 없습니다."),
+  DISPLAY_REVIEW_REPLY_LIKE_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "DISPLAY_REVIEW_REPLY_LIKE_NOT_FOUND", "전시 후기 답글 좋아요를 찾을 수 없습니다."),
   INVALID_DISPLAY_REVIEW_CONTENT(
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_REVIEW_CONTENT", "후기 내용을 입력해주세요."),
   INVALID_DISPLAY_REVIEW_REPLY_CONTENT(

@@ -3,7 +3,6 @@ package com.example.demo.domain.personalartwork.application.query;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
-import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkLike;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkLikeRepository;
 import com.example.demo.domain.personalartwork.domain.repository.PersonalArtworkRepository;
@@ -33,14 +32,12 @@ public class PersonalArtworkQueryService {
   public PersonalArtworkResult getPersonalArtworkDetail(
       Long personalArtworkId, Long requesterUserId) {
     PersonalArtwork personalArtwork = getPersonalArtwork(personalArtworkId);
-    long likeCount =
-        personalArtworkLikeRepository.countByPersonalArtworkIdAndDeletedAtIsNull(personalArtworkId);
+    long likeCount = personalArtworkLikeRepository.countByPersonalArtworkId(personalArtworkId);
     // 비회원 조회를 허용하므로 requesterUserId가 없으면 사용자별 상태는 false로 둔다.
     boolean isLiked =
         requesterUserId != null
             && personalArtworkLikeRepository
                 .findByPersonalArtworkIdAndUserId(personalArtworkId, requesterUserId)
-                .filter(PersonalArtworkLike::isActive)
                 .isPresent();
     return PersonalArtworkResult.from(personalArtwork, likeCount, isLiked);
   }

@@ -25,8 +25,8 @@ public class JpaLoungeCommentLikeRepositoryAdapter implements LoungeCommentLikeR
   }
 
   @Override
-  public void deleteByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId) {
-    jpaRepository.deleteByLoungeCommentIdAndUserId(loungeCommentId, userId.value());
+  public int deleteByLoungeCommentIdAndUserId(Long loungeCommentId, UserId userId) {
+    return jpaRepository.deleteByLoungeCommentIdAndUserId(loungeCommentId, userId.value());
   }
 
   @Override

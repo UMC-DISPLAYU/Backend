@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import com.example.demo.domain.personalartwork.application.usecase.GetPersonalArtworkAccessUseCase;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +19,10 @@ class PersonalArtworkCommunicationPermissionCheckerTest {
   private static final Long USER_ID = 1L;
   private static final Long PERSONAL_ARTWORK_ID = 10L;
 
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository =
-      mock(PersonalArtworkExistenceRepository.class);
+  private final GetPersonalArtworkAccessUseCase getPersonalArtworkAccessUseCase =
+      mock(GetPersonalArtworkAccessUseCase.class);
   private final PersonalArtworkCommunicationPermissionChecker checker =
-      new PersonalArtworkCommunicationPermissionChecker(personalArtworkExistenceRepository);
+      new PersonalArtworkCommunicationPermissionChecker(getPersonalArtworkAccessUseCase);
 
   @Test
   void requirePersonalArtworkOwnerRejectsNonOwner() {

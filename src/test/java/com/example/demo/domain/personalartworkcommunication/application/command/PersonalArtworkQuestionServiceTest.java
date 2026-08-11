@@ -1,19 +1,24 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.personalartwork.application.result.PersonalArtworkAccessResult;
+import com.example.demo.domain.personalartwork.application.usecase.GetPersonalArtworkAccessUseCase;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion.ImageInfo;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
+import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.global.error.BusinessException;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PersonalArtworkQuestionServiceTest {
 
   @Mock private PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
-  @Mock private PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  @Mock private GetPersonalArtworkAccessUseCase getPersonalArtworkAccessUseCase;
   @Mock private UserExistenceRepository userExistenceRepository;
   @Mock private PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
 
@@ -34,7 +39,7 @@ class PersonalArtworkQuestionServiceTest {
   void setUp() {
     PersonalArtworkQuestionValidator validator =
         new PersonalArtworkQuestionValidator(
-            personalArtworkExistenceRepository,
+            getPersonalArtworkAccessUseCase,
             userExistenceRepository,
             personalArtworkQuestionReplyRepository,
             personalArtworkQuestionRepository);
@@ -43,7 +48,8 @@ class PersonalArtworkQuestionServiceTest {
 
   @Test
   void ownerCanCreateQuestionOnOwnArtwork() {
-    when(personalArtworkExistenceRepository.existsById(1L)).thenReturn(true);
+    when(getPersonalArtworkAccessUseCase.getPersonalArtworkAccess(1L))
+        .thenReturn(Optional.of(new PersonalArtworkAccessResult(1L, 2L)));
     when(userExistenceRepository.existsById(2L)).thenReturn(true);
     when(personalArtworkQuestionRepository.save(any(PersonalArtworkQuestion.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -64,7 +70,24 @@ class PersonalArtworkQuestionServiceTest {
     assertThat(result.images().get(0).width()).isEqualTo(800);
     assertThat(result.images().get(0).height()).isEqualTo(600);
     assertThat(result.images().get(0).sortOrder()).isZero();
-    verify(personalArtworkExistenceRepository, never()).existsByIdAndUserId(any(), any());
     verify(personalArtworkQuestionRepository).save(any(PersonalArtworkQuestion.class));
+  }
+
+  @Test
+  void emptyAccessResultIsTreatedAsPersonalArtworkNotFound() {
+    when(getPersonalArtworkAccessUseCase.getPersonalArtworkAccess(99L))
+        .thenReturn(Optional.empty());
+
+    assertThatThrownBy(
+            () ->
+                service.createPersonalQuestion(
+                    new PersonalArtworkQuestionCommand(99L, 2L, "질문", true, List.of())))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
+
+    verify(personalArtworkQuestionRepository, never()).save(any());
   }
 }

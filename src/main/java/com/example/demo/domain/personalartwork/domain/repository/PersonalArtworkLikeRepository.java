@@ -10,5 +10,7 @@ public interface PersonalArtworkLikeRepository {
 
   PersonalArtworkLike save(PersonalArtworkLike personalArtworkLike);
 
-  long countByPersonalArtworkIdAndDeletedAtIsNull(Long personalArtworkId);
+  int deleteByPersonalArtworkIdAndUserId(Long personalArtworkId, Long userId);
+
+  long countByPersonalArtworkId(Long personalArtworkId);
 }

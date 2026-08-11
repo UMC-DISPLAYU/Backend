@@ -1,5 +1,6 @@
 package com.example.demo.domain.displaycommunication.application.command;
 
+import com.example.demo.domain.displaycommunication.application.permission.DisplayReviewPermissionChecker;
 import com.example.demo.domain.displaycommunication.application.result.DeletedDisplayReviewResult;
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewRepository;
@@ -9,11 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeleteDisplayReviewService {
   private final DisplayReviewValidator displayReviewValidator;
+  private final DisplayReviewPermissionChecker permissionChecker;
   private final DisplayReviewRepository displayReviewRepository;
 
+  @Transactional
   public DeletedDisplayReviewResult deleteReview(DeleteDisplayReviewCommand command) {
     displayReviewValidator.validateDisplayExists(command.displayId());
     displayReviewValidator.validateUserExists(command.userId());
@@ -21,8 +23,8 @@ public class DeleteDisplayReviewService {
     DisplayReview displayReview =
         displayReviewValidator.findReviewOrThrow(command.displayReviewId());
 
-    displayReviewValidator.validateAccessibleReview(
-        displayReview, command.displayId(), command.userId());
+    displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
+    permissionChecker.requireReviewWriter(displayReview, command.userId());
 
     displayReview.delete();
     DisplayReview saved = displayReviewRepository.save(displayReview);

@@ -215,7 +215,7 @@ class DisplayCacheIntegrationTest {
     Display display = displayWithTeamLeader();
     seedDisplayListCaches();
     when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
-    when(displayLikeRepository.countByDisplayIdAndDeletedAtIsNull(display.getId())).thenReturn(0L);
+    when(displayLikeRepository.countByDisplayId(display.getId())).thenReturn(0L);
 
     updateDisplayService.updateDisplay(updateDisplayCommand());
 

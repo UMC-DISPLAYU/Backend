@@ -102,7 +102,11 @@ public class LoungeCommentCommandService {
     permissionChecker.requireCategoryAccess(loungePost.getCategory(), userId);
     UserId likeUserId = new UserId(userId);
 
-    loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
+    int deleted =
+        loungeCommentLikeRepository.deleteByLoungeCommentIdAndUserId(comment.getId(), likeUserId);
+    if (deleted == 0) {
+      throw new BusinessException(LoungeErrorCode.LOUNGE_COMMENT_LIKE_NOT_FOUND);
+    }
 
     return new LoungeCommentLikeResult(
         comment.getId(),

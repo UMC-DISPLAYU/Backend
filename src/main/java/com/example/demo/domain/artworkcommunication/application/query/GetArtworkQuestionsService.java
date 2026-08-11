@@ -11,13 +11,10 @@ import com.example.demo.domain.artworkcommunication.application.result.ArtworkQu
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
@@ -32,21 +29,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetArtworkQuestionsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
-  private final ArtworkQuestionLikeRepository artworkQuestionLikeRepository;
-  private final ArtworkQuestionReplyLikeRepository artworkQuestionReplyLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional(readOnly = true)
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
@@ -79,25 +73,10 @@ public class GetArtworkQuestionsService {
     Map<Long, String> nicknameByUserId = findQuestionUserNicknames(pageQuestions);
     Map<Long, String> creatorNameByUserId = findQuestionCreatorNames(pageQuestions, query);
     Map<Long, String> creatorNameById = findCreatorNamesById(repliesByQuestionId);
-    List<Long> questionIds = pageQuestions.stream().map(ArtworkQuestion::getQuestionId).toList();
-    List<Long> questionReplyIds =
-        repliesByQuestionId.values().stream()
-            .flatMap(List::stream)
-            .map(ArtworkQuestionReply::getQueReplyId)
-            .toList();
-    Map<Long, Long> questionLikeCounts =
-        artworkQuestionLikeRepository.countByQuestionIds(questionIds);
-    Set<Long> likedQuestionIds =
-        query.userId() == null
-            ? Set.of()
-            : artworkQuestionLikeRepository.findLikedQuestionIds(questionIds, query.userId());
-    Map<Long, Long> replyLikeCounts =
-        artworkQuestionReplyLikeRepository.countByQuestionReplyIds(questionReplyIds);
-    Set<Long> likedQuestionReplyIds =
-        query.userId() == null
-            ? Set.of()
-            : artworkQuestionReplyLikeRepository.findLikedQuestionReplyIds(
-                questionReplyIds, query.userId());
+    Map<Long, Long> questionLikeCounts = Map.of();
+    Set<Long> likedQuestionIds = Set.of();
+    Map<Long, Long> replyLikeCounts = Map.of();
+    Set<Long> likedQuestionReplyIds = Set.of();
 
     List<ArtworkQuestionItemResult> questions =
         pageQuestions.stream()

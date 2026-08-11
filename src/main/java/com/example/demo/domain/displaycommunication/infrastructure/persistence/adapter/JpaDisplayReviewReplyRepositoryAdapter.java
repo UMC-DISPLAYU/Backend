@@ -2,7 +2,7 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewReply;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewReplyRepository;
-import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewReplyJpaRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewReplyJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JpaDisplayReviewReplyRepositoryAdapter implements DisplayReviewReplyRepository {
-  private final DisplayReviewReplyJpaRepository repository;
+  private final SpringDataDisplayReviewReplyJpaRepository repository;
 
   @Override
   public DisplayReviewReply save(DisplayReviewReply displayReviewReply) {

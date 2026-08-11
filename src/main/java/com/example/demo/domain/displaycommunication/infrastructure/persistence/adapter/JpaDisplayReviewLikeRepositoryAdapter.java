@@ -2,7 +2,7 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewLike;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewLikeRepository;
-import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewLikeJpaRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,28 +14,40 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JpaDisplayReviewLikeRepositoryAdapter implements DisplayReviewLikeRepository {
-  private final DisplayReviewLikeJpaRepository repository;
+  private final SpringDataDisplayReviewLikeJpaRepository repository;
 
   @Override
-  public Optional<DisplayReviewLikeSnapshot> toggleAndGetSnapshot(
-      Long displayReviewId, Long userId) {
+  public Optional<DisplayReviewLikeSnapshot> likeAndGetSnapshot(Long displayReviewId, Long userId) {
     repository.lockByDisplayReviewId(displayReviewId);
-    repository.toggle(displayReviewId, userId);
+    repository.insertIfAbsent(displayReviewId, userId);
 
-    long likeCount = repository.countByDisplayReviewIdAndDeletedAtIsNull(displayReviewId);
+    long likeCount = repository.countByDisplayReviewId(displayReviewId);
     return repository
         .findByDisplayReviewIdAndUserId(displayReviewId, userId)
         .map(displayReviewLike -> toSnapshot(displayReviewLike, likeCount));
+  }
+
+  @Override
+  public Optional<DisplayReviewLikeSnapshot> deleteAndGetSnapshot(
+      Long displayReviewId, Long userId) {
+    repository.lockByDisplayReviewId(displayReviewId);
+    int deleted = repository.deleteByDisplayReviewIdAndUserId(displayReviewId, userId);
+    if (deleted == 0) {
+      return Optional.empty();
+    }
+    long likeCount = repository.countByDisplayReviewId(displayReviewId);
+    return Optional.of(
+        new DisplayReviewLikeSnapshot(displayReviewId, false, likeCount, null, null));
   }
 
   private DisplayReviewLikeSnapshot toSnapshot(
       DisplayReviewLike displayReviewLike, long likeCount) {
     return new DisplayReviewLikeSnapshot(
         displayReviewLike.getDisplayReviewId(),
-        !displayReviewLike.isDeleted(),
+        true,
         likeCount,
         displayReviewLike.getCreatedAt(),
-        displayReviewLike.getDeletedAt());
+        null);
   }
 
   @Override

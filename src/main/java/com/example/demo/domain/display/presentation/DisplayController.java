@@ -136,8 +136,8 @@ import com.example.demo.domain.display.application.query.GetDisplayByInvitationS
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.query.GetDisplayLikeStatusService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
-import com.example.demo.domain.display.application.result.DisplayInvitationDisableResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
+import com.example.demo.domain.display.application.result.DisplayInvitationStatusResult;
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.service.DisplayBookmarkEnrichmentService;
@@ -157,12 +157,13 @@ import com.example.demo.domain.display.presentation.request.DuPickRequest;
 import com.example.demo.domain.display.presentation.request.GraduationDisplayRequest;
 import com.example.demo.domain.display.presentation.request.PublishDisplayRequest;
 import com.example.demo.domain.display.presentation.request.SearchDisplayRequest;
+import com.example.demo.domain.display.presentation.request.UpdateDisplayInvitationStatusRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayReservationRequest;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
-import com.example.demo.domain.display.presentation.response.DisplayInvitationDisableResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
@@ -513,7 +514,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/like")
+  @DeleteMapping("/api/v1/display/like")
   @Operation(summary = LIKE_CANCEL_SUMMARY, description = LIKE_CANCEL_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -593,7 +594,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/invitation/disable")
+  @PatchMapping("/api/v1/display/{displayId}/invitation")
   @Operation(summary = INVITATION_DISABLE_SUMMARY, description = INVITATION_DISABLE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -606,16 +607,18 @@ public class DisplayController {
                   @ExampleObject(
                       name = INVITATION_DISABLE_SUCCESS_EXAMPLE_NAME,
                       value = INVITATION_DISABLE_SUCCESS_EXAMPLE)))
-  public ApiResponseBody<DisplayInvitationDisableResponse> disableDisplayInvitation(
+  public ApiResponseBody<DisplayInvitationStatusResponse> updateDisplayInvitationStatus(
       @Parameter(
               description = INVITATION_DISPLAY_ID_DESCRIPTION,
               example = INVITATION_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
+      @Valid @RequestBody UpdateDisplayInvitationStatusRequest updateRequest,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
-    DisplayInvitationDisableResult result =
-        displayInvitationCommandService.disableInvitation(requireUserId(user), displayId);
+    DisplayInvitationStatusResult result =
+        displayInvitationCommandService.updateInvitationStatus(
+            requireUserId(user), displayId, updateRequest.enabled());
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
