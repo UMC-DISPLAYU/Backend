@@ -40,7 +40,7 @@ class RefreshTokenCookieManagerTest {
 
   private JwtProperties jwtProperties() {
     JwtProperties jwtProperties = new JwtProperties();
-    jwtProperties.setRefreshExpiration(1209600000);
+    jwtProperties.setRefreshExpiration(7200000);
     return jwtProperties;
   }
 }

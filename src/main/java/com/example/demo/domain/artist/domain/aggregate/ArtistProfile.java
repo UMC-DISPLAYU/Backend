@@ -2,6 +2,7 @@ package com.example.demo.domain.artist.domain.aggregate;
 
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
 import com.example.demo.domain.artist.domain.error.ArtistException;
+import com.example.demo.domain.artist.domain.vo.ArtistName;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -29,7 +30,7 @@ public class ArtistProfile extends BaseTimeEntity {
   @JoinColumn(name = "userId", nullable = false)
   private User user;
 
-  @Column(name = "artistName", nullable = false, length = 50)
+  @Column(name = "artistName", nullable = false, length = 15)
   private String artistName;
 
   @Column(name = "profileImageUrl", length = 2048)
@@ -50,7 +51,7 @@ public class ArtistProfile extends BaseTimeEntity {
   private ArtistProfile(
       User user, String artistName, String schoolEmail, String univName, String portfolioUrl) {
     this.user = user;
-    this.artistName = artistName;
+    this.artistName = ArtistName.of(artistName).value();
     this.schoolEmail = schoolEmail;
     this.univName = univName;
     this.portfolioUrl = portfolioUrl;
@@ -62,7 +63,7 @@ public class ArtistProfile extends BaseTimeEntity {
   }
 
   public void updateArtistName(String artistName) {
-    this.artistName = artistName;
+    this.artistName = ArtistName.of(artistName).value();
   }
 
   public void updatePortfolioUrl(String portfolioUrl) {

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.personalartwork.application.permission.PersonalArtworkPermissionChecker;
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
@@ -33,7 +34,9 @@ class PersonalArtworkCommandServiceTest {
       mock(ArtistVerificationRepository.class);
 
   private final PersonalArtworkCommandService service =
-      new PersonalArtworkCommandService(personalArtworkRepository, artistVerificationRepository);
+      new PersonalArtworkCommandService(
+          personalArtworkRepository,
+          new PersonalArtworkPermissionChecker(artistVerificationRepository));
 
   @Test
   void verifiedArtistCanCreatePersonalArtwork() {
