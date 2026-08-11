@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,18 +34,19 @@ public class HealthController {
                             "success": {
                               "data": {
                                 "status": "UP",
-                                "checkedAt": "2026-07-02T02:50:00"
+                                "checkedAt": "2026-07-02T02:50:00Z"
                               }
                             },
                             "error": null,
                             "meta": {
-                              "timestamp": "2026-07-02T02:50:00",
+                              "timestamp": "2026-07-02T02:50:00Z",
                               "path": "/api/v1/health"
                             }
                           }
                           """)))
   public ApiResponseBody<HealthResponse> health(HttpServletRequest request) {
-    return ApiResponseBody.success(new HealthResponse("UP", LocalDateTime.now()), request);
+    return ApiResponseBody.success(
+        new HealthResponse("UP", LocalDateTime.now(ZoneOffset.UTC)), request);
   }
 
   public record HealthResponse(String status, LocalDateTime checkedAt) {}

@@ -9,6 +9,7 @@ import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,7 +43,8 @@ public class ChangeNicknameService {
     }
 
     try {
-      LocalDateTime nextChangeAvailableAt = user.changeNickname(nickname, LocalDateTime.now(clock));
+      LocalDateTime nextChangeAvailableAt =
+          user.changeNickname(nickname, LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
 
       userRepository.flush();
 

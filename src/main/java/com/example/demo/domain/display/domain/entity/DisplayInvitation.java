@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -135,7 +136,7 @@ public class DisplayInvitation {
   @PrePersist
   private void prePersist() {
     if (createdAt == null) {
-      createdAt = LocalDateTime.now();
+      createdAt = LocalDateTime.now(ZoneOffset.UTC);
     }
   }
 }

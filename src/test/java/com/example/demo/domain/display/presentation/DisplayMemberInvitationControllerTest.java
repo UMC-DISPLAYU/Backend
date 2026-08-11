@@ -169,7 +169,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationId").value(invitationId))
         .andExpect(jsonPath("$.success.data.status").value("ACCEPTED"))
-        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T18:00:00"));
+        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T09:00:00Z"));
 
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.ACCEPTED);
@@ -230,7 +230,7 @@ class DisplayMemberInvitationControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.status").value("REJECTED"))
-        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T18:00:00"));
+        .andExpect(jsonPath("$.success.data.respondedAt").value("2026-07-22T09:00:00Z"));
 
     DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
     assertThat(invitation.getStatus()).isEqualTo(DisplayInvitationStatus.REJECTED);
@@ -361,7 +361,7 @@ class DisplayMemberInvitationControllerTest {
             .filter(teamMember -> teamMember.getUserId().value().equals(member.getId()))
             .findFirst()
             .orElseThrow();
-    assertThat(exitedMember.getDeletedAt()).isEqualTo(LocalDateTime.of(2026, 7, 22, 18, 0));
+    assertThat(exitedMember.getDeletedAt()).isEqualTo(LocalDateTime.of(2026, 7, 22, 9, 0));
     assertThat(
             teamMemberJpaRepository
                 .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
