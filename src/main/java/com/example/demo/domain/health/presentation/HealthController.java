@@ -34,12 +34,12 @@ public class HealthController {
                             "success": {
                               "data": {
                                 "status": "UP",
-                                "checkedAt": "2026-07-02T02:50:00"
+                                "checkedAt": "2026-07-02T02:50:00Z"
                               }
                             },
                             "error": null,
                             "meta": {
-                              "timestamp": "2026-07-02T02:50:00",
+                              "timestamp": "2026-07-02T02:50:00Z",
                               "path": "/api/v1/health"
                             }
                           }
