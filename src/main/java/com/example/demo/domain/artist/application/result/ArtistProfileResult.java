@@ -9,4 +9,5 @@ public record ArtistProfileResult(
     String introduction,
     String schoolName,
     String externalLink,
-    List<ActivityCategory> fields) {}
+    List<ActivityCategory> fields,
+    boolean isVerified) {}

@@ -44,7 +44,8 @@ public interface ArtistProfileControllerDocs {
             "artistName": "홍길동",
             "schoolEmail": "user@university.ac.kr",
             "univName": "덕성여자대학교",
-            "activityFields": ["PAINTING", "ILLUSTRATION"]
+            "activityFields": ["PAINTING", "ILLUSTRATION"],
+            "isVerified": true
           }
         },
         "error": null,
@@ -65,6 +66,7 @@ public interface ArtistProfileControllerDocs {
             "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
             "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
             "status": "VERIFIED",
+            "isVerified": true,
             "schoolName": "중앙대학교 서울캠퍼스",
             "externalLink": "https://portfolio.maya.com",
             "fields": ["PAINTING", "ILLUSTRATION"]
