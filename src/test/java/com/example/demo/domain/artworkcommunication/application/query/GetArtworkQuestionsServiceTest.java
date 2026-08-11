@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.application.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -9,6 +10,7 @@ import com.example.demo.domain.artworkcommunication.application.permission.Artwo
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
+import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
@@ -18,6 +20,7 @@ import com.example.demo.domain.artworkcommunication.domain.repository.UserExiste
 import com.example.demo.domain.artworkcommunication.domain.type.AnswerStatus;
 import com.example.demo.domain.displayartwork.application.result.ArtworkSummaryResult;
 import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
+import com.example.demo.global.error.BusinessException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -157,5 +160,17 @@ class GetArtworkQuestionsServiceTest {
 
     assertThat(result.size()).isEqualTo(50);
     assertThat(result.questions()).isEmpty();
+  }
+
+  @Test
+  void getQuestionsThrowsArtworkNotFoundWhenArtworkSummaryIsEmpty() {
+    when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(1L))).thenReturn(List.of());
+
+    assertThatThrownBy(() -> service.getQuestions(new GetArtworkQuestionsQuery(1L, null, 10, null)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND));
   }
 }
