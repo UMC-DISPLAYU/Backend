@@ -126,7 +126,7 @@ public class SecurityConfig {
                         "/api/v1/auth/google/login-url",
                         "/api/v1/auth/google/callback")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh", "/api/v1/auth/logout")
                     .authenticated()
                     .anyRequest()
                     .permitAll())
