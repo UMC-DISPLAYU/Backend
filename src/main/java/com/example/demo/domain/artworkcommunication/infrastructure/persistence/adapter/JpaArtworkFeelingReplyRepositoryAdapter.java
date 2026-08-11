@@ -2,7 +2,7 @@ package com.example.demo.domain.artworkcommunication.infrastructure.persistence.
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
-import com.example.demo.domain.artworkcommunication.infrastructure.persistence.ArtworkFeelingReplyJpaRepository;
+import com.example.demo.domain.artworkcommunication.infrastructure.persistence.SpringDataArtworkFeelingReplyJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JpaArtworkFeelingReplyRepositoryAdapter implements ArtworkFeelingReplyRepository {
-  private final ArtworkFeelingReplyJpaRepository artworkFeelingReplyJpaRepository;
+  private final SpringDataArtworkFeelingReplyJpaRepository artworkFeelingReplyJpaRepository;
 
   @Override
   public ArtworkFeelingReply save(ArtworkFeelingReply artworkFeelingReply) {

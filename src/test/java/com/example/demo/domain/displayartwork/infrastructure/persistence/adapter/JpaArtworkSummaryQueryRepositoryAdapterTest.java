@@ -98,10 +98,7 @@ class JpaArtworkSummaryQueryRepositoryAdapterTest {
     return display.getId();
   }
 
-  /**
-   * artworkcommunication의 DisplayArtworkReferenceJpaEntity가 같은 테이블에 @GeneratedValue 없이 매핑돼 있어, 테스트
-   * 스키마에서는 ID가 auto increment로 생성되지 않는다. 그래서 ID를 직접 지정해 넣는다.
-   */
+  /** 조회 결과와 입력 ID를 명확히 대응시키기 위해 테스트 데이터의 작품 ID를 직접 지정한다. */
   private void insertArtwork(
       Long artworkId, Long displayId, String artworkName, LocalDateTime deletedAt) {
     entityManager

@@ -10,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateArtworkFeelingService {
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
 
+  @Transactional
   public ArtworkFeelingResult createFeeling(ArtworkFeelingCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());

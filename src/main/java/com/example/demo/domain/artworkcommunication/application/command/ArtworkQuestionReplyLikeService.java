@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ArtworkQuestionReplyLikeService {
 
   private final ArtworkQuestionReplyLikeRepository artworkQuestionReplyLikeRepository;
@@ -23,6 +22,7 @@ public class ArtworkQuestionReplyLikeService {
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public ArtworkQuestionReplyLikeResult toggleQuestionReplyLike(
       ArtworkQuestionReplyLikeCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());

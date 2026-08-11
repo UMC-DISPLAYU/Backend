@@ -17,7 +17,6 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQue
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
@@ -32,12 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetArtworkQuestionsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
   private final ArtworkQuestionLikeRepository artworkQuestionLikeRepository;
@@ -47,6 +44,7 @@ public class GetArtworkQuestionsService {
   private final ArtworkQuestionValidator artworkQuestionValidator;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional(readOnly = true)
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);

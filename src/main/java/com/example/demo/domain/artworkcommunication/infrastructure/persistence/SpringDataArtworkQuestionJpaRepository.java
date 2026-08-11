@@ -10,7 +10,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ArtworkQuestionJpaRepository extends JpaRepository<ArtworkQuestion, Long> {
+public interface SpringDataArtworkQuestionJpaRepository
+    extends JpaRepository<ArtworkQuestion, Long> {
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query(
