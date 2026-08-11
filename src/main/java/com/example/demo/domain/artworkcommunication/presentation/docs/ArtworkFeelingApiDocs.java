@@ -547,10 +547,10 @@ public interface ArtworkFeelingApiDocs {
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 좋아요 토글", description = "감상평 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "작품 감상평 좋아요 등록", description = "감상평 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "감상평 좋아요 토글 성공",
+      description = "감상평 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -605,14 +605,14 @@ public interface ArtworkFeelingApiDocs {
   @ApiResponse(responseCode = "401", description = "인증 필요")
   ApiResponseBody<ArtworkFeelingLikeResponse> feelingLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
-      @Parameter(description = "좋아요를 토글할 감상평 ID", example = "7") Long feelingId,
+      @Parameter(description = "좋아요를 등록할 감상평 ID", example = "7") Long feelingId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 
-  @Operation(summary = "작품 감상평 답변 좋아요 토글", description = "감상평 답변 좋아요를 등록하거나 취소합니다.")
+  @Operation(summary = "작품 감상평 답변 좋아요 등록", description = "감상평 답변 좋아요를 등록합니다.")
   @ApiResponse(
       responseCode = "200",
-      description = "감상평 답변 좋아요 토글 성공",
+      description = "감상평 답변 좋아요 등록 성공",
       content =
           @Content(
               mediaType = "application/json",
@@ -644,7 +644,7 @@ public interface ArtworkFeelingApiDocs {
   ApiResponseBody<ArtworkFeelingReplyLikeResponse> feelingReplyLike(
       @Parameter(description = "감상평이 속한 작품 ID", example = "3") Long artworkId,
       @Parameter(description = "답변이 속한 감상평 ID", example = "7") Long feelingId,
-      @Parameter(description = "좋아요를 토글할 감상평 답변 ID", example = "8") Long feelingReplyId,
+      @Parameter(description = "좋아요를 등록할 감상평 답변 ID", example = "8") Long feelingReplyId,
       @Parameter(hidden = true) AuthUser user,
       HttpServletRequest httpServletRequest);
 }
