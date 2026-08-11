@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PersonalArtworkQuestionReplyJpaRepository
+public interface SpringDataPersonalArtworkQuestionReplyJpaRepository
     extends JpaRepository<PersonalArtworkQuestionReply, Long> {
 
   List<PersonalArtworkQuestionReply>

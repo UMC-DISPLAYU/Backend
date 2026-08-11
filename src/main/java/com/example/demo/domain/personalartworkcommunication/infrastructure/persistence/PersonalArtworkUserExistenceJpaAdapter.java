@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class PersonalArtworkUserExistenceJpaAdapter implements UserExistenceRepository {
 
-  private final PersonalArtworkUserExistenceJpaRepository repository;
+  private final SpringDataPersonalArtworkUserExistenceJpaRepository repository;
 
   @Override
   public boolean existsById(Long userId) {

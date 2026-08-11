@@ -3,7 +3,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionLikeRepository.PersonalArtworkQuestionLikeSnapshot;
-import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkQuestionLikeJpaRepository;
+import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.SpringDataPersonalArtworkQuestionLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +17,8 @@ import org.springframework.stereotype.Repository;
 public class JpaPersonalArtworkQuestionLikeRepositoryAdapter
     implements PersonalArtworkQuestionLikeRepository {
 
-  private final PersonalArtworkQuestionLikeJpaRepository personalArtworkQuestionLikeJpaRepository;
+  private final SpringDataPersonalArtworkQuestionLikeJpaRepository
+      personalArtworkQuestionLikeJpaRepository;
 
   @Override
   public Optional<PersonalArtworkQuestionLikeSnapshot> toggleAndGetSnapshot(

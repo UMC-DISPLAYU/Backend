@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeletePersonalArtworkFeelingReplyService {
 
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public DeletedPersonalArtworkFeelingReplyResult deleteReply(
       DeletePersonalArtworkFeelingReplyCommand command) {
     personalArtworkFeelingValidator.validatePersonalArtworkExists(command.personalArtworkId());

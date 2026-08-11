@@ -18,10 +18,12 @@ import org.springframework.test.context.ActiveProfiles;
 @Import(JpaAuditingConfig.class)
 class PersonalArtworkFeelingJpaRepositoryTest {
 
-  @Autowired private PersonalArtworkFeelingJpaRepository personalArtworkFeelingJpaRepository;
+  @Autowired
+  private SpringDataPersonalArtworkFeelingJpaRepository personalArtworkFeelingJpaRepository;
 
   @Autowired
-  private PersonalArtworkFeelingReplyJpaRepository personalArtworkFeelingReplyJpaRepository;
+  private SpringDataPersonalArtworkFeelingReplyJpaRepository
+      personalArtworkFeelingReplyJpaRepository;
 
   @Test
   void activeFeelingIsReturnedWithoutActiveReplies() {

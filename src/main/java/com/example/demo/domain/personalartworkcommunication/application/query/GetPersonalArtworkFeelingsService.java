@@ -1,12 +1,12 @@
 package com.example.demo.domain.personalartworkcommunication.application.query;
 
+import com.example.demo.domain.personalartworkcommunication.application.command.PersonalArtworkFeelingValidator;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.ImageResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingItemResult;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkFeelingListResult.PersonalArtworkFeelingUserResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
@@ -23,25 +23,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetPersonalArtworkFeelingsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
   private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final PersonalArtworkFeelingLikeRepository personalArtworkFeelingLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
 
+  @Transactional(readOnly = true)
   public PersonalArtworkFeelingListResult getFeelings(GetPersonalArtworkFeelingsQuery query) {
     Long ownerUserId =
-        personalArtworkExistenceRepository
-            .findOwnerUserIdById(query.personalArtworkId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
+        personalArtworkFeelingValidator
+            .findPersonalArtworkAccessOrThrow(query.personalArtworkId())
+            .ownerUserId();
 
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     List<PersonalArtworkFeeling> fetched =
