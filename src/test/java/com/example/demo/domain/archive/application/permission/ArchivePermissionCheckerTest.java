@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
+import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import org.junit.jupiter.api.Test;
 
 class ArchivePermissionCheckerTest {
@@ -27,24 +27,29 @@ class ArchivePermissionCheckerTest {
 
   @Test
   void requireOwnerRejectsNonOwnerForArtist() {
-    assertForbidden(() -> checker.requireOwner(ArchiveArtist.create(10L, OWNER_ID), OTHER_USER_ID));
+    assertErrorCode(
+        () -> checker.requireOwner(ArchiveArtist.create(10L, OWNER_ID), OTHER_USER_ID),
+        ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND);
   }
 
   @Test
   void requireOwnerRejectsNonOwnerForDisplay() {
-    assertForbidden(
-        () -> checker.requireOwner(ArchiveDisplay.create(10L, OWNER_ID), OTHER_USER_ID));
+    assertErrorCode(
+        () -> checker.requireOwner(ArchiveDisplay.create(10L, OWNER_ID), OTHER_USER_ID),
+        ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND);
   }
 
   @Test
   void requireOwnerRejectsNonOwnerForWork() {
-    assertForbidden(() -> checker.requireOwner(ArchiveWork.create(10L, OWNER_ID), OTHER_USER_ID));
+    assertErrorCode(
+        () -> checker.requireOwner(ArchiveWork.create(10L, OWNER_ID), OTHER_USER_ID),
+        ArchiveErrorCode.ARCHIVE_WORK_NOT_FOUND);
   }
 
-  private void assertForbidden(Runnable action) {
+  private void assertErrorCode(Runnable action, ArchiveErrorCode errorCode) {
     assertThatThrownBy(action::run)
         .isInstanceOfSatisfying(
             BusinessException.class,
-            exception -> assertThat(exception.errorCode()).isEqualTo(GlobalErrorCode.FORBIDDEN));
+            exception -> assertThat(exception.errorCode()).isEqualTo(errorCode));
   }
 }

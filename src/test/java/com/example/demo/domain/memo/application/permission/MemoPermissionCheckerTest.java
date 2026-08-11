@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
+import com.example.demo.domain.memo.domain.error.MemoErrorCode;
 import com.example.demo.global.error.BusinessException;
-import com.example.demo.global.error.GlobalErrorCode;
 import org.junit.jupiter.api.Test;
 
 class MemoPermissionCheckerTest {
@@ -27,20 +27,22 @@ class MemoPermissionCheckerTest {
 
   @Test
   void requireArchiveOwnerRejectsNonOwnerForDisplay() {
-    assertForbidden(
-        () -> checker.requireArchiveOwner(ArchiveDisplay.create(10L, OWNER_ID), OTHER_USER_ID));
+    assertErrorCode(
+        () -> checker.requireArchiveOwner(ArchiveDisplay.create(10L, OWNER_ID), OTHER_USER_ID),
+        MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND);
   }
 
   @Test
   void requireArchiveOwnerRejectsNonOwnerForWork() {
-    assertForbidden(
-        () -> checker.requireArchiveOwner(ArchiveWork.create(10L, OWNER_ID), OTHER_USER_ID));
+    assertErrorCode(
+        () -> checker.requireArchiveOwner(ArchiveWork.create(10L, OWNER_ID), OTHER_USER_ID),
+        MemoErrorCode.ARCHIVE_WORK_NOT_FOUND);
   }
 
-  private void assertForbidden(Runnable action) {
+  private void assertErrorCode(Runnable action, MemoErrorCode errorCode) {
     assertThatThrownBy(action::run)
         .isInstanceOfSatisfying(
             BusinessException.class,
-            exception -> assertThat(exception.errorCode()).isEqualTo(GlobalErrorCode.FORBIDDEN));
+            exception -> assertThat(exception.errorCode()).isEqualTo(errorCode));
   }
 }
