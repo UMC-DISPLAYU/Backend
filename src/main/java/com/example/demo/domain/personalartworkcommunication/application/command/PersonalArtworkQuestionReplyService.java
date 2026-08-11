@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PersonalArtworkQuestionReplyService {
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
@@ -25,6 +24,7 @@ public class PersonalArtworkQuestionReplyService {
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
   private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public PersonalArtworkQuestionReplyResult createQuestionReply(
       PersonalArtworkQuestionReplyCommand command) {
 

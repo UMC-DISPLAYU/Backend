@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetDisplayReviewsService {
 
   private final DisplayReviewValidator displayReviewValidator;
@@ -33,6 +32,7 @@ public class GetDisplayReviewsService {
   private final DisplayReviewLikeRepository displayReviewLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
 
+  @Transactional(readOnly = true)
   public DisplayReviewListResult getReviews(GetDisplayReviewsQuery query) {
     int pageSize = pagingPolicy.normalize(query.size());
     displayReviewValidator.findDisplayAccessOrThrow(query.displayId());

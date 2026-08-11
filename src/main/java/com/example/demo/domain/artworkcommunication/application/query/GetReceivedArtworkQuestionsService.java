@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetReceivedArtworkQuestionsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
   private final ReceivedArtworkQuestionQueryRepository queryRepository;
 
+  @Transactional(readOnly = true)
   public ReceivedArtworkQuestionListResult getReceivedQuestions(
       GetReceivedArtworkQuestionsQuery query) {
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);

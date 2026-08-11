@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DisplayReviewReplyLikeService {
 
   private final DisplayReviewValidator displayReviewValidator;
   private final DisplayReviewReplyLikeRepository displayReviewReplyLikeRepository;
 
+  @Transactional
   public DisplayReviewReplyLikeResult likeReviewReply(DisplayReviewReplyLikeCommand command) {
     validateLikeTarget(command);
 
@@ -33,6 +33,7 @@ public class DisplayReviewReplyLikeService {
     return toResult(snapshot);
   }
 
+  @Transactional
   public DisplayReviewReplyLikeResult cancelReviewReplyLike(DisplayReviewReplyLikeCommand command) {
     validateLikeTarget(command);
 

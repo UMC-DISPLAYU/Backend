@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeleteArtworkFeelingReplyService {
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
@@ -22,6 +21,7 @@ public class DeleteArtworkFeelingReplyService {
   private final ArtworkFeelingValidator artworkFeelingValidator;
   private final ArtworkCommunicationPermissionChecker permissionChecker;
 
+  @Transactional
   public DeletedArtworkFeelingReplyResult deleteReply(DeleteArtworkFeelingReplyCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkFeelingValidator.validateUserExists(command.userId());

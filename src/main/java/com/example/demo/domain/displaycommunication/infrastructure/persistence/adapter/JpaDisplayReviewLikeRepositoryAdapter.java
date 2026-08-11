@@ -2,7 +2,7 @@ package com.example.demo.domain.displaycommunication.infrastructure.persistence.
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReviewLike;
 import com.example.demo.domain.displaycommunication.domain.repository.DisplayReviewLikeRepository;
-import com.example.demo.domain.displaycommunication.infrastructure.persistence.DisplayReviewLikeJpaRepository;
+import com.example.demo.domain.displaycommunication.infrastructure.persistence.SpringDataDisplayReviewLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JpaDisplayReviewLikeRepositoryAdapter implements DisplayReviewLikeRepository {
-  private final DisplayReviewLikeJpaRepository repository;
+  private final SpringDataDisplayReviewLikeJpaRepository repository;
 
   @Override
   public Optional<DisplayReviewLikeSnapshot> likeAndGetSnapshot(Long displayReviewId, Long userId) {

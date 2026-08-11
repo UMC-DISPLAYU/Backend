@@ -12,12 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PersonalArtworkFeelingLikeService {
 
   private final PersonalArtworkFeelingLikeRepository personalArtworkFeelingLikeRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
+  @Transactional
   public PersonalArtworkFeelingLikeResult likeFeeling(PersonalArtworkFeelingLikeCommand command) {
     validateLikeTarget(command);
 
@@ -32,6 +32,7 @@ public class PersonalArtworkFeelingLikeService {
     return toResult(snapshot);
   }
 
+  @Transactional
   public PersonalArtworkFeelingLikeResult cancelFeelingLike(
       PersonalArtworkFeelingLikeCommand command) {
     validateLikeTarget(command);

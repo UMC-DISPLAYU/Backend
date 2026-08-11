@@ -1,11 +1,11 @@
 package com.example.demo.domain.personalartworkcommunication.application.permission;
 
+import com.example.demo.domain.personalartwork.application.usecase.GetPersonalArtworkAccessUseCase;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,13 +14,20 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PersonalArtworkCommunicationPermissionChecker {
 
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final GetPersonalArtworkAccessUseCase getPersonalArtworkAccessUseCase;
 
   public void requirePersonalArtworkOwner(Long personalArtworkId, Long userId) {
-    if (!personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
+    if (!isPersonalArtworkOwner(personalArtworkId, userId)) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
     }
+  }
+
+  public boolean isPersonalArtworkOwner(Long personalArtworkId, Long userId) {
+    return getPersonalArtworkAccessUseCase
+        .getPersonalArtworkAccess(personalArtworkId)
+        .map(access -> access.isOwner(userId))
+        .orElse(false);
   }
 
   public void requirePersonalFeelingWriter(PersonalArtworkFeeling feeling, Long userId) {

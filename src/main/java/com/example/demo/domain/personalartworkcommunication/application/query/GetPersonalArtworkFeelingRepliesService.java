@@ -8,7 +8,6 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
@@ -24,25 +23,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetPersonalArtworkFeelingRepliesService {
   private static final int MAX_PAGE_SIZE = 50;
 
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   private final PersonalArtworkFeelingReplyLikeRepository personalArtworkFeelingReplyLikeRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
 
+  @Transactional(readOnly = true)
   public PersonalArtworkFeelingReplyListResult getReplies(
       GetPersonalArtworkFeelingRepliesQuery query) {
     Long ownerUserId =
-        personalArtworkExistenceRepository
-            .findOwnerUserIdById(query.personalArtworkId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
+        personalArtworkFeelingValidator
+            .findPersonalArtworkAccessOrThrow(query.personalArtworkId())
+            .ownerUserId();
     PersonalArtworkFeeling feeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(query.personalFeelingId());
     personalArtworkFeelingValidator.validateReplyListTarget(feeling, query.personalArtworkId());

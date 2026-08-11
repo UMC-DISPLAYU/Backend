@@ -10,7 +10,6 @@ import com.example.demo.domain.personalartworkcommunication.application.result.P
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
-import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
@@ -27,27 +26,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetPersonalArtworkQuestionsService {
 
   private static final int MAX_PAGE_SIZE = 50;
 
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
   private final PersonalArtworkQuestionReplyRepository personalArtworkQuestionReplyRepository;
-  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
   private final UserExistenceRepository userExistenceRepository;
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
 
+  @Transactional(readOnly = true)
   public PersonalArtworkQuestionListResult getQuestions(GetPersonalArtworkQuestionsQuery query) {
-    personalArtworkQuestionValidator.validatePersonalArtworkExists(query.personalArtworkId());
     int pageSize = Math.min(Math.max(query.size(), 1), MAX_PAGE_SIZE);
     Long ownerUserId =
-        personalArtworkExistenceRepository
-            .findOwnerUserIdById(query.personalArtworkId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_NOT_FOUND));
+        personalArtworkQuestionValidator
+            .findPersonalArtworkAccessOrThrow(query.personalArtworkId())
+            .ownerUserId();
 
     List<PersonalArtworkQuestion> fetched =
         personalArtworkQuestionRepository.findActiveByPersonalArtworkIdWithCursor(

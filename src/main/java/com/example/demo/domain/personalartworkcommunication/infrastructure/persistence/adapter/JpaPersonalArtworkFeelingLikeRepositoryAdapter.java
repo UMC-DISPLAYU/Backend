@@ -2,7 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingLike;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingLikeRepository;
-import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkFeelingLikeJpaRepository;
+import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.SpringDataPersonalArtworkFeelingLikeJpaRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 public class JpaPersonalArtworkFeelingLikeRepositoryAdapter
     implements PersonalArtworkFeelingLikeRepository {
 
-  private final PersonalArtworkFeelingLikeJpaRepository repository;
+  private final SpringDataPersonalArtworkFeelingLikeJpaRepository repository;
 
   @Override
   public Optional<PersonalArtworkFeelingLikeSnapshot> likeAndGetSnapshot(

@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GetArtworkFeelingRepliesService {
   private static final int MAX_PAGE_SIZE = 50;
 
@@ -38,6 +37,7 @@ public class GetArtworkFeelingRepliesService {
   private final ArtworkFeelingValidator artworkFeelingValidator;
   private final ArtworkFeelingUserDisplayResolver userDisplayResolver;
 
+  @Transactional(readOnly = true)
   public ArtworkFeelingReplyListResult getReplies(GetArtworkFeelingRepliesQuery query) {
     artworkFeelingValidator.validateDisplayArtworkExists(query.displayArtworkId());
     ArtworkFeeling feeling =

@@ -2,7 +2,7 @@ package com.example.demo.domain.personalartworkcommunication.infrastructure.pers
 
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
-import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.PersonalArtworkQuestionReplyJpaRepository;
+import com.example.demo.domain.personalartworkcommunication.infrastructure.persistence.SpringDataPersonalArtworkQuestionReplyJpaRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public class JpaPersonalArtworkQuestionReplyRepositoryAdapter
     implements PersonalArtworkQuestionReplyRepository {
 
-  private final PersonalArtworkQuestionReplyJpaRepository repository;
+  private final SpringDataPersonalArtworkQuestionReplyJpaRepository repository;
 
   @Override
   public PersonalArtworkQuestionReply save(

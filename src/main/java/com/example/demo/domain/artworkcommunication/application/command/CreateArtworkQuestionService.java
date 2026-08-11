@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CreateArtworkQuestionService {
 
   private final ArtworkQuestionRepository artworkQuestionRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
 
+  @Transactional
   public ArtworkQuestionResult createQuestion(CreateArtworkQuestionCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
     artworkQuestionValidator.validateUserExists(command.userId());

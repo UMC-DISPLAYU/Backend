@@ -5,8 +5,8 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeel
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkFeelingReplyRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
+import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ArtworkFeelingValidator {
 
-  private final DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
+  private final GetArtworkSummariesUseCase getArtworkSummariesUseCase;
   private final UserExistenceRepository userExistenceRepository;
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
 
   public void validateDisplayArtworkExists(Long displayArtworkId) {
-    if (!displayArtworkExistenceRepository.existsById(displayArtworkId)) {
+    if (getArtworkSummariesUseCase.getArtworkSummaries(List.of(displayArtworkId)).isEmpty()) {
       throw new BusinessException(ArtworkCommunicationErrorCode.ARTWORK_NOT_FOUND);
     }
   }

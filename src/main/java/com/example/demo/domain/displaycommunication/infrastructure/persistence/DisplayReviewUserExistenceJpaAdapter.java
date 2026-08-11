@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class DisplayReviewUserExistenceJpaAdapter implements UserExistenceRepository {
-  private final DisplayReviewUserExistenceJpaRepository repository;
+  private final SpringDataDisplayReviewUserExistenceJpaRepository repository;
   private final DisplayReviewPersistenceMapper mapper;
 
   @Override
