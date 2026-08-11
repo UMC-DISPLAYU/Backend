@@ -18,6 +18,7 @@ public record DisplayArtworkDetailResult(
     List<ImageResult> images,
     String artistName,
     Long artistUserId,
+    List<CoAuthorResult> coAuthors,
     List<QaHandlerResult> qaHandlers,
     ExhibitionInfoResult exhibitionInfo,
     long likeCount,
@@ -26,10 +27,14 @@ public record DisplayArtworkDetailResult(
 
   public record QaHandlerResult(Long userId, String name) {}
 
+  /** 계정 없이 이름만 입력한 공동 작업자는 userId가 null이다. */
+  public record CoAuthorResult(Long userId, String name) {}
+
   public static DisplayArtworkDetailResult of(
       DisplayArtwork displayArtwork,
       String artistName,
       Long artistUserId,
+      List<CoAuthorResult> coAuthors,
       List<QaHandlerResult> qaHandlers,
       long likeCount,
       boolean isLiked,
@@ -46,6 +51,7 @@ public record DisplayArtworkDetailResult(
         displayArtwork.getImages().stream().map(ImageResult::from).toList(),
         artistName,
         artistUserId,
+        coAuthors,
         qaHandlers,
         ExhibitionInfoResult.from(displayArtwork),
         likeCount,

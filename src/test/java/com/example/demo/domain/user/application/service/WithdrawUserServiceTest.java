@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +38,8 @@ class WithdrawUserServiceTest {
 
     service.execute(command());
 
-    assertThat(user.getDeletedAt()).isEqualTo(LocalDateTime.now(CLOCK));
+    assertThat(user.getDeletedAt())
+        .isEqualTo(LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC));
   }
 
   @Test

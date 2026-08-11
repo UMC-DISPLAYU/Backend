@@ -1,9 +1,11 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionReplyLikeResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestionReply;
 import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
+import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyLikeRepository.PersonalArtworkQuestionReplyLikeSnapshot;
 import com.example.demo.global.error.BusinessException;
@@ -18,6 +20,8 @@ public class PersonalArtworkQuestionReplyLikeService {
 
   private final PersonalArtworkQuestionReplyLikeRepository repository;
   private final PersonalArtworkQuestionValidator validator;
+  private final PersonalArtworkExistenceRepository personalArtworkExistenceRepository;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
 
   public PersonalArtworkQuestionReplyLikeResult toggleReplyLike(
       PersonalArtworkQuestionReplyLikeCommand command) {
@@ -27,7 +31,10 @@ public class PersonalArtworkQuestionReplyLikeService {
     PersonalArtworkQuestion question =
         validator.findActiveQuestionForUpdateOrThrow(command.personalQuestionId());
     validator.validateQuestionTarget(question, command.personalArtworkId());
-    validator.validateLikePermission(question, command.personalArtworkId(), command.userId());
+    boolean isOwner =
+        personalArtworkExistenceRepository.existsByIdAndUserId(
+            command.personalArtworkId(), command.userId());
+    permissionChecker.requirePersonalQuestionAccessible(question, command.userId(), isOwner);
 
     PersonalArtworkQuestionReply reply =
         validator.findActiveReplyForUpdateOrThrow(command.personalQuestionReplyId());

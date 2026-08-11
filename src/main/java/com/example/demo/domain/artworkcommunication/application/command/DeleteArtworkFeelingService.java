@@ -1,5 +1,6 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
@@ -16,6 +17,7 @@ public class DeleteArtworkFeelingService {
 
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public DeletedArtworkFeelingResult deleteFeeling(DeleteArtworkFeelingCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
@@ -27,8 +29,8 @@ public class DeleteArtworkFeelingService {
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
 
-    artworkFeelingValidator.validateAccessibleFeeling(
-        artworkFeeling, command.displayArtworkId(), command.userId());
+    artworkFeelingValidator.validateFeelingTarget(artworkFeeling, command.displayArtworkId());
+    permissionChecker.requireFeelingWriter(artworkFeeling, command.userId());
 
     artworkFeeling.delete();
     ArtworkFeeling savedFeeling = artworkFeelingRepository.save(artworkFeeling);

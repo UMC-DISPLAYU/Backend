@@ -1,5 +1,6 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.DeletedArtworkFeelingReplyResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeelingReply;
@@ -19,6 +20,7 @@ public class DeleteArtworkFeelingReplyService {
   private final ArtworkFeelingRepository artworkFeelingRepository;
   private final ArtworkFeelingReplyRepository artworkFeelingReplyRepository;
   private final ArtworkFeelingValidator artworkFeelingValidator;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public DeletedArtworkFeelingReplyResult deleteReply(DeleteArtworkFeelingReplyCommand command) {
     artworkFeelingValidator.validateDisplayArtworkExists(command.displayArtworkId());
@@ -33,7 +35,8 @@ public class DeleteArtworkFeelingReplyService {
 
     ArtworkFeelingReply reply =
         artworkFeelingValidator.findActiveReplyForUpdateOrThrow(command.feelingReplyId());
-    artworkFeelingValidator.validateAccessibleReply(reply, command.feelingId(), command.userId());
+    artworkFeelingValidator.validateReplyTarget(reply, command.feelingId());
+    permissionChecker.requireFeelingReplyWriter(reply, command.userId());
 
     reply.delete();
     ArtworkFeelingReply saved = artworkFeelingReplyRepository.save(reply);

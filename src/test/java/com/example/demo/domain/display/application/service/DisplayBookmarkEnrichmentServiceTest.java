@@ -56,6 +56,11 @@ class DisplayBookmarkEnrichmentServiceTest {
     }
 
     @Override
+    public Optional<ArchiveDisplay> findById(Long archiveDisplayId) {
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<ArchiveDisplay> findByIdAndUserId(Long archiveDisplayId, Long userId) {
       return Optional.empty();
     }

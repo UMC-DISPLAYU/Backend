@@ -8,10 +8,12 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.personalartworkcommunication.application.result.PersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
+import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion.ImageInfo;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkExistenceRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionReplyRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,10 +50,20 @@ class PersonalArtworkQuestionServiceTest {
 
     PersonalArtworkQuestionResult result =
         service.createPersonalQuestion(
-            new PersonalArtworkQuestionCommand(1L, 2L, "작업자가 작성한 질문", true));
+            new PersonalArtworkQuestionCommand(
+                1L,
+                2L,
+                "작업자가 작성한 질문",
+                true,
+                List.of(new ImageInfo("https://image.test/question.jpg", 800, 600))));
 
     assertThat(result.userId()).isEqualTo(2L);
     assertThat(result.content()).isEqualTo("작업자가 작성한 질문");
+    assertThat(result.images()).hasSize(1);
+    assertThat(result.images().get(0).imageUrl()).isEqualTo("https://image.test/question.jpg");
+    assertThat(result.images().get(0).width()).isEqualTo(800);
+    assertThat(result.images().get(0).height()).isEqualTo(600);
+    assertThat(result.images().get(0).sortOrder()).isZero();
     verify(personalArtworkExistenceRepository, never()).existsByIdAndUserId(any(), any());
     verify(personalArtworkQuestionRepository).save(any(PersonalArtworkQuestion.class));
   }

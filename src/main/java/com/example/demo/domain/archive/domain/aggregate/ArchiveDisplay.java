@@ -44,4 +44,8 @@ public class ArchiveDisplay {
   public static ArchiveDisplay create(Long displayId, Long userId) {
     return new ArchiveDisplay(displayId, userId);
   }
+
+  public boolean isOwnedBy(Long userId) {
+    return Objects.equals(this.userId, userId);
+  }
 }

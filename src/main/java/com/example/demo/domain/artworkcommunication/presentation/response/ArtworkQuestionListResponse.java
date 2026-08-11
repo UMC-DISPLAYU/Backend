@@ -11,11 +11,13 @@ public record ArtworkQuestionListResponse(
       String content,
       Boolean isPublic,
       boolean accessible,
+      boolean isMine,
       boolean canReply,
       Long likeCount,
       boolean isLiked,
       String answerStatus,
       LocalDateTime createdAt,
+      List<QuestionImageResponse> images,
       ArtworkQuestionUserResponse user,
       ArtworkQuestionReplyItemResponse reply) {}
 
@@ -28,6 +30,14 @@ public record ArtworkQuestionListResponse(
       Boolean isCreator,
       String content,
       LocalDateTime createdAt,
+      List<ReplyImageResponse> images,
       Long likeCount,
-      boolean isLiked) {}
+      boolean isLiked,
+      boolean isMine) {}
+
+  public record QuestionImageResponse(
+      Long questionImageId, String imageUrl, int width, int height, int sortOrder) {}
+
+  public record ReplyImageResponse(
+      Long questionReplyImageId, String imageUrl, int width, int height, int sortOrder) {}
 }

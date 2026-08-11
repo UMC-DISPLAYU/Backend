@@ -1,10 +1,9 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkQuestionResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkQuestion;
-import com.example.demo.domain.personalartworkcommunication.domain.error.PersonalArtworkCommunicationErrorCode;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
-import com.example.demo.global.error.BusinessException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class DeletePersonalArtworkQuestionService {
 
   private final PersonalArtworkQuestionValidator personalArtworkQuestionValidator;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
   private final PersonalArtworkQuestionRepository personalArtworkQuestionRepository;
 
   public DeletedPersonalArtworkQuestionResult deleteQuestion(
@@ -23,15 +23,12 @@ public class DeletePersonalArtworkQuestionService {
     personalArtworkQuestionValidator.validateUserExists(command.userId());
 
     PersonalArtworkQuestion personalArtworkQuestion =
-        personalArtworkQuestionRepository
-            .findById(command.personalQuestionId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
+        personalArtworkQuestionValidator.findActiveQuestionForUpdateOrThrow(
+            command.personalQuestionId());
 
-    personalArtworkQuestionValidator.validateAccessiblePersonalQuestion(
-        personalArtworkQuestion, command.personalArtworkId(), command.userId());
+    personalArtworkQuestionValidator.validateQuestionTarget(
+        personalArtworkQuestion, command.personalArtworkId());
+    permissionChecker.requirePersonalQuestionWriter(personalArtworkQuestion, command.userId());
 
     personalArtworkQuestion.delete();
     PersonalArtworkQuestion savedQuestion =

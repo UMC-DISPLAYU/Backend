@@ -27,6 +27,11 @@ public class JpaPersonalArtworkRepositoryAdapter implements PersonalArtworkRepos
   }
 
   @Override
+  public List<PersonalArtwork> findAllByIdInAndDeletedAtIsNull(List<Long> personalArtworkIds) {
+    return jpaRepository.findAllByIdInAndDeletedAtIsNull(personalArtworkIds);
+  }
+
+  @Override
   public PersonalArtwork save(PersonalArtwork personalArtwork) {
     return jpaRepository.save(personalArtwork);
   }

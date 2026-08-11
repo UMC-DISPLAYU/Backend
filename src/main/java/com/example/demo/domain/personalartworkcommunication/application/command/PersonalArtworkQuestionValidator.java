@@ -8,6 +8,7 @@ import com.example.demo.domain.personalartworkcommunication.domain.repository.Pe
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkQuestionRepository;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -41,19 +42,32 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
-    if (!personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
-    }
+  public void validateImages(List<PersonalArtworkQuestion.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_IMAGES);
   }
 
-  public void validateAccessiblePersonalQuestion(
-      PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId, Long userId) {
-    validateNotDeleted(personalArtworkQuestion);
-    validatePersonalArtworkQuestionBelongsToPersonalArtwork(
-        personalArtworkQuestion, personalArtworkId);
-    validateWriter(personalArtworkQuestion, userId);
+  public void validateReplyImages(List<PersonalArtworkQuestionReply.ImageInfo> images) {
+    validateImageValues(
+        images == null
+            ? null
+            : images.stream()
+                .map(
+                    image ->
+                        image == null
+                            ? null
+                            : new ImageValue(image.imageUrl(), image.width(), image.height()))
+                .toList(),
+        PersonalArtworkCommunicationErrorCode.INVALID_QUESTION_REPLY_IMAGES);
   }
 
   public void validateQuestionTarget(
@@ -61,6 +75,13 @@ public class PersonalArtworkQuestionValidator {
     validateNotDeleted(personalArtworkQuestion);
     validatePersonalArtworkQuestionBelongsToPersonalArtwork(
         personalArtworkQuestion, personalArtworkId);
+  }
+
+  public void validateNotAnswered(PersonalArtworkQuestion personalArtworkQuestion) {
+    if (personalArtworkQuestion.isAnswered()) {
+      throw new BusinessException(
+          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_ALREADY_ANSWERED);
+    }
   }
 
   public PersonalArtworkQuestion findActiveQuestionForUpdateOrThrow(Long personalQuestionId) {
@@ -72,18 +93,6 @@ public class PersonalArtworkQuestionValidator {
                     PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
   }
 
-  public void validateLikePermission(
-      PersonalArtworkQuestion question, Long personalArtworkId, Long userId) {
-    if (question.isPublicQuestion()
-        || question.isWrittenBy(userId)
-        || personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      return;
-    }
-
-    throw new BusinessException(
-        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
-  }
-
   public PersonalArtworkQuestionReply findActiveReplyForUpdateOrThrow(
       Long personalQuestionReplyId) {
     return personalArtworkQuestionReplyRepository
@@ -92,15 +101,6 @@ public class PersonalArtworkQuestionValidator {
             () ->
                 new BusinessException(
                     PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
-  }
-
-  public void validateAccessibleReply(
-      PersonalArtworkQuestionReply reply, Long personalQuestionId, Long userId) {
-    validateReplyBelongsToQuestion(reply, personalQuestionId);
-    if (!reply.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
-    }
   }
 
   public void validateReplyBelongsToQuestion(
@@ -126,10 +126,23 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  private void validateWriter(PersonalArtworkQuestion personalArtworkQuestion, Long userId) {
-    if (!personalArtworkQuestion.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
+  private void validateImageValues(
+      List<ImageValue> images, PersonalArtworkCommunicationErrorCode errorCode) {
+    if (images == null || images.size() > 5) {
+      throw new BusinessException(errorCode);
+    }
+    if (images.stream()
+        .anyMatch(
+            image ->
+                image == null
+                    || image.imageUrl() == null
+                    || image.imageUrl().isBlank()
+                    || image.imageUrl().length() > 2048
+                    || image.width() <= 0
+                    || image.height() <= 0)) {
+      throw new BusinessException(errorCode);
     }
   }
+
+  private record ImageValue(String imageUrl, int width, int height) {}
 }

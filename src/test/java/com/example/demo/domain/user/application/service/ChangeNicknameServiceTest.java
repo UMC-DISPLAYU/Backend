@@ -18,6 +18,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,7 @@ class ChangeNicknameServiceTest {
     assertThat(user.getNickname()).isEqualTo(NEW_NICKNAME);
     assertThat(result.nickname()).isEqualTo(NEW_NICKNAME);
     assertThat(result.nextNicknameChangeAvailableAt())
-        .isEqualTo(LocalDateTime.now(CLOCK).plusDays(30));
+        .isEqualTo(LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).plusDays(30));
   }
 
   @Test
@@ -50,7 +51,8 @@ class ChangeNicknameServiceTest {
         User.builder()
             .id(USER_ID)
             .nickname("User1")
-            .nicknameChangeAt(LocalDateTime.now(CLOCK).minusDays(30))
+            .nicknameChangeAt(
+                LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).minusDays(30))
             .build();
     prepareUser(user);
 
@@ -65,7 +67,8 @@ class ChangeNicknameServiceTest {
         User.builder()
             .id(USER_ID)
             .nickname("User1")
-            .nicknameChangeAt(LocalDateTime.now(CLOCK).minusDays(29))
+            .nicknameChangeAt(
+                LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC).minusDays(29))
             .build();
     prepareUser(user);
 

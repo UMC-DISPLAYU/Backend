@@ -10,7 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.lounge.application.LoungeAccessPolicy;
+import com.example.demo.domain.lounge.application.permission.LoungePermissionChecker;
 import com.example.demo.domain.lounge.domain.aggregate.LoungePost;
 import com.example.demo.domain.lounge.domain.entity.LoungeComment;
 import com.example.demo.domain.lounge.domain.error.LoungeErrorCode;
@@ -33,10 +33,10 @@ class LoungeCommentCommandServiceTest {
   private final LoungeCommentRepository commentRepository = mock(LoungeCommentRepository.class);
   private final LoungeCommentLikeRepository commentLikeRepository =
       mock(LoungeCommentLikeRepository.class);
-  private final LoungeAccessPolicy loungeAccessPolicy = mock(LoungeAccessPolicy.class);
+  private final LoungePermissionChecker permissionChecker = mock(LoungePermissionChecker.class);
   private final LoungeCommentCommandService service =
       new LoungeCommentCommandService(
-          postRepository, commentRepository, commentLikeRepository, loungeAccessPolicy);
+          postRepository, commentRepository, commentLikeRepository, permissionChecker);
 
   @Test
   void createsCommentWithImages() {
@@ -56,7 +56,7 @@ class LoungeCommentCommandServiceTest {
 
     ArgumentCaptor<LoungeComment> captor = ArgumentCaptor.forClass(LoungeComment.class);
     verify(commentRepository).save(captor.capture());
-    verify(loungeAccessPolicy).validateCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 2L);
+    verify(permissionChecker).requireCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 2L);
     assertThat(captor.getValue().getImageUrls()).containsExactlyElementsOf(imageUrls);
   }
 
@@ -81,7 +81,7 @@ class LoungeCommentCommandServiceTest {
 
     ArgumentCaptor<LoungeComment> captor = ArgumentCaptor.forClass(LoungeComment.class);
     verify(commentRepository).save(captor.capture());
-    verify(loungeAccessPolicy).validateCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 3L);
+    verify(permissionChecker).requireCategoryAccess(LoungePostCategory.DISPLAY_REVIEW, 3L);
     assertThat(captor.getValue().getImageUrls()).containsExactlyElementsOf(imageUrls);
   }
 
@@ -95,7 +95,7 @@ class LoungeCommentCommandServiceTest {
     service.likeComment(2L, 3L);
     service.cancelLikeComment(2L, 3L);
 
-    verify(loungeAccessPolicy, times(2)).validateCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
+    verify(permissionChecker, times(2)).requireCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
   }
 
   @Test
@@ -107,9 +107,7 @@ class LoungeCommentCommandServiceTest {
         new BusinessException(LoungeErrorCode.LOUNGE_ARTIST_VERIFICATION_REQUIRED);
     when(postRepository.findById(1L)).thenReturn(Optional.of(post));
     when(commentRepository.findById(2L)).thenReturn(Optional.of(comment));
-    doThrow(denied)
-        .when(loungeAccessPolicy)
-        .validateCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
+    doThrow(denied).when(permissionChecker).requireCategoryAccess(LoungePostCategory.WORK_TIP, 3L);
 
     assertThatThrownBy(
             () ->

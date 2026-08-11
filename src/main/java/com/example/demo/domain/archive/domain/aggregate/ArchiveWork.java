@@ -45,4 +45,8 @@ public class ArchiveWork {
   public static ArchiveWork create(Long displayArtworkId, Long userId) {
     return new ArchiveWork(displayArtworkId, userId);
   }
+
+  public boolean isOwnedBy(Long userId) {
+    return Objects.equals(this.userId, userId);
+  }
 }

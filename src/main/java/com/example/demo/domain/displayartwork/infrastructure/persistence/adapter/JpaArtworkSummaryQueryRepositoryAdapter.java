@@ -38,10 +38,12 @@ public class JpaArtworkSummaryQueryRepositoryAdapter implements ArtworkSummaryQu
         findThumbnailImageUrlByArtworkId(displayArtworkIds);
     Map<Long, String> artistNameByArtworkId = findLeaderCreatorNameByArtworkId(displayArtworkIds);
 
+    // DisplayArtwork는 소프트 삭제라 row가 남으므로 id 조건만으로는 삭제된 작품도 조회된다.
+    // 이 결과를 archive 도메인이 작품 존재 여부 판단에 사용하고 있어 반드시 삭제분을 제외한다.
     return queryFactory
         .select(displayArtwork.id, displayArtwork.artworkName)
         .from(displayArtwork)
-        .where(displayArtwork.id.in(displayArtworkIds))
+        .where(displayArtwork.id.in(displayArtworkIds), displayArtwork.deletedAt.isNull())
         .fetch()
         .stream()
         .map(

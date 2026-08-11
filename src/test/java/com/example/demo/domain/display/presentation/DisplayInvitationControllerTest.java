@@ -58,7 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class DisplayInvitationControllerTest {
 
-  private static final String INVITATION_BASE_URL = "https://displayu.co.kr/display/invitation/";
+  private static final String INVITATION_BASE_URL =
+      "https://www.displayu.co.kr/display/invitation/";
 
   @Autowired private MockMvc mockMvc;
 
@@ -178,14 +179,14 @@ class DisplayInvitationControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
+        .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T14:30:00Z"));
 
     mockMvc
         .perform(
             patch("/api/v1/display/{displayId}/invitation/disable", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T23:30:00"));
+        .andExpect(jsonPath("$.success.data.invitationDisabledAt").value("2026-07-17T14:30:00Z"));
 
     mockMvc
         .perform(

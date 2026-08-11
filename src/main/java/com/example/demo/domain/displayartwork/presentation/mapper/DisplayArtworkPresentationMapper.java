@@ -1,6 +1,8 @@
 package com.example.demo.domain.displayartwork.presentation.mapper;
 
 import com.example.demo.domain.displayartwork.application.command.ArtworkImageCommand;
+import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkCommand;
+import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksCommand;
 import com.example.demo.domain.displayartwork.application.command.UpdateDisplayArtworkCommand;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
@@ -11,10 +13,14 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkL
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
+import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
+import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.CoAuthorResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse.QaHandlerResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkEditResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkLikeResponse;
@@ -124,6 +130,9 @@ public class DisplayArtworkPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.artistName(),
         result.artistUserId(),
+        result.coAuthors().stream()
+            .map(coAuthor -> new CoAuthorResponse(coAuthor.userId(), coAuthor.name()))
+            .toList(),
         result.qaHandlers().stream()
             .map(handler -> new QaHandlerResponse(handler.userId(), handler.name()))
             .toList(),
@@ -221,6 +230,55 @@ public class DisplayArtworkPresentationMapper {
                         coAuthor.userId(), coAuthor.name()))
             .toList(),
         result.qaHandlerUserIds());
+  }
+
+  public CreateDisplayArtworkCommand toCommand(CreateDisplayArtworkRequest request) {
+    return new CreateDisplayArtworkCommand(
+        request.displayId(),
+        request.artworkName(),
+        request.content(),
+        toArtworkType(request.type()),
+        request.productionYear(),
+        request.materialMedia(),
+        request.size(),
+        request.point(),
+        request.images().stream().map(this::toCommand).toList(),
+        request.artistName(),
+        request.artistUserId(),
+        request.coAuthors().userIds(),
+        request.coAuthors().rawNames(),
+        request.qaHandlerUserIds());
+  }
+
+  private ArtworkImageCommand toCommand(CreateDisplayArtworkRequest.ImageRequest image) {
+    return new ArtworkImageCommand(
+        image.imageUrl(),
+        image.isThumbnail(),
+        image.imageType(),
+        image.sortOrder(),
+        image.caption(),
+        image.width(),
+        image.height());
+  }
+
+  // API에 노출하는 분야 값(Field)과 도메인 타입(ArtworkType)이 별개라 여기서 명시적으로 변환한다.
+  private ArtworkType toArtworkType(CreateDisplayArtworkRequest.Field field) {
+    return switch (field) {
+      case PAINTING -> ArtworkType.PAINTING;
+      case DESIGN -> ArtworkType.DESIGN;
+      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
+      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
+      case MEDIA -> ArtworkType.MEDIA;
+      case CRAFT -> ArtworkType.CRAFT;
+      case SCULPTURE -> ArtworkType.SCULPTURE;
+      case FASHION -> ArtworkType.FASHION;
+      case COMPLEX -> ArtworkType.COMPLEX;
+      case ETC -> ArtworkType.ETC;
+    };
+  }
+
+  public ReorderDisplayArtworksCommand toCommand(ReorderDisplayArtworksRequest request) {
+    return new ReorderDisplayArtworksCommand(request.displayId(), request.orderedArtworkIds());
   }
 
   public UpdateDisplayArtworkCommand toCommand(

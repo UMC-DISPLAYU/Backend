@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -72,7 +73,7 @@ public class DisplayImage extends BaseTimeEntity {
   }
 
   public void delete() {
-    this.deletedAt = LocalDateTime.now();
+    this.deletedAt = LocalDateTime.now(ZoneOffset.UTC);
   }
 
   public void restore() {

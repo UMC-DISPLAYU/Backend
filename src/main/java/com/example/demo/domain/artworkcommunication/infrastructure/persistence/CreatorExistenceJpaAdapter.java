@@ -16,7 +16,7 @@ public class CreatorExistenceJpaAdapter implements CreatorExistenceRepository {
   private final CreatorExistenceJpaRepository repository;
 
   @Override
-  public Optional<String> findCreatorNameByDisplayArtworkIdAndUserId(
+  public Optional<String> findParticipantNameByDisplayArtworkIdAndUserId(
       Long displayArtworkId, Long userId) {
     return repository
         .findByDisplayArtworkIdAndUserId(displayArtworkId, userId)

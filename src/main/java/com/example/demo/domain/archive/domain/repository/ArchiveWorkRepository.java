@@ -6,6 +6,8 @@ import java.util.Optional;
 
 public interface ArchiveWorkRepository {
 
+  Optional<ArchiveWork> findById(Long archiveWorkId);
+
   Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId);
 
   Optional<ArchiveWork> findByUserIdAndDisplayArtworkId(Long userId, Long displayArtworkId);

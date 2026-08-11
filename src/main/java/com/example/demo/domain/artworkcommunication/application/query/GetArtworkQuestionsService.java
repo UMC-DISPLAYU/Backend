@@ -1,10 +1,13 @@
 package com.example.demo.domain.artworkcommunication.application.query;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionValidator;
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionReplyItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionUserResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.QuestionImageResult;
+import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ReplyImageResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
@@ -13,12 +16,14 @@ import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQue
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
+import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +45,7 @@ public class GetArtworkQuestionsService {
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
@@ -48,15 +54,15 @@ public class GetArtworkQuestionsService {
     boolean isParticipant =
         query.userId() != null
             && creatorExistenceRepository
-                .findCreatorNameByDisplayArtworkIdAndUserId(
+                .findParticipantNameByDisplayArtworkIdAndUserId(
                     query.displayArtworkId(), query.userId())
                 .isPresent();
-    boolean isContact =
+    Optional<ContactCreator> contactCreator =
         query.userId() != null
-            && creatorExistenceRepository
-                .findContactCreatorByDisplayArtworkIdAndUserId(
-                    query.displayArtworkId(), query.userId())
-                .isPresent();
+            ? creatorExistenceRepository.findContactCreatorByDisplayArtworkIdAndUserId(
+                query.displayArtworkId(), query.userId())
+            : Optional.empty();
+    boolean isContact = contactCreator.isPresent();
 
     List<ArtworkQuestion> fetched =
         artworkQuestionRepository.findActiveByDisplayArtworkIdWithCursor(
@@ -109,6 +115,7 @@ public class GetArtworkQuestionsService {
                         replyLikeCounts,
                         likedQuestionReplyIds,
                         query.userId(),
+                        contactCreator.map(ContactCreator::creatorId).orElse(null),
                         isParticipant,
                         isContact))
             .toList();
@@ -136,12 +143,10 @@ public class GetArtworkQuestionsService {
       Map<Long, Long> replyLikeCounts,
       Set<Long> likedQuestionReplyIds,
       Long userId,
+      Long currentCreatorId,
       boolean isParticipant,
       boolean isContact) {
-    boolean accessible =
-        Boolean.TRUE.equals(question.getIsPublic())
-            || question.isWrittenBy(userId)
-            || isParticipant;
+    boolean accessible = permissionChecker.isQuestionAccessible(question, userId, isParticipant);
     boolean canReply = accessible && isContact && !question.isAnswered();
 
     if (!accessible) {
@@ -151,10 +156,12 @@ public class GetArtworkQuestionsService {
           question.getIsPublic(),
           false,
           false,
+          false,
           null,
           false,
           question.getAnswerStatus().name(),
           question.getCreatedAt(),
+          List.of(),
           null,
           null);
     }
@@ -175,7 +182,8 @@ public class GetArtworkQuestionsService {
                         firstReply,
                         creatorNameById,
                         replyLikeCounts,
-                        likedQuestionReplyIds))
+                        likedQuestionReplyIds,
+                        currentCreatorId))
             .orElse(null);
 
     return new ArtworkQuestionItemResult(
@@ -183,11 +191,22 @@ public class GetArtworkQuestionsService {
         question.getContent(),
         question.getIsPublic(),
         true,
+        Objects.equals(question.getUserId(), userId),
         canReply,
         questionLikeCounts.getOrDefault(question.getQuestionId(), 0L),
         likedQuestionIds.contains(question.getQuestionId()),
         question.getAnswerStatus().name(),
         question.getCreatedAt(),
+        question.getImages().stream()
+            .map(
+                image ->
+                    new QuestionImageResult(
+                        image.getQuestionImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         user,
         reply);
   }
@@ -197,7 +216,8 @@ public class GetArtworkQuestionsService {
       ArtworkQuestionReply reply,
       Map<Long, String> creatorNameById,
       Map<Long, Long> replyLikeCounts,
-      Set<Long> likedQuestionReplyIds) {
+      Set<Long> likedQuestionReplyIds,
+      Long currentCreatorId) {
     Long creatorId = reply.getCreatorId();
     String creatorName = creatorId == null ? null : creatorNameById.get(creatorId);
     if (creatorName == null) {
@@ -211,8 +231,19 @@ public class GetArtworkQuestionsService {
         creatorName != null,
         reply.getContent(),
         reply.getCreatedAt(),
+        reply.getImages().stream()
+            .map(
+                image ->
+                    new ReplyImageResult(
+                        image.getQuestionReplyImageId(),
+                        image.getImageUrl(),
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getSortOrder()))
+            .toList(),
         replyLikeCounts.getOrDefault(reply.getQueReplyId(), 0L),
-        likedQuestionReplyIds.contains(reply.getQueReplyId()));
+        likedQuestionReplyIds.contains(reply.getQueReplyId()),
+        currentCreatorId != null && Objects.equals(creatorId, currentCreatorId));
   }
 
   private Map<Long, String> findCreatorNamesById(

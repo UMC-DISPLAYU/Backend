@@ -2,6 +2,7 @@ package com.example.demo.global.response;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 public record ApiResponseBody<T>(
     ResultType resultType, SuccessBody<T> success, ErrorBody error, Meta meta) {
@@ -22,7 +23,7 @@ public record ApiResponseBody<T>(
   public record Meta(LocalDateTime timestamp, String path) {
 
     private static Meta from(HttpServletRequest request) {
-      return new Meta(LocalDateTime.now(), request.getRequestURI());
+      return new Meta(LocalDateTime.now(ZoneOffset.UTC), request.getRequestURI());
     }
   }
 }

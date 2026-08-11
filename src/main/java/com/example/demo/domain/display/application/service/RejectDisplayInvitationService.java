@@ -9,6 +9,7 @@ import com.example.demo.domain.display.domain.repository.DisplayInvitationReposi
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class RejectDisplayInvitationService {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_INVITEE_MISMATCH);
     }
 
-    invitation.reject(LocalDateTime.now(clock));
+    invitation.reject(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     return mapper.toResult(invitation);
   }
 }

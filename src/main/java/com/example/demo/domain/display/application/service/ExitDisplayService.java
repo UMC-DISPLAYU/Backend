@@ -7,6 +7,7 @@ import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,6 @@ public class ExitDisplayService {
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_NOT_FOUND));
     displayPermissionChecker.requireExitAllowed(teamMember);
 
-    teamMember.softDelete(LocalDateTime.now(clock));
+    teamMember.softDelete(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
   }
 }

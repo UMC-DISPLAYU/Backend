@@ -12,6 +12,7 @@ import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +54,7 @@ public class DisplayInvitationCommandService {
   public DisplayInvitationDisableResult disableInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
     displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
-    display.disableInvitation(LocalDateTime.now(clock));
+    display.disableInvitation(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     return new DisplayInvitationDisableResult(display.getId(), display.getInvitationDisabledAt());
   }
 

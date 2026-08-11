@@ -1,5 +1,6 @@
 package com.example.demo.domain.archive.application.command;
 
+import com.example.demo.domain.archive.application.permission.ArchivePermissionChecker;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
@@ -12,9 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteArchiveWorkService {
 
   private final ArchiveWorkRepository archiveWorkRepository;
+  private final ArchivePermissionChecker archivePermissionChecker;
 
-  public DeleteArchiveWorkService(ArchiveWorkRepository archiveWorkRepository) {
+  public DeleteArchiveWorkService(
+      ArchiveWorkRepository archiveWorkRepository,
+      ArchivePermissionChecker archivePermissionChecker) {
     this.archiveWorkRepository = archiveWorkRepository;
+    this.archivePermissionChecker = archivePermissionChecker;
   }
 
   @Transactional
@@ -23,6 +28,7 @@ public class DeleteArchiveWorkService {
         archiveWorkRepository
             .findByUserIdAndDisplayArtworkId(userId, displayArtworkId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_WORK_NOT_FOUND));
+    archivePermissionChecker.requireOwner(archiveWork, userId);
 
     archiveWorkRepository.delete(archiveWork);
     return new ArchiveWorkToggleResult(displayArtworkId, false);

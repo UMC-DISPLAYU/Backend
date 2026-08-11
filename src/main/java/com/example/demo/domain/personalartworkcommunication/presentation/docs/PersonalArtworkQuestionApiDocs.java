@@ -38,6 +38,7 @@ public interface PersonalArtworkQuestionApiDocs {
           권한이 없는 요청자에게도 목록 항목은 유지하지만 content, user, reply는 null로 마스킹합니다.
 
           accessible은 질문과 답변 원문을 조회할 수 있는지를 나타냅니다.
+          isMine은 로그인 사용자가 해당 질문 또는 답변의 작성자인지를 나타내며, 비회원은 false입니다.
           canReply는 개인 작품 소유자이면서 질문 상태가 WAITING일 때만 true입니다.
           likeCount는 질문의 좋아요 수이며, reply.likeCount는 답변의 좋아요 수입니다.
           isLiked는 로그인 사용자의 좋아요 여부이며, 비회원은 false입니다.
@@ -64,11 +65,21 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": "색을 몇 번 겹쳐 칠했나요?",
                                     "isPublic": true,
                                     "accessible": true,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": 12,
                                     "isLiked": false,
                                     "answerStatus": "ANSWERED",
                                     "createdAt": "2026-07-23T17:00:00",
+                                    "images": [
+                                      {
+                                        "personalQuestionImageId": 1,
+                                        "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                        "width": 1200,
+                                        "height": 900,
+                                        "sortOrder": 0
+                                      }
+                                    ],
                                     "user": {
                                       "userId": 2,
                                       "nickname": "관람객",
@@ -81,8 +92,10 @@ public interface PersonalArtworkQuestionApiDocs {
                                       "isCreator": true,
                                       "content": "얇은 층을 열두 번 정도 겹쳤습니다.",
                                       "createdAt": "2026-07-23T17:10:00",
+                                      "images": [],
                                       "likeCount": 4,
-                                      "isLiked": false
+                                      "isLiked": false,
+                                      "isMine": true
                                     }
                                   },
                                   {
@@ -90,11 +103,13 @@ public interface PersonalArtworkQuestionApiDocs {
                                     "content": null,
                                     "isPublic": false,
                                     "accessible": false,
+                                    "isMine": false,
                                     "canReply": false,
                                     "likeCount": null,
                                     "isLiked": false,
                                     "answerStatus": "WAITING",
                                     "createdAt": "2026-07-23T17:15:00",
+                                    "images": [],
                                     "user": null,
                                     "reply": null
                                   }
@@ -266,7 +281,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                 "personalQuestionId": 2,
                                 "userId": 1,
                                 "nickname": "작품소유자",
-                                "isCreator": true
+                                "isCreator": true,
+                                "images": [
+                                  {
+                                    "personalQuestionReplyImageId": 1,
+                                    "imageUrl": "https://cdn.example.com/question-replies/1.jpg",
+                                    "width": 1200,
+                                    "height": 900,
+                                    "sortOrder": 0
+                                  }
+                                ]
                               }
                             },
                             "error": null,
@@ -404,7 +428,16 @@ public interface PersonalArtworkQuestionApiDocs {
                                           "isPublic": true,
                                           "answerStatus": "WAITING",
                                           "createdAt": "2026-07-20T22:20:00",
-                                          "userId": 1
+                                          "userId": 1,
+                                          "images": [
+                                            {
+                                              "personalQuestionImageId": 1,
+                                              "imageUrl": "https://cdn.example.com/questions/1.jpg",
+                                              "width": 1200,
+                                              "height": 900,
+                                              "sortOrder": 0
+                                            }
+                                          ]
                                         }
                                       },
                                       "error": null,
@@ -501,6 +534,31 @@ public interface PersonalArtworkQuestionApiDocs {
                             "error": null,
                             "meta": {
                               "timestamp": "2026-07-22T20:00:00",
+                              "path": "/api/v1/personal-artworks/3/questions/15"
+                            }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "답변이 등록된 질문은 삭제 불가",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "Personal artwork question already answered",
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": {
+                              "code": "PERSONAL_QUESTION_ALREADY_ANSWERED",
+                              "message": "이미 답변 완료된 질문입니다.",
+                              "details": null
+                            },
+                            "meta": {
+                              "timestamp": "2026-08-11T12:00:00",
                               "path": "/api/v1/personal-artworks/3/questions/15"
                             }
                           }
