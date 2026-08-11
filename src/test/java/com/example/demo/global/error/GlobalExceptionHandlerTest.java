@@ -8,6 +8,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -49,6 +50,25 @@ class GlobalExceptionHandlerTest {
         .contains("code=NOT_FOUND")
         .contains("method=GET")
         .contains("uri=/phpunit/eval-stdin.php");
+  }
+
+  @Test
+  void returnsConflictForOptimisticLockFailure(CapturedOutput output) {
+    MockHttpServletRequest request = request("PATCH", "/api/v1/lounge/posts/1");
+
+    var response =
+        exceptionHandler.handleOptimisticLockingFailureException(
+            new ObjectOptimisticLockingFailureException(Object.class, 1L), request);
+
+    assertThat(response.getStatusCode().value()).isEqualTo(409);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().error().code()).isEqualTo(GlobalErrorCode.CONFLICT.getCode());
+    assertThat(output)
+        .contains("WARN")
+        .contains("status=409")
+        .contains("code=CONFLICT")
+        .contains("method=PATCH")
+        .contains("uri=/api/v1/lounge/posts/1");
   }
 
   @Test

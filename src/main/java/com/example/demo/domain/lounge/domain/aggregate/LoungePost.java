@@ -24,6 +24,8 @@ public class LoungePost extends SoftDeleteBaseEntity {
   @Column(name = "loungePostId")
   private Long id;
 
+  @Version private Long version;
+
   @Embedded
   @AttributeOverride(name = "value", column = @Column(name = "userId", nullable = false))
   private UserId authorUserId;

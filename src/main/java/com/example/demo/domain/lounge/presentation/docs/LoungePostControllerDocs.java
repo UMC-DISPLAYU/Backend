@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Lounge Post", description = "라운지 게시글 API")
-@SecurityRequirement(name = "Authorization")
 public interface LoungePostControllerDocs {
 
   @Operation(
@@ -73,6 +72,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostDetailResponse> createPost(
       @Valid @RequestBody LoungePostRequest loungePostRequest,
       AuthUser user,
@@ -83,6 +83,7 @@ public interface LoungePostControllerDocs {
       description = "작성자가 라운지 게시글을 수정합니다. WORK_TIP과 COLLABORATION 카테고리로 변경하려면 작가 인증이 필요합니다.")
   @ApiResponse(responseCode = "401", description = "로그인 필요")
   @ApiResponse(responseCode = "403", description = "작성자 권한 또는 작가 인증 필요")
+  @ApiResponse(responseCode = "409", description = "동시 수정 충돌")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 수정 성공",
@@ -124,6 +125,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostDetailResponse> updatePost(
       @PathVariable Long loungePostId,
       @Valid @RequestBody LoungePostRequest loungePostRequest,
@@ -131,6 +133,7 @@ public interface LoungePostControllerDocs {
       HttpServletRequest request);
 
   @Operation(summary = "라운지 게시글 삭제", description = "작성자가 라운지 게시글을 삭제합니다.")
+  @ApiResponse(responseCode = "409", description = "동시 변경 충돌")
   @ApiResponse(
       responseCode = "200",
       description = "라운지 게시글 삭제 성공",
@@ -153,6 +156,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<Void> deletePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -187,6 +191,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostLikeResponse> likePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -221,6 +226,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostLikeResponse> cancelLikePost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -255,6 +261,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostScrapResponse> scrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -289,6 +296,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostScrapResponse> cancelScrapPost(
       @PathVariable Long loungePostId, AuthUser user, HttpServletRequest request);
 
@@ -452,6 +460,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostCursorResponse> getMyPosts(
       @Parameter(description = "마지막으로 조회한 게시글 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,
@@ -509,6 +518,7 @@ public interface LoungePostControllerDocs {
                             }
                           }
                           """)))
+  @SecurityRequirement(name = "Authorization")
   ApiResponseBody<LoungePostCursorResponse> getMyScrappedPosts(
       @Parameter(description = "마지막으로 조회한 스크랩 ID. 첫 요청이면 전달하지 않음") @RequestParam(required = false)
           Long cursorId,

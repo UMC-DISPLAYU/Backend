@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.Getter;
@@ -18,7 +19,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Entity
-@Table(name = "LoungePostScrap")
+@Table(
+    name = "LoungePostScrap",
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "UK_LOUNGEPOSTSCRAP_POST_USER",
+            columnNames = {"loungePostId", "userId"}))
 @EntityListeners(AuditingEntityListener.class)
 public class LoungePostScrap {
 
