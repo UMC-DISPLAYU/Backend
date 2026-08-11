@@ -15,7 +15,10 @@ public enum ArtistErrorCode implements BaseErrorCode {
   ARTIST_PROFILE_ALREADY_EXISTS(
       HttpStatus.CONFLICT, "ARTIST_PROFILE_ALREADY_EXISTS", "이미 작가 프로필이 존재합니다."),
   DUPLICATE_ARTIST_NAME(HttpStatus.CONFLICT, "DUPLICATE_ARTIST_NAME", "이미 사용 중인 작가명입니다."),
-  INVALID_ARTIST_NAME(HttpStatus.BAD_REQUEST, "INVALID_ARTIST_NAME", "작가명은 1자 이상 50자 이하여야 합니다."),
+  INVALID_ARTIST_NAME(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_ARTIST_NAME",
+      "작가명은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다."),
   INVALID_ACTIVITY_FIELDS(
       HttpStatus.BAD_REQUEST, "INVALID_ACTIVITY_FIELDS", "활동 분야는 중복 없이 최대 2개까지 선택할 수 있습니다."),
   ARTIST_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTIST_PROFILE_NOT_FOUND", "등록된 작가 프로필이 없습니다."),
