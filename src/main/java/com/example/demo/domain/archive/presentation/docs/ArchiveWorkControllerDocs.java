@@ -154,9 +154,11 @@ public interface ArchiveWorkControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveWorkCursorResponse> getArchivedWorks(
-      @Parameter(description = "마지막으로 조회한 저장 기록 ID. 첫 요청이면 전달하지 않음")
+      @Parameter(
+              description =
+                  "다음 페이지 조회용 커서. 응답의 nextCursorId를 그대로 전달하면 되는 opaque 값이며, 첫 요청이면 전달하지 않음")
           @RequestParam(required = false)
-          @Positive Long cursorId,
+          Long cursorId,
       @Parameter(description = "한 번에 불러올 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       AuthUser user,
       HttpServletRequest request);
@@ -199,12 +201,24 @@ public interface ArchiveWorkControllerDocs {
           "data": {
             "works": [
               {
+                "artworkImageUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
+                "artworkName": "작은 정원",
+                "artistName": null,
+                "memo": null,
+                "archiveWorkId": 2,
+                "artworkId": null,
+                "personalArtworkId": 1,
+                "userId": 1,
+                "savedAt": "2026-08-11T09:10:00"
+              },
+              {
                 "artworkImageUrl": "https://cdn.displayu.co.kr/artworks/1/thumb.jpg",
                 "artworkName": "FORM 2026",
                 "artistName": "고상준",
                 "memo": "이 작품의 색감이 좋았다.",
                 "archiveWorkId": 1,
                 "artworkId": 1,
+                "personalArtworkId": null,
                 "userId": 1,
                 "savedAt": "2026-07-13T01:49:28"
               }
@@ -215,7 +229,7 @@ public interface ArchiveWorkControllerDocs {
           }
         },
         "error": null,
-        "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artworks" }
+        "meta": { "timestamp": "2026-08-11T09:10:00", "path": "/api/v1/archives/artworks" }
       }
       """;
 }
