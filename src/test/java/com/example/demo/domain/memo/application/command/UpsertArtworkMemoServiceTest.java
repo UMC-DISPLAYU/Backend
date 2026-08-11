@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.application.result.MemoResult;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
@@ -26,12 +27,13 @@ class UpsertArtworkMemoServiceTest {
   private final ArchiveWorkRepository archiveWorkRepository = mock(ArchiveWorkRepository.class);
   private final MemoRepository memoRepository = mock(MemoRepository.class);
   private final UpsertArtworkMemoService service =
-      new UpsertArtworkMemoService(archiveWorkRepository, memoRepository);
+      new UpsertArtworkMemoService(
+          archiveWorkRepository, memoRepository, new MemoPermissionChecker());
 
   @Test
   void createsNewMemoWhenNoneExists() {
     ArchiveWork archiveWork = archiveWork(10L, 7L);
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L)).thenReturn(Optional.empty());
     when(memoRepository.save(any(Memo.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -48,7 +50,7 @@ class UpsertArtworkMemoServiceTest {
   void updatesExistingMemoContentWhenOneExists() {
     ArchiveWork archiveWork = archiveWork(10L, 7L);
     Memo existing = Memo.createForWork("이전 감상", null, 10L);
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L))
         .thenReturn(Optional.of(existing));
     when(memoRepository.save(existing)).thenReturn(existing);
@@ -63,7 +65,7 @@ class UpsertArtworkMemoServiceTest {
 
   @Test
   void rejectsArchiveWorkNotOwnedByUser() {
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.empty());
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(
@@ -77,7 +79,7 @@ class UpsertArtworkMemoServiceTest {
   @Test
   void rejectsConcurrentCreateWithUniqueConstraintViolation() {
     ArchiveWork archiveWork = archiveWork(10L, 7L);
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L)).thenReturn(Optional.empty());
     when(memoRepository.save(any(Memo.class)))
         .thenThrow(
@@ -100,7 +102,7 @@ class UpsertArtworkMemoServiceTest {
     DataIntegrityViolationException unrelated =
         new DataIntegrityViolationException(
             "fk violation", new RuntimeException("foreign key constraint fails"));
-    when(archiveWorkRepository.findByIdAndUserId(10L, 7L)).thenReturn(Optional.of(archiveWork));
+    when(archiveWorkRepository.findById(10L)).thenReturn(Optional.of(archiveWork));
     when(memoRepository.findByArchiveWorkIdAndDeletedAtIsNull(10L)).thenReturn(Optional.empty());
     when(memoRepository.save(any(Memo.class))).thenThrow(unrelated);
 

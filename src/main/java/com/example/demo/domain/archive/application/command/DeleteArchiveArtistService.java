@@ -1,5 +1,6 @@
 package com.example.demo.domain.archive.application.command;
 
+import com.example.demo.domain.archive.application.permission.ArchivePermissionChecker;
 import com.example.demo.domain.archive.application.result.ArchiveArtistToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
@@ -12,9 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteArchiveArtistService {
 
   private final ArchiveArtistRepository archiveArtistRepository;
+  private final ArchivePermissionChecker archivePermissionChecker;
 
-  public DeleteArchiveArtistService(ArchiveArtistRepository archiveArtistRepository) {
+  public DeleteArchiveArtistService(
+      ArchiveArtistRepository archiveArtistRepository,
+      ArchivePermissionChecker archivePermissionChecker) {
     this.archiveArtistRepository = archiveArtistRepository;
+    this.archivePermissionChecker = archivePermissionChecker;
   }
 
   @Transactional
@@ -23,6 +28,7 @@ public class DeleteArchiveArtistService {
         archiveArtistRepository
             .findByUserIdAndArtistProfileId(userId, artistProfileId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND));
+    archivePermissionChecker.requireOwner(archiveArtist, userId);
 
     archiveArtistRepository.delete(archiveArtist);
     return new ArchiveArtistToggleResult(artistProfileId, false);

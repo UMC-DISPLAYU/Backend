@@ -1,5 +1,6 @@
 package com.example.demo.domain.archive.application.command;
 
+import com.example.demo.domain.archive.application.permission.ArchivePermissionChecker;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
@@ -12,9 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteArchiveDisplayService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
+  private final ArchivePermissionChecker archivePermissionChecker;
 
-  public DeleteArchiveDisplayService(ArchiveDisplayRepository archiveDisplayRepository) {
+  public DeleteArchiveDisplayService(
+      ArchiveDisplayRepository archiveDisplayRepository,
+      ArchivePermissionChecker archivePermissionChecker) {
     this.archiveDisplayRepository = archiveDisplayRepository;
+    this.archivePermissionChecker = archivePermissionChecker;
   }
 
   @Transactional
@@ -23,6 +28,7 @@ public class DeleteArchiveDisplayService {
         archiveDisplayRepository
             .findByUserIdAndDisplayId(userId, displayId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
+    archivePermissionChecker.requireOwner(archiveDisplay, userId);
 
     archiveDisplayRepository.delete(archiveDisplay);
     return new ArchiveDisplayToggleResult(displayId, false);

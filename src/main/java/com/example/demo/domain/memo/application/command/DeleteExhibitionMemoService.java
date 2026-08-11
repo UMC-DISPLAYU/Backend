@@ -2,6 +2,7 @@ package com.example.demo.domain.memo.application.command;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
@@ -14,19 +15,24 @@ public class DeleteExhibitionMemoService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
   private final MemoRepository memoRepository;
+  private final MemoPermissionChecker memoPermissionChecker;
 
   public DeleteExhibitionMemoService(
-      ArchiveDisplayRepository archiveDisplayRepository, MemoRepository memoRepository) {
+      ArchiveDisplayRepository archiveDisplayRepository,
+      MemoRepository memoRepository,
+      MemoPermissionChecker memoPermissionChecker) {
     this.archiveDisplayRepository = archiveDisplayRepository;
     this.memoRepository = memoRepository;
+    this.memoPermissionChecker = memoPermissionChecker;
   }
 
   @Transactional
   public void deleteExhibitionMemo(Long userId, Long archiveDisplayId) {
     ArchiveDisplay archiveDisplay =
         archiveDisplayRepository
-            .findByIdAndUserId(archiveDisplayId, userId)
+            .findById(archiveDisplayId)
             .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_DISPLAY_NOT_FOUND));
+    memoPermissionChecker.requireArchiveOwner(archiveDisplay, userId);
 
     Memo memo =
         memoRepository
