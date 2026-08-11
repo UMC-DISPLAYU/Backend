@@ -2,6 +2,7 @@ package com.example.demo.domain.memo.application.command;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
+import com.example.demo.domain.memo.application.permission.MemoPermissionChecker;
 import com.example.demo.domain.memo.application.result.MemoResult;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.error.MemoErrorCode;
@@ -17,11 +18,15 @@ public class UpsertArtworkMemoService {
 
   private final ArchiveWorkRepository archiveWorkRepository;
   private final MemoRepository memoRepository;
+  private final MemoPermissionChecker memoPermissionChecker;
 
   public UpsertArtworkMemoService(
-      ArchiveWorkRepository archiveWorkRepository, MemoRepository memoRepository) {
+      ArchiveWorkRepository archiveWorkRepository,
+      MemoRepository memoRepository,
+      MemoPermissionChecker memoPermissionChecker) {
     this.archiveWorkRepository = archiveWorkRepository;
     this.memoRepository = memoRepository;
+    this.memoPermissionChecker = memoPermissionChecker;
   }
 
   @Transactional
@@ -30,8 +35,9 @@ public class UpsertArtworkMemoService {
 
     ArchiveWork archiveWork =
         archiveWorkRepository
-            .findByIdAndUserId(command.archiveWorkId(), command.userId())
+            .findById(command.archiveWorkId())
             .orElseThrow(() -> new BusinessException(MemoErrorCode.ARCHIVE_WORK_NOT_FOUND));
+    memoPermissionChecker.requireArchiveOwner(archiveWork, command.userId());
 
     Memo memo =
         memoRepository

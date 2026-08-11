@@ -45,4 +45,8 @@ public class ArchiveArtist {
   public static ArchiveArtist create(Long artistProfileId, Long userId) {
     return new ArchiveArtist(artistProfileId, userId);
   }
+
+  public boolean isOwnedBy(Long userId) {
+    return Objects.equals(this.userId, userId);
+  }
 }

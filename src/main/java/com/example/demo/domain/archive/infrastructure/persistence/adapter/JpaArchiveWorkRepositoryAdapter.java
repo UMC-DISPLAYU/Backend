@@ -18,6 +18,11 @@ public class JpaArchiveWorkRepositoryAdapter implements ArchiveWorkRepository {
   }
 
   @Override
+  public Optional<ArchiveWork> findById(Long archiveWorkId) {
+    return jpaRepository.findById(archiveWorkId);
+  }
+
+  @Override
   public Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId) {
     return jpaRepository.findByIdAndUserId(archiveWorkId, userId);
   }
