@@ -37,13 +37,13 @@ public class JpaMemoRepositoryAdapter implements MemoRepository {
   }
 
   @Override
-  public Optional<Memo> findByArchiveDisplayId(Long archiveDisplayId) {
-    return jpaRepository.findByArchiveDisplayId(archiveDisplayId);
+  public List<Memo> findAllByArchiveDisplayId(Long archiveDisplayId) {
+    return jpaRepository.findAllByArchiveDisplayId(archiveDisplayId);
   }
 
   @Override
-  public Optional<Memo> findByArchiveWorkId(Long archiveWorkId) {
-    return jpaRepository.findByArchiveWorkId(archiveWorkId);
+  public List<Memo> findAllByArchiveWorkId(Long archiveWorkId) {
+    return jpaRepository.findAllByArchiveWorkId(archiveWorkId);
   }
 
   @Override
@@ -53,7 +53,7 @@ public class JpaMemoRepositoryAdapter implements MemoRepository {
   }
 
   @Override
-  public void delete(Memo memo) {
-    jpaRepository.delete(memo);
+  public void deleteAll(List<Memo> memos) {
+    jpaRepository.deleteAll(memos);
   }
 }

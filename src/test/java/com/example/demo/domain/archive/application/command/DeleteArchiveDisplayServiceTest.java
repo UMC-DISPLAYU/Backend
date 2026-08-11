@@ -3,7 +3,6 @@ package com.example.demo.domain.archive.application.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,8 +14,11 @@ import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepositor
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class DeleteArchiveDisplayServiceTest {
@@ -34,13 +36,30 @@ class DeleteArchiveDisplayServiceTest {
     Memo memo = Memo.createForDisplay("메모", null, 10L);
     when(archiveDisplayRepository.findByUserIdAndDisplayId(7L, 100L))
         .thenReturn(Optional.of(archiveDisplay));
-    when(memoRepository.findByArchiveDisplayId(10L)).thenReturn(Optional.of(memo));
+    when(memoRepository.findAllByArchiveDisplayId(10L)).thenReturn(List.of(memo));
 
     ArchiveDisplayToggleResult result = service.deleteArchiveDisplay(7L, 100L);
 
     assertThat(result.displayId()).isEqualTo(100L);
     assertThat(result.isArchived()).isFalse();
-    verify(memoRepository).delete(memo);
+    InOrder inOrder = Mockito.inOrder(memoRepository, archiveDisplayRepository);
+    inOrder.verify(memoRepository).deleteAll(List.of(memo));
+    inOrder.verify(archiveDisplayRepository).delete(archiveDisplay);
+  }
+
+  @Test
+  void deletesEveryPastMemoWhenMultipleSoftDeletedMemosExist() {
+    ArchiveDisplay archiveDisplay = archiveDisplay(10L, 100L, 7L);
+    Memo firstMemo = Memo.createForDisplay("첫 메모", null, 10L);
+    Memo secondMemo = Memo.createForDisplay("두 번째 메모", null, 10L);
+    List<Memo> memos = List.of(firstMemo, secondMemo);
+    when(archiveDisplayRepository.findByUserIdAndDisplayId(7L, 100L))
+        .thenReturn(Optional.of(archiveDisplay));
+    when(memoRepository.findAllByArchiveDisplayId(10L)).thenReturn(memos);
+
+    service.deleteArchiveDisplay(7L, 100L);
+
+    verify(memoRepository).deleteAll(memos);
     verify(archiveDisplayRepository).delete(archiveDisplay);
   }
 
@@ -49,11 +68,11 @@ class DeleteArchiveDisplayServiceTest {
     ArchiveDisplay archiveDisplay = archiveDisplay(10L, 100L, 7L);
     when(archiveDisplayRepository.findByUserIdAndDisplayId(7L, 100L))
         .thenReturn(Optional.of(archiveDisplay));
-    when(memoRepository.findByArchiveDisplayId(10L)).thenReturn(Optional.empty());
+    when(memoRepository.findAllByArchiveDisplayId(10L)).thenReturn(List.of());
 
     service.deleteArchiveDisplay(7L, 100L);
 
-    verify(memoRepository, never()).delete(org.mockito.ArgumentMatchers.any());
+    verify(memoRepository).deleteAll(List.of());
     verify(archiveDisplayRepository).delete(archiveDisplay);
   }
 

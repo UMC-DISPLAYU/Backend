@@ -35,8 +35,8 @@ public class DeleteArchiveDisplayService {
     archivePermissionChecker.requireOwner(archiveDisplay, userId);
 
     // Memo는 삭제돼도 row가 남아 FK로 ArchiveDisplay를 계속 참조하므로, 물리 삭제 전에
-    // (이미 삭제된 것 포함) 먼저 정리하지 않으면 FK 제약 위반으로 저장 취소 자체가 실패한다.
-    memoRepository.findByArchiveDisplayId(archiveDisplay.getId()).ifPresent(memoRepository::delete);
+    // (이미 삭제된 것 포함, 여러 건일 수 있음) 먼저 정리하지 않으면 FK 제약 위반으로 저장 취소 자체가 실패한다.
+    memoRepository.deleteAll(memoRepository.findAllByArchiveDisplayId(archiveDisplay.getId()));
 
     archiveDisplayRepository.delete(archiveDisplay);
     return new ArchiveDisplayToggleResult(displayId, false);
