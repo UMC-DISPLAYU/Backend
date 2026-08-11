@@ -29,7 +29,7 @@ management:
 app:
   display:
     invitation:
-      base-url: https://displayu.co.kr/display/invitation
+      base-url: https://www.displayu.co.kr/display/invitation
 
   kakao:
     client:
