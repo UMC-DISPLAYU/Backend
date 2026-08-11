@@ -41,21 +41,6 @@ public class PersonalArtworkQuestionValidator {
     }
   }
 
-  public void validatePersonalArtworkCreator(Long personalArtworkId, Long userId) {
-    if (!personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
-    }
-  }
-
-  public void validateAccessiblePersonalQuestion(
-      PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId, Long userId) {
-    validateNotDeleted(personalArtworkQuestion);
-    validatePersonalArtworkQuestionBelongsToPersonalArtwork(
-        personalArtworkQuestion, personalArtworkId);
-    validateWriter(personalArtworkQuestion, userId);
-  }
-
   public void validateQuestionTarget(
       PersonalArtworkQuestion personalArtworkQuestion, Long personalArtworkId) {
     validateNotDeleted(personalArtworkQuestion);
@@ -72,18 +57,6 @@ public class PersonalArtworkQuestionValidator {
                     PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND));
   }
 
-  public void validateLikePermission(
-      PersonalArtworkQuestion question, Long personalArtworkId, Long userId) {
-    if (question.isPublicQuestion()
-        || question.isWrittenBy(userId)
-        || personalArtworkExistenceRepository.existsByIdAndUserId(personalArtworkId, userId)) {
-      return;
-    }
-
-    throw new BusinessException(
-        PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
-  }
-
   public PersonalArtworkQuestionReply findActiveReplyForUpdateOrThrow(
       Long personalQuestionReplyId) {
     return personalArtworkQuestionReplyRepository
@@ -92,15 +65,6 @@ public class PersonalArtworkQuestionValidator {
             () ->
                 new BusinessException(
                     PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_NOT_FOUND));
-  }
-
-  public void validateAccessibleReply(
-      PersonalArtworkQuestionReply reply, Long personalQuestionId, Long userId) {
-    validateReplyBelongsToQuestion(reply, personalQuestionId);
-    if (!reply.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_REPLY_FORBIDDEN);
-    }
   }
 
   public void validateReplyBelongsToQuestion(
@@ -123,13 +87,6 @@ public class PersonalArtworkQuestionValidator {
     if (!personalArtworkQuestion.belongsToArtwork(personalArtworkId)) {
       throw new BusinessException(
           PersonalArtworkCommunicationErrorCode.PERSONAL_QUESTION_NOT_FOUND);
-    }
-  }
-
-  private void validateWriter(PersonalArtworkQuestion personalArtworkQuestion, Long userId) {
-    if (!personalArtworkQuestion.isWrittenBy(userId)) {
-      throw new BusinessException(
-          PersonalArtworkCommunicationErrorCode.PERSONAL_ARTWORK_QUESTION_FORBIDDEN);
     }
   }
 }

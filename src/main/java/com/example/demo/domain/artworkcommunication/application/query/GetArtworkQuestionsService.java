@@ -1,6 +1,7 @@
 package com.example.demo.domain.artworkcommunication.application.query;
 
 import com.example.demo.domain.artworkcommunication.application.command.ArtworkQuestionValidator;
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionItemResult;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionListResult.ArtworkQuestionReplyItemResult;
@@ -40,6 +41,7 @@ public class GetArtworkQuestionsService {
   private final UserExistenceRepository userExistenceRepository;
   private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public ArtworkQuestionListResult getQuestions(GetArtworkQuestionsQuery query) {
     artworkQuestionValidator.validateDisplayArtworkExists(query.displayArtworkId());
@@ -48,7 +50,7 @@ public class GetArtworkQuestionsService {
     boolean isParticipant =
         query.userId() != null
             && creatorExistenceRepository
-                .findCreatorNameByDisplayArtworkIdAndUserId(
+                .findParticipantNameByDisplayArtworkIdAndUserId(
                     query.displayArtworkId(), query.userId())
                 .isPresent();
     boolean isContact =
@@ -138,10 +140,7 @@ public class GetArtworkQuestionsService {
       Long userId,
       boolean isParticipant,
       boolean isContact) {
-    boolean accessible =
-        Boolean.TRUE.equals(question.getIsPublic())
-            || question.isWrittenBy(userId)
-            || isParticipant;
+    boolean accessible = permissionChecker.isQuestionAccessible(question, userId, isParticipant);
     boolean canReply = accessible && isContact && !question.isAnswered();
 
     if (!accessible) {

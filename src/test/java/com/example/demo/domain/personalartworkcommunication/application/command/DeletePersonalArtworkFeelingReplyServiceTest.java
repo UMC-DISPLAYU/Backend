@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeelingReply;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingReplyRepository;
@@ -19,6 +20,7 @@ class DeletePersonalArtworkFeelingReplyServiceTest {
 
   @Mock private PersonalArtworkFeelingReplyRepository personalArtworkFeelingReplyRepository;
   @Mock private PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
+  @Mock private PersonalArtworkCommunicationPermissionChecker permissionChecker;
   @InjectMocks private DeletePersonalArtworkFeelingReplyService service;
 
   @Test
@@ -36,7 +38,8 @@ class DeletePersonalArtworkFeelingReplyServiceTest {
 
     assertThat(reply.isDeleted()).isTrue();
     verify(personalArtworkFeelingValidator).validateReplyDeletionTarget(deletedFeeling, 1L);
-    verify(personalArtworkFeelingValidator).validateAccessibleReply(reply, 10L, 3L);
+    verify(personalArtworkFeelingValidator).validateReplyTarget(reply, 10L);
+    verify(permissionChecker).requirePersonalFeelingReplyWriter(reply, 3L);
     verify(personalArtworkFeelingReplyRepository).save(reply);
   }
 }

@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartworkcommunication.application.command;
 
+import com.example.demo.domain.personalartworkcommunication.application.permission.PersonalArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.personalartworkcommunication.application.result.DeletedPersonalArtworkFeelingResult;
 import com.example.demo.domain.personalartworkcommunication.domain.aggregate.PersonalArtworkFeeling;
 import com.example.demo.domain.personalartworkcommunication.domain.repository.PersonalArtworkFeelingRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeletePersonalArtworkFeelingService {
 
   private final PersonalArtworkFeelingValidator personalArtworkFeelingValidator;
+  private final PersonalArtworkCommunicationPermissionChecker permissionChecker;
   private final PersonalArtworkFeelingRepository personalArtworkFeelingRepository;
 
   public DeletedPersonalArtworkFeelingResult deleteFeeling(
@@ -23,8 +25,9 @@ public class DeletePersonalArtworkFeelingService {
     PersonalArtworkFeeling personalArtworkFeeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
 
-    personalArtworkFeelingValidator.validateAccessiblePersonalFeeling(
-        personalArtworkFeeling, command.personalArtworkId(), command.userId());
+    personalArtworkFeelingValidator.validateFeelingTarget(
+        personalArtworkFeeling, command.personalArtworkId());
+    permissionChecker.requirePersonalFeelingWriter(personalArtworkFeeling, command.userId());
 
     personalArtworkFeeling.delete();
     PersonalArtworkFeeling savedFeeling =
