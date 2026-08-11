@@ -15,6 +15,7 @@ public record ArchiveArtistResult(
     Long exhibitionCount,
     Long archiveArtistId,
     Long artistProfileId,
+    Long artistUserId,
     Long userId,
     LocalDateTime savedAt) {
 
@@ -30,6 +31,7 @@ public record ArchiveArtistResult(
         stats == null ? null : stats.exhibitionCount(),
         archiveArtist.getId(),
         archiveArtist.getArtistProfileId(),
+        archiveArtist.getArtistUserId(),
         archiveArtist.getUserId(),
         archiveArtist.getSavedAt());
   }

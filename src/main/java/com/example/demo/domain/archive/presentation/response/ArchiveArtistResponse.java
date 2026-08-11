@@ -17,5 +17,9 @@ public record ArchiveArtistResponse(
     @Schema(description = "등록 전시 수", example = "8") Long exhibitionCount,
     @Schema(description = "저장 기록 ID", example = "1") Long archiveArtistId,
     @Schema(description = "작가 프로필 ID", example = "1") Long artistId,
+    @Schema(
+            description = "작가 userId. 작가 프로필 상세조회(/api/v1/users/{userId}/artist-profile) 시 사용",
+            example = "1")
+        Long artistUserId,
     @Schema(description = "저장한 사용자 ID", example = "1") Long userId,
     @Schema(description = "저장 시각", example = "2026-07-13T01:49:28") LocalDateTime savedAt) {}

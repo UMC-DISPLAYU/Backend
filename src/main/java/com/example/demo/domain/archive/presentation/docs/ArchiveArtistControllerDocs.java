@@ -164,6 +164,7 @@ public interface ArchiveArtistControllerDocs {
                                     "exhibitionCount": 8,
                                     "archiveArtistId": 2,
                                     "artistId": 5,
+                                    "artistUserId": 12,
                                     "userId": 1,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
@@ -175,6 +176,7 @@ public interface ArchiveArtistControllerDocs {
                                     "exhibitionCount": 1,
                                     "archiveArtistId": 1,
                                     "artistId": 3,
+                                    "artistUserId": 8,
                                     "userId": 1,
                                     "savedAt": "2026-07-12T15:10:02"
                                   }

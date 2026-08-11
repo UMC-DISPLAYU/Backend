@@ -96,6 +96,7 @@ public class ArchivePresentationMapper {
         result.exhibitionCount(),
         result.archiveArtistId(),
         result.artistProfileId(),
+        result.artistUserId(),
         result.userId(),
         result.savedAt());
   }
