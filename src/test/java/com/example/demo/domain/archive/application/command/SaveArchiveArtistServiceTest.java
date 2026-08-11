@@ -19,6 +19,7 @@ import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
 
 class SaveArchiveArtistServiceTest {
@@ -43,7 +44,12 @@ class SaveArchiveArtistServiceTest {
 
     assertThat(result.artistUserId()).isEqualTo(30L);
     assertThat(result.isArchived()).isTrue();
-    verify(archiveArtistRepository).save(any(ArchiveArtist.class));
+    ArgumentCaptor<ArchiveArtist> captor = ArgumentCaptor.forClass(ArchiveArtist.class);
+    verify(archiveArtistRepository).save(captor.capture());
+    ArchiveArtist saved = captor.getValue();
+    assertThat(saved.getArtistProfileId()).isEqualTo(18L);
+    assertThat(saved.getArtistUserId()).isEqualTo(30L);
+    assertThat(saved.getUserId()).isEqualTo(7L);
   }
 
   @Test
