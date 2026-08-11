@@ -1,0 +1,2 @@
+ALTER TABLE `ArtistProfile`
+    MODIFY COLUMN `artistName` VARCHAR(15) NOT NULL;

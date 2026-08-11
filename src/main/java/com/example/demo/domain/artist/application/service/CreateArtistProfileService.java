@@ -9,6 +9,7 @@ import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
+import com.example.demo.domain.artist.domain.vo.ArtistName;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
@@ -40,13 +41,14 @@ public class CreateArtistProfileService {
 
     permissionChecker.requireProfileCreationEligible(user);
     validateActivityFields(command.getActivityCategories());
+    String artistName = ArtistName.of(command.getArtistName()).value();
 
     if (artistProfileRepository.findByUser(user).isPresent()) {
       throw new ArtistException(ArtistErrorCode.ARTIST_PROFILE_ALREADY_EXISTS);
     }
 
     // 일반적인 중복 요청은 DB까지 가지 않고 빠르게 예외 처리
-    if (artistProfileRepository.existsByArtistName(command.getArtistName())) {
+    if (artistProfileRepository.existsByArtistName(artistName)) {
       throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);
     }
 

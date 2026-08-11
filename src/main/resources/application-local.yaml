@@ -57,8 +57,8 @@ app:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:7200000}
   signup-expiration: ${JWT_SIGNUP_EXPIRATION:600000}
 
 

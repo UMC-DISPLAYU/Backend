@@ -12,6 +12,7 @@ import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
+import com.example.demo.domain.artist.domain.vo.ArtistName;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
@@ -28,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UpdateArtistProfileService {
-
-  private static final int ARTIST_NAME_MAX_LENGTH = 50;
 
   private final UserRepository userRepository;
   private final ArtistProfileRepository artistProfileRepository;
@@ -82,11 +81,7 @@ public class UpdateArtistProfileService {
   }
 
   private String validateArtistName(String artistName) {
-    String normalized = normalize(artistName);
-    if (normalized == null || normalized.length() > ARTIST_NAME_MAX_LENGTH) {
-      throw new ArtistException(ArtistErrorCode.INVALID_ARTIST_NAME);
-    }
-    return normalized;
+    return ArtistName.of(artistName).value();
   }
 
   private void changeArtistName(ArtistProfile profile, String artistName) {
