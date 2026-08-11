@@ -53,6 +53,38 @@ public interface ArchiveArtistControllerDocs {
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
                           """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "존재하지 않는 작가 프로필입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ARTIST_PROFILE_NOT_FOUND", "message": "존재하지 않는 작가 프로필입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 저장한 작가입니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ALREADY_ARCHIVED_ARTIST", "message": "이미 저장한 작가입니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
   ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
       @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
@@ -86,6 +118,22 @@ public interface ArchiveArtistControllerDocs {
                             "resultType": "FAIL",
                             "success": null,
                             "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null },
+                            "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
+                          }
+                          """)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "저장된 작가를 찾을 수 없습니다.",
+      content =
+          @Content(
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
+                          {
+                            "resultType": "FAIL",
+                            "success": null,
+                            "error": { "code": "ARCHIVE_ARTIST_NOT_FOUND", "message": "저장된 작가를 찾을 수 없습니다.", "details": null },
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
                           """)))

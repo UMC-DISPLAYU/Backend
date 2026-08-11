@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
@@ -41,9 +42,12 @@ class DeleteArtworkQuestionServiceTest {
             artworkQuestionRepository,
             displayArtworkExistenceRepository,
             userExistenceRepository,
-            creatorExistenceRepository,
             artworkQuestionReplyRepository);
-    service = new DeleteArtworkQuestionService(artworkQuestionRepository, validator);
+    service =
+        new DeleteArtworkQuestionService(
+            artworkQuestionRepository,
+            validator,
+            new ArtworkCommunicationPermissionChecker(creatorExistenceRepository));
   }
 
   @Test

@@ -1,11 +1,11 @@
 package com.example.demo.domain.artworkcommunication.application.command;
 
+import com.example.demo.domain.artworkcommunication.application.permission.ArtworkCommunicationPermissionChecker;
 import com.example.demo.domain.artworkcommunication.application.result.ArtworkQuestionReplyResult;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion;
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestionReply;
 import com.example.demo.domain.artworkcommunication.domain.error.ArtworkCommunicationErrorCode;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository.ContactCreator;
 import com.example.demo.global.error.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateArtworkQuestionReplyService {
 
   private final ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
-  private final CreatorExistenceRepository creatorExistenceRepository;
   private final ArtworkQuestionValidator artworkQuestionValidator;
+  private final ArtworkCommunicationPermissionChecker permissionChecker;
 
   public ArtworkQuestionReplyResult createQuestionReply(ArtworkQuestionReplyCommand command) {
     artworkQuestionValidator.validateDisplayArtworkExists(command.displayArtworkId());
@@ -34,11 +34,7 @@ public class CreateArtworkQuestionReplyService {
     artworkQuestionValidator.validateNotAnswered(artworkQuestion);
 
     ContactCreator contactCreator =
-        creatorExistenceRepository
-            .findContactCreatorByDisplayArtworkIdAndUserId(
-                command.displayArtworkId(), command.userId())
-            .orElseThrow(
-                () -> new BusinessException(ArtworkCommunicationErrorCode.QNA_CONTACT_FORBIDDEN));
+        permissionChecker.requireQnaHandler(command.displayArtworkId(), command.userId());
 
     ArtworkQuestionReply savedQuestionReply = saveQuestionReplyOrThrow(command, contactCreator);
 

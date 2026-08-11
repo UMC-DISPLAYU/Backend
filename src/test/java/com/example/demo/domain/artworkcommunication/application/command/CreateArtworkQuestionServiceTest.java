@@ -2,7 +2,6 @@ package com.example.demo.domain.artworkcommunication.application.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +10,6 @@ import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQues
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkQuestion.ImageInfo;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionReplyRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.ArtworkQuestionRepository;
-import com.example.demo.domain.artworkcommunication.domain.repository.CreatorExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.DisplayArtworkExistenceRepository;
 import com.example.demo.domain.artworkcommunication.domain.repository.UserExistenceRepository;
 import java.util.List;
@@ -27,7 +25,6 @@ class CreateArtworkQuestionServiceTest {
   @Mock private ArtworkQuestionRepository artworkQuestionRepository;
   @Mock private DisplayArtworkExistenceRepository displayArtworkExistenceRepository;
   @Mock private UserExistenceRepository userExistenceRepository;
-  @Mock private CreatorExistenceRepository creatorExistenceRepository;
   @Mock private ArtworkQuestionReplyRepository artworkQuestionReplyRepository;
 
   private CreateArtworkQuestionService service;
@@ -39,7 +36,6 @@ class CreateArtworkQuestionServiceTest {
             artworkQuestionRepository,
             displayArtworkExistenceRepository,
             userExistenceRepository,
-            creatorExistenceRepository,
             artworkQuestionReplyRepository);
     service = new CreateArtworkQuestionService(artworkQuestionRepository, validator);
   }
@@ -68,8 +64,6 @@ class CreateArtworkQuestionServiceTest {
     assertThat(result.images().get(0).width()).isEqualTo(800);
     assertThat(result.images().get(0).height()).isEqualTo(600);
     assertThat(result.images().get(0).sortOrder()).isZero();
-    verify(creatorExistenceRepository, never())
-        .findCreatorNameByDisplayArtworkIdAndUserId(any(), any());
     verify(artworkQuestionRepository).save(any(ArtworkQuestion.class));
   }
 }

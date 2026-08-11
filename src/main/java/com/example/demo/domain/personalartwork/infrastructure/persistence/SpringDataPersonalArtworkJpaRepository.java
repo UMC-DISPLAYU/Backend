@@ -18,4 +18,16 @@ public interface SpringDataPersonalArtworkJpaRepository
       ORDER BY artwork.createdAt ASC, artwork.id ASC
       """)
   List<PersonalArtwork> findAllByOwnerUserIdOrderByCreatedAtAsc(@Param("userId") Long userId);
+
+  // 삭제된 작품이 섞이면 다른 도메인의 존재 검증이 무력화되므로 쿼리에서 걸러낸다.
+  @Query(
+      """
+      SELECT artwork
+      FROM PersonalArtwork artwork
+      WHERE artwork.id IN :personalArtworkIds
+        AND artwork.deletedAt IS NULL
+      ORDER BY artwork.createdAt ASC, artwork.id ASC
+      """)
+  List<PersonalArtwork> findAllByIdInAndDeletedAtIsNull(
+      @Param("personalArtworkIds") List<Long> personalArtworkIds);
 }

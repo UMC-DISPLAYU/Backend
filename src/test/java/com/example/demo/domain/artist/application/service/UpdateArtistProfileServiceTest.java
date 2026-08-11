@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.artist.application.command.UpdateArtistProfileCommand;
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.artist.application.result.UpdateArtistProfileResult;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
@@ -35,7 +36,11 @@ class UpdateArtistProfileServiceTest {
   private final SchoolEmailValidator schoolEmailValidator = mock(SchoolEmailValidator.class);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository, artistProfileRepository, areaOfActivityRepository, schoolEmailValidator);
+          userRepository,
+          artistProfileRepository,
+          areaOfActivityRepository,
+          schoolEmailValidator,
+          new ArtistPermissionChecker());
 
   @Test
   void updatesArtistProfileInOneFlow() {

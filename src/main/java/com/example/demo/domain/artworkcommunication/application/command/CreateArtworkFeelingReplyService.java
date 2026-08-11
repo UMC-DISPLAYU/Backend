@@ -46,7 +46,7 @@ public class CreateArtworkFeelingReplyService {
                 command.feelingId(), command.userId(), command.content(), command.images()));
 
     Optional<String> creatorName =
-        creatorExistenceRepository.findCreatorNameByDisplayArtworkIdAndUserId(
+        creatorExistenceRepository.findParticipantNameByDisplayArtworkIdAndUserId(
             command.displayArtworkId(), command.userId());
     String nickname =
         creatorName.orElseGet(

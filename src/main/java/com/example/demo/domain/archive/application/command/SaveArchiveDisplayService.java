@@ -4,7 +4,9 @@ import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleRe
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
+import com.example.demo.domain.display.application.usecase.GetDisplaySummariesUseCase;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -14,14 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveDisplayService {
 
   private final ArchiveDisplayRepository archiveDisplayRepository;
+  private final GetDisplaySummariesUseCase getDisplaySummariesUseCase;
 
-  public SaveArchiveDisplayService(ArchiveDisplayRepository archiveDisplayRepository) {
+  public SaveArchiveDisplayService(
+      ArchiveDisplayRepository archiveDisplayRepository,
+      GetDisplaySummariesUseCase getDisplaySummariesUseCase) {
     this.archiveDisplayRepository = archiveDisplayRepository;
+    this.getDisplaySummariesUseCase = getDisplaySummariesUseCase;
   }
 
   @Transactional
   public ArchiveDisplayToggleResult saveArchiveDisplay(SaveArchiveDisplayCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
+
+    boolean displayExists =
+        !getDisplaySummariesUseCase.getDisplaySummaries(List.of(command.displayId())).isEmpty();
+    if (!displayExists) {
+      throw new BusinessException(ArchiveErrorCode.DISPLAY_NOT_FOUND);
+    }
 
     boolean alreadyArchived =
         archiveDisplayRepository

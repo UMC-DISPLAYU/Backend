@@ -3,9 +3,10 @@ package com.example.demo.domain.archive.application.command;
 import com.example.demo.domain.archive.application.result.ArchiveArtistToggleResult;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
-import com.example.demo.domain.archive.domain.repository.ArchiveArtistProfileExistenceRepository;
 import com.example.demo.domain.archive.domain.repository.ArchiveArtistRepository;
+import com.example.demo.domain.artist.application.usecase.GetArtistProfileSummariesUseCase;
 import com.example.demo.global.error.BusinessException;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -15,20 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveArtistService {
 
   private final ArchiveArtistRepository archiveArtistRepository;
-  private final ArchiveArtistProfileExistenceRepository artistProfileExistenceRepository;
+  private final GetArtistProfileSummariesUseCase getArtistProfileSummariesUseCase;
 
   public SaveArchiveArtistService(
       ArchiveArtistRepository archiveArtistRepository,
-      ArchiveArtistProfileExistenceRepository artistProfileExistenceRepository) {
+      GetArtistProfileSummariesUseCase getArtistProfileSummariesUseCase) {
     this.archiveArtistRepository = archiveArtistRepository;
-    this.artistProfileExistenceRepository = artistProfileExistenceRepository;
+    this.getArtistProfileSummariesUseCase = getArtistProfileSummariesUseCase;
   }
 
   @Transactional
   public ArchiveArtistToggleResult saveArchiveArtist(SaveArchiveArtistCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    if (!artistProfileExistenceRepository.existsById(command.artistProfileId())) {
+    boolean artistProfileExists =
+        !getArtistProfileSummariesUseCase
+            .getArtistProfileSummaries(List.of(command.artistProfileId()))
+            .isEmpty();
+    if (!artistProfileExists) {
       throw new BusinessException(ArchiveErrorCode.ARTIST_PROFILE_NOT_FOUND);
     }
 

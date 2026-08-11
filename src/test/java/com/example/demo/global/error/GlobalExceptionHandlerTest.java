@@ -2,6 +2,7 @@ package com.example.demo.global.error;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -50,6 +51,46 @@ class GlobalExceptionHandlerTest {
         .contains("code=NOT_FOUND")
         .contains("method=GET")
         .contains("uri=/phpunit/eval-stdin.php");
+  }
+
+  @Test
+  void returnsNotFoundForArchiveDisplayNotFound(CapturedOutput output) {
+    MockHttpServletRequest request = request("POST", "/api/v1/archives/exhibitions");
+
+    var response =
+        exceptionHandler.handleBusinessException(
+            new BusinessException(ArchiveErrorCode.DISPLAY_NOT_FOUND), request);
+
+    assertThat(response.getStatusCode().value()).isEqualTo(404);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().error().code())
+        .isEqualTo(ArchiveErrorCode.DISPLAY_NOT_FOUND.getCode());
+    assertThat(output)
+        .contains("INFO")
+        .contains("status=404")
+        .contains("code=DISPLAY_NOT_FOUND")
+        .contains("method=POST")
+        .contains("uri=/api/v1/archives/exhibitions");
+  }
+
+  @Test
+  void returnsNotFoundForArchiveDisplayArtworkNotFound(CapturedOutput output) {
+    MockHttpServletRequest request = request("POST", "/api/v1/archives/artworks");
+
+    var response =
+        exceptionHandler.handleBusinessException(
+            new BusinessException(ArchiveErrorCode.DISPLAY_ARTWORK_NOT_FOUND), request);
+
+    assertThat(response.getStatusCode().value()).isEqualTo(404);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().error().code())
+        .isEqualTo(ArchiveErrorCode.DISPLAY_ARTWORK_NOT_FOUND.getCode());
+    assertThat(output)
+        .contains("INFO")
+        .contains("status=404")
+        .contains("code=DISPLAY_ARTWORK_NOT_FOUND")
+        .contains("method=POST")
+        .contains("uri=/api/v1/archives/artworks");
   }
 
   @Test
