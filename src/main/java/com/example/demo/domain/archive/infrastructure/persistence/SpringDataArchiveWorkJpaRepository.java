@@ -1,6 +1,7 @@
 package com.example.demo.domain.archive.infrastructure.persistence;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveWork;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +21,15 @@ public interface SpringDataArchiveWorkJpaRepository extends JpaRepository<Archiv
       FROM ArchiveWork w
       WHERE w.userId = :userId
         AND (
-          :cursorId IS NULL
-          OR w.savedAt < (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId AND c.userId = :userId)
-          OR (
-            w.savedAt = (SELECT c.savedAt FROM ArchiveWork c WHERE c.id = :cursorId AND c.userId = :userId)
-            AND w.id < :cursorId
-          )
+          :cursorSavedAt IS NULL
+          OR w.savedAt < :cursorSavedAt
+          OR (w.savedAt = :cursorSavedAt AND w.id < :cursorSignedId)
         )
       ORDER BY w.savedAt DESC, w.id DESC
       """)
   List<ArchiveWork> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
-      @Param("userId") Long userId, @Param("cursorId") Long cursorId, Pageable pageable);
+      @Param("userId") Long userId,
+      @Param("cursorSavedAt") LocalDateTime cursorSavedAt,
+      @Param("cursorSignedId") Long cursorSignedId,
+      Pageable pageable);
 }

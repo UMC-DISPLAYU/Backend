@@ -6,6 +6,7 @@ import com.example.demo.domain.archive.application.result.ArchiveArtistToggleRes
 import com.example.demo.domain.archive.application.result.ArchiveDisplayCursorResult;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayResult;
 import com.example.demo.domain.archive.application.result.ArchiveDisplayToggleResult;
+import com.example.demo.domain.archive.application.result.ArchivePersonalWorkToggleResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkCursorResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkResult;
 import com.example.demo.domain.archive.application.result.ArchiveWorkToggleResult;
@@ -15,6 +16,7 @@ import com.example.demo.domain.archive.presentation.response.ArchiveArtistToggle
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveDisplayToggleResponse;
+import com.example.demo.domain.archive.presentation.response.ArchivePersonalWorkToggleResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
@@ -62,6 +64,7 @@ public class ArchivePresentationMapper {
         result.memo(),
         result.archiveWorkId(),
         result.displayArtworkId(),
+        result.personalArtworkId(),
         result.userId(),
         result.savedAt());
   }
@@ -77,6 +80,10 @@ public class ArchivePresentationMapper {
         result.nextCursorId(),
         result.size(),
         result.hasNext());
+  }
+
+  public ArchivePersonalWorkToggleResponse toResponse(ArchivePersonalWorkToggleResult result) {
+    return new ArchivePersonalWorkToggleResponse(result.personalArtworkId(), result.isArchived());
   }
 
   public ArchiveArtistResponse toResponse(ArchiveArtistResult result) {
