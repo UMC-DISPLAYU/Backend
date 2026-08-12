@@ -33,7 +33,7 @@ public interface ArchiveArtistControllerDocs {
                           """
                           {
                             "resultType": "SUCCESS",
-                            "success": { "data": { "artistId": 1, "isArchived": true } },
+                            "success": { "data": { "artistUserId": 1, "isArchived": true } },
                             "error": null,
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
@@ -86,7 +86,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> saveArchiveArtist(
-      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 userId", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
       HttpServletRequest request);
 
@@ -101,7 +101,7 @@ public interface ArchiveArtistControllerDocs {
                           """
                           {
                             "resultType": "SUCCESS",
-                            "success": { "data": { "artistId": 1, "isArchived": false } },
+                            "success": { "data": { "artistUserId": 1, "isArchived": false } },
                             "error": null,
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
@@ -138,7 +138,7 @@ public interface ArchiveArtistControllerDocs {
                           }
                           """)))
   ApiResponseBody<ArchiveArtistToggleResponse> deleteArchiveArtist(
-      @Parameter(description = "작가 프로필 ID", example = "1") @PathVariable @Positive Long artistId,
+      @Parameter(description = "작가 userId", example = "1") @PathVariable @Positive Long artistId,
       AuthUser user,
       HttpServletRequest request);
 
@@ -164,6 +164,7 @@ public interface ArchiveArtistControllerDocs {
                                     "exhibitionCount": 8,
                                     "archiveArtistId": 2,
                                     "artistId": 5,
+                                    "artistUserId": 12,
                                     "userId": 1,
                                     "savedAt": "2026-07-13T01:49:28"
                                   },
@@ -175,6 +176,7 @@ public interface ArchiveArtistControllerDocs {
                                     "exhibitionCount": 1,
                                     "archiveArtistId": 1,
                                     "artistId": 3,
+                                    "artistUserId": 8,
                                     "userId": 1,
                                     "savedAt": "2026-07-12T15:10:02"
                                   }

@@ -28,7 +28,7 @@ class ArchivePermissionCheckerTest {
   @Test
   void requireOwnerRejectsNonOwnerForArtist() {
     assertErrorCode(
-        () -> checker.requireOwner(ArchiveArtist.create(10L, OWNER_ID), OTHER_USER_ID),
+        () -> checker.requireOwner(ArchiveArtist.create(10L, 20L, OWNER_ID), OTHER_USER_ID),
         ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND);
   }
 

@@ -4,7 +4,8 @@ import com.example.demo.domain.archive.application.result.ArchiveArtistToggleRes
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveArtistRepository;
-import com.example.demo.domain.artist.application.usecase.GetArtistProfileSummariesUseCase;
+import com.example.demo.domain.artist.application.result.ArtistProfileSummaryResult;
+import com.example.demo.domain.artist.application.usecase.GetArtistProfileSummariesByUserIdUseCase;
 import com.example.demo.global.error.BusinessException;
 import java.util.List;
 import java.util.Objects;
@@ -16,36 +17,39 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveArchiveArtistService {
 
   private final ArchiveArtistRepository archiveArtistRepository;
-  private final GetArtistProfileSummariesUseCase getArtistProfileSummariesUseCase;
+  private final GetArtistProfileSummariesByUserIdUseCase getArtistProfileSummariesByUserIdUseCase;
 
   public SaveArchiveArtistService(
       ArchiveArtistRepository archiveArtistRepository,
-      GetArtistProfileSummariesUseCase getArtistProfileSummariesUseCase) {
+      GetArtistProfileSummariesByUserIdUseCase getArtistProfileSummariesByUserIdUseCase) {
     this.archiveArtistRepository = archiveArtistRepository;
-    this.getArtistProfileSummariesUseCase = getArtistProfileSummariesUseCase;
+    this.getArtistProfileSummariesByUserIdUseCase = getArtistProfileSummariesByUserIdUseCase;
   }
 
   @Transactional
   public ArchiveArtistToggleResult saveArchiveArtist(SaveArchiveArtistCommand command) {
     Objects.requireNonNull(command, "command must not be null.");
 
-    boolean artistProfileExists =
-        !getArtistProfileSummariesUseCase
-            .getArtistProfileSummaries(List.of(command.artistProfileId()))
-            .isEmpty();
-    if (!artistProfileExists) {
+    // 프론트가 작가 프로필 화면에서 얻을 수 있는 값이 artistProfileId가 아니라 artistUserId뿐이라,
+    // 여기서 실제 artistProfileId를 조회해 온다 (요청 경로변수 자체는 계속 artistId로 부르지만 값은 artistUserId다).
+    List<ArtistProfileSummaryResult> summaries =
+        getArtistProfileSummariesByUserIdUseCase.getArtistProfileSummariesByUserId(
+            List.of(command.artistUserId()));
+    if (summaries.isEmpty()) {
       throw new BusinessException(ArchiveErrorCode.ARTIST_PROFILE_NOT_FOUND);
     }
+    Long artistProfileId = summaries.getFirst().artistProfileId();
 
     boolean alreadyArchived =
         archiveArtistRepository
-            .findByUserIdAndArtistProfileId(command.userId(), command.artistProfileId())
+            .findByUserIdAndArtistProfileId(command.userId(), artistProfileId)
             .isPresent();
     if (alreadyArchived) {
       throw new BusinessException(ArchiveErrorCode.ALREADY_ARCHIVED_ARTIST);
     }
 
-    ArchiveArtist archiveArtist = ArchiveArtist.create(command.artistProfileId(), command.userId());
+    ArchiveArtist archiveArtist =
+        ArchiveArtist.create(artistProfileId, command.artistUserId(), command.userId());
     try {
       archiveArtistRepository.save(archiveArtist);
     } catch (DataIntegrityViolationException e) {
@@ -58,7 +62,7 @@ public class SaveArchiveArtistService {
       }
       throw e;
     }
-    return new ArchiveArtistToggleResult(command.artistProfileId(), true);
+    return new ArchiveArtistToggleResult(command.artistUserId(), true);
   }
 
   private boolean isUserArtistProfileUniqueConstraintViolation(DataIntegrityViolationException e) {
