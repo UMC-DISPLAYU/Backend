@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
@@ -45,6 +47,8 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheVersion;
 import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.config.CacheConfig;
 import java.math.BigDecimal;
@@ -82,6 +86,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
       GetDuPicksService.class,
       GetClosingSoonDisplaysService.class,
       CreateDisplayService.class,
+      ArtistPermissionChecker.class,
       UpdateDisplayService.class,
       DisplayPermissionChecker.class,
       DisplayListCacheVersion.class,
@@ -201,13 +206,27 @@ class DisplayCacheIntegrationTest {
   @Test
   void createDisplayEvictsDisplayListCachesAfterCommit() {
     seedDisplayListCaches();
-    when(userRepository.findById(1L)).thenReturn(Optional.of(User.builder().name("팀장").build()));
+    when(userRepository.findById(1L))
+        .thenReturn(Optional.of(User.builder().name("팀장").isVerified(true).build()));
     when(displayRepository.save(any(Display.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     createDisplayService.createDisplay(createDisplayCommand());
 
     assertDisplayListCachesEmpty();
+  }
+
+  @Test
+  void createDisplayRejectsUnverifiedUser() {
+    when(userRepository.findById(1L))
+        .thenReturn(Optional.of(User.builder().isVerified(false).build()));
+
+    assertThatThrownBy(() -> createDisplayService.createDisplay(createDisplayCommand()))
+        .isInstanceOfSatisfying(
+            UserException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(UserErrorCode.ARTIST_VERIFICATION_REQUIRED));
   }
 
   @Test
