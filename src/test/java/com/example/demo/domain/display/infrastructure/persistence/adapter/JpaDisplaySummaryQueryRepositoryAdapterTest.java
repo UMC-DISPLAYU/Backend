@@ -87,6 +87,25 @@ class JpaDisplaySummaryQueryRepositoryAdapterTest {
   }
 
   @Test
+  void findByDisplayIdInReturnsOnlyPublishedDisplays() {
+    Display published =
+        display("공개 전시", "전시장", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 10));
+    Display draft =
+        draftDisplay("초안 전시", "전시장", LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 10));
+    Display deleted = display("삭제 전시", "전시장", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10));
+    deleted.delete();
+    jpaRepository.saveAllAndFlush(List.of(published, draft, deleted));
+
+    List<DisplaySummaryQueryResult> results =
+        queryRepository.findByDisplayIdIn(
+            List.of(published.getId(), draft.getId(), deleted.getId()));
+
+    assertThat(results)
+        .extracting(DisplaySummaryQueryResult::displayId)
+        .containsExactly(published.getId());
+  }
+
+  @Test
   void findByDisplayIdInReturnsEmptyWhenIdsAreEmpty() {
     List<DisplaySummaryQueryResult> results = queryRepository.findByDisplayIdIn(List.of());
 
@@ -94,6 +113,13 @@ class JpaDisplaySummaryQueryRepositoryAdapterTest {
   }
 
   private static Display display(
+      String title, String placeName, LocalDate startDate, LocalDate endDate) {
+    Display display = draftDisplay(title, placeName, startDate, endDate);
+    display.publish();
+    return display;
+  }
+
+  private static Display draftDisplay(
       String title, String placeName, LocalDate startDate, LocalDate endDate) {
     return Display.create(
         new UserId(1L),

@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -132,6 +133,76 @@ class DisplayControllerStatusTest {
         .andExpect(status().isMethodNotAllowed())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("METHOD_NOT_ALLOWED"));
+  }
+
+  @Test
+  void deleteDisplayMarksDisplayDeletedWhenRequesterIsTeamLeader() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.publish();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data").doesNotExist());
+
+    displayJpaRepository.flush();
+    Display deletedDisplay = displayJpaRepository.findById(display.getId()).orElseThrow();
+    org.assertj.core.api.Assertions.assertThat(deletedDisplay.isDeleted()).isTrue();
+  }
+
+  @Test
+  void deleteDisplayReturnsForbiddenWhenRequesterIsNotTeamLeader() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.publish();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  void deleteDisplayReturnsDisplayNotFoundWhenAlreadyDeleted() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.delete();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_NOT_FOUND"));
+  }
+
+  @Test
+  void deletedDisplayIsNotReturnedByDetailEvenForTeamLeader() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.publish();
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
   }
 
   @Test

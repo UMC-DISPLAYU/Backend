@@ -125,6 +125,8 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
+import com.example.demo.domain.display.application.command.DeleteDisplayCommand;
+import com.example.demo.domain.display.application.command.DeleteDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
 import com.example.demo.domain.display.application.command.HideDisplayCommand;
@@ -201,6 +203,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DisplayController {
 
   private final CreateDisplayService createDisplayService;
+  private final DeleteDisplayService deleteDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
@@ -222,6 +225,7 @@ public class DisplayController {
 
   public DisplayController(
       CreateDisplayService createDisplayService,
+      DeleteDisplayService deleteDisplayService,
       DisplayLikeCommandService displayLikeCommandService,
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
@@ -241,6 +245,7 @@ public class DisplayController {
       ExitDisplayService exitDisplayService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
+    this.deleteDisplayService = deleteDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
@@ -441,6 +446,20 @@ public class DisplayController {
         hideDisplayService.hideDisplay(new HideDisplayCommand(requireUserId(user), displayId));
     result = displayBookmarkEnrichmentService.enrich(result, user.userId());
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @DeleteMapping("/api/v1/display/{displayId}")
+  @Operation(summary = "전시 삭제", description = "전시를 삭제 상태로 전환하고 서비스 노출 대상에서 제외합니다.")
+  @SecurityRequirement(name = "Authorization")
+  public ApiResponseBody<Void> deleteDisplayPermanently(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    validateDisplayId(displayId);
+    deleteDisplayService.deleteDisplay(new DeleteDisplayCommand(requireUserId(user), displayId));
+    return ApiResponseBody.success(null, request);
   }
 
   private void validateDisplayId(Long displayId) {

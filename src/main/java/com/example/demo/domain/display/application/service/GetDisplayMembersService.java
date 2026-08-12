@@ -32,6 +32,7 @@ public class GetDisplayMembersService {
     Display display =
         displayRepository
             .findById(displayId)
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
 
     List<TeamMember> teamMembers =

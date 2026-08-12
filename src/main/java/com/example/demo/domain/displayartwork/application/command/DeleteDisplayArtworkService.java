@@ -27,7 +27,7 @@ public class DeleteDisplayArtworkService {
     DisplayArtwork artwork =
         displayArtworkRepository
             .findById(artworkId)
-            .filter(a -> !a.isDeleted())
+            .filter(a -> !a.isDeleted() && !a.getDisplay().isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 

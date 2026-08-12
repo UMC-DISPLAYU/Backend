@@ -46,6 +46,9 @@ public class AcceptDisplayInvitationService {
     Objects.requireNonNull(command, "command must not be null.");
 
     DisplayInvitation invitation = findInvitationForUpdate(command.invitationId());
+    if (invitation.getDisplay().isDeleted()) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_INVITATION_NOT_FOUND);
+    }
     validateInvitee(invitation, command.requesterUserId());
 
     Long displayId = invitation.getDisplay().getId();

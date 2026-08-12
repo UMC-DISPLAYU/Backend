@@ -53,6 +53,7 @@ public class InviteDisplayMemberService {
     Display display =
         displayRepository
             .findById(command.displayId())
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
 
     displayPermissionChecker.requireInvitationManager(display, command.requesterUserId());

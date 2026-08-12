@@ -38,6 +38,7 @@ public class UpdateDisplayReservationService {
     Display display =
         displayRepository
             .findById(command.displayId())
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
     displayPermissionChecker.requireTeamLeader(display, command.userId());
 
