@@ -45,6 +45,7 @@ public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepos
         .on(QDisplayImageConditions.mainImage(image))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
+            display.deletedAt.isNull(),
             display.location.latitude.between(query.southLatitude(), query.northLatitude()),
             display.location.longitude.between(query.westLongitude(), query.eastLongitude()),
             cursorBefore(query),

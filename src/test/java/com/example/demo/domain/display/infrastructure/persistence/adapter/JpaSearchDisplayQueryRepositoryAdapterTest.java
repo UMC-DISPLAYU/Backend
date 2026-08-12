@@ -100,6 +100,14 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             List.of(DisplayField.DESIGN),
             today.minusDays(1),
             today.plusDays(5));
+    Display deleted =
+        publishedDisplay(
+            "디자인 삭제 전시",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            today.minusDays(1),
+            today.plusDays(5));
+    deleted.delete();
     jpaRepository.saveAllAndFlush(
         List.of(
             first,
@@ -109,7 +117,8 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             differentType,
             differentRegion,
             upcoming,
-            draft));
+            draft,
+            deleted));
 
     List<SearchDisplayQueryResult> results =
         queryRepository.searchDisplays(
@@ -127,7 +136,8 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
         .containsExactly("디자인 졸업전시", "시각 디자인 전시")
-        .doesNotContain("디자인 회화 전시", "회화 졸업전시", "디자인 동아리 전시", "디자인 경기 전시", "디자인 예정 전시", "디자인 초안");
+        .doesNotContain(
+            "디자인 회화 전시", "회화 졸업전시", "디자인 동아리 전시", "디자인 경기 전시", "디자인 예정 전시", "디자인 초안", "디자인 삭제 전시");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
     assertThat(results.getFirst().organization()).isEqualTo("organization");
