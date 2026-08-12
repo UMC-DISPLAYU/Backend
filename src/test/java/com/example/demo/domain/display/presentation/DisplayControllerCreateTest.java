@@ -193,6 +193,7 @@ class DisplayControllerCreateTest {
         .name(name)
         .nickname(name)
         .socialEmail(name + "@displayu.com")
+        .isVerified(true)
         .build();
   }
 
