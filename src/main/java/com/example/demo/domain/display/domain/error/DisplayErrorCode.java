@@ -36,6 +36,7 @@ public enum DisplayErrorCode implements BaseErrorCode {
   INVALID_DISPLAY_PERIOD(HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_PERIOD", "전시 기간이 올바르지 않습니다."),
   DISPLAY_IMAGE_ALREADY_EXISTS(
       HttpStatus.CONFLICT, "DISPLAY_IMAGE_ALREADY_EXISTS", "이미 같은 순서의 활성 전시 이미지가 존재합니다."),
+  DISPLAY_ALREADY_EXISTS(HttpStatus.CONFLICT, "DISPLAY_ALREADY_EXISTS", "이미 존재하는 전시입니다."),
   DISPLAY_CONTENT_PERMISSION_DENIED(
       HttpStatus.FORBIDDEN, "DISPLAY_CONTENT_PERMISSION_DENIED", "전시 콘텐츠를 수정할 권한이 없습니다."),
   DISPLAY_INVITATION_INVITEE_MISMATCH(

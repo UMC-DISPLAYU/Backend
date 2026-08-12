@@ -17,6 +17,8 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
 
   Optional<Display> findByInvitationToken(String invitationToken);
 
+  boolean existsByOwnerUserIdValueAndTitleAndDeletedAtIsNull(Long ownerUserId, String title);
+
   @Query(
       """
       SELECT DISTINCT display
