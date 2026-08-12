@@ -33,7 +33,7 @@ public interface ArchiveArtistControllerDocs {
                           """
                           {
                             "resultType": "SUCCESS",
-                            "success": { "data": { "artistId": 1, "isArchived": true } },
+                            "success": { "data": { "artistUserId": 1, "isArchived": true } },
                             "error": null,
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
@@ -101,7 +101,7 @@ public interface ArchiveArtistControllerDocs {
                           """
                           {
                             "resultType": "SUCCESS",
-                            "success": { "data": { "artistId": 1, "isArchived": false } },
+                            "success": { "data": { "artistUserId": 1, "isArchived": false } },
                             "error": null,
                             "meta": { "timestamp": "2026-07-13T01:49:28", "path": "/api/v1/archives/artists/1" }
                           }
