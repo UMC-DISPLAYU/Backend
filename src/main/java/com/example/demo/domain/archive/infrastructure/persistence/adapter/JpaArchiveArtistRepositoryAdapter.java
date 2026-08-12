@@ -28,6 +28,11 @@ public class JpaArchiveArtistRepositoryAdapter implements ArchiveArtistRepositor
   }
 
   @Override
+  public Optional<ArchiveArtist> findByUserIdAndArtistUserId(Long userId, Long artistUserId) {
+    return jpaRepository.findByUserIdAndArtistUserId(userId, artistUserId);
+  }
+
+  @Override
   public List<ArchiveArtist> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
       Long userId, Long cursorId, int limit) {
     return jpaRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(

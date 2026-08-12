@@ -14,6 +14,8 @@ public interface SpringDataArchiveArtistJpaRepository extends JpaRepository<Arch
 
   Optional<ArchiveArtist> findByUserIdAndArtistProfileId(Long userId, Long artistProfileId);
 
+  Optional<ArchiveArtist> findByUserIdAndArtistUserId(Long userId, Long artistUserId);
+
   @Query(
       """
       SELECT a
