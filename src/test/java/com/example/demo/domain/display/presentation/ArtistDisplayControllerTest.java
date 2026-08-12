@@ -52,7 +52,9 @@ class ArtistDisplayControllerTest {
     Display pendingParticipated =
         published(participatedDisplay(3L, 1L, "미수락 참여 전시", today, today.plusDays(5), false));
     Display selfParticipated =
-        published(participatedDisplay(1L, 1L, "본인 만든 참여 전시", today, today.plusDays(5), true));
+        published(
+            participatedDisplay(
+                1L, 1L, "본인 만든 참여 전시", today.minusDays(1), today.plusDays(5), true));
     displayJpaRepository.saveAllAndFlush(
         List.of(
             publishedCreated,
@@ -67,14 +69,14 @@ class ArtistDisplayControllerTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.createdDisplays.length()").value(2))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].title").value("본인 만든 참여 전시"))
-        .andExpect(jsonPath("$.success.data.createdDisplays[0].isDisplaying").value(true))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].displayStatus").value("DISPLAYING"))
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].postImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
         .andExpect(jsonPath("$.success.data.createdDisplays[1].title").value("공개 만든 전시"))
         .andExpect(jsonPath("$.success.data.participatedDisplays.length()").value(1))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].title").value("공개 참여 전시"))
-        .andExpect(jsonPath("$.success.data.participatedDisplays[0].isDisplaying").value(false));
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"));
   }
 
   @Test

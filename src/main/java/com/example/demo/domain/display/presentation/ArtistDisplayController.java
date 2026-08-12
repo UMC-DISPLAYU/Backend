@@ -33,7 +33,7 @@ public class ArtistDisplayController {
               {
                 "displayId": 1,
                 "title": "디유 졸업전시",
-                "isDisplaying": true,
+                "displayStatus": "DISPLAYING",
                 "startDate": "2026-08-01",
                 "endDate": "2026-08-20",
                 "school": "디유대학교",

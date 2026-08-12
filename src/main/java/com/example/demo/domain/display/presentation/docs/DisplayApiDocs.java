@@ -816,7 +816,7 @@ public final class DisplayApiDocs {
               {
                 "displayId": 1,
                 "title": "내가 만든 전시",
-                "isDisplaying": true,
+                "displayStatus": "DISPLAYING",
                 "startDate": "2026-08-01",
                 "endDate": "2026-08-07",
                 "school": "디유대학교",
@@ -829,7 +829,7 @@ public final class DisplayApiDocs {
               {
                 "displayId": 2,
                 "title": "내가 참여한 전시",
-                "isDisplaying": false,
+                "displayStatus": "ENDED",
                 "startDate": "2026-07-20",
                 "endDate": "2026-07-31",
                 "school": "디유대학교",

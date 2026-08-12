@@ -60,7 +60,7 @@ class DisplayControllerMyDisplayTest {
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].displayId").value(createdDisplay.getId()))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].title").value("내가 만든 전시"))
-        .andExpect(jsonPath("$.success.data.createdDisplays[0].isDisplaying").value(true))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].displayStatus").value("DISPLAYING"))
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].startDate")
                 .value(today.minusDays(1).toString()))
@@ -77,7 +77,7 @@ class DisplayControllerMyDisplayTest {
             jsonPath("$.success.data.participatedDisplays[0].displayId")
                 .value(participatedDisplay.getId()))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].title").value("내가 참여한 전시"))
-        .andExpect(jsonPath("$.success.data.participatedDisplays[0].isDisplaying").value(false));
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"));
   }
 
   @Test
