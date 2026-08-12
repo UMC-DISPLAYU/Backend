@@ -4,6 +4,7 @@ import com.example.demo.domain.display.application.permission.DisplayPermissionC
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.global.error.BusinessException;
@@ -41,6 +42,10 @@ public class HideDisplayService {
             .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
     displayPermissionChecker.requireTeamLeader(display, command.userId());
+
+    if (!display.isPublished()) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_HIDDEN);
+    }
 
     display.changeToDraft();
     displayListCacheEvictionPort.evictAfterCommit();

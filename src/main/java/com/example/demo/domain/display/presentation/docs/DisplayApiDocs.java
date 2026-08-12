@@ -26,17 +26,17 @@ public final class DisplayApiDocs {
 
   public static final String PUBLISH_SUMMARY = "전시 등록";
   public static final String PUBLISH_DESCRIPTION =
-      "전시 팀장 권한을 가진 사용자가 초안 상태의 전시를 발행 상태로 변경합니다. 이미 발행된 전시는 성공 응답을 반환합니다.";
+      "전시 팀장 권한을 가진 사용자가 비공개(DRAFT) 상태의 전시를 공개(PUBLISHED) 상태로 변경합니다. 이미 공개(PUBLISHED) 상태인 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
   public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 등록 요청";
   public static final String PUBLISH_REQUEST_EXAMPLE_NAME = "Display publish request";
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
-  public static final String DELETE_SUMMARY = "전시 삭제";
+  public static final String DELETE_SUMMARY = "전시 비공개 전환";
   public static final String DELETE_DESCRIPTION =
-      "전시 팀장이 삭제 기능으로 전시를 초안(DRAFT) 상태로 변경해 목록/지도/졸업/마감임박 조회에서 노출되지 않게 합니다. 물리 삭제는 하지 않으며, 이미 초안 상태인 전시는 성공 응답을 반환합니다.";
-  public static final String DELETE_SUCCESS_DESCRIPTION = "전시 삭제 성공";
-  public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display delete success";
+      "전시 팀장이 공개(PUBLISHED) 상태의 전시를 비공개(DRAFT) 상태로 변경합니다. 비공개 전환된 전시는 목록/지도/졸업/마감임박 조회에서 노출되지 않습니다. 이미 비공개(DRAFT) 상태인 전시는 DISPLAY_ALREADY_HIDDEN 에러를 반환합니다.";
+  public static final String DELETE_SUCCESS_DESCRIPTION = "전시 비공개 전환 성공";
+  public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display hide success";
 
   public static final String RESERVATION_SUMMARY = "전시 콘텐츠 공개 예약 수정";
   public static final String RESERVATION_DESCRIPTION =

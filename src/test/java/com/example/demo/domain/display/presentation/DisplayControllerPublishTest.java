@@ -61,7 +61,7 @@ class DisplayControllerPublishTest {
   }
 
   @Test
-  void publishDisplayReturnsSuccessWhenDisplayIsAlreadyPublished() throws Exception {
+  void publishDisplayReturnsConflictWhenDisplayIsAlreadyPublished() throws Exception {
     Display display = displayWithTeamMembers();
     display.publish();
     displayJpaRepository.saveAndFlush(display);
@@ -72,9 +72,9 @@ class DisplayControllerPublishTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(publishRequest(display.getId())))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
-        .andExpect(jsonPath("$.success.data.status").value("PUBLISHED"));
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_ALREADY_PUBLISHED"));
   }
 
   @Test

@@ -63,7 +63,7 @@ class DisplayControllerStatusTest {
   }
 
   @Test
-  void hideDisplayReturnsSuccessWhenDisplayIsAlreadyDraft() throws Exception {
+  void hideDisplayReturnsConflictWhenDisplayIsAlreadyDraft() throws Exception {
     Display display = displayWithTeamMembers();
     displayJpaRepository.saveAndFlush(display);
 
@@ -71,9 +71,9 @@ class DisplayControllerStatusTest {
         .perform(
             patch("/api/v1/display/{displayId}/draft", display.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
-        .andExpect(jsonPath("$.success.data.status").value("DRAFT"));
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_ALREADY_HIDDEN"));
   }
 
   @Test
