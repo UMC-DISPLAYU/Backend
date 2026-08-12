@@ -33,7 +33,6 @@ class SecurityConfigTest {
         "/api/v1/users/search",
         "/api/v1/lounge/me/posts",
         "/api/v1/display/me",
-        "/api/v1/display/1/members",
         "/api/v1/display-invitations",
         "/api/v1/display-invitations/me",
         "/api/v1/artworks/1/edit",
@@ -51,6 +50,16 @@ class SecurityConfigTest {
   void permitsDisplayReviewHeadRequestWithoutAuthentication(String path) throws Exception {
     mockMvc
         .perform(head(path))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
+  }
+
+  @Test
+  void permitsDisplayMembersRequestWithoutAuthentication() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/display/1/members"))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
+    mockMvc
+        .perform(head("/api/v1/display/1/members"))
         .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
   }
 
