@@ -1,14 +1,33 @@
 package com.example.demo.domain.display.domain.vo;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.DisplayPeriodStatus;
+import com.example.demo.global.error.BusinessException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
 
 class DisplayPeriodTest {
+
+  @Test
+  void constructorRejectsEndTimeBeforeStartTimeOnSameDate() {
+    assertThatThrownBy(
+            () ->
+                new DisplayPeriod(
+                    LocalDate.of(2026, 8, 12),
+                    LocalDate.of(2026, 8, 12),
+                    LocalTime.of(18, 0),
+                    LocalTime.of(9, 0)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.INVALID_DISPLAY_PERIOD));
+  }
 
   @Test
   void statusAtReturnsUpcomingBeforeStartTimeOnStartDate() {

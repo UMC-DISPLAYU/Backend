@@ -1,6 +1,8 @@
 package com.example.demo.domain.display.domain.vo;
 
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.DisplayPeriodStatus;
+import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,8 +28,10 @@ public class DisplayPeriod {
     Objects.requireNonNull(startTime, "startTime must not be null.");
     Objects.requireNonNull(endTime, "endTime must not be null.");
 
-    if (endDate.isBefore(startDate)) {
-      throw new IllegalArgumentException("endDate must not be before startDate.");
+    LocalDateTime startedAt = LocalDateTime.of(startDate, startTime);
+    LocalDateTime endedAt = LocalDateTime.of(endDate, endTime);
+    if (endedAt.isBefore(startedAt)) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_PERIOD);
     }
 
     this.startDate = startDate;
