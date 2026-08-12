@@ -253,7 +253,7 @@ public class DisplayPresentationMapper {
     return new MyDisplayListResponse.MyDisplayResponse(
         result.displayId(),
         result.title(),
-        result.isDisplaying(),
+        result.displayStatus(),
         result.startDate(),
         result.endDate(),
         result.school(),

@@ -9,7 +9,7 @@ public record MyDisplayListResponse(
   public record MyDisplayResponse(
       Long displayId,
       String title,
-      boolean isDisplaying,
+      String displayStatus,
       LocalDate startDate,
       LocalDate endDate,
       String school,
