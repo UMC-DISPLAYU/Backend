@@ -7,9 +7,6 @@ import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChangeNicknameService {
 
   private final UserRepository userRepository;
-  private final Clock clock;
 
   @Transactional
   public ChangeNicknameResult execute(ChangeNicknameCommand command) {
@@ -35,7 +31,7 @@ public class ChangeNicknameService {
 
   public ChangeNicknameResult changeNickname(User user, Nickname nickname) {
     if (Objects.equals(user.getNickname(), nickname.value())) {
-      return new ChangeNicknameResult(user.getNickname(), user.getNextNicknameChangeAvailableAt());
+      return new ChangeNicknameResult(user.getNickname());
     }
 
     if (userRepository.existsByNickname(nickname.value())) {
@@ -43,12 +39,11 @@ public class ChangeNicknameService {
     }
 
     try {
-      LocalDateTime nextChangeAvailableAt =
-          user.changeNickname(nickname, LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
+      user.changeNickname(nickname);
 
       userRepository.flush();
 
-      return new ChangeNicknameResult(nickname.value(), nextChangeAvailableAt);
+      return new ChangeNicknameResult(nickname.value());
 
     } catch (DataIntegrityViolationException e) {
       throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
