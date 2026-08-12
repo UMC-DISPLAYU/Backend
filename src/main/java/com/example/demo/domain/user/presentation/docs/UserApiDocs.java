@@ -88,8 +88,7 @@ public final class UserApiDocs {
         "resultType": "SUCCESS",
         "success": {
           "data": {
-            "nickname": "User2",
-            "nextNicknameChangeAvailableAt": "2026-08-18T20:00:00"
+            "nickname": "User2"
           }
         },
         "error": null,
@@ -177,15 +176,6 @@ public final class UserApiDocs {
       {
         "resultType": "FAIL", "success": null,
         "error": { "code": "DUPLICATE_NICKNAME", "message": "이미 사용 중인 닉네임입니다.", "details": null },
-        "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
-      }
-      """;
-
-  public static final String NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE =
-      """
-      {
-        "resultType": "FAIL", "success": null,
-        "error": { "code": "NICKNAME_CHANGE_NOT_ALLOWED", "message": "마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.", "details": null },
         "meta": { "timestamp": "2026-07-19T20:00:00", "path": "/api/v1/users/me/nickname" }
       }
       """;

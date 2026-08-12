@@ -24,7 +24,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "User")
 public class User extends BaseTimeEntity {
 
-  private static final long NICKNAME_CHANGE_INTERVAL_DAYS = 30;
   private static final String WITHDRAWN_NICKNAME_PREFIX = "deleted_";
 
   @Id
@@ -87,20 +86,8 @@ public class User extends BaseTimeEntity {
     this.deletedAt = withdrawnAt;
   }
 
-  public LocalDateTime changeNickname(Nickname nickname, LocalDateTime changedAt) {
-    LocalDateTime nextChangeAvailableAt = getNextNicknameChangeAvailableAt();
-    if (nextChangeAvailableAt != null && changedAt.isBefore(nextChangeAvailableAt)) {
-      throw new UserException(UserErrorCode.NICKNAME_CHANGE_NOT_ALLOWED);
-    }
+  public void changeNickname(Nickname nickname) {
     this.nickname = nickname.value();
-    this.nicknameChangeAt = changedAt;
-    return changedAt.plusDays(NICKNAME_CHANGE_INTERVAL_DAYS);
-  }
-
-  public LocalDateTime getNextNicknameChangeAvailableAt() {
-    return nicknameChangeAt == null
-        ? null
-        : nicknameChangeAt.plusDays(NICKNAME_CHANGE_INTERVAL_DAYS);
   }
 
   public void changeProfileImage(String profileImageUrl) {

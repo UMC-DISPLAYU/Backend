@@ -12,21 +12,15 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class UpdateMyProfileServiceTest {
 
   private static final Long USER_ID = 1L;
-  private static final Clock CLOCK =
-      Clock.fixed(Instant.parse("2026-07-21T12:00:00Z"), ZoneId.of("Asia/Seoul"));
-
   private final UserRepository userRepository = mock(UserRepository.class);
   private final ChangeNicknameService changeNicknameService =
-      new ChangeNicknameService(userRepository, CLOCK);
+      new ChangeNicknameService(userRepository);
   private final UpdateMyProfileService service =
       new UpdateMyProfileService(userRepository, changeNicknameService);
 
@@ -52,7 +46,7 @@ class UpdateMyProfileServiceTest {
   }
 
   @Test
-  void removesProfileImageWithoutApplyingNicknamePolicyForSameNickname() {
+  void removesProfileImageWithoutCheckingDuplicateForSameNickname() {
     User user =
         User.builder()
             .id(USER_ID)
