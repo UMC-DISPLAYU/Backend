@@ -29,7 +29,7 @@ public class UserPresentationMapper {
   }
 
   public ChangeNicknameResponse toResponse(ChangeNicknameResult result) {
-    return new ChangeNicknameResponse(result.nickname(), result.nextNicknameChangeAvailableAt());
+    return new ChangeNicknameResponse(result.nickname());
   }
 
   public UpdateMyProfileCommand toCommand(Long userId, UpdateMyProfileRequest request) {

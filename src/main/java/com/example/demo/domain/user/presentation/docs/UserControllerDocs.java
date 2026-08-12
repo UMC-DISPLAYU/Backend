@@ -7,7 +7,6 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.EXPIRED
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
@@ -133,7 +132,6 @@ public interface UserControllerDocs {
 
           - 닉네임은 한글, 영문, 숫자로 2~15자여야 합니다.
           - 공백과 특수문자는 사용할 수 없습니다.
-          - 마지막 닉네임 변경 후 30일이 지나야 다시 변경할 수 있습니다.
           """)
   @ApiResponse(
       responseCode = "200",
@@ -151,14 +149,11 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "형식 오류", value = INVALID_NICKNAME_FORMAT_EXAMPLE)))
   @ApiResponse(
       responseCode = "409",
-      description = "닉네임 중복 또는 변경 주기 제한",
+      description = "닉네임 중복",
       content =
           @Content(
               mediaType = "application/json",
-              examples = {
-                @ExampleObject(name = "닉네임 중복", value = DUPLICATE_NICKNAME_EXAMPLE),
-                @ExampleObject(name = "변경 주기 제한", value = NICKNAME_CHANGE_NOT_ALLOWED_EXAMPLE)
-              }))
+              examples = @ExampleObject(name = "닉네임 중복", value = DUPLICATE_NICKNAME_EXAMPLE)))
   @ApiResponse(
       responseCode = "404",
       description = "사용자 없음",
