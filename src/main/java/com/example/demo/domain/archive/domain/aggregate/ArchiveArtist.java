@@ -30,8 +30,9 @@ public class ArchiveArtist {
   // 저장 시점에 조회해 둔, 저장 대상 작가 본인의 userId (참조 무결성 없음, 조회 편의용 비정규화 컬럼).
   // 취소(delete) 시 ArtistProfile을 다시 조회하지 않고 이 값으로 바로 찾기 위해 존재한다 —
   // 그래야 작가가 이후 프로필을 삭제해도 저장했던 사용자가 계속 취소할 수 있다.
-  // 이 컬럼이 추가되기 전에 저장된 레코드는 null일 수 있다.
-  @Column private Long artistUserId;
+  // 이 컬럼이 추가되기 전에 저장된 레코드는 마이그레이션 시점에 백필됨.
+  @Column(nullable = false)
+  private Long artistUserId;
 
   @Column(nullable = false)
   private Long userId;

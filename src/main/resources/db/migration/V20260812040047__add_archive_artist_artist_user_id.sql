@@ -9,6 +9,10 @@ update DisplayU.ArchiveArtist aa
 set aa.artistUserId = ap.userId
 where aa.artistUserId is null;
 
+-- 백필로 모든 행이 채워졌으므로, 이후 앱 코드 실수로 NULL이 다시 저장되는 것을 DB 차원에서 막는다.
+alter table DisplayU.ArchiveArtist
+    modify column artistUserId bigint not null;
+
 alter table DisplayU.ArchiveArtist
     add constraint FK_ARCHIVEARTIST_ARTISTUSER
         foreign key (artistUserId) references DisplayU.User (userId);
