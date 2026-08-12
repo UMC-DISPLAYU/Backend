@@ -1,7 +1,9 @@
 package com.example.demo.domain.display.domain.vo;
 
+import com.example.demo.domain.display.domain.type.DisplayPeriodStatus;
 import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 import lombok.EqualsAndHashCode;
@@ -48,5 +50,19 @@ public class DisplayPeriod {
 
   public LocalTime endTime() {
     return endTime;
+  }
+
+  public DisplayPeriodStatus statusAt(LocalDateTime now) {
+    Objects.requireNonNull(now, "now must not be null.");
+
+    LocalDateTime startedAt = LocalDateTime.of(startDate, startTime);
+    LocalDateTime endedAt = LocalDateTime.of(endDate, endTime);
+    if (now.isBefore(startedAt)) {
+      return DisplayPeriodStatus.UPCOMING;
+    }
+    if (now.isAfter(endedAt)) {
+      return DisplayPeriodStatus.ENDED;
+    }
+    return DisplayPeriodStatus.DISPLAYING;
   }
 }

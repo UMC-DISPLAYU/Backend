@@ -16,6 +16,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -40,15 +41,47 @@ class GetArtistDisplaysServiceTest {
     assertThat(repository.publishedParticipatedUserId).isEqualTo(1L);
     assertThat(result.createdDisplays()).hasSize(1);
     assertThat(result.createdDisplays().getFirst().title()).isEqualTo("만든 전시");
-    assertThat(result.createdDisplays().getFirst().isDisplaying()).isTrue();
+    assertThat(result.createdDisplays().getFirst().displayStatus()).isEqualTo("DISPLAYING");
     assertThat(result.createdDisplays().getFirst().postImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
     assertThat(result.participatedDisplays()).hasSize(1);
-    assertThat(result.participatedDisplays().getFirst().isDisplaying()).isFalse();
+    assertThat(result.participatedDisplays().getFirst().displayStatus()).isEqualTo("ENDED");
+  }
+
+  @Test
+  void getArtistDisplaysReturnsUpcomingBeforeStartTimeOnStartDate() {
+    Clock clock = Clock.fixed(Instant.parse("2026-08-11T16:00:00Z"), ZoneId.of("Asia/Seoul"));
+    FakeDisplayRepository repository =
+        new FakeDisplayRepository(
+            List.of(
+                display(
+                    1L,
+                    "오픈 전 전시",
+                    LocalDate.of(2026, 8, 12),
+                    LocalDate.of(2026, 8, 20),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(18, 0))),
+            List.of());
+    GetArtistDisplaysService service = new GetArtistDisplaysService(repository, clock);
+
+    MyDisplayListResult result = service.getArtistDisplays(1L);
+
+    assertThat(result.createdDisplays().getFirst().displayStatus()).isEqualTo("UPCOMING");
   }
 
   private static Display display(
       Long ownerUserId, String title, LocalDate startDate, LocalDate endDate) {
+    return display(
+        ownerUserId, title, startDate, endDate, LocalTime.of(10, 0), LocalTime.of(18, 0));
+  }
+
+  private static Display display(
+      Long ownerUserId,
+      String title,
+      LocalDate startDate,
+      LocalDate endDate,
+      LocalTime startTime,
+      LocalTime endTime) {
     return Display.create(
         new UserId(ownerUserId),
         title,
@@ -62,7 +95,7 @@ class GetArtistDisplaysServiceTest {
         "디자인학부",
         DisplayType.GRADUATION,
         List.of(DisplayField.DESIGN),
-        new DisplayPeriod(startDate, endDate, LocalTime.of(10, 0), LocalTime.of(18, 0)),
+        new DisplayPeriod(startDate, endDate, startTime, endTime),
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION);
   }

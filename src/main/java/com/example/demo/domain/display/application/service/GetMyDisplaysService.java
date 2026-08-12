@@ -3,7 +3,7 @@ package com.example.demo.domain.display.application.service;
 import com.example.demo.domain.display.application.result.MyDisplayListResult;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import java.time.Clock;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +23,6 @@ public class GetMyDisplaysService {
     return MyDisplayListResult.from(
         displayRepository.findCreatedDisplaysByUserId(userId),
         displayRepository.findParticipatedDisplaysByUserId(userId),
-        LocalDate.now(clock));
+        LocalDateTime.now(clock));
   }
 }
