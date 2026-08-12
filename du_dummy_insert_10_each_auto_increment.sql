@@ -4,7 +4,7 @@
 -- PK columns are omitted intentionally.
 -- Assumption: tables are empty, so generated IDs start from 1 and child FK values 1~10 match parent rows.
 
-INSERT INTO `User` (`provider`, `providerId`, `name`, `nickname`, `isVerified`, `socialEmail`, `schoolEmail`, `univ_name`, `createdAt`, `updatedAt`, `deletedAt`, `nicknameChangeAt`) VALUES
+INSERT INTO `User` (`provider`, `providerId`, `name`, `nickname`, `isVerified`, `socialEmail`, `schoolEmail`, `univName`, `createdAt`, `updatedAt`, `deletedAt`, `nicknameChangeAt`) VALUES
 ('Google', 'google-0001', '김도윤', 'doyun', 1, 'doyun@example.com', 'doyun@univ.ac.kr', '중앙대학교', '2026-07-01 09:00:00', '2026-07-01 09:00:00', NULL, '2026-07-01 09:00:00'),
 ('Kakao', 'kakao-0002', '이서연', 'seoyeon', 1, 'seoyeon@example.com', 'seoyeon@univ.ac.kr', '홍익대학교', '2026-07-01 09:10:00', '2026-07-01 09:10:00', NULL, '2026-07-01 09:10:00'),
 ('Google', 'google-0003', '박민준', 'minjun', 0, 'minjun@example.com', NULL, NULL, '2026-07-01 09:20:00', '2026-07-01 09:20:00', NULL, '2026-07-01 09:20:00'),
