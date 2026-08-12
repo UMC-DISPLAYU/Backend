@@ -89,7 +89,7 @@ class SaveArchivePersonalWorkServiceTest {
             new DataIntegrityViolationException(
                 "duplicate",
                 new RuntimeException(
-                    "Duplicate entry for UQ_ARCHIVEPERSONALWORK_USER_PERSONALARTWORK")));
+                    "Duplicate entry for UQ_ARCHIVEPERSONALWORK_ACTIVE_USER_PERSONALARTWORK")));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(

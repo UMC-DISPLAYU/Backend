@@ -11,15 +11,17 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataArchiveWorkJpaRepository extends JpaRepository<ArchiveWork, Long> {
 
-  Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId);
+  Optional<ArchiveWork> findByIdAndUserIdAndDeletedAtIsNull(Long archiveWorkId, Long userId);
 
-  Optional<ArchiveWork> findByUserIdAndDisplayArtworkId(Long userId, Long displayArtworkId);
+  Optional<ArchiveWork> findByUserIdAndDisplayArtworkIdAndDeletedAtIsNull(
+      Long userId, Long displayArtworkId);
 
   @Query(
       """
       SELECT w
       FROM ArchiveWork w
       WHERE w.userId = :userId
+        AND w.deletedAt IS NULL
         AND (
           :cursorSavedAt IS NULL
           OR w.savedAt < :cursorSavedAt

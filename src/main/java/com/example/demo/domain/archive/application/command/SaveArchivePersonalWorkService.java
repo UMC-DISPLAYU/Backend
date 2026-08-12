@@ -62,6 +62,7 @@ public class SaveArchivePersonalWorkService {
   private boolean isUserPersonalArtworkUniqueConstraintViolation(
       DataIntegrityViolationException e) {
     String message = e.getMostSpecificCause().getMessage();
-    return message != null && message.contains("UQ_ARCHIVEPERSONALWORK_USER_PERSONALARTWORK");
+    return message != null
+        && message.contains("UQ_ARCHIVEPERSONALWORK_ACTIVE_USER_PERSONALARTWORK");
   }
 }

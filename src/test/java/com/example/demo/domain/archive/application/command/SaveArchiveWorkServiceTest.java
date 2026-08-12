@@ -81,7 +81,8 @@ class SaveArchiveWorkServiceTest {
         .thenThrow(
             new DataIntegrityViolationException(
                 "duplicate",
-                new RuntimeException("Duplicate entry for UQ_ARCHIVEWORK_USER_DISPLAYARTWORK")));
+                new RuntimeException(
+                    "Duplicate entry for UQ_ARCHIVEWORK_ACTIVE_USER_DISPLAYARTWORK")));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.saveArchiveWork(new SaveArchiveWorkCommand(7L, 200L)))
