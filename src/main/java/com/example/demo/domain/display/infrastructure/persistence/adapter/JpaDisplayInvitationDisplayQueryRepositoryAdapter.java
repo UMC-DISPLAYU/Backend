@@ -46,6 +46,7 @@ public class JpaDisplayInvitationDisplayQueryRepositoryAdapter
         .where(
             invitation.inviteeUserId.value.eq(inviteeUserId),
             invitation.status.eq(DisplayInvitationStatus.PENDING),
+            display.deletedAt.isNull(),
             invitation.deletedAt.isNull())
         .orderBy(invitation.id.desc())
         .fetch();

@@ -22,6 +22,8 @@ public interface DisplayRepository {
 
   List<Display> findAll();
 
+  boolean existsByOwnerUserIdAndTitle(Long ownerUserId, String title);
+
   Display save(Display display);
 
   void flush();

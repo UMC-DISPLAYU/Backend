@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.port.DisplayListCacheEviction
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.service.DisplayContentPublicationService;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.global.error.BusinessException;
@@ -42,8 +43,13 @@ public class PublishDisplayService {
     Display display =
         displayRepository
             .findById(command.displayId())
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
     displayPermissionChecker.requireTeamLeader(display, command.userId());
+
+    if (display.isPublished()) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_PUBLISHED);
+    }
 
     display.publish();
     displayContentPublicationService.publishForDisplay(display.getId());

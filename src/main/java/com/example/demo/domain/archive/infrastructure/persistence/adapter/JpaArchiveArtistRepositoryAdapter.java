@@ -19,17 +19,17 @@ public class JpaArchiveArtistRepositoryAdapter implements ArchiveArtistRepositor
 
   @Override
   public Optional<ArchiveArtist> findByIdAndUserId(Long archiveArtistId, Long userId) {
-    return jpaRepository.findByIdAndUserId(archiveArtistId, userId);
+    return jpaRepository.findByIdAndUserIdAndDeletedAtIsNull(archiveArtistId, userId);
   }
 
   @Override
   public Optional<ArchiveArtist> findByUserIdAndArtistProfileId(Long userId, Long artistProfileId) {
-    return jpaRepository.findByUserIdAndArtistProfileId(userId, artistProfileId);
+    return jpaRepository.findByUserIdAndArtistProfileIdAndDeletedAtIsNull(userId, artistProfileId);
   }
 
   @Override
   public Optional<ArchiveArtist> findByUserIdAndArtistUserId(Long userId, Long artistUserId) {
-    return jpaRepository.findByUserIdAndArtistUserId(userId, artistUserId);
+    return jpaRepository.findByUserIdAndArtistUserIdAndDeletedAtIsNull(userId, artistUserId);
   }
 
   @Override

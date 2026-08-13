@@ -46,6 +46,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE;
@@ -125,6 +130,8 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
 import com.example.demo.domain.display.application.command.CreateDisplayService;
+import com.example.demo.domain.display.application.command.DeleteDisplayCommand;
+import com.example.demo.domain.display.application.command.DeleteDisplayService;
 import com.example.demo.domain.display.application.command.DisplayInvitationCommandService;
 import com.example.demo.domain.display.application.command.DisplayLikeCommandService;
 import com.example.demo.domain.display.application.command.HideDisplayCommand;
@@ -201,6 +208,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DisplayController {
 
   private final CreateDisplayService createDisplayService;
+  private final DeleteDisplayService deleteDisplayService;
   private final DisplayLikeCommandService displayLikeCommandService;
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
@@ -222,6 +230,7 @@ public class DisplayController {
 
   public DisplayController(
       CreateDisplayService createDisplayService,
+      DeleteDisplayService deleteDisplayService,
       DisplayLikeCommandService displayLikeCommandService,
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
@@ -241,6 +250,7 @@ public class DisplayController {
       ExitDisplayService exitDisplayService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
+    this.deleteDisplayService = deleteDisplayService;
     this.displayLikeCommandService = displayLikeCommandService;
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
@@ -418,6 +428,30 @@ public class DisplayController {
   }
 
   @PatchMapping("/api/v1/display/{displayId}/draft")
+  @Operation(summary = HIDE_SUMMARY, description = HIDE_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = HIDE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = HIDE_SUCCESS_EXAMPLE_NAME, value = HIDE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> changeDisplayToDraft(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    validateDisplayId(displayId);
+    DisplayDetailResult result =
+        hideDisplayService.hideDisplay(new HideDisplayCommand(requireUserId(user), displayId));
+    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
+    return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @DeleteMapping("/api/v1/display/{displayId}")
   @Operation(summary = DELETE_SUMMARY, description = DELETE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
@@ -430,17 +464,15 @@ public class DisplayController {
                   @ExampleObject(
                       name = DELETE_SUCCESS_EXAMPLE_NAME,
                       value = DELETE_SUCCESS_EXAMPLE)))
-  public ApiResponseBody<DisplayDetailResponse> deleteDisplay(
+  public ApiResponseBody<Void> deleteDisplay(
       @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest request) {
     validateDisplayId(displayId);
-    DisplayDetailResult result =
-        hideDisplayService.hideDisplay(new HideDisplayCommand(requireUserId(user), displayId));
-    result = displayBookmarkEnrichmentService.enrich(result, user.userId());
-    return ApiResponseBody.success(mapper.toResponse(result), request);
+    deleteDisplayService.deleteDisplay(new DeleteDisplayCommand(requireUserId(user), displayId));
+    return ApiResponseBody.success(null, request);
   }
 
   private void validateDisplayId(Long displayId) {

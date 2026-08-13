@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.infrastructure.persistence.adapter;
 
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.application.query.ArtworkSummaryQueryRepository;
 import com.example.demo.domain.displayartwork.application.query.ArtworkSummaryQueryResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.QDisplayArtwork;
@@ -43,7 +44,11 @@ public class JpaArtworkSummaryQueryRepositoryAdapter implements ArtworkSummaryQu
     return queryFactory
         .select(displayArtwork.id, displayArtwork.artworkName)
         .from(displayArtwork)
-        .where(displayArtwork.id.in(displayArtworkIds), displayArtwork.deletedAt.isNull())
+        .where(
+            displayArtwork.id.in(displayArtworkIds),
+            displayArtwork.deletedAt.isNull(),
+            displayArtwork.display.status.eq(DisplayStatus.PUBLISHED),
+            displayArtwork.display.deletedAt.isNull())
         .fetch()
         .stream()
         .map(

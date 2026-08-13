@@ -160,6 +160,11 @@ class GetArtistDisplaysServiceTest {
     }
 
     @Override
+    public boolean existsByOwnerUserIdAndTitle(Long ownerUserId, String title) {
+      return false;
+    }
+
+    @Override
     public Display save(Display display) {
       return display;
     }

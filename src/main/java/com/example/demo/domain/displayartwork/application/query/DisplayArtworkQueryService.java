@@ -67,7 +67,7 @@ public class DisplayArtworkQueryService {
     DisplayArtwork displayArtwork =
         displayArtworkRepository
             .findById(displayArtworkId)
-            .filter(artwork -> !artwork.isDeleted())
+            .filter(artwork -> !artwork.isDeleted() && !artwork.getDisplay().isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
     if (!canViewDraft(displayArtwork.getDisplay(), requesterUserId)
@@ -122,7 +122,7 @@ public class DisplayArtworkQueryService {
     DisplayArtwork displayArtwork =
         displayArtworkRepository
             .findById(displayArtworkId)
-            .filter(artwork -> !artwork.isDeleted())
+            .filter(artwork -> !artwork.isDeleted() && !artwork.getDisplay().isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
 
@@ -207,6 +207,7 @@ public class DisplayArtworkQueryService {
     var display =
         displayRepository
             .findById(displayId)
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     List<DisplayArtwork> artworks =
@@ -268,6 +269,9 @@ public class DisplayArtworkQueryService {
   }
 
   private List<DisplayArtwork> findVisibleArtworks(Display display, Long requesterUserId) {
+    if (display.isDeleted()) {
+      throw new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND);
+    }
     if (canViewDraft(display, requesterUserId)) {
       return displayArtworkRepository.findAllByDisplayId(display.getId());
     }

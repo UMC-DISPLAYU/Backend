@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.port.DisplayListCacheEviction
 import com.example.demo.domain.display.application.result.CreateDisplayResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.TeamMember;
+import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -14,6 +15,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.global.error.BusinessException;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +48,10 @@ public class CreateDisplayService {
             .findById(command.ownerUserId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     artistPermissionChecker.requireVerified(user);
+
+    if (displayRepository.existsByOwnerUserIdAndTitle(command.ownerUserId(), command.title())) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_EXISTS);
+    }
 
     Display display =
         Display.create(

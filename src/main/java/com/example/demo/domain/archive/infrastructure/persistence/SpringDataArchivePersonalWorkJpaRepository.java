@@ -12,9 +12,10 @@ import org.springframework.data.repository.query.Param;
 public interface SpringDataArchivePersonalWorkJpaRepository
     extends JpaRepository<ArchivePersonalWork, Long> {
 
-  Optional<ArchivePersonalWork> findByIdAndUserId(Long archivePersonalWorkId, Long userId);
+  Optional<ArchivePersonalWork> findByIdAndUserIdAndDeletedAtIsNull(
+      Long archivePersonalWorkId, Long userId);
 
-  Optional<ArchivePersonalWork> findByUserIdAndPersonalArtworkId(
+  Optional<ArchivePersonalWork> findByUserIdAndPersonalArtworkIdAndDeletedAtIsNull(
       Long userId, Long personalArtworkId);
 
   // signedId(=-id)로 정렬해, ArchiveWork(signedId=+id)와 병합했을 때 동일 userId 내 저장 기록 ID가 겹쳐도
@@ -24,6 +25,7 @@ public interface SpringDataArchivePersonalWorkJpaRepository
       SELECT p
       FROM ArchivePersonalWork p
       WHERE p.userId = :userId
+        AND p.deletedAt IS NULL
         AND (
           :cursorSavedAt IS NULL
           OR p.savedAt < :cursorSavedAt

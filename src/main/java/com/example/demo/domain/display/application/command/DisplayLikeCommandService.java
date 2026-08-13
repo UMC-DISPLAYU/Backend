@@ -62,6 +62,7 @@ public class DisplayLikeCommandService {
   private void validateDisplayExists(Long displayId) {
     displayRepository
         .findById(displayId)
+        .filter(display -> !display.isDeleted())
         .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
   }
 

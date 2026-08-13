@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.application.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,7 +23,7 @@ class DeleteArchivePersonalWorkServiceTest {
       new DeleteArchivePersonalWorkService(archivePersonalWorkRepository);
 
   @Test
-  void deletesArchivePersonalWorkWhenItExists() {
+  void softDeletesArchivePersonalWorkWhenItExists() {
     ArchivePersonalWork archivePersonalWork = ArchivePersonalWork.create(300L, 7L);
     when(archivePersonalWorkRepository.findByUserIdAndPersonalArtworkId(7L, 300L))
         .thenReturn(Optional.of(archivePersonalWork));
@@ -31,7 +32,8 @@ class DeleteArchivePersonalWorkServiceTest {
 
     assertThat(result.personalArtworkId()).isEqualTo(300L);
     assertThat(result.isArchived()).isFalse();
-    verify(archivePersonalWorkRepository).delete(archivePersonalWork);
+    assertThat(archivePersonalWork.isDeleted()).isTrue();
+    verify(archivePersonalWorkRepository, never()).delete(archivePersonalWork);
   }
 
   @Test

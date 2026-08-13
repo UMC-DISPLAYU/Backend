@@ -93,6 +93,7 @@ class JpaArtworkSummaryQueryRepositoryAdapterTest {
                 LocalTime.of(18, 0)),
             ContentOpenPolicy.IMMEDIATELY,
             ContentOpenPolicy.IMMEDIATELY);
+    display.publish();
     entityManager.persist(display);
     entityManager.flush();
     return display.getId();

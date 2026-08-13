@@ -42,6 +42,7 @@ public class GetDisplayByInvitationService {
     String tokenHash = tokenHasher.hash(rawToken);
     return displayRepository
         .findByInvitationToken(tokenHash)
+        .filter(display -> !display.isDeleted())
         .map(
             display -> {
               display.validateInvitationAccessible();

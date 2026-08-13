@@ -70,6 +70,7 @@ public class DisplayInvitationCommandService {
   private Display findDisplay(Long displayId) {
     return displayRepository
         .findById(displayId)
+        .filter(display -> !display.isDeleted())
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 

@@ -57,6 +57,18 @@ class SaveArchiveDisplayServiceTest {
   }
 
   @Test
+  void rejectsWhenDisplayIsNotPublished() {
+    when(getDisplaySummariesUseCase.getDisplaySummaries(List.of(100L))).thenReturn(List.of());
+
+    assertThatExceptionOfType(BusinessException.class)
+        .isThrownBy(() -> service.saveArchiveDisplay(new SaveArchiveDisplayCommand(7L, 100L)))
+        .satisfies(
+            exception ->
+                assertThat(exception.errorCode()).isEqualTo(ArchiveErrorCode.DISPLAY_NOT_FOUND));
+    verify(archiveDisplayRepository, never()).save(any());
+  }
+
+  @Test
   void rejectsWhenAlreadyArchived() {
     when(getDisplaySummariesUseCase.getDisplaySummaries(List.of(100L)))
         .thenReturn(List.of(displaySummary(100L)));
@@ -81,7 +93,7 @@ class SaveArchiveDisplayServiceTest {
         .thenThrow(
             new DataIntegrityViolationException(
                 "duplicate",
-                new RuntimeException("Duplicate entry for UQ_ARCHIVEDISPLAY_USER_DISPLAY")));
+                new RuntimeException("Duplicate entry for UQ_ARCHIVEDISPLAY_ACTIVE_USER_DISPLAY")));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.saveArchiveDisplay(new SaveArchiveDisplayCommand(7L, 100L)))

@@ -32,7 +32,7 @@ public class DeleteArchiveArtistService {
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_ARTIST_NOT_FOUND));
     archivePermissionChecker.requireOwner(archiveArtist, userId);
 
-    archiveArtistRepository.delete(archiveArtist);
+    archiveArtist.delete();
     return new ArchiveArtistToggleResult(artistUserId, false);
   }
 }

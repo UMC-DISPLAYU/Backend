@@ -26,15 +26,21 @@ public final class DisplayApiDocs {
 
   public static final String PUBLISH_SUMMARY = "전시 등록";
   public static final String PUBLISH_DESCRIPTION =
-      "전시 팀장 권한을 가진 사용자가 초안 상태의 전시를 발행 상태로 변경합니다. 이미 발행된 전시는 성공 응답을 반환합니다.";
+      "전시 팀장 권한을 가진 사용자가 비공개(DRAFT) 상태의 전시를 공개(PUBLISHED) 상태로 변경합니다. 이미 공개(PUBLISHED) 상태인 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
   public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 등록 요청";
   public static final String PUBLISH_REQUEST_EXAMPLE_NAME = "Display publish request";
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
+  public static final String HIDE_SUMMARY = "전시 비공개 전환";
+  public static final String HIDE_DESCRIPTION =
+      "전시 팀장이 공개(PUBLISHED) 상태의 전시를 비공개(DRAFT) 상태로 변경합니다. 비공개 전환된 전시는 목록/지도/졸업/마감임박 조회에서 노출되지 않습니다. 이미 비공개(DRAFT) 상태인 전시는 DISPLAY_ALREADY_HIDDEN 에러를 반환합니다.";
+  public static final String HIDE_SUCCESS_DESCRIPTION = "전시 비공개 전환 성공";
+  public static final String HIDE_SUCCESS_EXAMPLE_NAME = "Display hide success";
+
   public static final String DELETE_SUMMARY = "전시 삭제";
   public static final String DELETE_DESCRIPTION =
-      "전시 팀장이 삭제 기능으로 전시를 초안(DRAFT) 상태로 변경해 목록/지도/졸업/마감임박 조회에서 노출되지 않게 합니다. 물리 삭제는 하지 않으며, 이미 초안 상태인 전시는 성공 응답을 반환합니다.";
+      "전시 팀장이 전시를 삭제 상태로 전환하고 서비스 노출 대상에서 제외합니다. 삭제된 전시의 하위 데이터 정리는 비동기 cleanup으로 처리합니다.";
   public static final String DELETE_SUCCESS_DESCRIPTION = "전시 삭제 성공";
   public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display delete success";
 
@@ -441,7 +447,7 @@ public final class DisplayApiDocs {
       }
       """;
 
-  public static final String DELETE_SUCCESS_EXAMPLE =
+  public static final String HIDE_SUCCESS_EXAMPLE =
       """
       {
         "resultType": "SUCCESS",
@@ -487,6 +493,21 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
           "path": "/api/v1/display/12/draft"
+        }
+      }
+      """;
+
+  public static final String DELETE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-13T12:00:00",
+          "path": "/api/v1/display/12"
         }
       }
       """;

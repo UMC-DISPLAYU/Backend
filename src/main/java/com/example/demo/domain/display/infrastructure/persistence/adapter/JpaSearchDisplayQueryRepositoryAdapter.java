@@ -50,6 +50,7 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
         .on(QDisplayImageConditions.mainImage(image))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
+            display.deletedAt.isNull(),
             cursorAfter(query.cursor()),
             searchWordContains(query.searchWord()),
             regionEq(query),

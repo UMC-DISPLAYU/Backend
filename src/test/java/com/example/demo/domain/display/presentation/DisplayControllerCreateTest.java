@@ -106,6 +106,30 @@ class DisplayControllerCreateTest {
   }
 
   @Test
+  void createDisplayReturnsConflictWhenSameOwnerAlreadyHasSameTitle() throws Exception {
+    User user = userJpaRepository.save(user("홍길동"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody("SEOUL")))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody("SEOUL")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_ALREADY_EXISTS"))
+        .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
+  }
+
+  @Test
   void createDisplayReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(

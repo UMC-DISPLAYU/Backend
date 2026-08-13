@@ -42,6 +42,7 @@ public class ReorderDisplayArtworksService {
     Display display =
         displayRepository
             .findById(command.displayId())
+            .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 
     permissionChecker.requireArtworkOrderEditor(requesterUserId, display);

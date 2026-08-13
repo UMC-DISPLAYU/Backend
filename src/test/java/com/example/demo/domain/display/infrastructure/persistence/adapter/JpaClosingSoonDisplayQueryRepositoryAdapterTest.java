@@ -49,14 +49,17 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
     Display second = publishedDisplay("두 번째 전시", today.minusDays(3), today);
     Display draft = draftDisplay("초안 전시", today.minusDays(1), today.plusDays(1));
     Display ended = publishedDisplay("종료된 전시", today.minusDays(10), today.minusDays(1));
-    jpaRepository.saveAllAndFlush(List.of(first, second, draft, ended));
+    Display deleted = publishedDisplay("삭제된 전시", today.minusDays(1), today.plusDays(1));
+    deleted.delete();
+    jpaRepository.saveAllAndFlush(List.of(first, second, draft, ended, deleted));
 
     List<ClosingSoonDisplayQueryResult> results =
         queryRepository.findClosingSoonDisplays(new ClosingSoonDisplayQuery(null, 20), today, 20);
 
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::title)
-        .containsExactly("두 번째 전시", "첫 번째 전시");
+        .containsExactly("두 번째 전시", "첫 번째 전시")
+        .doesNotContain("삭제된 전시");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
   }
