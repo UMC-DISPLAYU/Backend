@@ -26,7 +26,7 @@ public class CreateDisplayReviewReplyService {
     displayReviewValidator.validateReplyImages(command.images());
 
     DisplayReview displayReview =
-        displayReviewValidator.findReviewOrThrow(command.displayReviewId());
+        displayReviewValidator.findReviewIncludingDeletedOrThrow(command.displayReviewId());
 
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
