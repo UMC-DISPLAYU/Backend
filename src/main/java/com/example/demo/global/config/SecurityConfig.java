@@ -126,6 +126,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout")
                     .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/files/presigned-url")
+                    .authenticated()
                     .anyRequest()
                     .permitAll())
         .exceptionHandling(

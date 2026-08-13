@@ -160,6 +160,7 @@ public class DisplayArtworkPresentationMapper {
     return new DisplayArtworkDetailResponse.ExhibitionInfoResponse(
         result.displayId(),
         result.exhibitionTitle(),
+        result.exhibitionSubtitle(),
         result.exhibitionThumbnailUrl(),
         result.exhibitionOrganizer(),
         result.exhibitionPeriod(),

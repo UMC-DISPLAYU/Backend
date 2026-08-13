@@ -94,7 +94,6 @@ public class PersonalArtworkFeelingValidator {
 
   public void validateReplyTarget(
       PersonalArtworkFeeling personalArtworkFeeling, Long personalArtworkId) {
-    validateNotDeleted(personalArtworkFeeling);
     validatePersonalArtworkFeelingBelongsToPersonalArtwork(
         personalArtworkFeeling, personalArtworkId);
   }

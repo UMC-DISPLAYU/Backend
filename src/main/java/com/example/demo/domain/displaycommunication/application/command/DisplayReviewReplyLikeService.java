@@ -53,7 +53,7 @@ public class DisplayReviewReplyLikeService {
     displayReviewValidator.validateUserExists(command.userId());
 
     DisplayReview displayReview =
-        displayReviewValidator.findReviewOrThrow(command.displayReviewId());
+        displayReviewValidator.findReviewIncludingDeletedOrThrow(command.displayReviewId());
     displayReviewValidator.validateReviewTarget(displayReview, command.displayId());
 
     DisplayReviewReply displayReviewReply =

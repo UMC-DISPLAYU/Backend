@@ -81,7 +81,6 @@ public class ArtworkFeelingValidator {
   }
 
   public void validateReplyTarget(ArtworkFeeling artworkFeeling, Long displayArtworkId) {
-    validateNotDeleted(artworkFeeling);
     validateArtworkFeelingBelongsToArtwork(artworkFeeling, displayArtworkId);
   }
 
