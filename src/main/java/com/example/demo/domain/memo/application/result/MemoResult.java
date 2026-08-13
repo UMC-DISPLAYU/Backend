@@ -7,6 +7,7 @@ public record MemoResult(
     Long memoId,
     Long archiveDisplayId,
     Long archiveWorkId,
+    Long archivePersonalWorkId,
     String content,
     LocalDate visitDate,
     LocalDateTime createdAt,

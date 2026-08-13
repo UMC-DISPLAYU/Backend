@@ -58,4 +58,8 @@ public class ArchivePersonalWork {
   public boolean isDeleted() {
     return deletedAt != null;
   }
+
+  public boolean isOwnedBy(Long userId) {
+    return Objects.equals(this.userId, userId);
+  }
 }

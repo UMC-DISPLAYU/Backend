@@ -22,7 +22,7 @@ public record CreateDisplayRequest(
     @NotNull Region region,
     @NotBlank String schoolOrOrganization,
     String departmentOrClub,
-    @NotBlank String qnaAccount,
+    String qnaAccount,
     @NotBlank String displayNickname,
     @Size(max = 50) String contract,
     String subtitle,

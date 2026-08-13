@@ -46,9 +46,9 @@ class DisplayControllerMyDisplayTest {
   @Test
   void getMyDisplaysReturnsCreatedAndParticipatedDisplays() throws Exception {
     LocalDate today = LocalDate.now(clock);
-    Display createdDisplay =
-        displayJpaRepository.saveAndFlush(
-            display(1L, "내가 만든 전시", today.minusDays(1), today.plusDays(3)));
+    Display createdDisplay = display(1L, "내가 만든 전시", today.minusDays(1), today.plusDays(3));
+    createdDisplay.publish();
+    createdDisplay = displayJpaRepository.saveAndFlush(createdDisplay);
     Display participatedDisplay =
         displayJpaRepository.saveAndFlush(
             participatedDisplay(2L, 1L, "내가 참여한 전시", today.minusDays(10), today.minusDays(1)));
@@ -61,6 +61,7 @@ class DisplayControllerMyDisplayTest {
             jsonPath("$.success.data.createdDisplays[0].displayId").value(createdDisplay.getId()))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].title").value("내가 만든 전시"))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].displayStatus").value("DISPLAYING"))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].publishStatus").value("PUBLISHED"))
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].startDate")
                 .value(today.minusDays(1).toString()))
@@ -73,11 +74,14 @@ class DisplayControllerMyDisplayTest {
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].postImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].isLeader").value(true))
         .andExpect(
             jsonPath("$.success.data.participatedDisplays[0].displayId")
                 .value(participatedDisplay.getId()))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].title").value("내가 참여한 전시"))
-        .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"));
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"))
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].publishStatus").value("DRAFT"))
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].isLeader").value(false));
   }
 
   @Test
@@ -104,22 +108,26 @@ class DisplayControllerMyDisplayTest {
 
   private static Display display(
       Long ownerUserId, String title, LocalDate startDate, LocalDate endDate) {
-    return Display.create(
-        new UserId(ownerUserId),
-        title,
-        "https://cdn.displayu.com/posters/main.png",
-        "subtitle",
-        "content",
-        new DisplayLocation("디유 갤러리", bd("37.5513"), bd("126.9248")),
-        "",
-        "",
-        "디유대학교",
-        "디자인학부",
-        DisplayType.GRADUATION,
-        List.of(DisplayField.DESIGN),
-        new DisplayPeriod(startDate, endDate, LocalTime.of(10, 0), LocalTime.of(18, 0)),
-        ContentOpenPolicy.IMMEDIATELY,
-        ContentOpenPolicy.ON_EXHIBITION);
+    Display display =
+        Display.create(
+            new UserId(ownerUserId),
+            title,
+            "https://cdn.displayu.com/posters/main.png",
+            "subtitle",
+            "content",
+            new DisplayLocation("디유 갤러리", bd("37.5513"), bd("126.9248")),
+            "",
+            "",
+            "디유대학교",
+            "디자인학부",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.DESIGN),
+            new DisplayPeriod(startDate, endDate, LocalTime.of(10, 0), LocalTime.of(18, 0)),
+            ContentOpenPolicy.IMMEDIATELY,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.addTeamMember(
+        new TeamMember(null, new UserId(ownerUserId), "팀장", TeamMemberRole.TEAM_LEADER, true));
+    return display;
   }
 
   private static BigDecimal bd(String value) {
