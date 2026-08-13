@@ -50,7 +50,7 @@ public class ArtworkFeelingLikeService {
     artworkFeelingValidator.validateUserExists(command.userId());
 
     ArtworkFeeling artworkFeeling = findFeelingOrThrow(command.feelingId());
-    artworkFeelingValidator.validateReplyTarget(artworkFeeling, command.displayArtworkId());
+    artworkFeelingValidator.validateFeelingTarget(artworkFeeling, command.displayArtworkId());
   }
 
   private ArtworkFeelingLikeResult toResult(ArtworkFeelingLikeSnapshot snapshot) {
