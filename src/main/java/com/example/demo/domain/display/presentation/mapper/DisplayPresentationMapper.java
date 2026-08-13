@@ -254,12 +254,14 @@ public class DisplayPresentationMapper {
         result.displayId(),
         result.title(),
         result.displayStatus(),
+        result.publishStatus(),
         result.startDate(),
         result.endDate(),
         result.school(),
         result.department(),
         result.placeName(),
-        result.postImageUrl());
+        result.postImageUrl(),
+        result.isLeader());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(
