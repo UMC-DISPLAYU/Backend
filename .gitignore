@@ -38,6 +38,7 @@ logs/
 .playwright-mcp/
 verification-screenshots/
 *.png
+!docs/images/readme/*.png
 
 # SSH private keys
 *.pem
