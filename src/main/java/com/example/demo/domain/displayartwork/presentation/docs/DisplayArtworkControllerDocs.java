@@ -343,6 +343,7 @@ public interface DisplayArtworkControllerDocs {
                                 "exhibitionInfo": {
                                   "displayId": 1,
                                   "exhibitionTitle": "FORM 2026",
+                                  "exhibitionSubtitle": "디자인학부 졸업전시",
                                   "exhibitionThumbnailUrl": "https://cdn.displayu.com/posters/form.png",
                                   "exhibitionOrganizer": "디유대학교",
                                   "exhibitionPeriod": "2026.05.28 - 2026.06.05",
