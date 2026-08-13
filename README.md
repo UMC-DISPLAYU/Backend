@@ -47,14 +47,6 @@ DisplayU는 대학생의 전시와 작품을 발견하고, 기록하고, 소통�
 
 <div align="center">
 
-### Contributors
-
-<a href="https://github.com/UMC-DISPLAYU/Backend/graphs/contributors">
-  <img alt="DisplayU contributors" src="https://contrib.rocks/image?repo=UMC-DISPLAYU/Backend" />
-</a>
-
-<br /><br />
-
 **Made with passion by DisplayU Backend Team**
 
 </div>
