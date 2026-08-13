@@ -2,7 +2,9 @@ package com.example.demo.domain.display.application.service;
 
 import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
+import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.repository.DisplayInvitationRepository;
+import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import java.util.List;
@@ -17,11 +19,15 @@ public class GetMyDisplayInvitationsService {
 
   private final DisplayInvitationRepository invitationRepository;
   private final UserRepository userRepository;
+  private final TeamMemberRepository teamMemberRepository;
 
   public GetMyDisplayInvitationsService(
-      DisplayInvitationRepository invitationRepository, UserRepository userRepository) {
+      DisplayInvitationRepository invitationRepository,
+      UserRepository userRepository,
+      TeamMemberRepository teamMemberRepository) {
     this.invitationRepository = invitationRepository;
     this.userRepository = userRepository;
+    this.teamMemberRepository = teamMemberRepository;
   }
 
   @Transactional(readOnly = true)
@@ -36,7 +42,17 @@ public class GetMyDisplayInvitationsService {
                     .toList())
             .stream()
             .collect(Collectors.toMap(User::getId, Function.identity()));
+    Map<Long, String> leaderNamesByDisplayId =
+        teamMemberRepository
+            .findAcceptedLeadersByDisplayIds(
+                invitations.stream().map(invitation -> invitation.getDisplay().getId()).toList())
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    teamMember -> teamMember.getDisplay().getId(),
+                    TeamMember::getDisplayNickname,
+                    (left, right) -> left));
 
-    return MyDisplayInvitationListResult.from(invitations, invitersById);
+    return MyDisplayInvitationListResult.from(invitations, invitersById, leaderNamesByDisplayId);
   }
 }

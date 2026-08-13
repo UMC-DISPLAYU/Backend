@@ -479,6 +479,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.invitations[0].endDate").value("2026-06-05"))
         .andExpect(jsonPath("$.success.data.invitations[0].location").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.invitations[0].userNickname").value("leader"))
+        .andExpect(jsonPath("$.success.data.invitations[0].leaderName").value("전시 리더"))
         .andExpect(jsonPath("$.success.data.invitations[0].title").value("FORM 2026"))
         .andExpect(
             jsonPath("$.success.data.invitations[0].schoolDepartmentName")
@@ -680,11 +681,7 @@ class DisplayMemberInvitationControllerTest {
             ContentOpenPolicy.ON_EXHIBITION);
     display.addTeamMember(
         new TeamMember(
-            null,
-            new UserId(leader.getId()),
-            leader.getNickname(),
-            TeamMemberRole.TEAM_LEADER,
-            true));
+            null, new UserId(leader.getId()), "전시 리더", TeamMemberRole.TEAM_LEADER, true));
     return display;
   }
 
