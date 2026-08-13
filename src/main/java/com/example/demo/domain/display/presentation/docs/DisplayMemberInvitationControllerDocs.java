@@ -153,7 +153,7 @@ public interface DisplayMemberInvitationControllerDocs {
         "success": {
           "data": {
             "displayId": 1,
-            "members": [
+            "memberAccept": [
               {
                 "teamMemberId": 1,
                 "userId": 10,
@@ -162,9 +162,11 @@ public interface DisplayMemberInvitationControllerDocs {
                 "artistVerified": true,
                 "accepted": true,
                 "role": "TEAM_LEADER"
-              },
+              }
+            ],
+            "memberPending": [
               {
-                "teamMemberId": 2,
+                "teamMemberId": null,
                 "userId": 11,
                 "displayNickname": "민지",
                 "loggedIn": true,

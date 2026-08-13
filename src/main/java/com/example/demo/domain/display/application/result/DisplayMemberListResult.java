@@ -2,7 +2,8 @@ package com.example.demo.domain.display.application.result;
 
 import java.util.List;
 
-public record DisplayMemberListResult(Long displayId, List<TeamMemberResult> members) {
+public record DisplayMemberListResult(
+    Long displayId, List<TeamMemberResult> memberAccept, List<TeamMemberResult> memberPending) {
 
   public record TeamMemberResult(
       Long teamMemberId,

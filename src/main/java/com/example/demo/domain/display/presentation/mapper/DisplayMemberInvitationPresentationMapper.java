@@ -59,7 +59,9 @@ public class DisplayMemberInvitationPresentationMapper {
 
   public DisplayMemberListResponse toResponse(DisplayMemberListResult result) {
     return new DisplayMemberListResponse(
-        result.displayId(), result.members().stream().map(this::toResponse).toList());
+        result.displayId(),
+        result.memberAccept().stream().map(this::toResponse).toList(),
+        result.memberPending().stream().map(this::toResponse).toList());
   }
 
   public DisplayMemberListResponse.TeamMemberResponse toResponse(DisplayMemberResult result) {
