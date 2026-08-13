@@ -39,8 +39,21 @@ class DeletePersonalWorkMemoServiceTest {
   }
 
   @Test
-  void rejectsArchivePersonalWorkNotOwnedByUser() {
+  void rejectsWhenArchivePersonalWorkDoesNotExist() {
     when(archivePersonalWorkRepository.findById(10L)).thenReturn(Optional.empty());
+
+    assertThatExceptionOfType(BusinessException.class)
+        .isThrownBy(() -> service.deletePersonalWorkMemo(7L, 10L))
+        .satisfies(
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(MemoErrorCode.ARCHIVE_PERSONAL_WORK_NOT_FOUND));
+  }
+
+  @Test
+  void rejectsArchivePersonalWorkNotOwnedByUser() {
+    ArchivePersonalWork archivePersonalWork = archivePersonalWork(10L, 99L);
+    when(archivePersonalWorkRepository.findById(10L)).thenReturn(Optional.of(archivePersonalWork));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.deletePersonalWorkMemo(7L, 10L))

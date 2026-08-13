@@ -66,8 +66,25 @@ class UpsertPersonalWorkMemoServiceTest {
   }
 
   @Test
-  void rejectsArchivePersonalWorkNotOwnedByUser() {
+  void rejectsWhenArchivePersonalWorkDoesNotExist() {
     when(archivePersonalWorkRepository.findById(10L)).thenReturn(Optional.empty());
+
+    assertThatExceptionOfType(BusinessException.class)
+        .isThrownBy(
+            () ->
+                service.upsertPersonalWorkMemo(
+                    new UpsertPersonalWorkMemoCommand(7L, 10L, "감상", null)))
+        .satisfies(
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(MemoErrorCode.ARCHIVE_PERSONAL_WORK_NOT_FOUND));
+    verify(memoRepository, never()).save(any());
+  }
+
+  @Test
+  void rejectsArchivePersonalWorkNotOwnedByUser() {
+    ArchivePersonalWork archivePersonalWork = archivePersonalWork(10L, 99L);
+    when(archivePersonalWorkRepository.findById(10L)).thenReturn(Optional.of(archivePersonalWork));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(
