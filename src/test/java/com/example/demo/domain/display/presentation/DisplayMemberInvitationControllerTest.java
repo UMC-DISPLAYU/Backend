@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -257,7 +258,7 @@ class DisplayMemberInvitationControllerTest {
     member.verifySchoolEmail("member@school.ac.kr", "중앙대학교");
     member.completeArtistVerification();
     userJpaRepository.save(member);
-    User pending = userJpaRepository.save(user("pending"));
+    User pendingInvitee = userJpaRepository.save(user("pending"));
     User withdrawn = user("withdrawn");
     withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
     userJpaRepository.save(withdrawn);
@@ -266,13 +267,6 @@ class DisplayMemberInvitationControllerTest {
     display.addTeamMember(
         new TeamMember(
             null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
-    display.addTeamMember(
-        new TeamMember(
-            null,
-            new UserId(pending.getId()),
-            pending.getNickname(),
-            TeamMemberRole.TEAM_MEM,
-            false));
     display.addTeamMember(
         new TeamMember(
             null,
@@ -286,6 +280,7 @@ class DisplayMemberInvitationControllerTest {
     exitedMember.softDelete(LocalDateTime.of(2026, 7, 24, 12, 0));
     display.addTeamMember(exitedMember);
     displayJpaRepository.saveAndFlush(display);
+    invite(display.getId(), leader.getId(), pendingInvitee.getId());
 
     mockMvc
         .perform(
@@ -294,19 +289,22 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.members.length()").value(4))
-        .andExpect(jsonPath("$.success.data.members[0].userId").value(leader.getId()))
-        .andExpect(jsonPath("$.success.data.members[0].role").value("TEAM_LEADER"))
-        .andExpect(jsonPath("$.success.data.members[1].userId").value(member.getId()))
-        .andExpect(jsonPath("$.success.data.members[1].loggedIn").value(true))
-        .andExpect(jsonPath("$.success.data.members[1].artistVerified").value(true))
-        .andExpect(jsonPath("$.success.data.members[1].accepted").value(true))
-        .andExpect(jsonPath("$.success.data.members[1].role").value("TEAM_MEM"))
-        .andExpect(jsonPath("$.success.data.members[2].userId").value(pending.getId()))
-        .andExpect(jsonPath("$.success.data.members[2].accepted").value(false))
-        .andExpect(jsonPath("$.success.data.members[3].userId").value(withdrawn.getId()))
-        .andExpect(jsonPath("$.success.data.members[3].loggedIn").value(false))
-        .andExpect(jsonPath("$.success.data.members[3].artistVerified").value(false));
+        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(3))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].userId").value(leader.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].role").value("TEAM_LEADER"))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].userId").value(member.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].loggedIn").value(true))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].artistVerified").value(true))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].accepted").value(true))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].role").value("TEAM_MEM"))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].userId").value(withdrawn.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].loggedIn").value(false))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].artistVerified").value(false))
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(1))
+        .andExpect(jsonPath("$.success.data.memberPending[0].teamMemberId").value(nullValue()))
+        .andExpect(jsonPath("$.success.data.memberPending[0].userId").value(pendingInvitee.getId()))
+        .andExpect(jsonPath("$.success.data.memberPending[0].accepted").value(false))
+        .andExpect(jsonPath("$.success.data.memberPending[0].role").value("TEAM_MEM"));
   }
 
   @Test
@@ -326,7 +324,8 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.members.length()").value(2));
+        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(2))
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(0));
   }
 
   @Test
@@ -339,7 +338,8 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.members.length()").value(1));
+        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(1))
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(0));
   }
 
   @Test
