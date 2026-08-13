@@ -37,6 +37,7 @@ import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -84,7 +85,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
   @Override
   public ApiResponseBody<DisplayArtworkPreviewResponse> getPreview(
       @RequestParam PreviewFilterType type,
-      @RequestParam(required = false) ArtworkType field,
+      @RequestParam(required = false) List<ArtworkType> field,
       @RequestParam(required = false) String school,
       @RequestParam int page,
       @RequestParam int size,
