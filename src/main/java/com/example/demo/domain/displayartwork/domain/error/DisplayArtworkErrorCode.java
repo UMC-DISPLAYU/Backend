@@ -27,6 +27,8 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       "해당 작품을 수정할 권한이 없습니다. (전시 대표자, 작품의 작가, 공동 작업자만 수정 가능)"),
   FORBIDDEN_ARTWORK_ORDER_EDIT(
       HttpStatus.FORBIDDEN, "FORBIDDEN_ARTWORK_ORDER_EDIT", "전시 대표자만 작품 순서를 편집할 수 있습니다."),
+  INVALID_ARTWORK_FIELD_COUNT(
+      HttpStatus.BAD_REQUEST, "INVALID_ARTWORK_FIELD_COUNT", "작품 분야는 1개 이상 2개 이하로 지정해야 합니다."),
   INVALID_ARTWORK_ORDER_LIST(
       HttpStatus.BAD_REQUEST,
       "INVALID_ARTWORK_ORDER_LIST",

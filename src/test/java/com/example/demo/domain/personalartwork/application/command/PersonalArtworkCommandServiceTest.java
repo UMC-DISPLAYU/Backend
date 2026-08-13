@@ -85,7 +85,7 @@ class PersonalArtworkCommandServiceTest {
     return new PersonalArtworkContentCommand(
         "작은 정원",
         "개인 작업으로 제작한 설치 작품입니다.",
-        ArtworkType.COMPLEX,
+        List.of(ArtworkType.COMPLEX),
         2026,
         "Mixed media",
         "100 x 100 cm",
@@ -109,7 +109,7 @@ class PersonalArtworkCommandServiceTest {
         new UserId(OWNER),
         "작은 정원",
         "content",
-        ArtworkType.COMPLEX,
+        List.of(ArtworkType.COMPLEX),
         2026,
         "Mixed media",
         "100 x 100 cm",

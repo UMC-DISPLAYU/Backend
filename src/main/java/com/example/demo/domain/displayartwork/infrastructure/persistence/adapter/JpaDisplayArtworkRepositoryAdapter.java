@@ -54,10 +54,17 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
       PreviewFilterType type, List<ArtworkType> fields, String school, int page, int size) {
     boolean requireGraduation = type == PreviewFilterType.GRADUATION;
     // 빈 목록이 IN에 들어가면 쿼리가 깨지므로, 필터 미선택은 플래그로 분기하고 목록은 참조하지 않는다.
-    boolean ignoreFields = fields == null || fields.isEmpty();
-    List<ArtworkType> effectiveFields = ignoreFields ? List.of(ArtworkType.PAINTING) : fields;
+    // 같은 분야를 두 번 보내면 1개 지정과 같으므로 중복을 제거한 뒤 개수를 센다.
+    List<ArtworkType> distinct = fields == null ? List.of() : fields.stream().distinct().toList();
+    boolean ignoreFields = distinct.isEmpty();
+    List<ArtworkType> effectiveFields = ignoreFields ? List.of(ArtworkType.PAINTING) : distinct;
     return jpaRepository.findPreview(
-        requireGraduation, ignoreFields, effectiveFields, school, PageRequest.of(page, size + 1));
+        requireGraduation,
+        ignoreFields,
+        effectiveFields,
+        effectiveFields.size(),
+        school,
+        PageRequest.of(page, size + 1));
   }
 
   @Override

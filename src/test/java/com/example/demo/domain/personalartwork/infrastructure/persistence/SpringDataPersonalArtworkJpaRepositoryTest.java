@@ -71,7 +71,7 @@ class SpringDataPersonalArtworkJpaRepositoryTest {
         new UserId(ownerUserId),
         artworkName,
         "content",
-        ArtworkType.COMPLEX,
+        List.of(ArtworkType.COMPLEX),
         2026,
         "Mixed media",
         "100 x 100 cm",

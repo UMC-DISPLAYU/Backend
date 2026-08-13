@@ -1,5 +1,6 @@
 package com.example.demo.domain.personalartwork.domain.aggregate;
 
+import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkField;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
 import com.example.demo.domain.personalartwork.domain.error.PersonalArtworkErrorCode;
 import com.example.demo.domain.personalartwork.domain.type.ArtworkImageType;
@@ -65,13 +66,19 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
   @OrderBy("sortOrder ASC")
   private final List<PersonalArtworkImage> images = new ArrayList<>();
 
+  /** 작품 분야. 최대 2개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
+  @OneToMany(mappedBy = "personalArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<PersonalArtworkField> fields = new ArrayList<>();
+
+  private static final int MAX_FIELDS = 2;
+
   protected PersonalArtwork() {}
 
   public static PersonalArtwork create(
       UserId ownerUserId,
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
@@ -79,7 +86,7 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
       List<PersonalArtworkImage> images) {
     PersonalArtwork personalArtwork =
         new PersonalArtwork(
-            ownerUserId, artworkName, content, type, productionYear, materialMedia, size, point);
+            ownerUserId, artworkName, content, types, productionYear, materialMedia, size, point);
     personalArtwork.replaceImages(images);
     return personalArtwork;
   }
@@ -88,13 +95,13 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
       UserId ownerUserId,
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
       String point) {
     this.ownerUserId = Objects.requireNonNull(ownerUserId, "ownerUserId must not be null.");
-    changeContent(artworkName, content, type, productionYear, materialMedia, size, point);
+    changeContent(artworkName, content, types, productionYear, materialMedia, size, point);
   }
 
   // 이미지 목록을 외부에서 직접 수정하지 못하도록 읽기 전용으로 반환한다.
@@ -105,14 +112,15 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
   public void changeContent(
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
       String point) {
     this.artworkName = requireNonBlank(artworkName, "artworkName");
     this.content = content;
-    this.type = Objects.requireNonNull(type, "type must not be null.");
+    // type도 여기서 함께 갱신된다.
+    replaceFields(types);
     this.productionYear = productionYear;
     this.materialMedia = requireNonBlank(materialMedia, "materialMedia");
     this.size = size;
@@ -127,6 +135,34 @@ public class PersonalArtwork extends SoftDeleteBaseEntity {
   }
 
   // PATCH 시 이미지 목록 전체를 교체한다 (기존 이미지는 orphanRemoval로 정리됨).
+  /** 작품 분야를 통째로 교체한다. type 컬럼에는 첫 번째 분야를 그대로 반영해 둘을 어긋나지 않게 유지한다. */
+  public void replaceFields(List<ArtworkType> newFields) {
+    List<ArtworkType> distinct = requireOneOrTwoFields(newFields);
+    fields.clear();
+    distinct.forEach(
+        field -> {
+          PersonalArtworkField artworkField = new PersonalArtworkField(field);
+          artworkField.assignPersonalArtwork(this);
+          fields.add(artworkField);
+        });
+    this.type = distinct.getFirst();
+  }
+
+  public List<ArtworkType> getFieldTypes() {
+    return fields.stream().map(PersonalArtworkField::getField).toList();
+  }
+
+  private static List<ArtworkType> requireOneOrTwoFields(List<ArtworkType> newFields) {
+    if (newFields == null || newFields.isEmpty()) {
+      throw new BusinessException(PersonalArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
+    }
+    List<ArtworkType> distinct = newFields.stream().distinct().toList();
+    if (distinct.size() > MAX_FIELDS) {
+      throw new BusinessException(PersonalArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
+    }
+    return distinct;
+  }
+
   public void replaceImages(List<PersonalArtworkImage> newImages) {
     requireAtLeastOneArtworkImage(newImages);
     images.clear();

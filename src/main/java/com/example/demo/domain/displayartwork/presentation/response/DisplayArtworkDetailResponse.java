@@ -7,6 +7,7 @@ public record DisplayArtworkDetailResponse(
     String artworkName,
     String content,
     String type,
+    List<String> types,
     int productionYear,
     String size,
     String materialMedia,

@@ -217,7 +217,7 @@ class AuthorSetupServicePermissionTest {
         display(),
         "작품명",
         "작품 설명입니다.",
-        ArtworkType.DESIGN,
+        List.of(ArtworkType.DESIGN),
         2026,
         "캔버스",
         "100x100",

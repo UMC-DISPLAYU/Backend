@@ -69,7 +69,7 @@ public class CreateDisplayArtworkService {
             display,
             command.artworkName(),
             command.content(),
-            command.type(),
+            command.types(),
             command.productionYear(),
             command.materialMedia(),
             command.size(),

@@ -46,7 +46,7 @@ public class UpdateDisplayArtworkService {
     artwork.changeContent(
         command.artworkName(),
         command.content(),
-        command.type(),
+        command.types(),
         command.productionYear(),
         command.materialMedia(),
         command.size(),

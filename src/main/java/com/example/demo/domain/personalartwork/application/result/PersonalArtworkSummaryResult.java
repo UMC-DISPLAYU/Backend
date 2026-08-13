@@ -4,12 +4,14 @@ import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
 import com.example.demo.domain.personalartwork.domain.entity.PersonalArtworkImage;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.List;
 
 public record PersonalArtworkSummaryResult(
     Long personalArtworkId,
     String artworkName,
     String thumbnailUrl,
     String type,
+    List<String> types,
     LocalDateTime createdAt) {
 
   public static PersonalArtworkSummaryResult from(PersonalArtwork personalArtwork) {
@@ -18,6 +20,7 @@ public record PersonalArtworkSummaryResult(
         personalArtwork.getArtworkName(),
         findThumbnailUrl(personalArtwork),
         personalArtwork.getType().name(),
+        personalArtwork.getFieldTypes().stream().map(Enum::name).toList(),
         personalArtwork.getCreatedAt());
   }
 

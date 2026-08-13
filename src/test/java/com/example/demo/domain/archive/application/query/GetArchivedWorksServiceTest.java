@@ -68,7 +68,12 @@ class GetArchivedWorksServiceTest {
         .thenReturn(
             List.of(
                 new PersonalArtworkSummaryResult(
-                    300L, "작은 정원", "https://cdn/garden.png", "COMPLEX", LocalDateTime.now())));
+                    300L,
+                    "작은 정원",
+                    "https://cdn/garden.png",
+                    "COMPLEX",
+                    List.of("COMPLEX"),
+                    LocalDateTime.now())));
 
     ArchiveWorkCursorResult result = service.getArchivedWorks(7L, null, 20);
 
