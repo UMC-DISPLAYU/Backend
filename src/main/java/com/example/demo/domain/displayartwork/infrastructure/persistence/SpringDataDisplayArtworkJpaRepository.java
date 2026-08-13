@@ -42,7 +42,13 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       """)
   List<DisplayArtwork> findAllByDisplayId(@Param("displayId") Long displayId);
 
-  /** 대표 작가/공동 작업자 구분 없이 해당 유저가 참여한 출품작을 등록순으로 조회한다. */
+  /**
+   * 해당 유저가 <b>작가로</b> 참여한 출품작을 등록순으로 조회한다.
+   *
+   * <p>대표 작가({@code LEAD_ARTIST})와 공동 작업자({@code CO_AUTHOR})는 포함하고, QnA 답변만 담당하는 전시 대표자({@code
+   * QA_ONLY})는 제외한다. 계정 없는 작가를 대리 등록하면 담당자를 지정하기 위해 대표자에게 {@code QA_ONLY} Creator가 생기는데, 이는 작가로서의
+   * 참여가 아니므로 그 사람의 작가 프로필에 남의 작품이 노출되면 안 된다.
+   */
   @Query(
       """
       SELECT artwork
@@ -55,6 +61,7 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
           SELECT creator.displayArtworkId
           FROM Creator creator
           WHERE creator.userId = :userId
+            AND creator.role <> com.example.demo.domain.displayartwork.domain.type.CreatorRole.QA_ONLY
         )
       ORDER BY artwork.createdAt ASC, artwork.id ASC
       """)
