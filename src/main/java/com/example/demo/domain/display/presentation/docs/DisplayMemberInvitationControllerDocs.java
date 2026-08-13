@@ -3,9 +3,9 @@ package com.example.demo.domain.display.presentation.docs;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
-import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -143,7 +143,7 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "Unauthorized", value = UNAUTHORIZED_EXAMPLE)))
-  ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
+  ApiResponseBody<DisplayInvitationDisplayResponse> getInvitationDisplays(
       AuthUser user, HttpServletRequest httpRequest);
 
   String DISPLAY_MEMBERS_SUCCESS_EXAMPLE =
@@ -319,8 +319,9 @@ public interface DisplayMemberInvitationControllerDocs {
                 "startDate": "2026-05-28",
                 "endDate": "2026-06-05",
                 "location": "서울시 종로구",
-                "leaderName": "도현",
+                "userNickname": "도현",
                 "title": "FORM 2026",
+                "schoolDepartmentName": "중앙대학교 디자인학부",
                 "placeName": "디유 갤러리"
               }
             ]

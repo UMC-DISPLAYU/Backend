@@ -3,17 +3,20 @@ package com.example.demo.domain.display.application.result;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
-import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
-import com.example.demo.domain.display.domain.type.TeamMemberRole;
+import com.example.demo.domain.user.domain.aggregate.User;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public record MyDisplayInvitationListResult(List<InvitationResult> invitations) {
 
-  public static MyDisplayInvitationListResult from(List<DisplayInvitation> invitations) {
+  public static MyDisplayInvitationListResult from(
+      List<DisplayInvitation> invitations, Map<Long, User> invitersById) {
     return new MyDisplayInvitationListResult(
-        invitations.stream().map(InvitationResult::from).toList());
+        invitations.stream()
+            .map(invitation -> InvitationResult.from(invitation, invitersById))
+            .toList());
   }
 
   public record InvitationResult(
@@ -23,12 +26,16 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
       LocalDate startDate,
       LocalDate endDate,
       String location,
-      String leaderName,
+      String userNickname,
       String title,
+      String school,
+      String department,
       String placeName) {
 
-    private static InvitationResult from(DisplayInvitation invitation) {
+    private static InvitationResult from(
+        DisplayInvitation invitation, Map<Long, User> invitersById) {
       Display display = invitation.getDisplay();
+      User inviter = invitersById.get(invitation.getInviterUserId().value());
       return new InvitationResult(
           invitation.getId(),
           display.getId(),
@@ -36,8 +43,10 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           display.getPeriod().startDate(),
           display.getPeriod().endDate(),
           display.getRegion().name(),
-          leaderName(display),
+          inviter != null ? inviter.getNickname() : "",
           display.getTitle(),
+          display.getOrganization(),
+          display.getDepartment(),
           display.getLocation().placeName());
     }
 
@@ -47,15 +56,6 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           .filter(image -> !image.isDeleted())
           .findFirst()
           .map(DisplayImage::getImageUrl)
-          .orElse(null);
-    }
-
-    private static String leaderName(Display display) {
-      return display.getTeamMembers().stream()
-          .filter(TeamMember::isAccepted)
-          .filter(teamMember -> teamMember.getRole() == TeamMemberRole.TEAM_LEADER)
-          .findFirst()
-          .map(TeamMember::getDisplayNickname)
           .orElse(null);
     }
   }

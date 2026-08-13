@@ -16,9 +16,9 @@ import com.example.demo.domain.display.presentation.mapper.DisplayMemberInvitati
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
-import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -124,11 +124,11 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
 
   @Override
   @GetMapping("/display-invitations")
-  public ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
+  public ApiResponseBody<DisplayInvitationDisplayResponse> getInvitationDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     GraduationDisplayResult result =
         getDisplayInvitationDisplaysService.getInvitations(requireUserId(user));
-    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+    return ApiResponseBody.success(mapper.toInvitationDisplayResponse(result), httpRequest);
   }
 
   private Long requireUserId(AuthUser user) {

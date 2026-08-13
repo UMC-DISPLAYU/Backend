@@ -478,8 +478,11 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.invitations[0].startDate").value("2026-05-28"))
         .andExpect(jsonPath("$.success.data.invitations[0].endDate").value("2026-06-05"))
         .andExpect(jsonPath("$.success.data.invitations[0].location").value("SEOUL"))
-        .andExpect(jsonPath("$.success.data.invitations[0].leaderName").value("leader"))
+        .andExpect(jsonPath("$.success.data.invitations[0].userNickname").value("leader"))
         .andExpect(jsonPath("$.success.data.invitations[0].title").value("FORM 2026"))
+        .andExpect(
+            jsonPath("$.success.data.invitations[0].schoolDepartmentName")
+                .value("organization department"))
         .andExpect(jsonPath("$.success.data.invitations[0].placeName").value("전시장"));
   }
 
