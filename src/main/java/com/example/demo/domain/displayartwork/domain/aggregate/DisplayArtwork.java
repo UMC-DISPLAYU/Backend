@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.domain.aggregate;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.displayartwork.domain.entity.ArtworkField;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
@@ -79,13 +80,20 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @BatchSize(size = 50)
   private final List<ArtworkImage> images = new ArrayList<>();
 
+  /** 작품 분야. 최대 2개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
+  @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
+  private final List<ArtworkField> fields = new ArrayList<>();
+
+  private static final int MAX_FIELDS = 2;
+
   protected DisplayArtwork() {}
 
   public static DisplayArtwork create(
       Display display,
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
@@ -97,7 +105,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
         display,
         artworkName,
         content,
-        type,
+        types,
         productionYear,
         materialMedia,
         size,
@@ -112,7 +120,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       Display display,
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
@@ -126,7 +134,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
             display,
             artworkName,
             content,
-            type,
+            types,
             productionYear,
             materialMedia,
             size,
@@ -142,7 +150,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       Display display,
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
@@ -151,7 +159,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       Long registeredByUserId,
       DisplayArtworkStatus status) {
     this.display = Objects.requireNonNull(display, "display must not be null.");
-    changeContent(artworkName, content, type, productionYear, materialMedia, size, point);
+    changeContent(artworkName, content, types, productionYear, materialMedia, size, point);
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
     this.registeredByUserId =
         Objects.requireNonNull(registeredByUserId, "registeredByUserId must not be null.");
@@ -165,7 +173,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   public void changeContent(
       String artworkName,
       String content,
-      ArtworkType type,
+      List<ArtworkType> types,
       int productionYear,
       String materialMedia,
       String size,
@@ -173,7 +181,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     // 작품설명/규격/감상 포인트는 디자인상 선택 항목이라 비어 있어도 허용한다.
     this.artworkName = requireNonBlank(artworkName, "artworkName");
     this.content = content;
-    this.type = Objects.requireNonNull(type, "type must not be null.");
+    // type은 replaceFields가 첫 번째 분야로 함께 갱신한다.
+    replaceFields(types);
     this.productionYear = productionYear;
     this.materialMedia = requireNonBlank(materialMedia, "materialMedia");
     this.size = size;
@@ -192,6 +201,39 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     ArtworkImage artworkImage = Objects.requireNonNull(image, "image must not be null.");
     artworkImage.assignDisplayArtwork(this);
     images.add(artworkImage);
+  }
+
+  /**
+   * 작품 분야를 통째로 교체한다.
+   *
+   * <p>{@code type} 컬럼은 아직 여러 조회와 응답이 사용하므로, 첫 번째 분야를 그대로 반영해 둘을 어긋나지 않게 유지한다.
+   */
+  public void replaceFields(List<ArtworkType> newFields) {
+    List<ArtworkType> distinct = requireOneOrTwoFields(newFields);
+    fields.clear();
+    distinct.forEach(
+        field -> {
+          ArtworkField artworkField = new ArtworkField(field);
+          artworkField.assignDisplayArtwork(this);
+          fields.add(artworkField);
+        });
+    this.type = distinct.getFirst();
+  }
+
+  public List<ArtworkType> getFieldTypes() {
+    return fields.stream().map(ArtworkField::getField).toList();
+  }
+
+  private static List<ArtworkType> requireOneOrTwoFields(List<ArtworkType> newFields) {
+    if (newFields == null || newFields.isEmpty()) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
+    }
+    // 같은 분야를 두 번 보내는 것은 1개 지정과 같으므로 중복을 제거한 뒤 개수를 따진다.
+    List<ArtworkType> distinct = newFields.stream().distinct().toList();
+    if (distinct.size() > MAX_FIELDS) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
+    }
+    return distinct;
   }
 
   public void replaceImages(List<ArtworkImage> newImages) {

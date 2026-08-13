@@ -25,6 +25,7 @@ public class PersonalArtworkPresentationMapper {
         result.artworkName(),
         result.thumbnailUrl(),
         result.type(),
+        result.types(),
         result.createdAt());
   }
 
@@ -36,6 +37,7 @@ public class PersonalArtworkPresentationMapper {
         result.artworkName(),
         result.content(),
         result.type(),
+        result.types(),
         result.productionYear(),
         result.materialMedia(),
         result.size(),
@@ -51,7 +53,7 @@ public class PersonalArtworkPresentationMapper {
     return new PersonalArtworkContentCommand(
         request.artworkName(),
         request.content(),
-        request.type(),
+        request.resolvedTypes(),
         request.productionYear(),
         request.materialMedia(),
         request.size(),

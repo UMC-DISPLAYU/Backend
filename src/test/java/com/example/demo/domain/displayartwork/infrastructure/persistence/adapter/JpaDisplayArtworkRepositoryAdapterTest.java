@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.infrastructure.persistence.adapte
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -67,7 +68,7 @@ class JpaDisplayArtworkRepositoryAdapterTest {
 
   private void stubFindPreview() {
     when(jpaRepository.findPreview(
-            anyBoolean(), anyBoolean(), any(), isNull(), any(Pageable.class)))
+            anyBoolean(), anyBoolean(), any(), anyLong(), isNull(), any(Pageable.class)))
         .thenReturn(List.of());
   }
 
@@ -87,6 +88,7 @@ class JpaDisplayArtworkRepositoryAdapterTest {
             requireGraduation.capture(),
             ignoreFields.capture(),
             any(),
+            anyLong(),
             isNull(),
             any(Pageable.class));
     return List.of(requireGraduation.getValue(), ignoreFields.getValue());
@@ -96,7 +98,8 @@ class JpaDisplayArtworkRepositoryAdapterTest {
   private List<ArtworkType> capturedFields() {
     ArgumentCaptor<List<ArtworkType>> fields = ArgumentCaptor.forClass(List.class);
     verify(jpaRepository)
-        .findPreview(anyBoolean(), anyBoolean(), fields.capture(), isNull(), any(Pageable.class));
+        .findPreview(
+            anyBoolean(), anyBoolean(), fields.capture(), anyLong(), isNull(), any(Pageable.class));
     return fields.getValue();
   }
 }

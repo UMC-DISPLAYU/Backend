@@ -123,6 +123,7 @@ class SaveArchivePersonalWorkServiceTest {
         "작은 정원",
         "https://cdn.displayu.com/personal-artworks/garden.png",
         "COMPLEX",
+        List.of("COMPLEX"),
         LocalDateTime.now());
   }
 }

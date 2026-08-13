@@ -9,12 +9,14 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record UpdateDisplayArtworkRequest(
     @NotBlank String artworkName,
     String content,
-    @NotNull ArtworkType type,
+    ArtworkType type,
+    @Size(max = 2) List<ArtworkType> types,
     @NotNull @Min(1000) int productionYear,
     @NotBlank String materialMedia,
     String size,
@@ -24,6 +26,14 @@ public record UpdateDisplayArtworkRequest(
     Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
     @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
+
+  /** 등록과 같은 규칙으로, types가 있으면 그것을 쓰고 없으면 기존 단일 type을 1개짜리 목록으로 취급한다. */
+  public List<ArtworkType> resolvedTypes() {
+    if (types != null && !types.isEmpty()) {
+      return types;
+    }
+    return type == null ? List.of() : List.of(type);
+  }
 
   public record ImageRequest(
       @NotBlank String imageUrl,

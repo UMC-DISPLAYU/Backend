@@ -100,14 +100,14 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   @Test
-  void findPreviewReturnsAllFieldsWhenFieldFilterIsIgnored() {
+  void findPreviewReturnsAllArtworksWhenFieldFilterIsIgnored() {
     Display display = persistedDisplay();
-    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
-    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
+    persistArtwork(display, "회화 작품", List.of(ArtworkType.PAINTING), 0);
+    persistArtwork(display, "디자인 작품", List.of(ArtworkType.DESIGN), 1);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
-            false, true, List.of(ArtworkType.PAINTING), null, PageRequest.of(0, 20));
+            false, true, List.of(ArtworkType.PAINTING), 1, null, PageRequest.of(0, 20));
 
     assertThat(found)
         .extracting(DisplayArtwork::getArtworkName)
@@ -115,46 +115,56 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   @Test
-  void findPreviewReturnsOnlySelectedFieldWhenSingleFieldGiven() {
+  void findPreviewReturnsArtworksHavingSelectedFieldWhenSingleFieldGiven() {
     Display display = persistedDisplay();
-    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
-    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
+    persistArtwork(display, "회화만", List.of(ArtworkType.PAINTING), 0);
+    persistArtwork(display, "회화와 사진", List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY), 1);
+    persistArtwork(display, "디자인만", List.of(ArtworkType.DESIGN), 2);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
-            false, false, List.of(ArtworkType.DESIGN), null, PageRequest.of(0, 20));
+            false, false, List.of(ArtworkType.PAINTING), 1, null, PageRequest.of(0, 20));
 
-    assertThat(found).extracting(DisplayArtwork::getArtworkName).containsExactly("디자인 작품");
+    // 분야를 2개 가진 작품도 그중 하나가 회화면 포함된다.
+    assertThat(found)
+        .extracting(DisplayArtwork::getArtworkName)
+        .containsExactlyInAnyOrder("회화만", "회화와 사진");
   }
 
   @Test
-  void findPreviewReturnsUnionOfSelectedFieldsWhenMultipleFieldsGiven() {
+  void findPreviewReturnsOnlyArtworksHavingAllSelectedFields() {
     Display display = persistedDisplay();
-    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
-    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
-    persistArtwork(display, "사진 작품", ArtworkType.PHOTOGRAPHY, 2);
+    persistArtwork(display, "회화만", List.of(ArtworkType.PAINTING), 0);
+    persistArtwork(display, "사진만", List.of(ArtworkType.PHOTOGRAPHY), 1);
+    persistArtwork(display, "회화와 사진", List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY), 2);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
             false,
             false,
             List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY),
+            2,
             null,
             PageRequest.of(0, 20));
 
-    assertThat(found)
-        .extracting(DisplayArtwork::getArtworkName)
-        .containsExactlyInAnyOrder("회화 작품", "사진 작품");
+    // AND 조건이므로 두 분야를 모두 가진 작품만 나온다.
+    assertThat(found).extracting(DisplayArtwork::getArtworkName).containsExactly("회화와 사진");
   }
 
   @Test
-  void findPreviewReturnsEmptyWhenSelectedFieldHasNoArtwork() {
+  void findPreviewReturnsEmptyWhenNoArtworkHasAllSelectedFields() {
     Display display = persistedDisplay();
-    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
+    persistArtwork(display, "회화만", List.of(ArtworkType.PAINTING), 0);
+    persistArtwork(display, "사진만", List.of(ArtworkType.PHOTOGRAPHY), 1);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
-            false, false, List.of(ArtworkType.SCULPTURE), null, PageRequest.of(0, 20));
+            false,
+            false,
+            List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY),
+            2,
+            null,
+            PageRequest.of(0, 20));
 
     assertThat(found).isEmpty();
   }
@@ -190,17 +200,17 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   private DisplayArtwork persistArtwork(Display display, String artworkName, int workSortOrder) {
-    return persistArtwork(display, artworkName, ArtworkType.PAINTING, workSortOrder);
+    return persistArtwork(display, artworkName, List.of(ArtworkType.PAINTING), workSortOrder);
   }
 
   private DisplayArtwork persistArtwork(
-      Display display, String artworkName, ArtworkType type, int workSortOrder) {
+      Display display, String artworkName, List<ArtworkType> types, int workSortOrder) {
     DisplayArtwork artwork =
         DisplayArtwork.create(
             display,
             artworkName,
             "content",
-            type,
+            types,
             2026,
             "Oil on canvas",
             "72.7 x 90.9 cm",
