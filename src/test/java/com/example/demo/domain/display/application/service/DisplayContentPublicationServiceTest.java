@@ -148,6 +148,92 @@ class DisplayContentPublicationServiceTest {
   }
 
   @Test
+  void publishForDisplayPublishesImmediateChildrenEvenWhenDisplayHasNotStarted() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 3), ContentOpenPolicy.IMMEDIATELY, ContentOpenPolicy.IMMEDIATELY);
+    display.publish();
+    addDraftContent(display);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_007L;
+    insertArtwork(artworkId, savedDisplay.getId(), "즉시 공개 작품", DisplayArtworkStatus.DRAFT);
+
+    DisplayContentPublicationResult result =
+        publicationService.publishForDisplay(savedDisplay.getId());
+
+    assertThat(result.displayContentCount()).isEqualTo(1);
+    assertThat(result.displayArtworkCount()).isEqualTo(1);
+    assertThat(contentStatus(savedDisplay.getId())).isEqualTo(DisplayContentStatus.PUBLISHED);
+    assertThat(artworkStatus(artworkId)).isEqualTo(DisplayArtworkStatus.PUBLISHED);
+  }
+
+  @Test
+  void publishForDisplayKeepsOnExhibitionChildrenDraftWhenDisplayHasNotStarted() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 3),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.publish();
+    addDraftContent(display);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_008L;
+    insertArtwork(artworkId, savedDisplay.getId(), "개막 공개 예정 작품", DisplayArtworkStatus.DRAFT);
+
+    DisplayContentPublicationResult result =
+        publicationService.publishForDisplay(savedDisplay.getId());
+
+    assertThat(result.displayContentCount()).isZero();
+    assertThat(result.displayArtworkCount()).isZero();
+    assertThat(contentStatus(savedDisplay.getId())).isEqualTo(DisplayContentStatus.DRAFT);
+    assertThat(artworkStatus(artworkId)).isEqualTo(DisplayArtworkStatus.DRAFT);
+  }
+
+  @Test
+  void publishForDisplayPublishesOnExhibitionChildrenWhenDisplayStarted() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 1),
+            ContentOpenPolicy.ON_EXHIBITION,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.publish();
+    addDraftContent(display);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_009L;
+    insertArtwork(artworkId, savedDisplay.getId(), "개막 공개 작품", DisplayArtworkStatus.DRAFT);
+
+    DisplayContentPublicationResult result =
+        publicationService.publishForDisplay(savedDisplay.getId());
+
+    assertThat(result.displayContentCount()).isEqualTo(1);
+    assertThat(result.displayArtworkCount()).isEqualTo(1);
+    assertThat(contentStatus(savedDisplay.getId())).isEqualTo(DisplayContentStatus.PUBLISHED);
+    assertThat(artworkStatus(artworkId)).isEqualTo(DisplayArtworkStatus.PUBLISHED);
+  }
+
+  @Test
+  void publishForDisplayAppliesContentAndArtworkPoliciesIndependently() {
+    Display display =
+        display(
+            LocalDate.of(2026, 8, 3),
+            ContentOpenPolicy.IMMEDIATELY,
+            ContentOpenPolicy.ON_EXHIBITION);
+    display.publish();
+    addDraftContent(display);
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    Long artworkId = 10_010L;
+    insertArtwork(artworkId, savedDisplay.getId(), "즉시 공개 작품", DisplayArtworkStatus.DRAFT);
+
+    DisplayContentPublicationResult result =
+        publicationService.publishForDisplay(savedDisplay.getId());
+
+    assertThat(result.displayContentCount()).isZero();
+    assertThat(result.displayArtworkCount()).isEqualTo(1);
+    assertThat(contentStatus(savedDisplay.getId())).isEqualTo(DisplayContentStatus.DRAFT);
+    assertThat(artworkStatus(artworkId)).isEqualTo(DisplayArtworkStatus.PUBLISHED);
+  }
+
+  @Test
   void displayDetailReturnsPublishedContentsOnly() {
     Display display =
         display(
@@ -308,6 +394,21 @@ class DisplayContentPublicationServiceTest {
             startDate, startDate.plusDays(7), LocalTime.of(10, 0), LocalTime.of(18, 0)),
         artworkContentOpen,
         exhibitionContentOpen);
+  }
+
+  private static void addDraftContent(Display display) {
+    display.addContentCategory(
+        new DisplayContentCategory(
+            null,
+            "전시 소개",
+            "전시 소개 이미지입니다.",
+            0,
+            List.of(
+                new DisplayContent(
+                    null,
+                    "https://cdn.displayu.com/display/content-draft.jpg",
+                    0,
+                    DisplayContentStatus.DRAFT))));
   }
 
   private void insertArtwork(
