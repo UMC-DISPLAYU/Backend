@@ -24,6 +24,7 @@ import com.example.demo.domain.user.presentation.response.UpdateMyProfileRespons
 import com.example.demo.domain.user.presentation.response.UserSearchResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -75,11 +76,12 @@ public interface UserControllerDocs {
   @ApiResponse(responseCode = "400", description = "프로필 이미지 URL 또는 닉네임 형식 오류")
   @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
   @ApiResponse(responseCode = "404", description = "사용자 없음")
-  @ApiResponse(responseCode = "409", description = "닉네임 중복 또는 변경 주기 제한")
+  @ApiResponse(responseCode = "409", description = "닉네임 중복")
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<UpdateMyProfileResponse> updateMe(
       AuthUser user, UpdateMyProfileRequest request, HttpServletRequest httpRequest);
 
+  @Hidden
   @Operation(
       summary = "회원 탈퇴",
       description =
