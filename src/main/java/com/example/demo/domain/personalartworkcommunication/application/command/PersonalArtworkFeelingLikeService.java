@@ -54,7 +54,7 @@ public class PersonalArtworkFeelingLikeService {
 
     PersonalArtworkFeeling personalArtworkFeeling =
         personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
-    personalArtworkFeelingValidator.validateReplyTarget(
+    personalArtworkFeelingValidator.validateFeelingTarget(
         personalArtworkFeeling, command.personalArtworkId());
   }
 
