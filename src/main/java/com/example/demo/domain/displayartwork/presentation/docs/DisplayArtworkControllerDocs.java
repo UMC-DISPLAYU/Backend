@@ -29,6 +29,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -82,7 +83,15 @@ public interface DisplayArtworkControllerDocs {
   ApiResponseBody<DisplayArtworkPreviewResponse> getPreview(
       @Parameter(description = "대분류 필터 (RECOMMEND: 추천 탭, GRADUATION: 2025 졸작 탭)") @RequestParam
           PreviewFilterType type,
-      @Parameter(description = "하위 분야 필터") @RequestParam(required = false) ArtworkType field,
+      @Parameter(
+              description =
+                  """
+                  하위 분야 필터. 여러 개를 선택할 수 있고 개수 제한은 없다. 선택한 분야 중 하나라도 해당하면 조회된다.
+                  비우면 전체 분야를 조회한다.
+                  예: `field=DESIGN&field=PAINTING` 또는 `field=DESIGN,PAINTING`
+                  """)
+          @RequestParam(required = false)
+          List<ArtworkType> field,
       @Parameter(description = "하위 대학교 필터") @RequestParam(required = false) String school,
       @Parameter(description = "요청할 페이지 번호 (0부터 시작)") @RequestParam @PositiveOrZero int page,
       @Parameter(description = "한 번에 가져올 작품 개수") @RequestParam @Min(1) @Max(50) int size,
