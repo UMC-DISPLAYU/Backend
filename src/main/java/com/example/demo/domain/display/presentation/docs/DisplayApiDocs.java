@@ -32,11 +32,17 @@ public final class DisplayApiDocs {
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
-  public static final String DELETE_SUMMARY = "전시 비공개 전환";
-  public static final String DELETE_DESCRIPTION =
+  public static final String HIDE_SUMMARY = "전시 비공개 전환";
+  public static final String HIDE_DESCRIPTION =
       "전시 팀장이 공개(PUBLISHED) 상태의 전시를 비공개(DRAFT) 상태로 변경합니다. 비공개 전환된 전시는 목록/지도/졸업/마감임박 조회에서 노출되지 않습니다. 이미 비공개(DRAFT) 상태인 전시는 DISPLAY_ALREADY_HIDDEN 에러를 반환합니다.";
-  public static final String DELETE_SUCCESS_DESCRIPTION = "전시 비공개 전환 성공";
-  public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display hide success";
+  public static final String HIDE_SUCCESS_DESCRIPTION = "전시 비공개 전환 성공";
+  public static final String HIDE_SUCCESS_EXAMPLE_NAME = "Display hide success";
+
+  public static final String DELETE_SUMMARY = "전시 삭제";
+  public static final String DELETE_DESCRIPTION =
+      "전시 팀장이 전시를 삭제 상태로 전환하고 서비스 노출 대상에서 제외합니다. 삭제된 전시의 하위 데이터 정리는 비동기 cleanup으로 처리합니다.";
+  public static final String DELETE_SUCCESS_DESCRIPTION = "전시 삭제 성공";
+  public static final String DELETE_SUCCESS_EXAMPLE_NAME = "Display delete success";
 
   public static final String RESERVATION_SUMMARY = "전시 콘텐츠 공개 예약 수정";
   public static final String RESERVATION_DESCRIPTION =
@@ -441,7 +447,7 @@ public final class DisplayApiDocs {
       }
       """;
 
-  public static final String DELETE_SUCCESS_EXAMPLE =
+  public static final String HIDE_SUCCESS_EXAMPLE =
       """
       {
         "resultType": "SUCCESS",
@@ -487,6 +493,21 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-07-14T02:00:00",
           "path": "/api/v1/display/12/draft"
+        }
+      }
+      """;
+
+  public static final String DELETE_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": null
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-08-13T12:00:00",
+          "path": "/api/v1/display/12"
         }
       }
       """;

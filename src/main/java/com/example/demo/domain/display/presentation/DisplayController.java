@@ -46,6 +46,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.G
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.GRADUATION_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.HIDE_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_DETAIL_SUCCESS_EXAMPLE;
@@ -423,19 +428,17 @@ public class DisplayController {
   }
 
   @PatchMapping("/api/v1/display/{displayId}/draft")
-  @Operation(summary = DELETE_SUMMARY, description = DELETE_DESCRIPTION)
+  @Operation(summary = HIDE_SUMMARY, description = HIDE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
-      description = DELETE_SUCCESS_DESCRIPTION,
+      description = HIDE_SUCCESS_DESCRIPTION,
       content =
           @Content(
               mediaType = "application/json",
               examples =
-                  @ExampleObject(
-                      name = DELETE_SUCCESS_EXAMPLE_NAME,
-                      value = DELETE_SUCCESS_EXAMPLE)))
-  public ApiResponseBody<DisplayDetailResponse> deleteDisplay(
+                  @ExampleObject(name = HIDE_SUCCESS_EXAMPLE_NAME, value = HIDE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<DisplayDetailResponse> changeDisplayToDraft(
       @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
@@ -449,9 +452,19 @@ public class DisplayController {
   }
 
   @DeleteMapping("/api/v1/display/{displayId}")
-  @Operation(summary = "전시 삭제", description = "전시를 삭제 상태로 전환하고 서비스 노출 대상에서 제외합니다.")
+  @Operation(summary = DELETE_SUMMARY, description = DELETE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
-  public ApiResponseBody<Void> deleteDisplayPermanently(
+  @ApiResponse(
+      responseCode = "200",
+      description = DELETE_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = DELETE_SUCCESS_EXAMPLE_NAME,
+                      value = DELETE_SUCCESS_EXAMPLE)))
+  public ApiResponseBody<Void> deleteDisplay(
       @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
           @PathVariable
           Long displayId,
