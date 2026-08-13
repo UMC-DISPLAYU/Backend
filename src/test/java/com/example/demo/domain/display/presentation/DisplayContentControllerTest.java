@@ -133,6 +133,22 @@ class DisplayContentControllerTest {
   }
 
   @Test
+  void createCategorySucceedsWithoutDescription() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(displayWithMember());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display/{displayId}/content-categories", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(categoryRequestWithoutDescription("전시장 전경")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.name").value("전시장 전경"))
+        .andExpect(jsonPath("$.success.data.description").value(""));
+  }
+
+  @Test
   void updateCategoryReturnsNotFoundWhenCategoryDoesNotExist() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(displayWithMember());
 
@@ -429,6 +445,15 @@ class DisplayContentControllerTest {
         }
         """
         .formatted(name, description);
+  }
+
+  private static String categoryRequestWithoutDescription(String name) {
+    return """
+        {
+          "name": "%s"
+        }
+        """
+        .formatted(name);
   }
 
   private static String contentRequest(String imageUrl) {

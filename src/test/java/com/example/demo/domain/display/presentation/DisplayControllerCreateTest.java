@@ -106,6 +106,36 @@ class DisplayControllerCreateTest {
   }
 
   @Test
+  void createDisplaySucceedsWithoutQnaAccount() throws Exception {
+    User user = userJpaRepository.save(user("홍길동"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBodyWithoutQnaAccount()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.qnaAccount").value(""));
+  }
+
+  @Test
+  void createDisplaySucceedsWithoutContract() throws Exception {
+    User user = userJpaRepository.save(user("홍길동"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBodyWithoutContract()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"))
+        .andExpect(jsonPath("$.success.data.contract").doesNotExist());
+  }
+
+  @Test
   void createDisplayReturnsConflictWhenSameOwnerAlreadyHasSameTitle() throws Exception {
     User user = userJpaRepository.save(user("홍길동"));
 
@@ -173,6 +203,68 @@ class DisplayControllerCreateTest {
         }
         """
         .formatted(region);
+  }
+
+  private static String requestBodyWithoutQnaAccount() {
+    return """
+        {
+          "title": "FORM 2026",
+          "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+          "displayImageUrl": [
+            "https://cdn.displayu.com/display/detail-1.png",
+            "https://cdn.displayu.com/display/detail-2.png"
+          ],
+          "type": "GRADUATION",
+          "fields": ["DESIGN", "MEDIA"],
+          "region": "SEOUL",
+          "schoolOrOrganization": "중앙대학교",
+          "departmentOrClub": "디자인학부",
+          "displayNickname": "전시 리더",
+          "contract": "Instagram DM",
+          "subtitle": "중앙대학교 디자인학부 졸업전시",
+          "description": "디자인학부 학생들의 전시입니다.",
+          "startDate": "2026-05-28",
+          "endDate": "2026-06-05",
+          "openTime": "10:00",
+          "closeTime": "18:00",
+          "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+          "latitude": 37.0063,
+          "longitude": 127.2267,
+          "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
+          "precautions": "전시장 내 음료 반입 금지"
+        }
+        """;
+  }
+
+  private static String requestBodyWithoutContract() {
+    return """
+        {
+          "title": "FORM 2026",
+          "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+          "displayImageUrl": [
+            "https://cdn.displayu.com/display/detail-1.png",
+            "https://cdn.displayu.com/display/detail-2.png"
+          ],
+          "type": "GRADUATION",
+          "fields": ["DESIGN", "MEDIA"],
+          "region": "SEOUL",
+          "schoolOrOrganization": "중앙대학교",
+          "departmentOrClub": "디자인학부",
+          "qnaAccount": "@displayu",
+          "displayNickname": "전시 리더",
+          "subtitle": "중앙대학교 디자인학부 졸업전시",
+          "description": "디자인학부 학생들의 전시입니다.",
+          "startDate": "2026-05-28",
+          "endDate": "2026-06-05",
+          "openTime": "10:00",
+          "closeTime": "18:00",
+          "locationName": "중앙대학교 안성캠퍼스 301관 대전시실 2층",
+          "latitude": 37.0063,
+          "longitude": 127.2267,
+          "roadAddress": "경기도 안성시 대덕면 서동대로 4726",
+          "precautions": "전시장 내 음료 반입 금지"
+        }
+        """;
   }
 
   private static String requestBodyWithFiveDisplayImages() {
