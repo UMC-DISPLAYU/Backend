@@ -32,6 +32,7 @@ public class PersonalArtworkPresentationMapper {
     return new PersonalArtworkResponse(
         result.personalArtworkId(),
         result.userId(),
+        result.artistName(),
         result.artworkName(),
         result.content(),
         result.type(),
@@ -42,7 +43,8 @@ public class PersonalArtworkPresentationMapper {
         result.createdAt(),
         result.images().stream().map(this::toResponse).toList(),
         result.likeCount(),
-        result.isLiked());
+        result.isLiked(),
+        result.isArchived());
   }
 
   public PersonalArtworkContentCommand toCommand(PersonalArtworkRequest request) {

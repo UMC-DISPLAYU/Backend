@@ -1,5 +1,8 @@
 package com.example.demo.domain.personalartwork.application.query;
 
+import com.example.demo.domain.archive.domain.repository.ArchivePersonalWorkRepository;
+import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
+import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkResult;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.domain.aggregate.PersonalArtwork;
@@ -16,12 +19,18 @@ public class PersonalArtworkQueryService {
 
   private final PersonalArtworkRepository personalArtworkRepository;
   private final PersonalArtworkLikeRepository personalArtworkLikeRepository;
+  private final ArtistProfileRepository artistProfileRepository;
+  private final ArchivePersonalWorkRepository archivePersonalWorkRepository;
 
   public PersonalArtworkQueryService(
       PersonalArtworkRepository personalArtworkRepository,
-      PersonalArtworkLikeRepository personalArtworkLikeRepository) {
+      PersonalArtworkLikeRepository personalArtworkLikeRepository,
+      ArtistProfileRepository artistProfileRepository,
+      ArchivePersonalWorkRepository archivePersonalWorkRepository) {
     this.personalArtworkRepository = personalArtworkRepository;
     this.personalArtworkLikeRepository = personalArtworkLikeRepository;
+    this.artistProfileRepository = artistProfileRepository;
+    this.archivePersonalWorkRepository = archivePersonalWorkRepository;
   }
 
   /**
@@ -32,6 +41,11 @@ public class PersonalArtworkQueryService {
   public PersonalArtworkResult getPersonalArtworkDetail(
       Long personalArtworkId, Long requesterUserId) {
     PersonalArtwork personalArtwork = getPersonalArtwork(personalArtworkId);
+    String artistName =
+        artistProfileRepository
+            .findByUserId(personalArtwork.getOwnerUserId().value())
+            .map(ArtistProfile::getArtistName)
+            .orElse(null);
     long likeCount = personalArtworkLikeRepository.countByPersonalArtworkId(personalArtworkId);
     // 비회원 조회를 허용하므로 requesterUserId가 없으면 사용자별 상태는 false로 둔다.
     boolean isLiked =
@@ -39,7 +53,12 @@ public class PersonalArtworkQueryService {
             && personalArtworkLikeRepository
                 .findByPersonalArtworkIdAndUserId(personalArtworkId, requesterUserId)
                 .isPresent();
-    return PersonalArtworkResult.from(personalArtwork, likeCount, isLiked);
+    boolean isArchived =
+        requesterUserId != null
+            && archivePersonalWorkRepository
+                .findByUserIdAndPersonalArtworkId(requesterUserId, personalArtworkId)
+                .isPresent();
+    return PersonalArtworkResult.from(personalArtwork, artistName, likeCount, isLiked, isArchived);
   }
 
   private PersonalArtwork getPersonalArtwork(Long personalArtworkId) {

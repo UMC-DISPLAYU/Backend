@@ -39,6 +39,7 @@ public record DisplayArtworkDetailResponse(
   public record ExhibitionInfoResponse(
       Long displayId,
       String exhibitionTitle,
+      String exhibitionSubtitle,
       String exhibitionThumbnailUrl,
       String exhibitionOrganizer,
       String exhibitionPeriod,
