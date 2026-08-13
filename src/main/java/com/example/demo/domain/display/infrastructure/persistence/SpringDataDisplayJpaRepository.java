@@ -38,6 +38,7 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       LEFT JOIN FETCH display.images image
       WHERE teamMember.userId.value = :userId
         AND teamMember.accepted = true
+        AND teamMember.deletedAt IS NULL
         AND display.ownerUserId.value <> :userId
         AND display.deletedAt IS NULL
       ORDER BY display.period.startDate DESC, display.id DESC
@@ -69,6 +70,7 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       LEFT JOIN FETCH display.images image
       WHERE teamMember.userId.value = :userId
         AND teamMember.accepted = true
+        AND teamMember.deletedAt IS NULL
         AND display.ownerUserId.value <> :userId
         AND display.status = :status
         AND display.deletedAt IS NULL
