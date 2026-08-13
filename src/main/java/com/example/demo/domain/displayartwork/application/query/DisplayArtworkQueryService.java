@@ -161,9 +161,9 @@ public class DisplayArtworkQueryService {
 
   @Transactional(readOnly = true)
   public DisplayArtworkPreviewResult getPreview(
-      PreviewFilterType type, ArtworkType field, String school, int page, int size) {
+      PreviewFilterType type, List<ArtworkType> fields, String school, int page, int size) {
     List<DisplayArtwork> fetched =
-        displayArtworkRepository.findPreview(type, field, school, page, size);
+        displayArtworkRepository.findPreview(type, fields, school, page, size);
 
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);

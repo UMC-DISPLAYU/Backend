@@ -25,11 +25,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * 작가 프로필의 작품 탭이 쓰는 조회다. Creator는 작가(LEAD_ARTIST/CO_AUTHOR) 외에 QnA 답변만 담당하는 전시 대표자(QA_ONLY)로도 생성되므로,
- * role을 구분하지 않으면 대리 등록해 준 남의 작품이 대표자의 작가 프로필에 노출된다.
+ * 작품 조회 쿼리 중 조건이 까다로운 두 가지를 검증한다.
+ *
+ * <p>{@code findAllByParticipantUserId} — Creator는 작가(LEAD_ARTIST/CO_AUTHOR) 외에 QnA 답변만 담당하는 전시
+ * 대표자(QA_ONLY)로도 생성되므로, role을 구분하지 않으면 대리 등록해 준 남의 작품이 대표자의 작가 프로필에 노출된다.
+ *
+ * <p>{@code findPreview} — 분야 필터는 다중 선택이라 IN 조건을 쓴다. 필터를 하나도 고르지 않으면 빈 목록이 IN에 들어가 쿼리가 깨지므로, 그 경우는
+ * 플래그로 조건을 건너뛴다.
  */
 @DataJpaTest
 @ActiveProfiles("test")
@@ -93,6 +99,66 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
         .containsExactly(own.getId());
   }
 
+  @Test
+  void findPreviewReturnsAllFieldsWhenFieldFilterIsIgnored() {
+    Display display = persistedDisplay();
+    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
+    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
+
+    List<DisplayArtwork> found =
+        jpaRepository.findPreview(
+            false, true, List.of(ArtworkType.PAINTING), null, PageRequest.of(0, 20));
+
+    assertThat(found)
+        .extracting(DisplayArtwork::getArtworkName)
+        .containsExactlyInAnyOrder("회화 작품", "디자인 작품");
+  }
+
+  @Test
+  void findPreviewReturnsOnlySelectedFieldWhenSingleFieldGiven() {
+    Display display = persistedDisplay();
+    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
+    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
+
+    List<DisplayArtwork> found =
+        jpaRepository.findPreview(
+            false, false, List.of(ArtworkType.DESIGN), null, PageRequest.of(0, 20));
+
+    assertThat(found).extracting(DisplayArtwork::getArtworkName).containsExactly("디자인 작품");
+  }
+
+  @Test
+  void findPreviewReturnsUnionOfSelectedFieldsWhenMultipleFieldsGiven() {
+    Display display = persistedDisplay();
+    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
+    persistArtwork(display, "디자인 작품", ArtworkType.DESIGN, 1);
+    persistArtwork(display, "사진 작품", ArtworkType.PHOTOGRAPHY, 2);
+
+    List<DisplayArtwork> found =
+        jpaRepository.findPreview(
+            false,
+            false,
+            List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY),
+            null,
+            PageRequest.of(0, 20));
+
+    assertThat(found)
+        .extracting(DisplayArtwork::getArtworkName)
+        .containsExactlyInAnyOrder("회화 작품", "사진 작품");
+  }
+
+  @Test
+  void findPreviewReturnsEmptyWhenSelectedFieldHasNoArtwork() {
+    Display display = persistedDisplay();
+    persistArtwork(display, "회화 작품", ArtworkType.PAINTING, 0);
+
+    List<DisplayArtwork> found =
+        jpaRepository.findPreview(
+            false, false, List.of(ArtworkType.SCULPTURE), null, PageRequest.of(0, 20));
+
+    assertThat(found).isEmpty();
+  }
+
   private Display persistedDisplay() {
     Display display =
         Display.create(
@@ -124,12 +190,17 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   private DisplayArtwork persistArtwork(Display display, String artworkName, int workSortOrder) {
+    return persistArtwork(display, artworkName, ArtworkType.PAINTING, workSortOrder);
+  }
+
+  private DisplayArtwork persistArtwork(
+      Display display, String artworkName, ArtworkType type, int workSortOrder) {
     DisplayArtwork artwork =
         DisplayArtwork.create(
             display,
             artworkName,
             "content",
-            ArtworkType.PAINTING,
+            type,
             2026,
             "Oil on canvas",
             "72.7 x 90.9 cm",

@@ -88,13 +88,14 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
         AND display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
         AND (:requireGraduation = false OR display.displayType
              = com.example.demo.domain.display.domain.type.DisplayType.GRADUATION)
-        AND (:field IS NULL OR artwork.type = :field)
+        AND (:ignoreFields = true OR artwork.type IN :fields)
         AND (:school IS NULL OR display.organization = :school)
       ORDER BY artwork.createdAt DESC
       """)
   List<DisplayArtwork> findPreview(
       @Param("requireGraduation") boolean requireGraduation,
-      @Param("field") ArtworkType field,
+      @Param("ignoreFields") boolean ignoreFields,
+      @Param("fields") List<ArtworkType> fields,
       @Param("school") String school,
       Pageable pageable);
 
