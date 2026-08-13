@@ -480,6 +480,8 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.invitations[0].location").value("SEOUL"))
         .andExpect(jsonPath("$.success.data.invitations[0].leaderName").value("leader"))
         .andExpect(jsonPath("$.success.data.invitations[0].title").value("FORM 2026"))
+        .andExpect(jsonPath("$.success.data.invitations[0].school").value("organization"))
+        .andExpect(jsonPath("$.success.data.invitations[0].department").value("department"))
         .andExpect(jsonPath("$.success.data.invitations[0].placeName").value("전시장"));
   }
 
@@ -535,9 +537,8 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
-        .andExpect(
-            jsonPath("$.success.data.exhibitions[0].schoolDepartmentName")
-                .value("organization department"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].school").value("organization"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].department").value("department"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].startedAt").value("2026-05-28"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].endedAt").value("2026-06-05"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(-47))

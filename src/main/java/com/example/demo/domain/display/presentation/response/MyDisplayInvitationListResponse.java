@@ -14,5 +14,7 @@ public record MyDisplayInvitationListResponse(List<InvitationResponse> invitatio
       String location,
       String leaderName,
       String title,
+      String school,
+      String department,
       String placeName) {}
 }

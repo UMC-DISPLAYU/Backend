@@ -12,9 +12,9 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRoleRequest;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
-import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import org.springframework.stereotype.Component;
 
@@ -80,9 +80,10 @@ public class DisplayMemberInvitationPresentationMapper {
         result.invitations().stream().map(this::toResponse).toList());
   }
 
-  public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
-    return new GraduationDisplayResponse(
-        result.exhibitions().stream().map(this::toResponse).toList());
+  public DisplayInvitationDisplayResponse toInvitationDisplayResponse(
+      GraduationDisplayResult result) {
+    return new DisplayInvitationDisplayResponse(
+        result.exhibitions().stream().map(this::toInvitationDisplayResponse).toList());
   }
 
   private DisplayMemberListResponse.TeamMemberResponse toResponse(
@@ -108,35 +109,22 @@ public class DisplayMemberInvitationPresentationMapper {
         result.location(),
         result.leaderName(),
         result.title(),
+        result.school(),
+        result.department(),
         result.placeName());
   }
 
-  private GraduationDisplayResponse.ExhibitionResponse toResponse(
+  private DisplayInvitationDisplayResponse.ExhibitionResponse toInvitationDisplayResponse(
       GraduationDisplayResult.ExhibitionResult result) {
-    return new GraduationDisplayResponse.ExhibitionResponse(
+    return new DisplayInvitationDisplayResponse.ExhibitionResponse(
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        schoolDepartmentName(result.organization(), result.department()),
+        result.organization(),
+        result.department(),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
         result.isArchived());
-  }
-
-  private String schoolDepartmentName(String organization, String department) {
-    String trimmedOrganization = trimToEmpty(organization);
-    String trimmedDepartment = trimToEmpty(department);
-    if (trimmedOrganization.isBlank()) {
-      return trimmedDepartment;
-    }
-    if (trimmedDepartment.isBlank()) {
-      return trimmedOrganization;
-    }
-    return trimmedOrganization + " " + trimmedDepartment;
-  }
-
-  private String trimToEmpty(String value) {
-    return value == null ? "" : value.trim();
   }
 }

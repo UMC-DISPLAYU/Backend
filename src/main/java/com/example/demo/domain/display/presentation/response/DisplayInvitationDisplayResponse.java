@@ -1,0 +1,19 @@
+package com.example.demo.domain.display.presentation.response;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDate;
+import java.util.List;
+
+public record DisplayInvitationDisplayResponse(List<ExhibitionResponse> exhibitions) {
+
+  public record ExhibitionResponse(
+      Long displayId,
+      String title,
+      String posterImageUrl,
+      String school,
+      String department,
+      LocalDate startedAt,
+      LocalDate endedAt,
+      long dayLeft,
+      @JsonProperty("isArchived") boolean isArchived) {}
+}

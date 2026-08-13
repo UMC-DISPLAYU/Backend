@@ -3,9 +3,9 @@ package com.example.demo.domain.display.presentation.docs;
 import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
+import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
-import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -143,7 +143,7 @@ public interface DisplayMemberInvitationControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "Unauthorized", value = UNAUTHORIZED_EXAMPLE)))
-  ApiResponseBody<GraduationDisplayResponse> getInvitationDisplays(
+  ApiResponseBody<DisplayInvitationDisplayResponse> getInvitationDisplays(
       AuthUser user, HttpServletRequest httpRequest);
 
   String DISPLAY_MEMBERS_SUCCESS_EXAMPLE =
@@ -196,7 +196,8 @@ public interface DisplayMemberInvitationControllerDocs {
                 "displayId": 1,
                 "title": "FORM 2026",
                 "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
-                "schoolDepartmentName": "중앙대학교 디자인학부",
+                "school": "중앙대학교",
+                "department": "디자인학부",
                 "startedAt": "2026-05-28",
                 "endedAt": "2026-06-05",
                 "dayLeft": 3,
@@ -321,6 +322,8 @@ public interface DisplayMemberInvitationControllerDocs {
                 "location": "서울시 종로구",
                 "leaderName": "도현",
                 "title": "FORM 2026",
+                "school": "중앙대학교",
+                "department": "디자인학부",
                 "placeName": "디유 갤러리"
               }
             ]

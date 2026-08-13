@@ -25,6 +25,8 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
       String location,
       String leaderName,
       String title,
+      String school,
+      String department,
       String placeName) {
 
     private static InvitationResult from(DisplayInvitation invitation) {
@@ -38,6 +40,8 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           display.getRegion().name(),
           leaderName(display),
           display.getTitle(),
+          display.getOrganization(),
+          display.getDepartment(),
           display.getLocation().placeName());
     }
 
