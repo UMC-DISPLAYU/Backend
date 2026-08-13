@@ -18,6 +18,7 @@ import com.example.demo.global.security.JwtFactory;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,24 @@ class DisplayControllerMyDisplayTest {
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].publishStatus").value("DRAFT"))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].isLeader").value(false));
+  }
+
+  @Test
+  void getMyDisplaysDoesNotReturnExitedParticipatedDisplay() throws Exception {
+    LocalDate today = LocalDate.now(clock);
+    Display display = participatedDisplay(2L, 1L, "나간 전시", today.minusDays(10), today.minusDays(1));
+    display.getTeamMembers().stream()
+        .filter(teamMember -> teamMember.getUserId().value().equals(1L))
+        .findFirst()
+        .orElseThrow()
+        .softDelete(LocalDateTime.of(2026, 8, 13, 9, 0));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(get("/api/v1/display/me").header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays.length()").value(0))
+        .andExpect(jsonPath("$.success.data.participatedDisplays.length()").value(0));
   }
 
   @Test
