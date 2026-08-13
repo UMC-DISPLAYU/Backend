@@ -124,13 +124,13 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       WHERE artwork.status = :draftStatus
         AND artwork.deletedAt IS NULL
         AND artwork.display.id = :displayId
-        AND artwork.display.artworkContentOpen = :openPolicy
-        AND artwork.display.period.startDate <= :today
+        AND (artwork.display.artworkContentOpen = :immediatePolicy
+             OR artwork.display.period.startDate <= :today)
       """)
   int publishForDisplay(
       @Param("displayId") Long displayId,
       @Param("today") LocalDate today,
-      @Param("openPolicy") ContentOpenPolicy openPolicy,
+      @Param("immediatePolicy") ContentOpenPolicy immediatePolicy,
       @Param("draftStatus") DisplayArtworkStatus draftStatus,
       @Param("publishedStatus") DisplayArtworkStatus publishedStatus);
 }

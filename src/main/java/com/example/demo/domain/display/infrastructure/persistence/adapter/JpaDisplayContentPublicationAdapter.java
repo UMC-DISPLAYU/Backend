@@ -48,7 +48,7 @@ public class JpaDisplayContentPublicationAdapter implements DisplayContentPublic
     return displayContentJpaRepository.publishForDisplay(
         displayId,
         today,
-        ContentOpenPolicy.ON_EXHIBITION,
+        ContentOpenPolicy.IMMEDIATELY,
         DisplayContentStatus.DRAFT,
         DisplayContentStatus.PUBLISHED);
   }
@@ -58,7 +58,7 @@ public class JpaDisplayContentPublicationAdapter implements DisplayContentPublic
     return displayArtworkJpaRepository.publishForDisplay(
         displayId,
         today,
-        ContentOpenPolicy.ON_EXHIBITION,
+        ContentOpenPolicy.IMMEDIATELY,
         DisplayArtworkStatus.DRAFT,
         DisplayArtworkStatus.PUBLISHED);
   }
