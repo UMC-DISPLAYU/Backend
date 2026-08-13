@@ -108,6 +108,7 @@ public class DisplayMemberInvitationPresentationMapper {
         result.endDate(),
         result.location(),
         result.userNickname(),
+        result.leaderName(),
         result.title(),
         schoolDepartmentName(result.school(), result.department()),
         result.placeName());

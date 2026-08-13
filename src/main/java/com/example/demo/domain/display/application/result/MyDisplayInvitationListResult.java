@@ -12,10 +12,14 @@ import java.util.Map;
 public record MyDisplayInvitationListResult(List<InvitationResult> invitations) {
 
   public static MyDisplayInvitationListResult from(
-      List<DisplayInvitation> invitations, Map<Long, User> invitersById) {
+      List<DisplayInvitation> invitations,
+      Map<Long, User> invitersById,
+      Map<Long, String> leaderNamesByDisplayId) {
     return new MyDisplayInvitationListResult(
         invitations.stream()
-            .map(invitation -> InvitationResult.from(invitation, invitersById))
+            .map(
+                invitation ->
+                    InvitationResult.from(invitation, invitersById, leaderNamesByDisplayId))
             .toList());
   }
 
@@ -27,13 +31,16 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
       LocalDate endDate,
       String location,
       String userNickname,
+      String leaderName,
       String title,
       String school,
       String department,
       String placeName) {
 
     private static InvitationResult from(
-        DisplayInvitation invitation, Map<Long, User> invitersById) {
+        DisplayInvitation invitation,
+        Map<Long, User> invitersById,
+        Map<Long, String> leaderNamesByDisplayId) {
       Display display = invitation.getDisplay();
       User inviter = invitersById.get(invitation.getInviterUserId().value());
       return new InvitationResult(
@@ -44,6 +51,7 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           display.getPeriod().endDate(),
           display.getRegion().name(),
           inviter != null ? inviter.getNickname() : "",
+          leaderNamesByDisplayId.getOrDefault(display.getId(), ""),
           display.getTitle(),
           display.getOrganization(),
           display.getDepartment(),

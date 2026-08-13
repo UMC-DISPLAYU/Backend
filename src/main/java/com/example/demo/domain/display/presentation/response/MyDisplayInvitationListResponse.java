@@ -13,6 +13,7 @@ public record MyDisplayInvitationListResponse(List<InvitationResponse> invitatio
       LocalDate endDate,
       String location,
       String userNickname,
+      String leaderName,
       String title,
       String schoolDepartmentName,
       String placeName) {}
