@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.global.security.TokenProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,10 +23,38 @@ import org.springframework.test.web.servlet.MockMvc;
 class SecurityConfigTest {
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private TokenProvider tokenProvider;
 
   @Test
   void rejectsAccessTokenRefreshWithoutRefreshTokenCookie() throws Exception {
     mockMvc.perform(post("/api/v1/auth/refresh")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void rejectsPresignedUrlRequestWithoutAuthentication() throws Exception {
+    mockMvc.perform(post("/api/v1/files/presigned-url")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void permitsPresignedUrlRequestWithAuthentication() throws Exception {
+    String accessToken = tokenProvider.createAccessToken(User.builder().id(1L).build());
+
+    mockMvc
+        .perform(
+            post("/api/v1/files/presigned-url")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType("application/json")
+                .content(
+                    """
+                    {
+                      "fileType": "IMAGE",
+                      "domain": "display",
+                      "fileName": "poster.png",
+                      "contentType": "image/png",
+                      "fileSize": 1048576
+                    }
+                    """))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
   }
 
   @ParameterizedTest
