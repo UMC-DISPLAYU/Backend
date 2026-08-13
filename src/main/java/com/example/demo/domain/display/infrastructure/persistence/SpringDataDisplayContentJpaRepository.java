@@ -43,14 +43,14 @@ public interface SpringDataDisplayContentJpaRepository extends JpaRepository<Dis
           SELECT category.id
           FROM DisplayContentCategory category
           WHERE category.display.id = :displayId
-            AND category.display.exhibitionContentOpen = :openPolicy
-            AND category.display.period.startDate <= :today
+            AND (category.display.exhibitionContentOpen = :immediatePolicy
+                 OR category.display.period.startDate <= :today)
         )
       """)
   int publishForDisplay(
       @Param("displayId") Long displayId,
       @Param("today") LocalDate today,
-      @Param("openPolicy") ContentOpenPolicy openPolicy,
+      @Param("immediatePolicy") ContentOpenPolicy immediatePolicy,
       @Param("draftStatus") DisplayContentStatus draftStatus,
       @Param("publishedStatus") DisplayContentStatus publishedStatus);
 }
