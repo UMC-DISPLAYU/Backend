@@ -8,6 +8,7 @@ import java.util.List;
 public record PersonalArtworkResult(
     Long personalArtworkId,
     Long userId,
+    String artistName,
     String artworkName,
     String content,
     String type,
@@ -18,13 +19,19 @@ public record PersonalArtworkResult(
     LocalDateTime createdAt,
     List<ImageResult> images,
     long likeCount,
-    boolean isLiked) {
+    boolean isLiked,
+    boolean isArchived) {
 
   public static PersonalArtworkResult from(
-      PersonalArtwork personalArtwork, long likeCount, boolean isLiked) {
+      PersonalArtwork personalArtwork,
+      String artistName,
+      long likeCount,
+      boolean isLiked,
+      boolean isArchived) {
     return new PersonalArtworkResult(
         personalArtwork.getId(),
         personalArtwork.getOwnerUserId().value(),
+        artistName,
         personalArtwork.getArtworkName(),
         personalArtwork.getContent(),
         personalArtwork.getType().name(),
@@ -35,7 +42,8 @@ public record PersonalArtworkResult(
         personalArtwork.getCreatedAt(),
         personalArtwork.getImages().stream().map(ImageResult::from).toList(),
         likeCount,
-        isLiked);
+        isLiked,
+        isArchived);
   }
 
   public record ImageResult(

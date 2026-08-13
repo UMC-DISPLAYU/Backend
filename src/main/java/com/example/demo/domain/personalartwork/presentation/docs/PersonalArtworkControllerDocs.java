@@ -115,7 +115,7 @@ public interface PersonalArtworkControllerDocs {
           개인 작품의 전체 필드를 조회합니다. 작가 프로필에서 타인의 작품도 열람할 수 있으며 비회원도 조회 가능합니다.
           본인 작품의 수정 화면에 기존 값을 채울 때도 같은 응답을 사용합니다.
 
-          로그인한 경우 isLiked에 본인의 좋아요 여부가 담기고, 비회원이면 false로 내려갑니다.
+          로그인한 경우 isLiked와 isArchived에 본인의 좋아요·저장 여부가 담기고, 비회원이면 모두 false로 내려갑니다.
           """)
   @ApiResponse(
       responseCode = "200",
@@ -134,6 +134,7 @@ public interface PersonalArtworkControllerDocs {
                               "data": {
                                 "personalArtworkId": 1,
                                 "userId": 1,
+                                "artistName": "김마야",
                                 "artworkName": "작은 정원",
                                 "content": "개인 작업으로 제작한 설치 작품입니다.",
                                 "type": "COMPLEX",
@@ -153,7 +154,10 @@ public interface PersonalArtworkControllerDocs {
                                     "width": 1200,
                                     "height": 1600
                                   }
-                                ]
+                                ],
+                                "likeCount": 12,
+                                "isLiked": true,
+                                "isArchived": false
                               }
                             },
                             "error": null,

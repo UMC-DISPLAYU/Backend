@@ -6,6 +6,7 @@ import java.util.List;
 public record PersonalArtworkResponse(
     Long personalArtworkId,
     Long userId,
+    String artistName,
     String artworkName,
     String content,
     String type,
@@ -16,7 +17,8 @@ public record PersonalArtworkResponse(
     LocalDateTime createdAt,
     List<ImageResponse> images,
     long likeCount,
-    boolean isLiked) {
+    boolean isLiked,
+    boolean isArchived) {
 
   public record ImageResponse(
       Long imageId,
