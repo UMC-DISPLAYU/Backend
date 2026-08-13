@@ -77,7 +77,7 @@ public class DisplayContentCategory extends BaseTimeEntity {
 
   public void changeInfo(String name, String description) {
     this.name = requireNonBlank(name, "name");
-    this.description = requireNonBlank(description, "description");
+    this.description = nullToEmpty(description);
   }
 
   public void addContent(DisplayContent content) {
@@ -147,6 +147,10 @@ public class DisplayContentCategory extends BaseTimeEntity {
       throw new IllegalArgumentException(fieldName + " must not be blank.");
     }
     return value;
+  }
+
+  private static String nullToEmpty(String value) {
+    return value == null ? "" : value;
   }
 
   private static int requireNonNegative(int value, String fieldName) {
