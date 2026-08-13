@@ -6,7 +6,7 @@ import java.util.List;
 public record PersonalArtworkContentCommand(
     String artworkName,
     String content,
-    ArtworkType type,
+    java.util.List<ArtworkType> types,
     int productionYear,
     String materialMedia,
     String size,

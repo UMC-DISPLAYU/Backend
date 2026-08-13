@@ -88,7 +88,11 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
         AND display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
         AND (:requireGraduation = false OR display.displayType
              = com.example.demo.domain.display.domain.type.DisplayType.GRADUATION)
-        AND (:ignoreFields = true OR artwork.type IN :fields)
+        AND (:ignoreFields = true
+             OR (SELECT COUNT(artworkField)
+                 FROM ArtworkField artworkField
+                 WHERE artworkField.displayArtwork = artwork
+                   AND artworkField.field IN :fields) = :fieldCount)
         AND (:school IS NULL OR display.organization = :school)
       ORDER BY artwork.createdAt DESC
       """)
@@ -96,6 +100,7 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       @Param("requireGraduation") boolean requireGraduation,
       @Param("ignoreFields") boolean ignoreFields,
       @Param("fields") List<ArtworkType> fields,
+      @Param("fieldCount") long fieldCount,
       @Param("school") String school,
       Pageable pageable);
 

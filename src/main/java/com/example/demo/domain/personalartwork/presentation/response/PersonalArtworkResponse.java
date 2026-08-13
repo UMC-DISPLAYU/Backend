@@ -10,6 +10,7 @@ public record PersonalArtworkResponse(
     String artworkName,
     String content,
     String type,
+    List<String> types,
     int productionYear,
     String materialMedia,
     String size,

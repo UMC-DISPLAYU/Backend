@@ -28,6 +28,7 @@ import com.example.demo.domain.displayartwork.presentation.response.DisplayArtwo
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -123,6 +124,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkName(),
         result.content(),
         result.type(),
+        result.types(),
         result.productionYear(),
         result.size(),
         result.materialMedia(),
@@ -174,6 +176,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkName(),
         result.content(),
         result.type(),
+        result.types(),
         result.productionYear(),
         result.materialMedia(),
         result.size(),
@@ -205,6 +208,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkName(),
         result.content(),
         result.type(),
+        result.types(),
         result.productionYear(),
         result.materialMedia(),
         result.size(),
@@ -238,7 +242,7 @@ public class DisplayArtworkPresentationMapper {
         request.displayId(),
         request.artworkName(),
         request.content(),
-        toArtworkType(request.type()),
+        toArtworkTypes(request.resolvedTypes()),
         request.productionYear(),
         request.materialMedia(),
         request.size(),
@@ -260,6 +264,10 @@ public class DisplayArtworkPresentationMapper {
         image.caption(),
         image.width(),
         image.height());
+  }
+
+  private List<ArtworkType> toArtworkTypes(List<CreateDisplayArtworkRequest.Field> fields) {
+    return fields.stream().map(this::toArtworkType).toList();
   }
 
   // API에 노출하는 분야 값(Field)과 도메인 타입(ArtworkType)이 별개라 여기서 명시적으로 변환한다.
@@ -288,7 +296,7 @@ public class DisplayArtworkPresentationMapper {
         artworkId,
         request.artworkName(),
         request.content(),
-        request.type(),
+        request.resolvedTypes(),
         request.productionYear(),
         request.materialMedia(),
         request.size(),

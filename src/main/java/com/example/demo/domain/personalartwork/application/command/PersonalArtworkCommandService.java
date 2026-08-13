@@ -38,7 +38,7 @@ public class PersonalArtworkCommandService {
             new UserId(ownerUserId),
             command.artworkName(),
             command.content(),
-            command.type(),
+            command.types(),
             command.productionYear(),
             command.materialMedia(),
             command.size(),
@@ -58,7 +58,7 @@ public class PersonalArtworkCommandService {
     personalArtwork.changeContent(
         command.artworkName(),
         command.content(),
-        command.type(),
+        command.types(),
         command.productionYear(),
         command.materialMedia(),
         command.size(),

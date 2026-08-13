@@ -72,7 +72,7 @@ class PersonalArtworkQueryServiceTest {
         new UserId(10L),
         "작은 정원",
         "작품 설명",
-        ArtworkType.COMPLEX,
+        List.of(ArtworkType.COMPLEX),
         2026,
         "Mixed media",
         "100 x 100 x 150 cm",
