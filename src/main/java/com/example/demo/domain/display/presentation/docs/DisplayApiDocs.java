@@ -838,12 +838,14 @@ public final class DisplayApiDocs {
                 "displayId": 1,
                 "title": "내가 만든 전시",
                 "displayStatus": "DISPLAYING",
+                "publishStatus": "PUBLISHED",
                 "startDate": "2026-08-01",
                 "endDate": "2026-08-07",
                 "school": "디유대학교",
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
-                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "isLeader": true
               }
             ],
             "participatedDisplays": [
@@ -851,12 +853,14 @@ public final class DisplayApiDocs {
                 "displayId": 2,
                 "title": "내가 참여한 전시",
                 "displayStatus": "ENDED",
+                "publishStatus": "DRAFT",
                 "startDate": "2026-07-20",
                 "endDate": "2026-07-31",
                 "school": "디유대학교",
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
-                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "isLeader": false
               }
             ]
           }

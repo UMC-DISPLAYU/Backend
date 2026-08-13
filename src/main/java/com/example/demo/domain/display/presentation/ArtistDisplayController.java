@@ -34,12 +34,14 @@ public class ArtistDisplayController {
                 "displayId": 1,
                 "title": "디유 졸업전시",
                 "displayStatus": "DISPLAYING",
+                "publishStatus": "PUBLISHED",
                 "startDate": "2026-08-01",
                 "endDate": "2026-08-20",
                 "school": "디유대학교",
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
-                "postImageUrl": "https://cdn.displayu.com/posters/main.png"
+                "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "isLeader": true
               }
             ],
             "participatedDisplays": []

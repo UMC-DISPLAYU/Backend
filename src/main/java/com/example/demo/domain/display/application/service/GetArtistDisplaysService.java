@@ -23,6 +23,7 @@ public class GetArtistDisplaysService {
     return MyDisplayListResult.from(
         displayRepository.findPublishedCreatedDisplaysByUserId(userId),
         displayRepository.findPublishedParticipatedDisplaysByUserId(userId),
-        LocalDateTime.now(clock));
+        LocalDateTime.now(clock),
+        userId);
   }
 }

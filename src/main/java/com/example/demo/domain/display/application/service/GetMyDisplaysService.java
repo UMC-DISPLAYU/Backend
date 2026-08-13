@@ -23,6 +23,7 @@ public class GetMyDisplaysService {
     return MyDisplayListResult.from(
         displayRepository.findCreatedDisplaysByUserId(userId),
         displayRepository.findParticipatedDisplaysByUserId(userId),
-        LocalDateTime.now(clock));
+        LocalDateTime.now(clock),
+        userId);
   }
 }
