@@ -196,8 +196,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "displayId": 1,
                 "title": "FORM 2026",
                 "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
-                "school": "중앙대학교",
-                "department": "디자인학부",
+                "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-05-28",
                 "endedAt": "2026-06-05",
                 "dayLeft": 3,
@@ -322,8 +321,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "location": "서울시 종로구",
                 "userNickname": "도현",
                 "title": "FORM 2026",
-                "school": "중앙대학교",
-                "department": "디자인학부",
+                "schoolDepartmentName": "중앙대학교 디자인학부",
                 "placeName": "디유 갤러리"
               }
             ]

@@ -109,8 +109,7 @@ public class DisplayMemberInvitationPresentationMapper {
         result.location(),
         result.userNickname(),
         result.title(),
-        result.school(),
-        result.department(),
+        schoolDepartmentName(result.school(), result.department()),
         result.placeName());
   }
 
@@ -120,11 +119,26 @@ public class DisplayMemberInvitationPresentationMapper {
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
-        result.organization(),
-        result.department(),
+        schoolDepartmentName(result.organization(), result.department()),
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
         result.isArchived());
+  }
+
+  private String schoolDepartmentName(String organization, String department) {
+    String trimmedOrganization = trimToEmpty(organization);
+    String trimmedDepartment = trimToEmpty(department);
+    if (trimmedOrganization.isBlank()) {
+      return trimmedDepartment;
+    }
+    if (trimmedDepartment.isBlank()) {
+      return trimmedOrganization;
+    }
+    return trimmedOrganization + " " + trimmedDepartment;
+  }
+
+  private String trimToEmpty(String value) {
+    return value == null ? "" : value.trim();
   }
 }
