@@ -30,12 +30,20 @@ public class Memo extends SoftDeleteBaseEntity {
 
   private Long archiveWorkId;
 
+  private Long archivePersonalWorkId;
+
   protected Memo() {}
 
-  private Memo(String content, LocalDate visitDate, Long archiveDisplayId, Long archiveWorkId) {
-    requireExactlyOneTarget(archiveDisplayId, archiveWorkId);
+  private Memo(
+      String content,
+      LocalDate visitDate,
+      Long archiveDisplayId,
+      Long archiveWorkId,
+      Long archivePersonalWorkId) {
+    requireExactlyOneTarget(archiveDisplayId, archiveWorkId, archivePersonalWorkId);
     this.archiveDisplayId = archiveDisplayId;
     this.archiveWorkId = archiveWorkId;
+    this.archivePersonalWorkId = archivePersonalWorkId;
     changeContent(content, visitDate);
   }
 
@@ -44,6 +52,7 @@ public class Memo extends SoftDeleteBaseEntity {
         content,
         visitDate,
         Objects.requireNonNull(archiveDisplayId, "archiveDisplayId must not be null."),
+        null,
         null);
   }
 
@@ -52,7 +61,18 @@ public class Memo extends SoftDeleteBaseEntity {
         content,
         visitDate,
         null,
-        Objects.requireNonNull(archiveWorkId, "archiveWorkId must not be null."));
+        Objects.requireNonNull(archiveWorkId, "archiveWorkId must not be null."),
+        null);
+  }
+
+  public static Memo createForPersonalWork(
+      String content, LocalDate visitDate, Long archivePersonalWorkId) {
+    return new Memo(
+        content,
+        visitDate,
+        null,
+        null,
+        Objects.requireNonNull(archivePersonalWorkId, "archivePersonalWorkId must not be null."));
   }
 
   public void changeContent(String content, LocalDate visitDate) {
@@ -60,11 +80,21 @@ public class Memo extends SoftDeleteBaseEntity {
     this.visitDate = visitDate;
   }
 
-  private static void requireExactlyOneTarget(Long archiveDisplayId, Long archiveWorkId) {
-    boolean hasDisplay = archiveDisplayId != null;
-    boolean hasWork = archiveWorkId != null;
-    if (hasDisplay == hasWork) {
-      throw new IllegalArgumentException("archiveDisplayId와 archiveWorkId 중 정확히 하나만 값이 있어야 합니다.");
+  private static void requireExactlyOneTarget(
+      Long archiveDisplayId, Long archiveWorkId, Long archivePersonalWorkId) {
+    int targetCount = 0;
+    if (archiveDisplayId != null) {
+      targetCount++;
+    }
+    if (archiveWorkId != null) {
+      targetCount++;
+    }
+    if (archivePersonalWorkId != null) {
+      targetCount++;
+    }
+    if (targetCount != 1) {
+      throw new IllegalArgumentException(
+          "archiveDisplayId, archiveWorkId, archivePersonalWorkId 중 정확히 하나만 값이 있어야 합니다.");
     }
   }
 

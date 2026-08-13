@@ -20,6 +20,11 @@ public class JpaArchivePersonalWorkRepositoryAdapter implements ArchivePersonalW
   }
 
   @Override
+  public Optional<ArchivePersonalWork> findById(Long archivePersonalWorkId) {
+    return jpaRepository.findById(archivePersonalWorkId).filter(work -> !work.isDeleted());
+  }
+
+  @Override
   public Optional<ArchivePersonalWork> findByIdAndUserId(Long archivePersonalWorkId, Long userId) {
     return jpaRepository.findByIdAndUserIdAndDeletedAtIsNull(archivePersonalWorkId, userId);
   }

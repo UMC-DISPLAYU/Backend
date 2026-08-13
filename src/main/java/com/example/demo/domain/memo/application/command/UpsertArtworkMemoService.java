@@ -76,6 +76,7 @@ public class UpsertArtworkMemoService {
         memo.getId(),
         memo.getArchiveDisplayId(),
         memo.getArchiveWorkId(),
+        memo.getArchivePersonalWorkId(),
         memo.getContent(),
         memo.getVisitDate(),
         memo.getCreatedAt(),

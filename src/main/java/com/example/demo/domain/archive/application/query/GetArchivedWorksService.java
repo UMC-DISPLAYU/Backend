@@ -81,6 +81,15 @@ public class GetArchivedWorksService {
                 .stream()
                 .collect(Collectors.toMap(Memo::getArchiveWorkId, Memo::getContent));
 
+    Map<Long, String> memoByArchivePersonalWorkId =
+        personalWorks.isEmpty()
+            ? Map.of()
+            : memoRepository
+                .findByArchivePersonalWorkIdInAndDeletedAtIsNull(
+                    personalWorks.stream().map(ArchivePersonalWork::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(Memo::getArchivePersonalWorkId, Memo::getContent));
+
     Map<Long, ArtworkSummaryResult> summaryByArtworkId =
         works.isEmpty()
             ? Map.of()
@@ -119,6 +128,7 @@ public class GetArchivedWorksService {
               -personalWork.getId(),
               ArchiveWorkResult.fromPersonal(
                   personalWork,
+                  memoByArchivePersonalWorkId.get(personalWork.getId()),
                   summaryByPersonalArtworkId.get(personalWork.getPersonalArtworkId()))));
     }
     // savedAt DESC, signedId DESC — signedId가 클수록(전시 작품이 항상 개인 작품보다 우선) 먼저 온다.
