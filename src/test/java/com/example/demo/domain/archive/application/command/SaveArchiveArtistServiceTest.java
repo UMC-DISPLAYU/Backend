@@ -92,7 +92,8 @@ class SaveArchiveArtistServiceTest {
         .thenThrow(
             new DataIntegrityViolationException(
                 "duplicate",
-                new RuntimeException("Duplicate entry for UQ_ARCHIVEARTIST_USER_ARTISTPROFILE")));
+                new RuntimeException(
+                    "Duplicate entry for UQ_ARCHIVEARTIST_ACTIVE_USER_ARTISTPROFILE")));
 
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(() -> service.saveArchiveArtist(new SaveArchiveArtistCommand(7L, 30L)))

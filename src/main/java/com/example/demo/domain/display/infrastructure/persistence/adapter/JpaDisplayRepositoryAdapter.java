@@ -57,6 +57,11 @@ public class JpaDisplayRepositoryAdapter implements DisplayRepository {
   }
 
   @Override
+  public boolean existsByOwnerUserIdAndTitle(Long ownerUserId, String title) {
+    return jpaRepository.existsByOwnerUserIdValueAndTitleAndDeletedAtIsNull(ownerUserId, title);
+  }
+
+  @Override
   public Display save(Display display) {
     return jpaRepository.save(display);
   }

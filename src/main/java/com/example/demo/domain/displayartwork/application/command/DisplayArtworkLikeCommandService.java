@@ -64,7 +64,7 @@ public class DisplayArtworkLikeCommandService {
   private void validateDisplayArtworkExists(Long displayArtworkId) {
     displayArtworkRepository
         .findById(displayArtworkId)
-        .filter(artwork -> !artwork.isDeleted())
+        .filter(artwork -> !artwork.isDeleted() && !artwork.getDisplay().isDeleted())
         .orElseThrow(
             () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
   }

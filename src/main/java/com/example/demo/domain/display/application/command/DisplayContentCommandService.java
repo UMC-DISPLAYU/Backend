@@ -135,12 +135,14 @@ public class DisplayContentCommandService {
   private Display findDisplay(Long displayId) {
     return displayRepository
         .findById(displayId)
+        .filter(display -> !display.isDeleted())
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 
   private Display findDisplayWithOptimisticLock(Long displayId) {
     return displayRepository
         .findByIdWithOptimisticLock(displayId)
+        .filter(display -> !display.isDeleted())
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }
 

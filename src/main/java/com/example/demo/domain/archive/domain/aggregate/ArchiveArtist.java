@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -41,6 +42,8 @@ public class ArchiveArtist {
   @Column(nullable = false, updatable = false)
   private LocalDateTime savedAt;
 
+  @Column private LocalDateTime deletedAt;
+
   protected ArchiveArtist() {}
 
   private ArchiveArtist(Long artistProfileId, Long artistUserId, Long userId) {
@@ -56,5 +59,15 @@ public class ArchiveArtist {
 
   public boolean isOwnedBy(Long userId) {
     return Objects.equals(this.userId, userId);
+  }
+
+  public void delete() {
+    if (deletedAt == null) {
+      deletedAt = LocalDateTime.now(ZoneOffset.UTC);
+    }
+  }
+
+  public boolean isDeleted() {
+    return deletedAt != null;
   }
 }

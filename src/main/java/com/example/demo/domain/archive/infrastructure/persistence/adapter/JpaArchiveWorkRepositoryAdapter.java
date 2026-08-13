@@ -20,17 +20,18 @@ public class JpaArchiveWorkRepositoryAdapter implements ArchiveWorkRepository {
 
   @Override
   public Optional<ArchiveWork> findById(Long archiveWorkId) {
-    return jpaRepository.findById(archiveWorkId);
+    return jpaRepository.findById(archiveWorkId).filter(archive -> !archive.isDeleted());
   }
 
   @Override
   public Optional<ArchiveWork> findByIdAndUserId(Long archiveWorkId, Long userId) {
-    return jpaRepository.findByIdAndUserId(archiveWorkId, userId);
+    return jpaRepository.findByIdAndUserIdAndDeletedAtIsNull(archiveWorkId, userId);
   }
 
   @Override
   public Optional<ArchiveWork> findByUserIdAndDisplayArtworkId(Long userId, Long displayArtworkId) {
-    return jpaRepository.findByUserIdAndDisplayArtworkId(userId, displayArtworkId);
+    return jpaRepository.findByUserIdAndDisplayArtworkIdAndDeletedAtIsNull(
+        userId, displayArtworkId);
   }
 
   @Override

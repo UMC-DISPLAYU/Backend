@@ -124,6 +124,7 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
     return display
         .status
         .eq(DisplayStatus.PUBLISHED)
+        .and(display.deletedAt.isNull())
         .and(display.displayType.eq(DisplayType.GRADUATION));
   }
 }

@@ -44,14 +44,17 @@ class JpaGraduationDisplayQueryRepositoryAdapterTest {
     Display third = publishedDisplay("졸업 전시 3", DisplayType.GRADUATION);
     Display assignment = publishedDisplay("과제 전시", DisplayType.ASSIGNMENTS);
     Display draft = draftDisplay("초안 졸업 전시", DisplayType.GRADUATION);
-    jpaRepository.saveAllAndFlush(List.of(first, second, third, assignment, draft));
+    Display deleted = publishedDisplay("삭제된 졸업 전시", DisplayType.GRADUATION);
+    deleted.delete();
+    jpaRepository.saveAllAndFlush(List.of(first, second, third, assignment, draft, deleted));
 
     List<ClosingSoonDisplayQueryResult> results = queryRepository.findRandomGraduationDisplays(2);
 
     assertThat(results).hasSize(2);
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::title)
-        .allMatch(title -> title.startsWith("졸업 전시"));
+        .allMatch(title -> title.startsWith("졸업 전시"))
+        .doesNotContain("삭제된 졸업 전시");
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::posterImageUrl)
         .containsOnly("https://cdn.displayu.com/posters/main.png");

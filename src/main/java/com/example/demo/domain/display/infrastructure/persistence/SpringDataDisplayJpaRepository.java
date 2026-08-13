@@ -17,12 +17,15 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
 
   Optional<Display> findByInvitationToken(String invitationToken);
 
+  boolean existsByOwnerUserIdValueAndTitleAndDeletedAtIsNull(Long ownerUserId, String title);
+
   @Query(
       """
       SELECT DISTINCT display
       FROM Display display
       LEFT JOIN FETCH display.images image
       WHERE display.ownerUserId.value = :userId
+        AND display.deletedAt IS NULL
       ORDER BY display.period.startDate DESC, display.id DESC
       """)
   List<Display> findCreatedDisplaysByUserId(@Param("userId") Long userId);
@@ -36,6 +39,7 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       WHERE teamMember.userId.value = :userId
         AND teamMember.accepted = true
         AND display.ownerUserId.value <> :userId
+        AND display.deletedAt IS NULL
       ORDER BY display.period.startDate DESC, display.id DESC
       """)
   List<Display> findParticipatedDisplaysByUserId(@Param("userId") Long userId);
@@ -47,6 +51,7 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       LEFT JOIN FETCH display.images image
       WHERE display.ownerUserId.value = :userId
         AND display.status = :status
+        AND display.deletedAt IS NULL
       ORDER BY display.period.startDate DESC, display.id DESC
       """)
   List<Display> findPublishedCreatedDisplaysByUserId(
@@ -66,6 +71,7 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
         AND teamMember.accepted = true
         AND display.ownerUserId.value <> :userId
         AND display.status = :status
+        AND display.deletedAt IS NULL
       ORDER BY display.period.startDate DESC, display.id DESC
       """)
   List<Display> findPublishedParticipatedDisplaysByUserId(

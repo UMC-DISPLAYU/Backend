@@ -21,13 +21,14 @@ public class JpaArchivePersonalWorkRepositoryAdapter implements ArchivePersonalW
 
   @Override
   public Optional<ArchivePersonalWork> findByIdAndUserId(Long archivePersonalWorkId, Long userId) {
-    return jpaRepository.findByIdAndUserId(archivePersonalWorkId, userId);
+    return jpaRepository.findByIdAndUserIdAndDeletedAtIsNull(archivePersonalWorkId, userId);
   }
 
   @Override
   public Optional<ArchivePersonalWork> findByUserIdAndPersonalArtworkId(
       Long userId, Long personalArtworkId) {
-    return jpaRepository.findByUserIdAndPersonalArtworkId(userId, personalArtworkId);
+    return jpaRepository.findByUserIdAndPersonalArtworkIdAndDeletedAtIsNull(
+        userId, personalArtworkId);
   }
 
   @Override

@@ -19,7 +19,7 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
-import com.example.demo.global.entity.BaseTimeEntity;
+import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -45,7 +45,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "Display")
-public class Display extends BaseTimeEntity {
+public class Display extends SoftDeleteBaseEntity {
 
   private static final int MAX_DETAIL_IMAGE_COUNT = 4;
   private static final int MAIN_IMAGE_SORT_ORDER = 0;

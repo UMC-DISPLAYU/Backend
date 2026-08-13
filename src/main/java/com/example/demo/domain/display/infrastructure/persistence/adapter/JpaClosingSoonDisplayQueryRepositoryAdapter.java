@@ -49,6 +49,7 @@ public class JpaClosingSoonDisplayQueryRepositoryAdapter
             image.sortOrder.eq(0))
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
+            display.deletedAt.isNull(),
             display.period.endDate.goe(today),
             cursorAfter(query.cursor()))
         .orderBy(display.period.endDate.asc(), display.id.asc())

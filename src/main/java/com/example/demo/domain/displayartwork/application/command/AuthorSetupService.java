@@ -65,7 +65,7 @@ public class AuthorSetupService {
     DisplayArtwork artwork =
         displayArtworkRepository
             .findById(command.artworkId())
-            .filter(a -> !a.isDeleted())
+            .filter(a -> !a.isDeleted() && !a.getDisplay().isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
     Display display = artwork.getDisplay();

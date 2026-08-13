@@ -17,6 +17,9 @@ public class GetDisplayReviewAccessService implements GetDisplayReviewAccessUseC
   @Override
   @Transactional(readOnly = true)
   public Optional<DisplayReviewAccessResult> getDisplayReviewAccess(Long displayId) {
-    return displayRepository.findById(displayId).map(DisplayReviewAccessResult::from);
+    return displayRepository
+        .findById(displayId)
+        .filter(display -> !display.isDeleted())
+        .map(DisplayReviewAccessResult::from);
   }
 }

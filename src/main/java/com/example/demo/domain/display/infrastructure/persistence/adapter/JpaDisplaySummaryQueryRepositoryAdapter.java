@@ -4,6 +4,7 @@ import com.example.demo.domain.display.application.query.DisplaySummaryQueryRepo
 import com.example.demo.domain.display.application.query.DisplaySummaryQueryResult;
 import com.example.demo.domain.display.domain.aggregate.QDisplay;
 import com.example.demo.domain.display.domain.entity.QDisplayImage;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -42,7 +43,10 @@ public class JpaDisplaySummaryQueryRepositoryAdapter implements DisplaySummaryQu
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))
-        .where(display.id.in(displayIds))
+        .where(
+            display.id.in(displayIds),
+            display.status.eq(DisplayStatus.PUBLISHED),
+            display.deletedAt.isNull())
         .fetch();
   }
 }

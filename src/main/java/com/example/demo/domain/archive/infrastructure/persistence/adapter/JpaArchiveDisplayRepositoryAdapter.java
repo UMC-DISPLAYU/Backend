@@ -19,17 +19,17 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
 
   @Override
   public Optional<ArchiveDisplay> findById(Long archiveDisplayId) {
-    return jpaRepository.findById(archiveDisplayId);
+    return jpaRepository.findById(archiveDisplayId).filter(archive -> !archive.isDeleted());
   }
 
   @Override
   public Optional<ArchiveDisplay> findByIdAndUserId(Long archiveDisplayId, Long userId) {
-    return jpaRepository.findByIdAndUserId(archiveDisplayId, userId);
+    return jpaRepository.findByIdAndUserIdAndDeletedAtIsNull(archiveDisplayId, userId);
   }
 
   @Override
   public Optional<ArchiveDisplay> findByUserIdAndDisplayId(Long userId, Long displayId) {
-    return jpaRepository.findByUserIdAndDisplayId(userId, displayId);
+    return jpaRepository.findByUserIdAndDisplayIdAndDeletedAtIsNull(userId, displayId);
   }
 
   @Override

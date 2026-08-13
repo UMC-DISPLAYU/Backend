@@ -40,7 +40,9 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
     Display second = publishedDisplay("내면의 풍경", "서울 갤러리", "37.5600", "126.9300");
     Display draft = draftDisplay("디자인 초안", "홍익대학교", "37.5520", "126.9250");
     Display outside = publishedDisplay("영역 밖 전시", "부산 갤러리", "35.1000", "129.0300");
-    jpaRepository.saveAllAndFlush(List.of(first, second, draft, outside));
+    Display deleted = publishedDisplay("삭제된 전시", "서울 갤러리", "37.5550", "126.9350");
+    deleted.delete();
+    jpaRepository.saveAllAndFlush(List.of(first, second, draft, outside, deleted));
 
     List<DisplayMapQueryResult> results =
         displayMapQueryRepository.findMarkers(
@@ -48,7 +50,8 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
 
     assertThat(results)
         .extracting(DisplayMapQueryResult::title)
-        .containsExactly("내면의 풍경", "디자인 전시");
+        .containsExactly("내면의 풍경", "디자인 전시")
+        .doesNotContain("삭제된 전시");
     assertThat(results.getFirst().posterImageUrl())
         .isEqualTo("https://cdn.displayu.com/posters/main.png");
     assertThat(results.getFirst().organization()).isEqualTo("organization");

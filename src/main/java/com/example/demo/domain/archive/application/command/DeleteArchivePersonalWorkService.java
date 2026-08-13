@@ -27,7 +27,7 @@ public class DeleteArchivePersonalWorkService {
             .orElseThrow(
                 () -> new BusinessException(ArchiveErrorCode.ARCHIVE_PERSONAL_WORK_NOT_FOUND));
 
-    archivePersonalWorkRepository.delete(archivePersonalWork);
+    archivePersonalWork.delete();
     return new ArchivePersonalWorkToggleResult(personalArtworkId, false);
   }
 }
