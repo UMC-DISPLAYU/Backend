@@ -26,9 +26,9 @@ public interface SpringDataArchiveArtistJpaRepository extends JpaRepository<Arch
         AND a.deletedAt IS NULL
         AND (
           :cursorId IS NULL
-          OR a.savedAt < (SELECT c.savedAt FROM ArchiveArtist c WHERE c.id = :cursorId AND c.userId = :userId AND c.deletedAt IS NULL)
+          OR a.savedAt < (SELECT c.savedAt FROM ArchiveArtist c WHERE c.id = :cursorId AND c.userId = :userId)
           OR (
-            a.savedAt = (SELECT c.savedAt FROM ArchiveArtist c WHERE c.id = :cursorId AND c.userId = :userId AND c.deletedAt IS NULL)
+            a.savedAt = (SELECT c.savedAt FROM ArchiveArtist c WHERE c.id = :cursorId AND c.userId = :userId)
             AND a.id < :cursorId
           )
         )

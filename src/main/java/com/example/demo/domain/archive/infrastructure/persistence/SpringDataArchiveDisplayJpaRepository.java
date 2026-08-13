@@ -39,9 +39,9 @@ public interface SpringDataArchiveDisplayJpaRepository extends JpaRepository<Arc
         AND display.deletedAt IS NULL
         AND (
           :cursorId IS NULL
-          OR ad.savedAt < (SELECT c.savedAt FROM ArchiveDisplay c WHERE c.id = :cursorId AND c.userId = :userId AND c.deletedAt IS NULL)
+          OR ad.savedAt < (SELECT c.savedAt FROM ArchiveDisplay c WHERE c.id = :cursorId AND c.userId = :userId)
           OR (
-            ad.savedAt = (SELECT c.savedAt FROM ArchiveDisplay c WHERE c.id = :cursorId AND c.userId = :userId AND c.deletedAt IS NULL)
+            ad.savedAt = (SELECT c.savedAt FROM ArchiveDisplay c WHERE c.id = :cursorId AND c.userId = :userId)
             AND ad.id < :cursorId
           )
         )
