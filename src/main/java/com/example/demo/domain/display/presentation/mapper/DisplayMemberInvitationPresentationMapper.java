@@ -107,7 +107,7 @@ public class DisplayMemberInvitationPresentationMapper {
         result.startDate(),
         result.endDate(),
         result.location(),
-        result.leaderName(),
+        result.userNickname(),
         result.title(),
         result.school(),
         result.department(),

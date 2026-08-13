@@ -320,7 +320,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "startDate": "2026-05-28",
                 "endDate": "2026-06-05",
                 "location": "서울시 종로구",
-                "leaderName": "도현",
+                "userNickname": "도현",
                 "title": "FORM 2026",
                 "school": "중앙대학교",
                 "department": "디자인학부",
