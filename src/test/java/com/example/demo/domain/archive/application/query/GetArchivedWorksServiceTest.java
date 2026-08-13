@@ -19,6 +19,7 @@ import com.example.demo.domain.archive.domain.repository.ArchivePersonalWorkRepo
 import com.example.demo.domain.archive.domain.repository.ArchiveWorkRepository;
 import com.example.demo.domain.displayartwork.application.result.ArtworkSummaryResult;
 import com.example.demo.domain.displayartwork.application.usecase.GetArtworkSummariesUseCase;
+import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import com.example.demo.domain.personalartwork.application.result.PersonalArtworkSummaryResult;
 import com.example.demo.domain.personalartwork.application.usecase.GetPersonalArtworkSummariesUseCase;
@@ -58,6 +59,8 @@ class GetArchivedWorksServiceTest {
         .thenReturn(List.of(personalWork));
     when(memoRepository.findByArchiveWorkIdInAndDeletedAtIsNull(List.of(10L)))
         .thenReturn(List.of());
+    when(memoRepository.findByArchivePersonalWorkIdInAndDeletedAtIsNull(List.of(20L)))
+        .thenReturn(List.of());
     when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(100L)))
         .thenReturn(
             List.of(new ArtworkSummaryResult(100L, "FORM 2026", "고상준", "https://cdn/1.png")));
@@ -91,6 +94,27 @@ class GetArchivedWorksServiceTest {
   }
 
   @Test
+  void includesPersonalWorkMemoWhenOneExists() {
+    ArchivePersonalWork personalWork =
+        archivePersonalWork(20L, 300L, 7L, LocalDateTime.of(2026, 8, 11, 9, 0, 0));
+    Memo memo = Memo.createForPersonalWork("제일 아끼는 작품", null, 20L);
+    when(archiveWorkRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, null, 21))
+        .thenReturn(List.of());
+    when(archivePersonalWorkRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
+            7L, null, null, 21))
+        .thenReturn(List.of(personalWork));
+    when(memoRepository.findByArchivePersonalWorkIdInAndDeletedAtIsNull(List.of(20L)))
+        .thenReturn(List.of(memo));
+    when(getPersonalArtworkSummariesUseCase.getPersonalArtworkSummaries(List.of(300L)))
+        .thenReturn(List.of());
+
+    ArchiveWorkCursorResult result = service.getArchivedWorks(7L, null, 20);
+
+    assertThat(result.works()).hasSize(1);
+    assertThat(result.works().get(0).memo()).isEqualTo("제일 아끼는 작품");
+  }
+
+  @Test
   void tieBreaksBySignedIdWhenSavedAtIsEqual() {
     LocalDateTime sameSavedAt = LocalDateTime.of(2026, 8, 11, 10, 0, 0);
     ArchiveWork work = archiveWork(10L, 100L, 7L, sameSavedAt);
@@ -101,6 +125,8 @@ class GetArchivedWorksServiceTest {
             7L, null, null, 21))
         .thenReturn(List.of(personalWork));
     when(memoRepository.findByArchiveWorkIdInAndDeletedAtIsNull(List.of(10L)))
+        .thenReturn(List.of());
+    when(memoRepository.findByArchivePersonalWorkIdInAndDeletedAtIsNull(List.of(10L)))
         .thenReturn(List.of());
     when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(100L))).thenReturn(List.of());
     when(getPersonalArtworkSummariesUseCase.getPersonalArtworkSummaries(List.of(300L)))
@@ -222,6 +248,8 @@ class GetArchivedWorksServiceTest {
             7L, null, null, 3))
         .thenReturn(List.of(newerPersonal, olderPersonal));
     when(memoRepository.findByArchiveWorkIdInAndDeletedAtIsNull(List.of(30L)))
+        .thenReturn(List.of());
+    when(memoRepository.findByArchivePersonalWorkIdInAndDeletedAtIsNull(List.of(15L, 5L)))
         .thenReturn(List.of());
     when(getArtworkSummariesUseCase.getArtworkSummaries(List.of(100L))).thenReturn(List.of());
     when(getPersonalArtworkSummariesUseCase.getPersonalArtworkSummaries(List.of(300L, 400L)))

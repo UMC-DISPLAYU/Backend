@@ -2,8 +2,10 @@ package com.example.demo.domain.memo.presentation;
 
 import com.example.demo.domain.memo.application.command.DeleteArtworkMemoService;
 import com.example.demo.domain.memo.application.command.DeleteExhibitionMemoService;
+import com.example.demo.domain.memo.application.command.DeletePersonalWorkMemoService;
 import com.example.demo.domain.memo.application.command.UpsertArtworkMemoService;
 import com.example.demo.domain.memo.application.command.UpsertExhibitionMemoService;
+import com.example.demo.domain.memo.application.command.UpsertPersonalWorkMemoService;
 import com.example.demo.domain.memo.application.result.MemoResult;
 import com.example.demo.domain.memo.presentation.docs.MemoControllerDocs;
 import com.example.demo.domain.memo.presentation.mapper.MemoPresentationMapper;
@@ -30,6 +32,8 @@ public class MemoController implements MemoControllerDocs {
   private final DeleteExhibitionMemoService deleteExhibitionMemoService;
   private final UpsertArtworkMemoService upsertArtworkMemoService;
   private final DeleteArtworkMemoService deleteArtworkMemoService;
+  private final UpsertPersonalWorkMemoService upsertPersonalWorkMemoService;
+  private final DeletePersonalWorkMemoService deletePersonalWorkMemoService;
   private final MemoPresentationMapper mapper;
 
   public MemoController(
@@ -37,11 +41,15 @@ public class MemoController implements MemoControllerDocs {
       DeleteExhibitionMemoService deleteExhibitionMemoService,
       UpsertArtworkMemoService upsertArtworkMemoService,
       DeleteArtworkMemoService deleteArtworkMemoService,
+      UpsertPersonalWorkMemoService upsertPersonalWorkMemoService,
+      DeletePersonalWorkMemoService deletePersonalWorkMemoService,
       MemoPresentationMapper mapper) {
     this.upsertExhibitionMemoService = upsertExhibitionMemoService;
     this.deleteExhibitionMemoService = deleteExhibitionMemoService;
     this.upsertArtworkMemoService = upsertArtworkMemoService;
     this.deleteArtworkMemoService = deleteArtworkMemoService;
+    this.upsertPersonalWorkMemoService = upsertPersonalWorkMemoService;
+    this.deletePersonalWorkMemoService = deletePersonalWorkMemoService;
     this.mapper = mapper;
   }
 
@@ -88,6 +96,30 @@ public class MemoController implements MemoControllerDocs {
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     deleteArtworkMemoService.deleteArtworkMemo(requireUserId(user), archiveWorkId);
+    return ApiResponseBody.success(null, httpRequest);
+  }
+
+  @PutMapping("/api/v1/archives/personal-artworks/{archivePersonalWorkId}/memo")
+  @Override
+  public ApiResponseBody<MemoResponse> upsertPersonalWorkMemo(
+      @PathVariable Long archivePersonalWorkId,
+      @RequestBody MemoRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    MemoResult result =
+        upsertPersonalWorkMemoService.upsertPersonalWorkMemo(
+            mapper.toPersonalWorkMemoCommand(archivePersonalWorkId, requireUserId(user), request));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @DeleteMapping("/api/v1/archives/personal-artworks/{archivePersonalWorkId}/memo")
+  @Override
+  public ApiResponseBody<Void> deletePersonalWorkMemo(
+      @PathVariable Long archivePersonalWorkId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    deletePersonalWorkMemoService.deletePersonalWorkMemo(
+        requireUserId(user), archivePersonalWorkId);
     return ApiResponseBody.success(null, httpRequest);
   }
 

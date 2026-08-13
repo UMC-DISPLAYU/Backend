@@ -9,7 +9,9 @@ public enum MemoErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT, "MEMO_CONCURRENT_WRITE_CONFLICT", "메모 저장 중 충돌이 발생했습니다. 다시 시도해주세요."),
   ARCHIVE_DISPLAY_NOT_FOUND(
       HttpStatus.NOT_FOUND, "ARCHIVE_DISPLAY_NOT_FOUND", "저장된 전시를 찾을 수 없습니다."),
-  ARCHIVE_WORK_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE_WORK_NOT_FOUND", "저장된 작품을 찾을 수 없습니다.");
+  ARCHIVE_WORK_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE_WORK_NOT_FOUND", "저장된 작품을 찾을 수 없습니다."),
+  ARCHIVE_PERSONAL_WORK_NOT_FOUND(
+      HttpStatus.NOT_FOUND, "ARCHIVE_PERSONAL_WORK_NOT_FOUND", "저장된 개인 작품을 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String code;
