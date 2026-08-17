@@ -72,6 +72,9 @@ public class SendSchoolEmailVerificationService {
   }
 
   private String normalize(String schoolEmail) {
+    if (schoolEmail == null || schoolEmail.isBlank()) {
+      throw new UserException(UserErrorCode.INVALID_EMAIL);
+    }
     return schoolEmail.trim().toLowerCase(Locale.ROOT);
   }
 
