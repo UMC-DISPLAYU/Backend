@@ -26,4 +26,28 @@ public interface SpringDataCreatorJpaRepository extends JpaRepository<Creator, L
   @Modifying(flushAutomatically = true)
   @Query("DELETE FROM Creator creator WHERE creator.displayArtworkId = :displayArtworkId")
   void deleteAllByDisplayArtworkId(@Param("displayArtworkId") Long displayArtworkId);
+
+  /**
+   * 전시 작가명 변경을 그 이름을 쓰고 있던 작품에 반영한다.
+   *
+   * <p>Creator에는 전시 식별자가 없으므로 작품을 거쳐 전시를 좁힌다. 삭제된 작품은 조회에 나오지 않지만 복구될 수 있어 함께 갱신한다.
+   */
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
+  @Query(
+      """
+      UPDATE Creator creator
+      SET creator.creatorName = :newName
+      WHERE creator.userId = :userId
+        AND creator.creatorName = :previousName
+        AND creator.displayArtworkId IN (
+          SELECT artwork.id
+          FROM DisplayArtwork artwork
+          WHERE artwork.display.id = :displayId
+        )
+      """)
+  int renameCreatorNamesInDisplay(
+      @Param("displayId") Long displayId,
+      @Param("userId") Long userId,
+      @Param("previousName") String previousName,
+      @Param("newName") String newName);
 }

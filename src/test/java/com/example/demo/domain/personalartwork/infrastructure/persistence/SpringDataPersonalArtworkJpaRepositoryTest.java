@@ -8,6 +8,7 @@ import com.example.demo.domain.personalartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.personalartwork.domain.type.ArtworkType;
 import com.example.demo.domain.personalartwork.domain.vo.UserId;
 import com.example.demo.global.config.JpaAuditingConfig;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ class SpringDataPersonalArtworkJpaRepositoryTest {
   private static final Long ANOTHER_OWNER = 2L;
 
   @Autowired private SpringDataPersonalArtworkJpaRepository jpaRepository;
+
+  @Autowired private EntityManager entityManager;
 
   @Test
   void findAllByIdInAndDeletedAtIsNullExcludesDeletedArtwork() {
@@ -66,12 +69,66 @@ class SpringDataPersonalArtworkJpaRepositoryTest {
         .containsExactlyInAnyOrder(mine.getId(), others.getId());
   }
 
+  @Test
+  void keepsExistingFieldRowWhenArtworkIsUpdatedWithSameField() {
+    PersonalArtwork saved =
+        jpaRepository.saveAndFlush(artwork(OWNER, "작품", List.of(ArtworkType.COMPLEX)));
+    Long fieldRowId = saved.getFields().getFirst().getId();
+    entityManager.clear();
+
+    PersonalArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    loaded.changeContent("수정된 작품", "수정된 설명", List.of(ArtworkType.COMPLEX), 2026, "재료", "크기", "포인트");
+    jpaRepository.saveAndFlush(loaded);
+    entityManager.clear();
+
+    PersonalArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    assertThat(reloaded.getFieldTypes()).containsExactly(ArtworkType.COMPLEX);
+    // 유지되는 분야는 기존 행을 그대로 둔다. 지우고 다시 넣으면 유니크 제약에 걸려 저장 자체가 실패한다.
+    assertThat(reloaded.getFields().getFirst().getId()).isEqualTo(fieldRowId);
+  }
+
+  @Test
+  void replacesOnlyChangedFieldWhenArtworkIsUpdated() {
+    PersonalArtwork saved =
+        jpaRepository.saveAndFlush(
+            artwork(OWNER, "작품", List.of(ArtworkType.COMPLEX, ArtworkType.PAINTING)));
+    Long keptRowId =
+        saved.getFields().stream()
+            .filter(field -> field.getField() == ArtworkType.COMPLEX)
+            .findFirst()
+            .orElseThrow()
+            .getId();
+    entityManager.clear();
+
+    PersonalArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    loaded.changeContent(
+        "수정된 작품", "설명", List.of(ArtworkType.COMPLEX, ArtworkType.MEDIA), 2026, "재료", "크기", "포인트");
+    jpaRepository.saveAndFlush(loaded);
+    entityManager.clear();
+
+    PersonalArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    assertThat(reloaded.getFieldTypes())
+        .containsExactlyInAnyOrder(ArtworkType.COMPLEX, ArtworkType.MEDIA);
+    assertThat(
+            reloaded.getFields().stream()
+                .filter(field -> field.getField() == ArtworkType.COMPLEX)
+                .findFirst()
+                .orElseThrow()
+                .getId())
+        .isEqualTo(keptRowId);
+  }
+
   private static PersonalArtwork artwork(Long ownerUserId, String artworkName) {
+    return artwork(ownerUserId, artworkName, List.of(ArtworkType.COMPLEX));
+  }
+
+  private static PersonalArtwork artwork(
+      Long ownerUserId, String artworkName, List<ArtworkType> types) {
     return PersonalArtwork.create(
         new UserId(ownerUserId),
         artworkName,
         "content",
-        List.of(ArtworkType.COMPLEX),
+        types,
         2026,
         "Mixed media",
         "100 x 100 cm",

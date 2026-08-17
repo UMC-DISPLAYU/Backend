@@ -60,6 +60,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkId(),
         result.artworkName(),
         result.artistName(),
+        result.artistUserId(),
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
@@ -86,6 +87,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkId(),
         result.artworkName(),
         result.artistName(),
+        result.artistUserId(),
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
@@ -113,6 +115,7 @@ public class DisplayArtworkPresentationMapper {
         result.artworkId(),
         result.artworkName(),
         result.artistName(),
+        result.artistUserId(),
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight());

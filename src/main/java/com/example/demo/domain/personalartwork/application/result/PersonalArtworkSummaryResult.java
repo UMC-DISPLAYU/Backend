@@ -9,15 +9,19 @@ import java.util.List;
 public record PersonalArtworkSummaryResult(
     Long personalArtworkId,
     String artworkName,
+    String artistName,
     String thumbnailUrl,
     String type,
     List<String> types,
     LocalDateTime createdAt) {
 
-  public static PersonalArtworkSummaryResult from(PersonalArtwork personalArtwork) {
+  /** 작가명은 작품이 아니라 작가 프로필에 있으므로 밖에서 조회해 넘겨받는다. 프로필이 없으면 null이다. */
+  public static PersonalArtworkSummaryResult from(
+      PersonalArtwork personalArtwork, String artistName) {
     return new PersonalArtworkSummaryResult(
         personalArtwork.getId(),
         personalArtwork.getArtworkName(),
+        artistName,
         findThumbnailUrl(personalArtwork),
         personalArtwork.getType().name(),
         personalArtwork.getFieldTypes().stream().map(Enum::name).toList(),

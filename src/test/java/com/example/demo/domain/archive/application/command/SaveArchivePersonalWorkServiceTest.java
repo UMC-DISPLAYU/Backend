@@ -121,6 +121,7 @@ class SaveArchivePersonalWorkServiceTest {
     return new PersonalArtworkSummaryResult(
         personalArtworkId,
         "작은 정원",
+        "김마야",
         "https://cdn.displayu.com/personal-artworks/garden.png",
         "COMPLEX",
         List.of("COMPLEX"),

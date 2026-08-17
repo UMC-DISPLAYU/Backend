@@ -70,6 +70,7 @@ class GetArchivedWorksServiceTest {
                 new PersonalArtworkSummaryResult(
                     300L,
                     "작은 정원",
+                    "김마야",
                     "https://cdn/garden.png",
                     "COMPLEX",
                     List.of("COMPLEX"),
@@ -91,7 +92,7 @@ class GetArchivedWorksServiceTest {
     assertThat(second.personalArtworkId()).isEqualTo(300L);
     assertThat(second.artworkName()).isEqualTo("작은 정원");
     assertThat(second.artworkImageUrl()).isEqualTo("https://cdn/garden.png");
-    assertThat(second.artistName()).isNull();
+    assertThat(second.artistName()).isEqualTo("김마야");
     assertThat(second.memo()).isNull();
 
     assertThat(result.hasNext()).isFalse();

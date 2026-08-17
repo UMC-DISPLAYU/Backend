@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -24,7 +25,12 @@ import lombok.Getter;
  */
 @Getter
 @Entity
-@Table(name = "PersonalArtworkField")
+@Table(
+    name = "PersonalArtworkField",
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "UQ_PERSONALARTWORKFIELD_ARTWORK_FIELD",
+            columnNames = {"personalArtworkId", "field"}))
 public class PersonalArtworkField {
 
   @Id
