@@ -23,6 +23,7 @@ public class PersonalArtworkPresentationMapper {
     return new PersonalArtworkSummaryResponse(
         result.personalArtworkId(),
         result.artworkName(),
+        result.artistName(),
         result.thumbnailUrl(),
         result.type(),
         result.types(),
