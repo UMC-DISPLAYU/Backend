@@ -10,6 +10,7 @@ import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRep
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import java.security.SecureRandom;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +29,25 @@ public class SendSchoolEmailVerificationService {
   @Transactional
   public void execute(SendSchoolEmailVerificationCommand command) {
 
+    String schoolEmail = normalize(command.schoolEmail());
+
     // 학교 이메일 + 도메인 검증
-    schoolEmailValidator.validate(command.univName(), command.schoolEmail());
+    schoolEmailValidator.validate(command.univName(), schoolEmail);
 
     User user =
         userRepository
             .findById(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
+    if (user.getSchoolEmail() != null) {
+      throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
+    }
+    if (userRepository.existsBySchoolEmail(schoolEmail)) {
+      throw new UserException(UserErrorCode.DUPLICATE_SCHOOL_EMAIL);
+    }
+
     verificationRepository
-        .findByUserIdAndSchoolEmail(command.userId(), command.schoolEmail())
+        .findByUserIdAndSchoolEmail(command.userId(), schoolEmail)
         .ifPresent(
             verification -> {
               if (!verification.canResend()) {
@@ -46,20 +56,23 @@ public class SendSchoolEmailVerificationService {
             });
 
     // 기존 인증 정보 삭제
-    verificationRepository.deleteByUserIdAndSchoolEmail(command.userId(), command.schoolEmail());
+    verificationRepository.deleteByUserIdAndSchoolEmail(command.userId(), schoolEmail);
 
     // 새 인증번호 생성
     String verificationCode = createVerificationCode();
 
     // 새 인증 정보 저장
     SchoolEmailVerification verification =
-        SchoolEmailVerification.create(
-            user, command.schoolEmail(), command.univName(), verificationCode);
+        SchoolEmailVerification.create(user, schoolEmail, command.univName(), verificationCode);
 
     verificationRepository.save(verification);
 
     // 이메일 발송
-    emailSender.send(command.schoolEmail(), verificationCode);
+    emailSender.send(schoolEmail, verificationCode);
+  }
+
+  private String normalize(String schoolEmail) {
+    return schoolEmail.trim().toLowerCase(Locale.ROOT);
   }
 
   private String createVerificationCode() {
