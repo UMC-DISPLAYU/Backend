@@ -173,6 +173,57 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   @Test
+  void keepsExistingFieldRowWhenArtworkIsUpdatedWithSameField() {
+    Display display = persistedDisplay();
+    DisplayArtwork saved =
+        jpaRepository.saveAndFlush(buildArtwork(display, "작품", List.of(ArtworkType.PAINTING), 0));
+    Long fieldRowId = saved.getFields().getFirst().getId();
+    entityManager.clear();
+
+    DisplayArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    loaded.changeContent("수정된 작품", "설명", List.of(ArtworkType.PAINTING), 2026, "재료", "크기", "포인트");
+    jpaRepository.saveAndFlush(loaded);
+    entityManager.clear();
+
+    DisplayArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    assertThat(reloaded.getFieldTypes()).containsExactly(ArtworkType.PAINTING);
+    // 유지되는 분야는 기존 행을 그대로 둔다. 지우고 다시 넣으면 유니크 제약에 걸려 저장 자체가 실패한다.
+    assertThat(reloaded.getFields().getFirst().getId()).isEqualTo(fieldRowId);
+  }
+
+  @Test
+  void replacesOnlyChangedFieldWhenArtworkIsUpdated() {
+    Display display = persistedDisplay();
+    DisplayArtwork saved =
+        jpaRepository.saveAndFlush(
+            buildArtwork(display, "작품", List.of(ArtworkType.PAINTING, ArtworkType.DESIGN), 0));
+    Long keptRowId =
+        saved.getFields().stream()
+            .filter(field -> field.getField() == ArtworkType.PAINTING)
+            .findFirst()
+            .orElseThrow()
+            .getId();
+    entityManager.clear();
+
+    DisplayArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    loaded.changeContent(
+        "수정된 작품", "설명", List.of(ArtworkType.PAINTING, ArtworkType.MEDIA), 2026, "재료", "크기", "포인트");
+    jpaRepository.saveAndFlush(loaded);
+    entityManager.clear();
+
+    DisplayArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
+    assertThat(reloaded.getFieldTypes())
+        .containsExactlyInAnyOrder(ArtworkType.PAINTING, ArtworkType.MEDIA);
+    assertThat(
+            reloaded.getFields().stream()
+                .filter(field -> field.getField() == ArtworkType.PAINTING)
+                .findFirst()
+                .orElseThrow()
+                .getId())
+        .isEqualTo(keptRowId);
+  }
+
+  @Test
   void renameCreatorNamesInDisplayUpdatesOnlyCreatorsUsingPreviousName() {
     Display display = persistedDisplay();
     DisplayArtwork usingDefault = persistArtwork(display, "기본 이름을 쓰던 작품", 0);
@@ -268,31 +319,35 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
 
   private DisplayArtwork persistArtwork(
       Display display, String artworkName, List<ArtworkType> types, int workSortOrder) {
-    DisplayArtwork artwork =
-        DisplayArtwork.create(
-            display,
-            artworkName,
-            "content",
-            types,
-            2026,
-            "Oil on canvas",
-            "72.7 x 90.9 cm",
-            "point",
-            workSortOrder,
-            DISPLAY_OWNER,
-            List.of(
-                new ArtworkImage(
-                    null,
-                    "https://cdn.displayu.com/artworks/main.png",
-                    true,
-                    ArtworkImageType.ARTWORK,
-                    0,
-                    "대표 이미지",
-                    1200,
-                    1600)));
+    DisplayArtwork artwork = buildArtwork(display, artworkName, types, workSortOrder);
     entityManager.persist(artwork);
     entityManager.flush();
     return artwork;
+  }
+
+  private DisplayArtwork buildArtwork(
+      Display display, String artworkName, List<ArtworkType> types, int workSortOrder) {
+    return DisplayArtwork.create(
+        display,
+        artworkName,
+        "content",
+        types,
+        2026,
+        "Oil on canvas",
+        "72.7 x 90.9 cm",
+        "point",
+        workSortOrder,
+        DISPLAY_OWNER,
+        List.of(
+            new ArtworkImage(
+                null,
+                "https://cdn.displayu.com/artworks/main.png",
+                true,
+                ArtworkImageType.ARTWORK,
+                0,
+                "대표 이미지",
+                1200,
+                1600)));
   }
 
   /**

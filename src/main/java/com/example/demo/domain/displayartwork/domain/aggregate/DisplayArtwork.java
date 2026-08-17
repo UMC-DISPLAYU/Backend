@@ -210,13 +210,17 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
    */
   public void replaceFields(List<ArtworkType> newFields) {
     List<ArtworkType> distinct = requireOneOrTwoFields(newFields);
-    fields.clear();
-    distinct.forEach(
-        field -> {
-          ArtworkField artworkField = new ArtworkField(field);
-          artworkField.assignDisplayArtwork(this);
-          fields.add(artworkField);
-        });
+    // 전체를 지우고 다시 넣으면, 유지되는 분야가 같은 값으로 다시 INSERT되어 유니크 제약에 걸린다.
+    // (Hibernate가 고아 삭제보다 INSERT를 먼저 내보내는 경우가 있다) 그래서 차이만 반영한다.
+    fields.removeIf(existing -> !distinct.contains(existing.getField()));
+    distinct.stream()
+        .filter(field -> fields.stream().noneMatch(existing -> existing.getField() == field))
+        .forEach(
+            field -> {
+              ArtworkField added = new ArtworkField(field);
+              added.assignDisplayArtwork(this);
+              fields.add(added);
+            });
     this.type = distinct.getFirst();
   }
 
