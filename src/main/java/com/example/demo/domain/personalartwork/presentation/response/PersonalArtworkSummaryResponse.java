@@ -6,6 +6,7 @@ import java.util.List;
 public record PersonalArtworkSummaryResponse(
     Long personalArtworkId,
     String artworkName,
+    String artistName,
     String thumbnailUrl,
     String type,
     List<String> types,

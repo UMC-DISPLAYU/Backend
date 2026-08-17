@@ -71,8 +71,11 @@ public class PersonalArtworkQueryService {
 
   @Transactional(readOnly = true)
   public List<PersonalArtworkSummaryResult> getPersonalArtworksByUser(Long userId) {
+    // 한 사용자의 작품만 조회하므로 작가명은 한 번만 읽으면 된다.
+    String artistName =
+        artistProfileRepository.findByUserId(userId).map(ArtistProfile::getArtistName).orElse(null);
     return personalArtworkRepository.findAllByOwnerUserIdOrderByCreatedAtAsc(userId).stream()
-        .map(PersonalArtworkSummaryResult::from)
+        .map(artwork -> PersonalArtworkSummaryResult.from(artwork, artistName))
         .toList();
   }
 }

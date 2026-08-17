@@ -12,6 +12,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.entity.Creator;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
@@ -46,6 +47,8 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   private static final Long PARTICIPANT = 10L;
 
   @Autowired private SpringDataDisplayArtworkJpaRepository jpaRepository;
+
+  @Autowired private SpringDataCreatorJpaRepository creatorJpaRepository;
 
   @Autowired private EntityManager entityManager;
 
@@ -218,6 +221,66 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
                 .orElseThrow()
                 .getId())
         .isEqualTo(keptRowId);
+  }
+
+  @Test
+  void renameCreatorNamesInDisplayUpdatesOnlyCreatorsUsingPreviousName() {
+    Display display = persistedDisplay();
+    DisplayArtwork usingDefault = persistArtwork(display, "기본 이름을 쓰던 작품", 0);
+    DisplayArtwork renamed = persistArtwork(display, "작품별로 이름을 바꾼 작품", 1);
+    persistCreator(usingDefault.getId(), "beanie", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(renamed.getId(), "스튜디오 접다", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+
+    int updated =
+        creatorJpaRepository.renameCreatorNamesInDisplay(
+            display.getId(), PARTICIPANT, "beanie", "세현");
+
+    assertThat(updated).isEqualTo(1);
+    assertThat(creatorNames(usingDefault.getId())).containsExactly("세현");
+    // 작품별로 지정한 표기명은 전시 작가명이 바뀌어도 그대로 둔다.
+    assertThat(creatorNames(renamed.getId())).containsExactly("스튜디오 접다");
+  }
+
+  @Test
+  void renameCreatorNamesInDisplayDoesNotTouchOtherUsersOrDisplays() {
+    Display display = persistedDisplay();
+    Display otherDisplay = persistedDisplay();
+    DisplayArtwork mine = persistArtwork(display, "내 작품", 0);
+    DisplayArtwork someoneElse = persistArtwork(display, "동명이인 작품", 1);
+    DisplayArtwork otherDisplayArtwork = persistArtwork(otherDisplay, "다른 전시의 내 작품", 0);
+    persistCreator(mine.getId(), "beanie", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(someoneElse.getId(), "beanie", CreatorRole.LEAD_ARTIST, DISPLAY_OWNER);
+    persistCreator(otherDisplayArtwork.getId(), "beanie", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+
+    int updated =
+        creatorJpaRepository.renameCreatorNamesInDisplay(
+            display.getId(), PARTICIPANT, "beanie", "세현");
+
+    assertThat(updated).isEqualTo(1);
+    assertThat(creatorNames(mine.getId())).containsExactly("세현");
+    // 이름이 같아도 다른 사용자, 다른 전시는 건드리지 않는다.
+    assertThat(creatorNames(someoneElse.getId())).containsExactly("beanie");
+    assertThat(creatorNames(otherDisplayArtwork.getId())).containsExactly("beanie");
+  }
+
+  @Test
+  void renameCreatorNamesInDisplayUpdatesNothingWhenNameIsUnused() {
+    Display display = persistedDisplay();
+    DisplayArtwork artwork = persistArtwork(display, "작품", 0);
+    persistCreator(artwork.getId(), "beanie", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+
+    int updated =
+        creatorJpaRepository.renameCreatorNamesInDisplay(
+            display.getId(), PARTICIPANT, "쓰이지 않는 이름", "세현");
+
+    assertThat(updated).isZero();
+    assertThat(creatorNames(artwork.getId())).containsExactly("beanie");
+  }
+
+  private List<String> creatorNames(Long artworkId) {
+    return creatorJpaRepository.findByDisplayArtworkId(artworkId).stream()
+        .map(Creator::getCreatorName)
+        .toList();
   }
 
   private Display persistedDisplay() {

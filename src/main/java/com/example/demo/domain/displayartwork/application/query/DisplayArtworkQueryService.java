@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -168,19 +169,23 @@ public class DisplayArtworkQueryService {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
-    Map<Long, String> artistNamesByArtworkId =
-        creatorRepository
-            .findLeadersByDisplayArtworkIds(pageItems.stream().map(DisplayArtwork::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(pageItems);
 
     List<ArtworkCardResult> cards =
-        pageItems.stream().map(artwork -> toCard(artwork, artistNamesByArtworkId)).toList();
+        pageItems.stream().map(artwork -> toCard(artwork, leadersByArtworkId)).toList();
     return new DisplayArtworkPreviewResult(cards, page, size, isLast);
   }
 
+  /** 목록·미리보기는 대표 작가의 이름과 계정을 함께 쓰므로 Creator 자체를 담아 둔다. */
+  private Map<Long, Creator> findLeadersByArtworkIds(List<DisplayArtwork> artworks) {
+    return creatorRepository
+        .findLeadersByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
+        .stream()
+        .collect(Collectors.toMap(Creator::getDisplayArtworkId, Function.identity()));
+  }
+
   private ArtworkCardResult toCard(
-      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
+      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
@@ -191,7 +196,8 @@ public class DisplayArtworkQueryService {
     return new ArtworkCardResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
-        artistNamesByArtworkId.get(displayArtwork.getId()),
+        leaderName(leadersByArtworkId, displayArtwork),
+        leaderUserId(leadersByArtworkId, displayArtwork),
         thumbnail != null ? thumbnail.getImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
@@ -215,14 +221,10 @@ public class DisplayArtworkQueryService {
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
-    Map<Long, String> artistNamesByArtworkId =
-        creatorRepository
-            .findLeadersByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(artworks);
 
     List<ArtworkItemResult> items =
-        artworks.stream().map(artwork -> toItem(artwork, artistNamesByArtworkId)).toList();
+        artworks.stream().map(artwork -> toItem(artwork, leadersByArtworkId)).toList();
     return new DisplayArtworkListResult(items);
   }
 
@@ -233,19 +235,15 @@ public class DisplayArtworkQueryService {
   public DisplayArtworkByArtistResult getArtworksByUserId(Long userId) {
     List<DisplayArtwork> artworks = displayArtworkRepository.findAllByParticipantUserId(userId);
 
-    Map<Long, String> artistNamesByArtworkId =
-        creatorRepository
-            .findLeadersByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Creator::getCreatorName));
+    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(artworks);
 
     List<DisplayArtworkByArtistResult.ArtworkCardResult> cards =
-        artworks.stream().map(artwork -> toArtistCard(artwork, artistNamesByArtworkId)).toList();
+        artworks.stream().map(artwork -> toArtistCard(artwork, leadersByArtworkId)).toList();
     return new DisplayArtworkByArtistResult(cards);
   }
 
   private DisplayArtworkByArtistResult.ArtworkCardResult toArtistCard(
-      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
+      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
@@ -256,7 +254,8 @@ public class DisplayArtworkQueryService {
     return new DisplayArtworkByArtistResult.ArtworkCardResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
-        artistNamesByArtworkId.get(displayArtwork.getId()),
+        leaderName(leadersByArtworkId, displayArtwork),
+        leaderUserId(leadersByArtworkId, displayArtwork),
         thumbnail != null ? thumbnail.getImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
@@ -287,15 +286,27 @@ public class DisplayArtworkQueryService {
   }
 
   private ArtworkItemResult toItem(
-      DisplayArtwork displayArtwork, Map<Long, String> artistNamesByArtworkId) {
+      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     return new ArtworkItemResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
-        artistNamesByArtworkId.get(displayArtwork.getId()),
+        leaderName(leadersByArtworkId, displayArtwork),
+        leaderUserId(leadersByArtworkId, displayArtwork),
         thumbnail != null ? thumbnail.getImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0);
+  }
+
+  private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {
+    Creator leader = leaders.get(artwork.getId());
+    return leader == null ? null : leader.getCreatorName();
+  }
+
+  /** 계정 없는 작가를 대리 등록한 경우 null이다. 프론트는 이 값으로 프로필 이동 가능 여부를 판단한다. */
+  private static Long leaderUserId(Map<Long, Creator> leaders, DisplayArtwork artwork) {
+    Creator leader = leaders.get(artwork.getId());
+    return leader == null ? null : leader.getUserId();
   }
 
   private ArtworkImage findThumbnail(DisplayArtwork displayArtwork) {
