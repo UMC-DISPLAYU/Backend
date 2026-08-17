@@ -8,6 +8,7 @@ public record DisplayArtworkListResult(List<ArtworkItemResult> artworks) {
       Long artworkId,
       String artworkName,
       String artistName,
+      Long artistUserId,
       String artworkImageUrl,
       int imageWidth,
       int imageHeight) {}

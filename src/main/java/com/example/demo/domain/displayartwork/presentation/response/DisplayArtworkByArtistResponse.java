@@ -9,6 +9,7 @@ public record DisplayArtworkByArtistResponse(List<ArtworkCardResponse> artworks)
       Long artworkId,
       String artworkName,
       String artistName,
+      Long artistUserId,
       String artworkImageUrl,
       int imageWidth,
       int imageHeight,

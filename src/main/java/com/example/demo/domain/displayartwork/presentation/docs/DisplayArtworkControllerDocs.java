@@ -61,6 +61,7 @@ public interface DisplayArtworkControllerDocs {
                                     "artworkId": 1,
                                     "artworkName": "Blue Moment",
                                     "artistName": "김마야",
+                                    "artistUserId": 5,
                                     "artworkImageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "imageWidth": 1200,
                                     "imageHeight": 1600,
@@ -132,6 +133,7 @@ public interface DisplayArtworkControllerDocs {
                                     "artworkId": 1,
                                     "artworkName": "Blue Moment",
                                     "artistName": "김마야",
+                                    "artistUserId": 5,
                                     "artworkImageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "imageWidth": 1200,
                                     "imageHeight": 1600
@@ -179,6 +181,7 @@ public interface DisplayArtworkControllerDocs {
                                     "artworkId": 1,
                                     "artworkName": "Blue Moment",
                                     "artistName": "김마야",
+                                    "artistUserId": 5,
                                     "artworkImageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "imageWidth": 1200,
                                     "imageHeight": 1600,

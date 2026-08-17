@@ -42,6 +42,12 @@ public class JpaCreatorRepositoryAdapter implements CreatorRepository {
   }
 
   @Override
+  public int renameCreatorNamesInDisplay(
+      Long displayId, Long userId, String previousName, String newName) {
+    return jpaRepository.renameCreatorNamesInDisplay(displayId, userId, previousName, newName);
+  }
+
+  @Override
   public void deleteAllByDisplayArtworkId(Long displayArtworkId) {
     jpaRepository.deleteAllByDisplayArtworkId(displayArtworkId);
   }
