@@ -3,6 +3,7 @@ package com.example.demo.domain.user.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -161,6 +162,50 @@ class SchoolEmailVerificationServiceTest {
     assertThat(user.getSchoolEmail()).isEqualTo(SCHOOL_EMAIL);
   }
 
+  @Test
+  void sendRejectsNullSchoolEmailAsInvalidEmail() {
+    FakeVerificationRepository repository = new FakeVerificationRepository(null);
+    UserRepository userRepository = mock(UserRepository.class);
+    SendSchoolEmailVerificationService service =
+        new SendSchoolEmailVerificationService(
+            repository, new FakeEmailSender(), new NoOpSchoolEmailValidator(), userRepository);
+
+    assertThatExceptionOfType(UserException.class)
+        .isThrownBy(
+            () -> service.execute(new SendSchoolEmailVerificationCommand(USER_ID, null, UNIV_NAME)))
+        .satisfies(
+            exception -> assertThat(exception.errorCode()).isEqualTo(UserErrorCode.INVALID_EMAIL));
+  }
+
+  @Test
+  void verificationRejectsBlankSchoolEmailAsInvalidEmail() {
+    VerifySchoolEmailVerificationService service =
+        new VerifySchoolEmailVerificationService(
+            new FakeVerificationRepository(null), mock(UserRepository.class));
+
+    assertThatExceptionOfType(UserException.class)
+        .isThrownBy(
+            () ->
+                service.execute(
+                    new VerifySchoolEmailVerificationCommand(USER_ID, "  ", VERIFICATION_CODE)))
+        .satisfies(
+            exception -> assertThat(exception.errorCode()).isEqualTo(UserErrorCode.INVALID_EMAIL));
+  }
+
+  @Test
+  void resendNormalizesSchoolEmailBeforeLookupAndSending() {
+    FakeVerificationRepository repository = new FakeVerificationRepository(createVerification());
+    SendSchoolEmailVerificationService sendService = mock(SendSchoolEmailVerificationService.class);
+    ResendSchoolEmailVerificationService service =
+        new ResendSchoolEmailVerificationService(repository, sendService);
+
+    service.execute(USER_ID, "  STUDENT@SCHOOL.AC.KR  ");
+
+    assertThat(repository.lastFindSchoolEmail).isEqualTo(SCHOOL_EMAIL);
+    verify(sendService)
+        .execute(new SendSchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, UNIV_NAME));
+  }
+
   private SchoolEmailVerification createVerification() {
     return SchoolEmailVerification.create(createUser(), SCHOOL_EMAIL, UNIV_NAME, VERIFICATION_CODE);
   }
@@ -174,6 +219,7 @@ class SchoolEmailVerificationServiceTest {
     private SchoolEmailVerification verification;
     private int saveCount;
     private int deleteCount;
+    private String lastFindSchoolEmail;
 
     private FakeVerificationRepository(SchoolEmailVerification verification) {
       this.verification = verification;
@@ -189,6 +235,7 @@ class SchoolEmailVerificationServiceTest {
     @Override
     public Optional<SchoolEmailVerification> findByUserIdAndSchoolEmail(
         Long userId, String schoolEmail) {
+      lastFindSchoolEmail = schoolEmail;
       return Optional.ofNullable(verification);
     }
 
