@@ -1,3 +1,0 @@
-ALTER TABLE `User`
-    ADD CONSTRAINT `UQ_USER_SCHOOL_EMAIL`
-        UNIQUE (`schoolEmail`);
