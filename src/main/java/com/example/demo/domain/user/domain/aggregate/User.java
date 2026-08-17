@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User")
+@Table(
+    name = "User",
+    uniqueConstraints =
+        @UniqueConstraint(name = "UQ_USER_SCHOOL_EMAIL", columnNames = "schoolEmail"))
 public class User extends BaseTimeEntity {
 
   private static final String WITHDRAWN_NICKNAME_PREFIX = "deleted_";
@@ -70,7 +74,10 @@ public class User extends BaseTimeEntity {
   private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
   public void verifySchoolEmail(String schoolEmail, String univName) {
-    this.schoolEmail = schoolEmail;
+    if (this.schoolEmail != null) {
+      throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
+    }
+    this.schoolEmail = schoolEmail.trim().toLowerCase(Locale.ROOT);
     this.univName = univName;
   }
 
