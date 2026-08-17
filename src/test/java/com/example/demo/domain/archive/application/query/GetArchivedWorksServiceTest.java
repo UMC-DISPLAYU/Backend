@@ -70,6 +70,7 @@ class GetArchivedWorksServiceTest {
                 new PersonalArtworkSummaryResult(
                     300L,
                     "작은 정원",
+                    "김마야",
                     "https://cdn/garden.png",
                     "COMPLEX",
                     List.of("COMPLEX"),

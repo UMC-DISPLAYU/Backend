@@ -94,6 +94,7 @@ public interface PersonalArtworkControllerDocs {
                                 {
                                   "personalArtworkId": 1,
                                   "artworkName": "작은 정원",
+                                  "artistName": "김마야",
                                   "thumbnailUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
                                   "type": "COMPLEX",
                                   "createdAt": "2026-08-04T09:00:00"
