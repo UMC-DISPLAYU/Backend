@@ -12,6 +12,7 @@ import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -48,13 +49,13 @@ class DisplayContentControllerTest {
   @Autowired private JwtFactory jwtFactory;
 
   @Test
-  void createCategorySucceedsWhenRequesterIsAcceptedTeamMember() throws Exception {
+  void createCategorySucceedsWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(displayWithMember());
 
     mockMvc
         .perform(
             post("/api/v1/display/{displayId}/content-categories", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
         .andExpect(status().isCreated())
@@ -85,18 +86,18 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void createCategoryReturnsForbiddenWhenRequesterIsNotAcceptedTeamMember() throws Exception {
+  void createCategoryReturnsForbiddenWhenRequesterIsNotTeamLeader() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(displayWithMember());
 
     mockMvc
         .perform(
             post("/api/v1/display/{displayId}/content-categories", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(3L))
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
   @Test
@@ -114,7 +115,7 @@ class DisplayContentControllerTest {
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
   }
 
   @Test
@@ -124,7 +125,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display/{displayId}/content-categories", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("", "전시장 이미지입니다.")))
         .andExpect(status().isBadRequest())
@@ -139,7 +140,7 @@ class DisplayContentControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display/{displayId}/content-categories", display.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequestWithoutDescription("전시장 전경")))
         .andExpect(status().isCreated())
@@ -158,7 +159,7 @@ class DisplayContentControllerTest {
                     "/api/v1/display/{displayId}/content-categories/{categoryId}",
                     display.getId(),
                     999L)
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("메인 전시장", "메인 전시장 이미지입니다.")))
         .andExpect(status().isNotFound())
@@ -178,7 +179,7 @@ class DisplayContentControllerTest {
                     "/api/v1/display/{displayId}/content-categories/{categoryId}",
                     savedDisplay.getId(),
                     categoryId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(2L)))
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(savedDisplay.getId()))
@@ -206,6 +207,7 @@ class DisplayContentControllerTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.categoryId").value(categoryId))
         .andExpect(jsonPath("$.success.data.contentId").isNumber())
+        .andExpect(jsonPath("$.success.data.userId").value(2L))
         .andExpect(
             jsonPath("$.success.data.imageUrl")
                 .value("https://cdn.displayu.com/display/content-2.jpg"))
@@ -273,7 +275,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void updateContentSucceedsWhenRequesterIsAcceptedTeamMemberOnDraftDisplay() throws Exception {
+  void updateContentSucceedsWhenRequesterIsContentUploader() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -292,6 +294,7 @@ class DisplayContentControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.contentId").value(contentId))
+        .andExpect(jsonPath("$.success.data.userId").value(2L))
         .andExpect(
             jsonPath("$.success.data.imageUrl")
                 .value("https://cdn.displayu.com/display/content-updated.jpg"));
@@ -319,7 +322,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void deleteContentSucceedsWhenRequesterIsAcceptedTeamMemberOnDraftDisplay() throws Exception {
+  void deleteContentSucceedsWhenRequesterIsContentUploader() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -357,6 +360,48 @@ class DisplayContentControllerTest {
                     category.getId(),
                     contentId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(3L)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+  }
+
+  @Test
+  void deleteContentReturnsForbiddenWhenRequesterIsNotContentUploader() throws Exception {
+    Display display = displayWithCategory();
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
+    Long contentId = category.getContents().getFirst().getId();
+
+    mockMvc
+        .perform(
+            delete(
+                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    savedDisplay.getId(),
+                    category.getId(),
+                    contentId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.resultType").value("FAIL"))
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+  }
+
+  @Test
+  void updateContentReturnsForbiddenWhenRequesterIsNotContentUploader() throws Exception {
+    Display display = displayWithCategory();
+    Display savedDisplay = displayJpaRepository.saveAndFlush(display);
+    DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
+    Long contentId = category.getContents().getFirst().getId();
+
+    mockMvc
+        .perform(
+            patch(
+                    "/api/v1/display/{displayId}/content-categories/{categoryId}/contents/{contentId}",
+                    savedDisplay.getId(),
+                    category.getId(),
+                    contentId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(contentRequest("https://cdn.displayu.com/display/content-updated.jpg")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
@@ -477,6 +522,8 @@ class DisplayContentControllerTest {
   private static Display displayWithMember() {
     Display display = display();
     display.addTeamMember(
+        new TeamMember(null, new UserId(1L), "팀 리더", TeamMemberRole.TEAM_LEADER, true));
+    display.addTeamMember(
         new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
     return display;
   }
@@ -489,8 +536,7 @@ class DisplayContentControllerTest {
             "전시장 전경",
             "전시장 이미지입니다.",
             0,
-            List.of(
-                new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0))));
+            List.of(content("https://cdn.displayu.com/display/content-1.jpg", 0, 2L))));
     return display;
   }
 
@@ -503,9 +549,9 @@ class DisplayContentControllerTest {
             "전시장 이미지입니다.",
             0,
             List.of(
-                new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0),
-                new DisplayContent(null, "https://cdn.displayu.com/display/content-2.jpg", 1),
-                new DisplayContent(null, "https://cdn.displayu.com/display/content-3.jpg", 2))));
+                content("https://cdn.displayu.com/display/content-1.jpg", 0, 2L),
+                content("https://cdn.displayu.com/display/content-2.jpg", 1, 2L),
+                content("https://cdn.displayu.com/display/content-3.jpg", 2, 2L))));
     return display;
   }
 
@@ -520,11 +566,14 @@ class DisplayContentControllerTest {
     return java.util.stream.IntStream.range(0, 20)
         .mapToObj(
             index ->
-                new DisplayContent(
-                    null,
-                    "https://cdn.displayu.com/display/content-" + (index + 1) + ".jpg",
-                    index))
+                content(
+                    "https://cdn.displayu.com/display/content-" + (index + 1) + ".jpg", index, 2L))
         .toList();
+  }
+
+  private static DisplayContent content(String imageUrl, int sortOrder, Long userId) {
+    return new DisplayContent(
+        null, imageUrl, sortOrder, DisplayContentStatus.PUBLISHED, new UserId(userId));
   }
 
   private static Display display() {

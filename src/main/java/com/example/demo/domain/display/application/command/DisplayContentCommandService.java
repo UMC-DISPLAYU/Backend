@@ -14,6 +14,7 @@ import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.OptimisticLockException;
 import java.time.Clock;
@@ -45,7 +46,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireContentEditor(display, command.userId());
+    displayPermissionChecker.requireTeamLeader(display, command.userId());
     DisplayContentCategory category =
         display.createContentCategory(command.name(), command.description());
     displayRepository.flush();
@@ -58,7 +59,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireContentEditor(display, command.userId());
+    displayPermissionChecker.requireTeamLeader(display, command.userId());
     DisplayContentCategory category =
         display.changeContentCategory(command.categoryId(), command.name(), command.description());
 
@@ -71,7 +72,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireContentEditor(display, command.userId());
+    displayPermissionChecker.requireTeamLeader(display, command.userId());
     display.removeContentCategory(command.categoryId());
 
     return new DeleteDisplayContentCategoryResult(command.displayId(), command.categoryId());
@@ -85,7 +86,10 @@ public class DisplayContentCommandService {
     displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContent content =
         display.createContent(
-            command.categoryId(), command.imageUrl(), initialContentStatus(display));
+            command.categoryId(),
+            command.imageUrl(),
+            initialContentStatus(display),
+            new UserId(command.userId()));
     displayRepository.flush();
 
     return DisplayContentResult.from(content);
@@ -96,7 +100,8 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireContentEditor(display, command.userId());
+    DisplayContent targetContent = display.findContent(command.categoryId(), command.contentId());
+    displayPermissionChecker.requireContentOwner(targetContent, command.userId());
     DisplayContent content =
         display.changeContent(command.categoryId(), command.contentId(), command.imageUrl());
 
@@ -108,7 +113,8 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireContentEditor(display, command.userId());
+    DisplayContent content = display.findContent(command.categoryId(), command.contentId());
+    displayPermissionChecker.requireContentOwner(content, command.userId());
     display.removeContent(command.categoryId(), command.contentId());
 
     return new DeleteDisplayContentResult(

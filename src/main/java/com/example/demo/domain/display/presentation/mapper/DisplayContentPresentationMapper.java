@@ -82,7 +82,11 @@ public class DisplayContentPresentationMapper {
 
   public DisplayContentResponse toResponse(DisplayContentResult result) {
     return new DisplayContentResponse(
-        result.categoryId(), result.contentId(), result.imageUrl(), result.sortOrder());
+        result.categoryId(),
+        result.contentId(),
+        result.userId(),
+        result.imageUrl(),
+        result.sortOrder());
   }
 
   public DeleteDisplayContentCategoryResponse toResponse(

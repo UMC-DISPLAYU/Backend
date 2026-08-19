@@ -50,7 +50,7 @@ public record DisplayDetailResponse(
       int sortOrder,
       List<ContentResponse> contents) {}
 
-  public record ContentResponse(Long contentId, String imageUrl, int sortOrder) {}
+  public record ContentResponse(Long contentId, Long userId, String imageUrl, int sortOrder) {}
 
   public record TeamMemberResponse(
       Long teamMemberId, Long userId, String displayNickname, String role, boolean accepted) {}
