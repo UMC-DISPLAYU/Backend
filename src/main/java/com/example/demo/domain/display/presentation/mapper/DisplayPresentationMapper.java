@@ -14,7 +14,6 @@ import com.example.demo.domain.display.application.result.GraduationDisplayResul
 import com.example.demo.domain.display.application.result.MyDisplayListResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
-import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
@@ -54,8 +53,8 @@ public class DisplayPresentationMapper {
         department(request),
         request.displayNickname(),
         request.contract(),
-        toDisplayType(request.type()),
-        request.fields().stream().map(this::toDisplayField).toList(),
+        request.type(),
+        request.fields(),
         toDisplayRegion(request.region()),
         request.startDate(),
         request.endDate(),
@@ -71,10 +70,8 @@ public class DisplayPresentationMapper {
         request.displayId(),
         request.title(),
         request.posterImageUrl(),
-        request.type() == null ? null : toDisplayType(request.type()),
-        request.fields() == null
-            ? null
-            : request.fields().stream().map(this::toDisplayField).toList(),
+        request.type(),
+        request.fields(),
         request.schoolOrOrganization(),
         request.departmentOrClub(),
         request.hostOrganizationName(),
@@ -336,58 +333,8 @@ public class DisplayPresentationMapper {
     return requiresSchoolInfo(request.type()) ? request.departmentOrClub() : "";
   }
 
-  private boolean requiresSchoolInfo(CreateDisplayRequest.Type type) {
-    return type == CreateDisplayRequest.Type.GRADUATION || type == CreateDisplayRequest.Type.TASK;
-  }
-
-  private DisplayType toDisplayType(CreateDisplayRequest.Type type) {
-    return switch (type) {
-      case GRADUATION -> DisplayType.GRADUATION;
-      case TASK -> DisplayType.ASSIGNMENTS;
-      case CLUB -> DisplayType.SMALL_GROUP;
-      case JOINT -> DisplayType.INTER_GROUP;
-      case ETC -> DisplayType.OTHERS;
-    };
-  }
-
-  private DisplayType toDisplayType(UpdateDisplayRequest.Type type) {
-    return switch (type) {
-      case GRADUATION -> DisplayType.GRADUATION;
-      case TASK -> DisplayType.ASSIGNMENTS;
-      case CLUB -> DisplayType.SMALL_GROUP;
-      case JOINT -> DisplayType.INTER_GROUP;
-      case ETC -> DisplayType.OTHERS;
-    };
-  }
-
-  private DisplayField toDisplayField(CreateDisplayRequest.Field field) {
-    return switch (field) {
-      case PAINTING -> DisplayField.PAINTING;
-      case DESIGN -> DisplayField.DESIGN;
-      case PHOTOGRAPHY -> DisplayField.PHOTOGRAPHY;
-      case ARCHITECTURE -> DisplayField.ARCHITECTURE;
-      case MEDIA -> DisplayField.VIDEO;
-      case CRAFT -> DisplayField.CRAFTS;
-      case SCULPTURE -> DisplayField.SCULPTURE;
-      case FASHION -> DisplayField.FASHION;
-      case COMPLEX -> DisplayField.INTERDISCIPLINARY;
-      case ETC -> DisplayField.OTHERS;
-    };
-  }
-
-  private DisplayField toDisplayField(UpdateDisplayRequest.Field field) {
-    return switch (field) {
-      case PAINTING -> DisplayField.PAINTING;
-      case DESIGN -> DisplayField.DESIGN;
-      case PHOTOGRAPHY -> DisplayField.PHOTOGRAPHY;
-      case ARCHITECTURE -> DisplayField.ARCHITECTURE;
-      case MEDIA -> DisplayField.VIDEO;
-      case CRAFT -> DisplayField.CRAFTS;
-      case SCULPTURE -> DisplayField.SCULPTURE;
-      case FASHION -> DisplayField.FASHION;
-      case COMPLEX -> DisplayField.INTERDISCIPLINARY;
-      case ETC -> DisplayField.OTHERS;
-    };
+  private boolean requiresSchoolInfo(DisplayType type) {
+    return type == DisplayType.GRADUATION || type == DisplayType.ASSIGNMENTS;
   }
 
   private DisplayRegion toDisplayRegion(CreateDisplayRequest.Region region) {

@@ -1,5 +1,7 @@
 package com.example.demo.domain.display.presentation.request;
 
+import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,8 +14,8 @@ public record UpdateDisplayRequest(
     @NotNull @Positive Long displayId,
     String title,
     String posterImageUrl,
-    Type type,
-    List<Field> fields,
+    DisplayType type,
+    List<DisplayField> fields,
     String schoolOrOrganization,
     String departmentOrClub,
     String hostOrganizationName,
@@ -29,26 +31,5 @@ public record UpdateDisplayRequest(
 
   @AssertTrue(message = "fields는 비어 있을 수 없습니다.") public boolean isFieldsValid() {
     return fields == null || !fields.isEmpty();
-  }
-
-  public enum Type {
-    GRADUATION,
-    TASK,
-    CLUB,
-    JOINT,
-    ETC
-  }
-
-  public enum Field {
-    PAINTING,
-    DESIGN,
-    PHOTOGRAPHY,
-    ARCHITECTURE,
-    MEDIA,
-    CRAFT,
-    SCULPTURE,
-    FASHION,
-    COMPLEX,
-    ETC
   }
 }

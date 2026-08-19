@@ -9,6 +9,6 @@ public enum DisplayField {
   CRAFTS,
   SCULPTURE,
   FASHION,
-  INTERDISCIPLINARY,
+  ILLUSTRATION,
   OTHERS
 }

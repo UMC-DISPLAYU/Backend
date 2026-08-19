@@ -1,5 +1,7 @@
 package com.example.demo.domain.display.presentation.request;
 
+import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
@@ -17,8 +19,8 @@ public record CreateDisplayRequest(
     @NotBlank String title,
     @NotBlank String posterImageUrl,
     @JsonProperty("displayImageUrl") @Size(max = 4) List<@NotBlank String> displayImageUrls,
-    @NotNull Type type,
-    @NotEmpty List<Field> fields,
+    @NotNull DisplayType type,
+    @NotEmpty List<DisplayField> fields,
     @NotNull Region region,
     @NotBlank String schoolOrOrganization,
     String departmentOrClub,
@@ -37,7 +39,7 @@ public record CreateDisplayRequest(
     @NotBlank String roadAddress,
     String precautions) {
 
-  @AssertTrue(message = "GRADUATION, TASK 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {
+  @AssertTrue(message = "GRADUATION, ASSIGNMENTS 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {
     return !requiresSchoolInfo() || hasText(departmentOrClub);
   }
 
@@ -46,32 +48,11 @@ public record CreateDisplayRequest(
   }
 
   private boolean requiresSchoolInfo() {
-    return type == Type.GRADUATION || type == Type.TASK;
+    return type == DisplayType.GRADUATION || type == DisplayType.ASSIGNMENTS;
   }
 
   private static boolean hasText(String value) {
     return value != null && !value.isBlank();
-  }
-
-  public enum Type {
-    GRADUATION,
-    TASK,
-    CLUB,
-    JOINT,
-    ETC
-  }
-
-  public enum Field {
-    PAINTING,
-    DESIGN,
-    PHOTOGRAPHY,
-    ARCHITECTURE,
-    MEDIA,
-    CRAFT,
-    SCULPTURE,
-    FASHION,
-    COMPLEX,
-    ETC
   }
 
   public enum Region {
