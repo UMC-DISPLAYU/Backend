@@ -74,6 +74,40 @@ class DisplayControllerCreateTest {
   }
 
   @Test
+  void createDisplaySucceedsWithSmallGroupTypeAndIllustrationField() throws Exception {
+    User user = userJpaRepository.save(user("소모임장"));
+    String request =
+        requestBody("SEOUL")
+            .replace("\"GRADUATION\"", "\"SMALL_GROUP\"")
+            .replace("[\"DESIGN\", \"VIDEO\"]", "[\"ILLUSTRATION\"]");
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.displayType").value("SMALL_GROUP"));
+  }
+
+  @Test
+  void createDisplayRejectsLegacyInterdisciplinaryField() throws Exception {
+    User user = userJpaRepository.save(user("소모임장"));
+    String request =
+        requestBody("SEOUL").replace("[\"DESIGN\", \"VIDEO\"]", "[\"INTERDISCIPLINARY\"]");
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("MALFORMED_JSON"));
+  }
+
+  @Test
   void createDisplayReturnsBadRequestWhenRegionIsAll() throws Exception {
     User user = userJpaRepository.save(user("홍길동"));
 
@@ -182,7 +216,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
+          "fields": ["DESIGN", "VIDEO"],
           "region": "%s",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -215,7 +249,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
+          "fields": ["DESIGN", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -246,7 +280,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
+          "fields": ["DESIGN", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -280,7 +314,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-5.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
+          "fields": ["DESIGN", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
