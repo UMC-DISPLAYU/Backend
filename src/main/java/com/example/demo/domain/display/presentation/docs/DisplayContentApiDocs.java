@@ -14,7 +14,7 @@ public final class DisplayContentApiDocs {
 
   public static final String CREATE_CATEGORY_SUMMARY = "전시 콘텐츠 카테고리 생성";
   public static final String CREATE_CATEGORY_DESCRIPTION =
-      "수락된 전시 팀원이 전시 콘텐츠 이미지들을 담을 카테고리를 생성합니다. sortOrder는 서버가 자동 부여합니다.";
+      "전시 팀 리더가 전시 콘텐츠 이미지들을 담을 카테고리를 생성합니다. sortOrder는 서버가 자동 부여합니다.";
   public static final String CREATE_CATEGORY_REQUEST_DESCRIPTION = "전시 콘텐츠 카테고리 생성 요청";
   public static final String CREATE_CATEGORY_REQUEST_EXAMPLE_NAME =
       "Display content category create request";
@@ -23,7 +23,7 @@ public final class DisplayContentApiDocs {
       "Display content category create success";
 
   public static final String UPDATE_CATEGORY_SUMMARY = "전시 콘텐츠 카테고리 수정";
-  public static final String UPDATE_CATEGORY_DESCRIPTION = "수락된 전시 팀원이 전시 콘텐츠 카테고리의 이름과 설명을 수정합니다.";
+  public static final String UPDATE_CATEGORY_DESCRIPTION = "전시 팀 리더가 전시 콘텐츠 카테고리의 이름과 설명을 수정합니다.";
   public static final String UPDATE_CATEGORY_REQUEST_DESCRIPTION = "전시 콘텐츠 카테고리 수정 요청";
   public static final String UPDATE_CATEGORY_REQUEST_EXAMPLE_NAME =
       "Display content category update request";
@@ -33,7 +33,7 @@ public final class DisplayContentApiDocs {
 
   public static final String DELETE_CATEGORY_SUMMARY = "전시 콘텐츠 카테고리 삭제";
   public static final String DELETE_CATEGORY_DESCRIPTION =
-      "수락된 전시 팀원이 전시 콘텐츠 카테고리를 삭제합니다. 카테고리 안의 이미지도 함께 삭제됩니다.";
+      "전시 팀 리더가 전시 콘텐츠 카테고리를 삭제합니다. 카테고리 안의 이미지도 함께 삭제됩니다.";
   public static final String DELETE_CATEGORY_SUCCESS_DESCRIPTION = "전시 콘텐츠 카테고리 삭제 성공";
   public static final String DELETE_CATEGORY_SUCCESS_EXAMPLE_NAME =
       "Display content category delete success";
@@ -49,14 +49,15 @@ public final class DisplayContentApiDocs {
 
   public static final String UPDATE_CONTENT_SUMMARY = "전시 콘텐츠 이미지 수정";
   public static final String UPDATE_CONTENT_DESCRIPTION =
-      "수락된 전시 팀원이 카테고리 안의 이미지 URL과 이미지 크기를 수정합니다. 콘텐츠 이미지 수정은 전시 대표 이미지(imageType=MAIN, sortOrder=0)에 영향을 주지 않습니다.";
+      "전시 콘텐츠 이미지를 최초 업로드한 사용자가 카테고리 안의 이미지 URL과 이미지 크기를 수정합니다. 콘텐츠 이미지 수정은 전시 대표 이미지(imageType=MAIN, sortOrder=0)에 영향을 주지 않습니다.";
   public static final String UPDATE_CONTENT_REQUEST_DESCRIPTION = "전시 콘텐츠 이미지 수정 요청";
   public static final String UPDATE_CONTENT_REQUEST_EXAMPLE_NAME = "Display content update request";
   public static final String UPDATE_CONTENT_SUCCESS_DESCRIPTION = "전시 콘텐츠 이미지 수정 성공";
   public static final String UPDATE_CONTENT_SUCCESS_EXAMPLE_NAME = "Display content update success";
 
   public static final String DELETE_CONTENT_SUMMARY = "전시 콘텐츠 이미지 삭제";
-  public static final String DELETE_CONTENT_DESCRIPTION = "수락된 전시 팀원이 카테고리 안의 이미지를 삭제합니다.";
+  public static final String DELETE_CONTENT_DESCRIPTION =
+      "전시 콘텐츠 이미지를 최초 업로드한 사용자가 카테고리 안의 이미지를 삭제합니다.";
   public static final String DELETE_CONTENT_SUCCESS_DESCRIPTION = "전시 콘텐츠 이미지 삭제 성공";
   public static final String DELETE_CONTENT_SUCCESS_EXAMPLE_NAME = "Display content delete success";
 
@@ -116,6 +117,7 @@ public final class DisplayContentApiDocs {
               {
                 "categoryId": 3,
                 "contentId": 7,
+                "userId": 10,
                 "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
                 "sortOrder": 0
               }
@@ -163,6 +165,7 @@ public final class DisplayContentApiDocs {
           "data": {
             "categoryId": 3,
             "contentId": 7,
+            "userId": 10,
             "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
             "sortOrder": 0
           }
@@ -183,6 +186,7 @@ public final class DisplayContentApiDocs {
           "data": {
             "categoryId": 3,
             "contentId": 7,
+            "userId": 10,
             "imageUrl": "https://cdn.displayu.com/display/content-7-updated.jpg",
             "sortOrder": 0
           }
@@ -233,18 +237,21 @@ public final class DisplayContentApiDocs {
               {
                 "categoryId": 3,
                 "contentId": 9,
+                "userId": 11,
                 "imageUrl": "https://cdn.displayu.com/display/content-9.jpg",
                 "sortOrder": 0
               },
               {
                 "categoryId": 3,
                 "contentId": 7,
+                "userId": 10,
                 "imageUrl": "https://cdn.displayu.com/display/content-7.jpg",
                 "sortOrder": 1
               },
               {
                 "categoryId": 3,
                 "contentId": 8,
+                "userId": 10,
                 "imageUrl": "https://cdn.displayu.com/display/content-8.jpg",
                 "sortOrder": 2
               }

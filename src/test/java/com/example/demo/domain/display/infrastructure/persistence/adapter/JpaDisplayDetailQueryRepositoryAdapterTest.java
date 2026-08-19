@@ -62,7 +62,12 @@ class JpaDisplayDetailQueryRepositoryAdapterTest {
             0,
             List.of(
                 new DisplayContent(null, "https://cdn.displayu.com/display/content-1.jpg", 0),
-                new DisplayContent(null, "https://cdn.displayu.com/display/content-2.jpg", 1))));
+                new DisplayContent(
+                    null,
+                    "https://cdn.displayu.com/display/content-2.jpg",
+                    1,
+                    com.example.demo.domain.display.domain.type.DisplayContentStatus.PUBLISHED,
+                    new UserId(2L)))));
     display.addTeamMember(
         new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
     display.addInvitation(
@@ -96,6 +101,9 @@ class JpaDisplayDetailQueryRepositoryAdapterTest {
     assertThat(result.contentCategories().getFirst().contents())
         .extracting(DisplayDetailResult.ContentResult::sortOrder)
         .containsExactly(0, 1);
+    assertThat(result.contentCategories().getFirst().contents())
+        .extracting(DisplayDetailResult.ContentResult::userId)
+        .containsExactly(null, 2L);
     assertThat(result.teamMembers())
         .extracting(DisplayDetailResult.TeamMemberResult::displayNickname)
         .containsExactly("팀원");

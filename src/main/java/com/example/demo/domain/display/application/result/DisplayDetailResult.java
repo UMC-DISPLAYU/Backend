@@ -167,10 +167,14 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ContentResult(Long contentId, String imageUrl, int sortOrder) {
+  public record ContentResult(Long contentId, Long userId, String imageUrl, int sortOrder) {
 
     private static ContentResult from(DisplayContent content) {
-      return new ContentResult(content.getId(), content.getImageUrl(), content.getSortOrder());
+      return new ContentResult(
+          content.getId(),
+          content.getUserId() == null ? null : content.getUserId().value(),
+          content.getImageUrl(),
+          content.getSortOrder());
     }
   }
 
