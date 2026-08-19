@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.permission;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
@@ -19,6 +20,12 @@ public class DisplayPermissionChecker {
 
   public void requireContentEditor(Display display, Long userId) {
     if (!display.hasAcceptedTeamMember(userId)) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED);
+    }
+  }
+
+  public void requireContentOwner(DisplayContent content, Long userId) {
+    if (content.getUserId() == null || !content.getUserId().value().equals(userId)) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED);
     }
   }

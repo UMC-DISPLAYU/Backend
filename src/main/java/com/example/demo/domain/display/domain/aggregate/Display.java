@@ -604,13 +604,23 @@ public class Display extends SoftDeleteBaseEntity {
 
   public DisplayContent createContent(
       Long categoryId, String imageUrl, DisplayContentStatus status) {
+    return createContent(categoryId, imageUrl, status, null);
+  }
+
+  public DisplayContent createContent(
+      Long categoryId, String imageUrl, DisplayContentStatus status, UserId userId) {
     DisplayContentCategory category = findContentCategory(categoryId);
-    return category.createContent(imageUrl, status);
+    return category.createContent(imageUrl, status, userId);
   }
 
   public DisplayContent changeContent(Long categoryId, Long contentId, String imageUrl) {
     DisplayContentCategory category = findContentCategory(categoryId);
     return category.changeContent(contentId, imageUrl);
+  }
+
+  public DisplayContent findContent(Long categoryId, Long contentId) {
+    DisplayContentCategory category = findContentCategory(categoryId);
+    return category.findContent(contentId);
   }
 
   public void removeContent(Long categoryId, Long contentId) {

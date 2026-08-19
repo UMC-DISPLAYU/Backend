@@ -934,6 +934,7 @@ public final class DisplayApiDocs {
                 "contents": [
                   {
                     "contentId": 1,
+                    "userId": 10,
                     "imageUrl": "https://cdn.displayu.com/display/content-1.jpg",
                     "sortOrder": 0
                   }
