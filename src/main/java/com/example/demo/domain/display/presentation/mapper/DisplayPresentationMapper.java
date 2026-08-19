@@ -293,7 +293,7 @@ public class DisplayPresentationMapper {
   private DisplayDetailResponse.ContentResponse toResponse(
       DisplayDetailResult.ContentResult result) {
     return new DisplayDetailResponse.ContentResponse(
-        result.contentId(), result.imageUrl(), result.sortOrder());
+        result.contentId(), result.userId(), result.imageUrl(), result.sortOrder());
   }
 
   private DisplayDetailResponse.TeamMemberResponse toResponse(

@@ -3,6 +3,7 @@ package com.example.demo.domain.display.domain.entity;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.BaseTimeEntity;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.CascadeType;
@@ -94,10 +95,14 @@ public class DisplayContentCategory extends BaseTimeEntity {
   }
 
   public DisplayContent createContent(String imageUrl, DisplayContentStatus status) {
+    return createContent(imageUrl, status, null);
+  }
+
+  public DisplayContent createContent(String imageUrl, DisplayContentStatus status, UserId userId) {
     if (contents.size() >= MAX_CONTENT_COUNT) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_LIMIT_EXCEEDED);
     }
-    DisplayContent content = new DisplayContent(null, imageUrl, nextSortOrder(), status);
+    DisplayContent content = new DisplayContent(null, imageUrl, nextSortOrder(), status, userId);
     addContent(content);
     return content;
   }

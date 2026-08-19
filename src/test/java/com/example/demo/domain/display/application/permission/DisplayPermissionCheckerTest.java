@@ -7,9 +7,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
+import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
+import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,49 @@ class DisplayPermissionCheckerTest {
     Display display = mock(Display.class);
 
     assertThatThrownBy(() -> checker.requireContentEditor(display, USER_ID))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED));
+  }
+
+  @Test
+  void requireContentOwnerAllowsUploader() {
+    DisplayContent content =
+        new DisplayContent(
+            1L,
+            "https://cdn.displayu.com/content.jpg",
+            0,
+            DisplayContentStatus.PUBLISHED,
+            new UserId(USER_ID));
+
+    assertThatCode(() -> checker.requireContentOwner(content, USER_ID)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void requireContentOwnerRejectsDifferentUser() {
+    DisplayContent content =
+        new DisplayContent(
+            1L,
+            "https://cdn.displayu.com/content.jpg",
+            0,
+            DisplayContentStatus.PUBLISHED,
+            new UserId(2L));
+
+    assertThatThrownBy(() -> checker.requireContentOwner(content, USER_ID))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED));
+  }
+
+  @Test
+  void requireContentOwnerRejectsLegacyContentWithoutUploader() {
+    DisplayContent content = new DisplayContent(1L, "https://cdn.displayu.com/content.jpg", 0);
+
+    assertThatThrownBy(() -> checker.requireContentOwner(content, USER_ID))
         .isInstanceOfSatisfying(
             BusinessException.class,
             exception ->

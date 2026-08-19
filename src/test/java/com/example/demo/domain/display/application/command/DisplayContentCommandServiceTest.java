@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
+import com.example.demo.domain.display.application.result.DisplayContentResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayContent;
 import com.example.demo.domain.display.domain.entity.DisplayContentCategory;
@@ -56,6 +57,35 @@ class DisplayContentCommandServiceTest {
             2L, 1L, 1L, "https://cdn.displayu.com/display/content.jpg"));
 
     assertThat(category.getContents().getFirst().getStatus()).isEqualTo(DisplayContentStatus.DRAFT);
+    assertThat(category.getContents().getFirst().getUserId().value()).isEqualTo(2L);
+  }
+
+  @Test
+  void updateContentKeepsOriginalUploaderUserId() {
+    Display display = display();
+    display.addTeamMember(new TeamMember(1L, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    display.addContentCategory(
+        new DisplayContentCategory(
+            1L,
+            "전시장 전경",
+            "전시장 이미지입니다.",
+            0,
+            List.of(
+                new DisplayContent(
+                    1L,
+                    "https://cdn.displayu.com/display/content-1.jpg",
+                    0,
+                    DisplayContentStatus.PUBLISHED,
+                    new UserId(2L)))));
+    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
+
+    DisplayContentResult result =
+        service.updateContent(
+            new UpdateDisplayContentCommand(
+                2L, 1L, 1L, 1L, "https://cdn.displayu.com/display/content-updated.jpg"));
+
+    assertThat(result.userId()).isEqualTo(2L);
+    assertThat(result.imageUrl()).isEqualTo("https://cdn.displayu.com/display/content-updated.jpg");
   }
 
   @Test

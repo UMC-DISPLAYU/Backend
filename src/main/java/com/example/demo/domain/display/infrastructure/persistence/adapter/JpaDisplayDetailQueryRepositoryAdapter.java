@@ -163,7 +163,12 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
 
     List<Tuple> contents =
         queryFactory
-            .select(content.category.id, content.id, content.imageUrl, content.sortOrder)
+            .select(
+                content.category.id,
+                content.id,
+                content.userId.value,
+                content.imageUrl,
+                content.sortOrder)
             .from(content)
             .where(
                 content.category.id.in(categoryIds),
@@ -179,6 +184,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                     tuple ->
                         new DisplayDetailResult.ContentResult(
                             tuple.get(content.id),
+                            tuple.get(content.userId.value),
                             tuple.get(content.imageUrl),
                             tuple.get(content.sortOrder)),
                     Collectors.toList())));

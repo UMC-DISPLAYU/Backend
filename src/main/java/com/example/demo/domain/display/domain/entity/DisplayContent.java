@@ -1,8 +1,11 @@
 package com.example.demo.domain.display.domain.entity;
 
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.BaseTimeEntity;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,17 +42,27 @@ public class DisplayContent extends BaseTimeEntity {
   @Column(nullable = false)
   private DisplayContentStatus status;
 
+  @Embedded
+  @AttributeOverride(name = "value", column = @Column(name = "userId"))
+  private UserId userId;
+
   protected DisplayContent() {}
 
   public DisplayContent(Long id, String imageUrl, int sortOrder) {
-    this(id, imageUrl, sortOrder, DisplayContentStatus.PUBLISHED);
+    this(id, imageUrl, sortOrder, DisplayContentStatus.PUBLISHED, null);
   }
 
   public DisplayContent(Long id, String imageUrl, int sortOrder, DisplayContentStatus status) {
+    this(id, imageUrl, sortOrder, status, null);
+  }
+
+  public DisplayContent(
+      Long id, String imageUrl, int sortOrder, DisplayContentStatus status, UserId userId) {
     this.id = id;
     changeImageUrl(imageUrl);
     changeSortOrder(sortOrder);
     this.status = Objects.requireNonNull(status, "status must not be null.");
+    this.userId = userId;
   }
 
   public void assignCategory(DisplayContentCategory category) {
