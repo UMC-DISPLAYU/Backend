@@ -92,6 +92,22 @@ class DisplayControllerCreateTest {
   }
 
   @Test
+  void createDisplayRejectsLegacyInterdisciplinaryField() throws Exception {
+    User user = userJpaRepository.save(user("소모임장"));
+    String request =
+        requestBody("SEOUL").replace("[\"DESIGN\", \"VIDEO\"]", "[\"INTERDISCIPLINARY\"]");
+
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST_BODY"));
+  }
+
+  @Test
   void createDisplayReturnsBadRequestWhenRegionIsAll() throws Exception {
     User user = userJpaRepository.save(user("홍길동"));
 
