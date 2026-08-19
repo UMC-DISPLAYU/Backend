@@ -104,7 +104,7 @@ class DisplayControllerCreateTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST_BODY"));
+        .andExpect(jsonPath("$.error.code").value("MALFORMED_JSON"));
   }
 
   @Test
