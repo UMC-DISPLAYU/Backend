@@ -126,7 +126,7 @@ class DisplayControllerUpdateTest {
           "title": "FORM 2026 (수정본)",
           "posterImageUrl": "https://cdn.displayu.com/posters/updated.png",
           "type": "GRADUATION",
-          "fields": ["DESIGN", "MEDIA"],
+          "fields": ["DESIGN", "VIDEO"],
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부 시각디자인",
           "hostOrganizationName": null,

@@ -28,7 +28,7 @@ public record SearchDisplayRequest(
             description =
                 "전시 분야. PAINTING: 회화, DESIGN: 디자인, PHOTOGRAPHY: 사진, ARCHITECTURE: 건축, "
                     + "VIDEO: 영상, CRAFTS: 공예, SCULPTURE: 조소, FASHION: 패션, "
-                    + "INTERDISCIPLINARY: 융복합, OTHERS: 기타",
+                    + "ILLUSTRATION: 일러스트, OTHERS: 기타",
             allowableValues = {
               "PAINTING",
               "DESIGN",
@@ -38,7 +38,7 @@ public record SearchDisplayRequest(
               "CRAFTS",
               "SCULPTURE",
               "FASHION",
-              "INTERDISCIPLINARY",
+              "ILLUSTRATION",
               "OTHERS"
             },
             example = "DESIGN")
