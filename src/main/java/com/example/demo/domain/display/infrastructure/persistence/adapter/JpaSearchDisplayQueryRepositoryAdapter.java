@@ -51,19 +51,19 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.deletedAt.isNull(),
-            cursorAfter(query.cursor()),
+            cursorBefore(query.cursor()),
             searchWordContains(query.searchWord()),
             regionEq(query),
             query.type() == null ? null : display.displayType.eq(query.type()),
             fieldExists(query),
             statusCondition(query.status(), today))
-        .orderBy(display.id.asc())
+        .orderBy(display.id.desc())
         .limit(limit)
         .fetch();
   }
 
-  private BooleanExpression cursorAfter(Long cursor) {
-    return cursor == null ? null : display.id.gt(cursor);
+  private BooleanExpression cursorBefore(Long cursor) {
+    return cursor == null || cursor == 0 ? null : display.id.lt(cursor);
   }
 
   private BooleanExpression searchWordContains(String searchWord) {

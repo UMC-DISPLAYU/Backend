@@ -67,7 +67,7 @@ class DisplayControllerSearchTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].displayId", notNullValue()))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].title").value("디자인 졸업전시"))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].title").value("시각 디자인 전시"))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
@@ -76,10 +76,10 @@ class DisplayControllerSearchTest {
                 .value("organization department"))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].startedAt")
-                .value(today.minusDays(1).toString()))
+                .value(today.minusDays(2).toString()))
         .andExpect(
-            jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(5).toString()))
-        .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(5))
+            jsonPath("$.success.data.exhibitions[0].endedAt").value(today.plusDays(3).toString()))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].dayLeft").value(3))
         .andExpect(jsonPath("$.success.data.exhibitions[0].isArchived").value(false))
         .andExpect(jsonPath("$.success.data.pagination.nextCursor", notNullValue()))
         .andExpect(jsonPath("$.success.data.pagination.size").value(1))
