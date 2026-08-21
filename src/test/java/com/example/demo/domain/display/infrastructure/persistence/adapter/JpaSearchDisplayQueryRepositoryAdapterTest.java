@@ -135,7 +135,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
-        .containsExactly("디자인 졸업전시", "시각 디자인 전시")
+        .containsExactly("시각 디자인 전시", "디자인 졸업전시")
         .doesNotContain(
             "디자인 회화 전시", "회화 졸업전시", "디자인 동아리 전시", "디자인 경기 전시", "디자인 예정 전시", "디자인 초안", "디자인 삭제 전시");
     assertThat(results.getFirst().posterImageUrl())
@@ -145,7 +145,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
   }
 
   @Test
-  void searchDisplaysAppliesCursorAndLimitByDisplayIdAsc() {
+  void searchDisplaysAppliesCursorAndLimitByDisplayIdDesc() {
     LocalDate today = LocalDate.of(2026, 7, 12);
     Display first =
         publishedDisplay(
@@ -180,10 +180,10 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
             today,
             10);
 
-    assertThat(firstPage).extracting(SearchDisplayQueryResult::title).containsExactly("첫 번째 전시");
+    assertThat(firstPage).extracting(SearchDisplayQueryResult::title).containsExactly("세 번째 전시");
     assertThat(secondPage)
         .extracting(SearchDisplayQueryResult::title)
-        .containsExactly("두 번째 전시", "세 번째 전시");
+        .containsExactly("두 번째 전시", "첫 번째 전시");
   }
 
   @Test
@@ -211,7 +211,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
-        .containsExactly("첫 번째 전시", "두 번째 전시");
+        .containsExactly("두 번째 전시", "첫 번째 전시");
   }
 
   @Test
@@ -269,7 +269,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
-        .containsExactly("오늘 종료 전시", "3일 이내 종료 전시")
+        .containsExactly("3일 이내 종료 전시", "오늘 종료 전시")
         .doesNotContain("4일 뒤 종료 전시", "아직 시작 전인 3일 이내 종료 전시", "이미 종료 전시");
   }
 
