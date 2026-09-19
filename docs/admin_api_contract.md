@@ -74,7 +74,8 @@ User의 역할 필드명·응답 형식과 Display의 상태·저장 필드·호
 
 ## 수정 파일 계획
 
-초기 구성은 이 문서와 `src/main/java/com/example/demo/domain/admin/package-info.java`에 한정.
+Admin은 기존 도메인과 동일하게 `presentation/application/domain/infrastructure` 구조를 사용.
+빈 계층 디렉터리는 로컬에서만 유지하고 실제 구현 파일이 추가될 때 Git에 반영.
 계약 합의 후 `admin.presentation`의 Controller·DTO·Mapper와
 `admin.application`의 심사 처리 코드를 추가하고 `src/test/java/com/example/demo/domain/admin`에서 검증.
 연동 어댑터는 계약상 필요할 때만 추가. User·Display 코드는 직접 수정하지 않음.
