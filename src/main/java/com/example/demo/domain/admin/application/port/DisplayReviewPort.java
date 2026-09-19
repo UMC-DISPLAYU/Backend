@@ -15,6 +15,7 @@ public interface DisplayReviewPort {
    */
   ReviewPage search(ReviewSearchQuery query);
 
+  /** school·leaderName·requesterId는 목록과 같은 의미와 null 정책을 적용한다. */
   ReviewDetail getDetail(Long displayId);
 
   void approve(Long displayId, Long reviewerId);

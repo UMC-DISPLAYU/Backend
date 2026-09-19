@@ -160,11 +160,47 @@ class AdminReviewTest {
                 null,
                 null,
                 "서울",
-                List.of("poster")));
+                List.of("poster"),
+                "전시대학교",
+                "전시 대표자"));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
+        .andExpect(jsonPath("$.success.data.school").value("전시대학교"))
+        .andExpect(jsonPath("$.success.data.leaderName").value("전시 대표자"))
+        .andExpect(jsonPath("$.success.data.requesterId").value(2))
         .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"));
+  }
+
+  @Test
+  void returnsDetailWithoutLeaderIndependentlyOfList() throws Exception {
+    ReviewDetail detail =
+        new ReviewDetail(
+            3L,
+            "전시",
+            "소제목",
+            "내용",
+            2L,
+            "PENDING_REVIEW",
+            null,
+            null,
+            null,
+            null,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 10, 7),
+            "서울",
+            List.of(),
+            "전시대학교",
+            null);
+    when(reviews.getDetail(3L)).thenReturn(detail);
+    assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();
+    mvc.perform(get("/api/v1/admin/displays/3"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.school").value("전시대학교"))
+        .andExpect(jsonPath("$.success.data.leaderName").doesNotExist())
+        .andExpect(jsonPath("$.success.data.requesterId").value(2));
+    verify(reviews).getDetail(3L);
+    verifyNoMoreInteractions(reviews);
   }
 
   @Test

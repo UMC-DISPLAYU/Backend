@@ -35,5 +35,7 @@ public final class ReviewResponses {
       LocalDate startDate,
       LocalDate endDate,
       String location,
-      List<String> imageUrls) {}
+      List<String> imageUrls,
+      String school,
+      String leaderName) {}
 }
