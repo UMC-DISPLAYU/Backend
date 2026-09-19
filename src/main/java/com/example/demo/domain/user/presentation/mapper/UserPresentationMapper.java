@@ -50,6 +50,7 @@ public class UserPresentationMapper {
         result.name(),
         result.nickname(),
         result.profileImageUrl(),
+        result.role().name(),
         result.isVerified(),
         result.socialEmail(),
         result.schoolEmail());
