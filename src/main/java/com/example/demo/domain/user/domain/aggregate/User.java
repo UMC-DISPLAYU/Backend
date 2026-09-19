@@ -4,6 +4,7 @@ import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.type.Provider;
+import com.example.demo.domain.user.domain.type.UserRole;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -41,6 +42,11 @@ public class User extends BaseTimeEntity {
 
   @Column(name = "providerId", nullable = false)
   private String providerId;
+
+  @Builder.Default
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false)
+  private UserRole role = UserRole.USER;
 
   @Column(name = "name", nullable = false)
   private String name;
@@ -90,6 +96,7 @@ public class User extends BaseTimeEntity {
       throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
     }
     this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID(); // 탈퇴한 사용자의 닉네임 사용이 가능하도록 허용
+    this.role = UserRole.USER;
     this.deletedAt = withdrawnAt;
   }
 

@@ -25,6 +25,7 @@ import com.example.demo.domain.user.domain.repository.UserAgreementRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.type.AgreementCode;
 import com.example.demo.domain.user.domain.type.Provider;
+import com.example.demo.domain.user.domain.type.UserRole;
 import com.example.demo.domain.user.domain.vo.Nickname;
 import com.example.demo.global.security.TokenProvider;
 import java.util.List;
@@ -91,6 +92,20 @@ class UserServiceSignupTest {
         socialUserInfo);
 
     assertSavedAgreementIds(11L, 12L, 7L);
+  }
+
+  @Test
+  void signsUpWithUserRole() {
+    userService.signup(
+        command(
+            List.of(
+                agreement(AgreementCode.TERMS_OF_SERVICE),
+                agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+        socialUserInfo);
+
+    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(userCaptor.capture());
+    assertThat(userCaptor.getValue().getRole()).isEqualTo(UserRole.USER);
   }
 
   @Test
