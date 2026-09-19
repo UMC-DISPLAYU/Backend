@@ -24,17 +24,18 @@ public final class DisplayApiDocs {
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
   public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
 
-  public static final String PUBLISH_SUMMARY = "전시 등록";
+  public static final String PUBLISH_SUMMARY = "전시 공개 심사 신청";
   public static final String PUBLISH_DESCRIPTION =
-      "전시 팀장 권한을 가진 사용자가 비공개(DRAFT) 상태의 전시를 공개(PUBLISHED) 상태로 변경합니다. 이미 공개(PUBLISHED) 상태인 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
-  public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 등록 요청";
+      "전시 팀장 권한을 가진 사용자가 비공개(DRAFT) 또는 반려(REJECTED) 상태의 전시를 심사 중(PENDING_REVIEW) 상태로 변경합니다. "
+          + "이미 심사 중인 전시는 DISPLAY_REVIEW_ALREADY_PENDING, 공개된 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
+  public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 공개 심사 신청 요청";
   public static final String PUBLISH_REQUEST_EXAMPLE_NAME = "Display publish request";
-  public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 등록 성공";
+  public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 공개 심사 신청 성공";
   public static final String PUBLISH_SUCCESS_EXAMPLE_NAME = "Display publish success";
 
   public static final String HIDE_SUMMARY = "전시 비공개 전환";
   public static final String HIDE_DESCRIPTION =
-      "전시 팀장이 공개(PUBLISHED) 상태의 전시를 비공개(DRAFT) 상태로 변경합니다. 비공개 전환된 전시는 목록/지도/졸업/마감임박 조회에서 노출되지 않습니다. 이미 비공개(DRAFT) 상태인 전시는 DISPLAY_ALREADY_HIDDEN 에러를 반환합니다.";
+      "전시 팀장이 공개(PUBLISHED) 상태의 전시를 비공개(DRAFT) 상태로 변경합니다. 비공개 전환된 전시는 목록/지도/졸업/마감임박 조회에서 노출되지 않습니다. 공개 상태가 아닌 전시는 DISPLAY_ALREADY_HIDDEN 에러를 반환합니다.";
   public static final String HIDE_SUCCESS_DESCRIPTION = "전시 비공개 전환 성공";
   public static final String HIDE_SUCCESS_EXAMPLE_NAME = "Display hide success";
 
@@ -128,7 +129,7 @@ public final class DisplayApiDocs {
 
   public static final String MY_DISPLAY_SUMMARY = "내 전시 목록 조회";
   public static final String MY_DISPLAY_DESCRIPTION =
-      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안 상태의 전시도 포함합니다.";
+      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안·심사 중·반려 상태의 전시도 포함합니다.";
   public static final String MY_DISPLAY_SUCCESS_DESCRIPTION = "내 전시 목록 조회 성공";
   public static final String MY_DISPLAY_SUCCESS_EXAMPLE_NAME = "My display success";
 
@@ -430,7 +431,7 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
-            "status": "PUBLISHED",
+            "status": "PENDING_REVIEW",
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [],
