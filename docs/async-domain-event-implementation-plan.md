@@ -149,6 +149,84 @@ HTTP / Scheduler / Command
 
 전달은 at-least-once를 전제로 한다. 구독자가 업무 커밋 후 완료 표시 전에 종료되면 재전달되며 수신자 멱등성으로 처리한다.
 
+#### 전체 구조도
+
+아래 구조가 이 문서에서 기본으로 삼는 구현 방식이다. REST API는 외부 요청의 진입점으로만 사용하고, 도메인 간 이벤트 전달은 MySQL 발행 기록과 JVM 내부 Subscriber 호출로 처리한다. `domain_event_outbox`와 `event_delivery`는 직접 Outbox를 구현할 때의 논리적 이름이며, Spring Modulith를 선택하면 Event Publication Registry 테이블과 API가 같은 책임을 맡는다.
+
+```mermaid
+flowchart LR
+    subgraph entryArea["외부 요청 영역"]
+        client["Client"]
+        scheduler["Scheduler"]
+        restApi["REST Controller"]
+    end
+
+    subgraph producerArea["발신 도메인"]
+        producerService["Application Service"]
+        producerAggregate["소유 Aggregate"]
+        publicEvent["공개 Domain Event"]
+    end
+
+    subgraph mysqlArea["MySQL"]
+        producerData[("발신 도메인 데이터")]
+        eventStore[("Event Publication Log")]
+        deliveryStore[("구독자별 Delivery")]
+    end
+
+    subgraph distributorArea["중앙 Distributor"]
+        deliveryPoller["Delivery Poller"]
+        subscriptionRegistry["Subscription Registry"]
+        eventForwarder["Event Forwarder"]
+        recoveryWorker["Retry and Recovery"]
+        completionRecorder["Completion Recorder"]
+    end
+
+    subgraph subscriberArea["JVM 내부 구독자"]
+        artworkSubscriber["DisplayArtwork Subscriber"]
+        communicationSubscriber["Communication Subscriber"]
+        archiveSubscriber["Archive Subscriber"]
+        otherSubscriber["Other Domain Subscriber"]
+    end
+
+    subgraph receiverArea["수신 도메인"]
+        receiverService["수신 Application Service"]
+        inbox[("Processed Event Inbox")]
+        receiverData[("자기 데이터와 로컬 모델")]
+    end
+
+    client --> restApi
+    restApi --> producerService
+    scheduler --> producerService
+    producerService --> producerAggregate
+    producerAggregate --> producerData
+    producerService --> publicEvent
+    publicEvent --> eventStore
+    eventStore --> deliveryStore
+
+    deliveryStore --> deliveryPoller
+    recoveryWorker --> deliveryPoller
+    deliveryPoller --> subscriptionRegistry
+    subscriptionRegistry --> eventForwarder
+
+    eventForwarder --> artworkSubscriber
+    eventForwarder --> communicationSubscriber
+    eventForwarder --> archiveSubscriber
+    eventForwarder --> otherSubscriber
+
+    artworkSubscriber --> receiverService
+    communicationSubscriber --> receiverService
+    archiveSubscriber --> receiverService
+    otherSubscriber --> receiverService
+    receiverService --> inbox
+    receiverService --> receiverData
+    receiverService --> completionRecorder
+    completionRecorder --> deliveryStore
+```
+
+발신 도메인 데이터 변경과 Event Publication Log 저장은 같은 DB 트랜잭션에 참여한다. 구독자별 Delivery는 Event가 누구에게 전달되어야 하는지를 나타내며, distributor가 업무 대상이나 규칙을 판단한다는 의미가 아니다. 구독자 등록 정보에 따라 기술적으로 fan-out할 뿐이다.
+
+구독자가 자기 데이터를 변경할 때 Processed Event Inbox도 같은 트랜잭션에 저장한다. 따라서 수신 커밋 직후 서버가 종료되어 같은 Event가 다시 전달되더라도 업무 변경을 중복 적용하지 않는다.
+
 ### 3.2 내부 사건과 공개 계약
 
 제안 패키지 구조다. 기존 전체 패키지를 이동하지 않고 적용 기능부터 추가한다.
@@ -270,6 +348,46 @@ global/event/
 
 직접 구현 상태 예: PENDING → PROCESSING → COMPLETED, 실패 시 RETRY_WAIT 또는 DEAD. lease 만료는 재점유 후보가 된다.
 
+#### 이벤트 한 건의 처리 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor client as Client
+    participant api as REST Controller
+    participant producer as 발신 Application Service
+    participant mysql as MySQL
+    participant distributor as 중앙 Distributor
+    participant subscriber as JVM 내부 Subscriber
+    participant receiver as 수신 Application Service
+
+    client->>api: 업무 요청
+    api->>producer: Command 실행
+    producer->>mysql: 소유 상태와 Event Publication 저장
+    mysql-->>producer: 트랜잭션 Commit
+    producer-->>api: 발신 업무 결과
+    api-->>client: HTTP 응답
+
+    distributor->>mysql: 처리 가능한 Delivery 점유
+    mysql-->>distributor: Event와 Subscriber 정보
+    distributor->>subscriber: 공개 Event 전달
+    subscriber->>receiver: 자기 유스케이스 실행
+    receiver->>mysql: Inbox와 수신 도메인 상태 저장
+
+    alt 수신 트랜잭션 성공
+        mysql-->>receiver: Commit
+        receiver-->>subscriber: 처리 성공
+        subscriber-->>distributor: 처리 성공
+        distributor->>mysql: Delivery 완료 표시
+    else 처리 실패
+        mysql-->>receiver: Rollback
+        receiver-->>subscriber: 예외
+        subscriber-->>distributor: 처리 실패
+        distributor->>mysql: 재시도 시각과 실패 정보 저장
+    end
+```
+
+HTTP 응답 시점은 발신 도메인의 트랜잭션 완료 시점이다. 구독 도메인의 처리가 끝난 시점까지 기다리는 구조가 아니다. 여러 도메인의 완료가 API 성공 의미에 포함되어야 하는 기능은 일반 Event 처리와 구분해 §6의 operation/완료 장벽을 적용한다.
+
 1. 원본 상태 변경과 event/delivery를 한 트랜잭션으로 커밋한다.
 2. worker는 짧은 점유 트랜잭션으로 작업을 확보한다.
 3. 수신 서비스는 자기 트랜잭션에서 Inbox 중복 검사, 업무 변경, 후속 이벤트 저장을 수행한다.
@@ -279,6 +397,23 @@ global/event/
 AFTER_COMMIT에서 최초 Outbox INSERT를 수행하지 않는다. 이벤트 기록 실패 시 원본 변경도 롤백한다. 장시간 handler 실행 동안 claim용 DB 잠금을 유지하지 않는다.
 
 다중 서버는 claimToken으로 이전 worker의 늦은 완료 기록을 막는다. lease 만료만으로 중복 업무가 사라지지 않으므로 Inbox와 조건부 변경이 필요하다. 운영 MySQL 버전에서 SKIP LOCKED 지원 여부를 확인한 뒤 점유 SQL을 확정한다.
+
+#### Delivery 상태 흐름
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING: 원본 트랜잭션에서 저장
+    PENDING --> PROCESSING: Worker 점유
+    PROCESSING --> COMPLETED: Subscriber 처리 성공
+    PROCESSING --> RETRY_WAIT: 재시도 가능한 실패
+    PROCESSING --> DEAD: 영구 실패 또는 최대 횟수 초과
+    PROCESSING --> RETRY_WAIT: Lease 만료
+    RETRY_WAIT --> PROCESSING: 재시도 시각 도달
+    DEAD --> PENDING: 운영자 재처리
+    COMPLETED --> [*]: 보관 기간 후 정리
+```
+
+Modulith를 선택하면 실제 상태명과 전환은 선택한 버전의 Event Publication Lifecycle을 따른다. 위 상태도는 프로젝트가 보장해야 하는 논리적 수명 주기를 나타낸다.
 
 ### 4.5 순서, 멱등성, 재시도, 계약 호환
 
