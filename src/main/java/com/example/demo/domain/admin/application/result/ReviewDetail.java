@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
-/** 심사 미리보기 초안. 공개 제한을 우회하는 일반 사용자 조회에 사용하지 않는다. */
 public record ReviewDetail(
     Long displayId,
     String title,
