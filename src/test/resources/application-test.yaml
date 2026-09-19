@@ -8,6 +8,12 @@ spring:
   flyway:
     enabled: false
 
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+
   jpa:
     hibernate:
       ddl-auto: create-drop

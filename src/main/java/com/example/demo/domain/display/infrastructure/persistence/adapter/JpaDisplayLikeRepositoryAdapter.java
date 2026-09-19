@@ -32,6 +32,11 @@ public class JpaDisplayLikeRepositoryAdapter implements DisplayLikeRepository {
   }
 
   @Override
+  public int deleteAllByDisplayId(Long displayId) {
+    return jpaRepository.deleteAllByDisplayId(displayId);
+  }
+
+  @Override
   public long countByDisplayId(Long displayId) {
     return jpaRepository.countByDisplayId(displayId);
   }

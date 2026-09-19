@@ -1,8 +1,8 @@
 package com.example.demo.domain.display.application.command;
 
-import com.example.demo.domain.display.application.event.DisplayDeletedEvent;
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
+import com.example.demo.domain.display.contract.event.v1.DisplayDeletedEvent;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,7 @@ public class DeleteDisplayService {
     LocalDateTime deletedAt = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
     display.delete();
     displayListCacheEvictionPort.evictAfterCommit();
-    eventPublisher.publishEvent(new DisplayDeletedEvent(display.getId(), deletedAt));
+    eventPublisher.publishEvent(
+        new DisplayDeletedEvent(UUID.randomUUID(), display.getId(), deletedAt));
   }
 }

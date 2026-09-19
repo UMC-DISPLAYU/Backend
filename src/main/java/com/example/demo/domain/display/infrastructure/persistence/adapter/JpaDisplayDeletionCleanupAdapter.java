@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
@@ -18,12 +17,11 @@ public class JpaDisplayDeletionCleanupAdapter implements DisplayDeletionCleanupP
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public void cleanupDisplayChildren(Long displayId, LocalDateTime deletedAt) {
     List<Long> displayArtworkIds = findDisplayArtworkIds(displayId);
 
     cleanupDisplayArchives(displayId, deletedAt);
-    cleanupDisplayLikes(displayId);
     cleanupDisplayReviews(displayId, deletedAt);
 
     if (displayArtworkIds.isEmpty()) {
@@ -109,13 +107,6 @@ public class JpaDisplayDeletionCleanupAdapter implements DisplayDeletionCleanupP
             """)
         .setParameter("deletedAt", deletedAt)
         .setParameter("displayArtworkIds", displayArtworkIds)
-        .executeUpdate();
-  }
-
-  private void cleanupDisplayLikes(Long displayId) {
-    entityManager
-        .createQuery("DELETE FROM DisplayLike displayLike WHERE displayLike.displayId = :displayId")
-        .setParameter("displayId", displayId)
         .executeUpdate();
   }
 
