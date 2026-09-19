@@ -17,6 +17,7 @@ import com.example.demo.domain.admin.presentation.mapper.AdminReviewMapper;
 import com.example.demo.global.error.*;
 import com.example.demo.global.security.AuthUser;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,14 +81,65 @@ class AdminReviewTest {
             new ReviewPage(
                 List.of(
                     new ReviewSummary(
-                        3L, "전시", 2L, "PENDING_REVIEW", Instant.parse("2026-09-19T00:00:00Z"))),
+                        3L,
+                        "전시",
+                        2L,
+                        "PENDING_REVIEW",
+                        Instant.parse("2026-09-19T00:00:00Z"),
+                        "전시대학교",
+                        "전시 대표자",
+                        LocalDate.of(2026, 10, 1),
+                        LocalDate.of(2026, 10, 7),
+                        "https://example.com/poster.png")),
                 3L,
                 true));
     mvc.perform(get("/api/v1/admin/displays"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.items[0].displayId").value(3))
+        .andExpect(jsonPath("$.success.data.items[0].requesterId").value(2))
+        .andExpect(jsonPath("$.success.data.items[0].school").value("전시대학교"))
+        .andExpect(jsonPath("$.success.data.items[0].leaderName").value("전시 대표자"))
+        .andExpect(jsonPath("$.success.data.items[0].startDate").value("2026-10-01"))
+        .andExpect(jsonPath("$.success.data.items[0].endDate").value("2026-10-07"))
+        .andExpect(
+            jsonPath("$.success.data.items[0].posterImageUrl")
+                .value("https://example.com/poster.png"))
         .andExpect(jsonPath("$.success.data.nextCursor").value(3))
         .andExpect(jsonPath("$.success.data.hasNext").value(true));
+  }
+
+  @Test
+  void preservesNullableListFieldsAndFilteredCursor() throws Exception {
+    ReviewSummary summary =
+        new ReviewSummary(
+            2L,
+            "전시",
+            null,
+            "REJECTED",
+            null,
+            "전시대학교",
+            null,
+            LocalDate.of(2026, 10, 1),
+            LocalDate.of(2026, 10, 7),
+            null);
+    when(reviews.search(new ReviewSearchQuery("REJECTED", 3L, 10)))
+        .thenReturn(new ReviewPage(List.of(summary), null, false));
+    var mapped = Mappers.getMapper(AdminReviewMapper.class).toResponse(summary);
+    assertThat(mapped.requesterId()).isNull();
+    assertThat(mapped.leaderName()).isNull();
+    assertThat(mapped.posterImageUrl()).isNull();
+    mvc.perform(
+            get("/api/v1/admin/displays")
+                .param("status", "REJECTED")
+                .param("cursor", "3")
+                .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.items[0].status").value("REJECTED"))
+        .andExpect(jsonPath("$.success.data.items[0].leaderName").doesNotExist())
+        .andExpect(jsonPath("$.success.data.items[0].posterImageUrl").doesNotExist())
+        .andExpect(jsonPath("$.success.data.nextCursor").doesNotExist())
+        .andExpect(jsonPath("$.success.data.hasNext").value(false));
+    verify(reviews).search(new ReviewSearchQuery("REJECTED", 3L, 10));
   }
 
   @Test

@@ -8,7 +8,16 @@ public final class ReviewResponses {
   private ReviewResponses() {}
 
   public record Summary(
-      Long displayId, String title, Long requesterId, String status, Instant requestedAt) {}
+      Long displayId,
+      String title,
+      Long requesterId,
+      String status,
+      Instant requestedAt,
+      String school,
+      String leaderName,
+      LocalDate startDate,
+      LocalDate endDate,
+      String posterImageUrl) {}
 
   public record Page(List<Summary> items, Long nextCursor, boolean hasNext) {}
 
