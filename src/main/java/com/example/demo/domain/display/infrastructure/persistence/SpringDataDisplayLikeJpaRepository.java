@@ -20,5 +20,9 @@ public interface SpringDataDisplayLikeJpaRepository extends JpaRepository<Displa
       """)
   int deleteByDisplayIdAndUserId(@Param("displayId") Long displayId, @Param("userId") Long userId);
 
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("DELETE FROM DisplayLike displayLike WHERE displayLike.displayId = :displayId")
+  int deleteAllByDisplayId(@Param("displayId") Long displayId);
+
   long countByDisplayId(Long displayId);
 }

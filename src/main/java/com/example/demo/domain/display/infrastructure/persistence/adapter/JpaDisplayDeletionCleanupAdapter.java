@@ -22,7 +22,6 @@ public class JpaDisplayDeletionCleanupAdapter implements DisplayDeletionCleanupP
     List<Long> displayArtworkIds = findDisplayArtworkIds(displayId);
 
     cleanupDisplayArchives(displayId, deletedAt);
-    cleanupDisplayLikes(displayId);
     cleanupDisplayReviews(displayId, deletedAt);
 
     if (displayArtworkIds.isEmpty()) {
@@ -108,13 +107,6 @@ public class JpaDisplayDeletionCleanupAdapter implements DisplayDeletionCleanupP
             """)
         .setParameter("deletedAt", deletedAt)
         .setParameter("displayArtworkIds", displayArtworkIds)
-        .executeUpdate();
-  }
-
-  private void cleanupDisplayLikes(Long displayId) {
-    entityManager
-        .createQuery("DELETE FROM DisplayLike displayLike WHERE displayLike.displayId = :displayId")
-        .setParameter("displayId", displayId)
         .executeUpdate();
   }
 

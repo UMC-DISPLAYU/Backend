@@ -132,7 +132,7 @@ Service를 기존 UseCase 인터페이스로 바꾸는 것만으로 목표를 �
 
 Flyway에는 개인 작품 소통 → PersonalArtwork/User, 전시 리뷰 → Display/User 등의 외부 FK가 있다. 객체 연관 제거와 FK 제거는 분리한다. 실제 FK와 CASCADE는 초기 스키마 및 운영 information_schema를 함께 확인한다.
 
-**기존 전시 삭제 이벤트**
+**조사 당시 전시 삭제 이벤트**
 
 - DeleteDisplayService가 DisplayDeletedEvent(displayId, deletedAt)를 발행한다.
 - DisplayDeletionCleanupEventHandler는 AFTER_COMMIT + Async로 즉시 최대 3회 실행한다.
@@ -336,15 +336,20 @@ flowchart LR
         multicaster --> registry[("MySQL EVENT_PUBLICATION<br/>listener별 전달 기록")]
     end
 
-    registry --> listener["@ApplicationModuleListener"]
+    registry --> displayListener["DisplayDeletedEventHandler<br/>Display 도메인 Subscriber"]
+    registry --> legacyListener["DisplayDeletionCleanupEventHandler<br/>과도기 통합 Subscriber"]
 
     subgraph tx2["구독자 독립 트랜잭션"]
-        listener --> cleanup["DisplayDeletionCleanupPort"]
-        cleanup --> receiverData[("하위 데이터 cleanup")]
+        displayListener --> displayCleanup["CleanupDeletedDisplayService"]
+        displayCleanup --> displayLike[("DisplayLike 삭제")]
+        legacyListener --> cleanup["DisplayDeletionCleanupPort"]
+        cleanup --> receiverData[("타 도메인 하위 데이터 cleanup<br/>DisplayLike 제외")]
     end
 
-    listener -->|성공| completed["Publication COMPLETED"]
-    listener -->|예외 전파| failed["Publication FAILED"]
+    displayListener -->|성공| completed["Listener별 Publication COMPLETED"]
+    legacyListener -->|성공| completed
+    displayListener -->|예외 전파| failed["Listener별 Publication FAILED"]
+    legacyListener -->|예외 전파| failed
 
     subgraph maintenance["global/event 중앙 유지관리"]
         recovery["Recovery Scheduler<br/>1분 / 최대 10회"]
@@ -359,7 +364,7 @@ flowchart LR
     retention --> registry
 ```
 
-첫 적용인 `DisplayDeleted` cleanup은 기존 SQL 자체가 반복 실행에 안전하므로 별도 Inbox를 두지 않는다. 비멱등 subscriber가 처음 도입되는 책임 분리 PR에서 수신 도메인 소유 Inbox를 추가한다.
+첫 도메인별 기준 구현으로 Display Subscriber를 분리했다. `DisplayDeletedEventHandler`는 공개 계약을 받아 `CleanupDeletedDisplayService`를 호출하고 Display 소유 `DisplayLike`만 삭제한다. 삭제 쿼리는 같은 이벤트가 다시 전달되어도 결과가 같으므로 별도 Inbox를 두지 않는다. 다른 도메인을 정리하는 과도기 통합 Subscriber와 publication 완료 상태도 서로 독립적이다. 비멱등 subscriber가 처음 도입되는 책임 분리 PR에서 수신 도메인 소유 Inbox를 추가한다.
 
 1차 구현 파일과 운영 기준은 다음과 같다.
 
@@ -367,7 +372,8 @@ flowchart LR
 - `V20260919000100__create_event_publication.sql`: Modulith 2.0.7 공식 MySQL v2 `EVENT_PUBLICATION` 스키마.
 - `global/event`: 1분 주기 복구, 최대 완료 시도 10회, 동시 재처리 4개, 30일 완료 기록 정리, Registry 지표와 payload 없는 로그.
 - `display/contract/event/v1/DisplayDeletedEvent`: `eventId`, `displayId`, `deletedAt` 공개 계약.
-- `DisplayDeletionCleanupEventHandler`: `@ApplicationModuleListener`와 독립 수신 트랜잭션. 예외를 삼키지 않고 Registry에 전달한다.
+- `DisplayDeletedEventHandler`와 `CleanupDeletedDisplayService`: Display 도메인의 기준 Subscriber. DisplayLike Repository만 사용하며 수신·커밋 완료·실패 로그를 eventId와 함께 남긴다.
+- `DisplayDeletionCleanupEventHandler`: 아직 분리되지 않은 타 도메인 cleanup을 담당하는 과도기 Subscriber. DisplayLike SQL은 제거했으며 예외를 삼키지 않고 Registry에 전달한다.
 - `V20260919000200__add_display_cleanup_failure_recovery.sql` 및 legacy recovery runner: 미처리 기존 실패 행을 결정적 eventId로 재발행하고 같은 트랜잭션에서 `recoveredAt`을 기록한다.
 
 검증할 항목: Spring Boot/Jackson 호환, Flyway schema, listener별 완료, stale 작업 회수, 2서버 재발행 경합, 업무 커밋/완료 표시 사이 장애, 저장된 타입/리스너 rename, payload 크기.

@@ -12,5 +12,7 @@ public interface DisplayLikeRepository {
 
   int deleteByDisplayIdAndUserId(Long displayId, UserId userId);
 
+  int deleteAllByDisplayId(Long displayId);
+
   long countByDisplayId(Long displayId);
 }

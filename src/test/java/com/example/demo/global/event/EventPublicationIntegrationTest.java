@@ -6,8 +6,12 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.reset;
 
+import com.example.demo.domain.display.application.command.CleanupDeletedDisplayService;
 import com.example.demo.domain.display.application.port.DisplayDeletionCleanupPort;
 import com.example.demo.domain.display.contract.event.v1.DisplayDeletedEvent;
+import com.example.demo.domain.display.domain.entity.DisplayLike;
+import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
+import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.event.LegacyDisplayDeletionCleanupRecoveryProcessor;
 import com.example.demo.domain.display.infrastructure.persistence.DisplayDeletionCleanupFailure;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayDeletionCleanupFailureJpaRepository;
@@ -18,17 +22,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +41,6 @@ import org.springframework.transaction.support.TransactionTemplate;
       "app.domain-events.publication.minimum-retry-age=0s",
       "app.domain-events.publication.completed-retention=30d"
     })
-@Import(EventPublicationIntegrationTest.IndependentSubscriberConfiguration.class)
 class EventPublicationIntegrationTest {
 
   @Autowired private ApplicationEventPublisher eventPublisher;
@@ -51,8 +49,9 @@ class EventPublicationIntegrationTest {
   @Autowired private EventPublicationMaintenanceScheduler maintenanceScheduler;
   @Autowired private SpringDataDisplayDeletionCleanupFailureJpaRepository failureRepository;
   @Autowired private LegacyDisplayDeletionCleanupRecoveryProcessor legacyRecoveryProcessor;
+  @Autowired private DisplayLikeRepository displayLikeRepository;
+  @Autowired private CleanupDeletedDisplayService cleanupDeletedDisplayService;
   @Autowired private Clock clock;
-  @Autowired private FailingIndependentSubscriber failingIndependentSubscriber;
 
   @MockitoBean private DisplayDeletionCleanupPort cleanupPort;
 
@@ -90,7 +89,7 @@ class EventPublicationIntegrationTest {
     publishInTransaction(newEvent());
 
     handled.await(5, TimeUnit.SECONDS);
-    awaitStatus("COMPLETED", 1L);
+    awaitStatus("COMPLETED", 2L);
   }
 
   @Test
@@ -108,6 +107,7 @@ class EventPublicationIntegrationTest {
     publishInTransaction(newEvent());
     failed.await(5, TimeUnit.SECONDS);
     awaitStatus("FAILED", 1L);
+    awaitStatus("COMPLETED", 1L);
 
     reset(cleanupPort);
     doNothing()
@@ -116,7 +116,7 @@ class EventPublicationIntegrationTest {
             org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
     maintenanceScheduler.recoverFailedPublications();
 
-    awaitStatus("COMPLETED", 1L);
+    awaitStatus("COMPLETED", 2L);
   }
 
   @Test
@@ -131,7 +131,7 @@ class EventPublicationIntegrationTest {
     DisplayDeletionCleanupFailure recovered =
         failureRepository.findById(failure.getId()).orElseThrow();
     assertNotNull(recovered.getRecoveredAt());
-    awaitStatus("COMPLETED", 1L);
+    awaitStatus("COMPLETED", 2L);
   }
 
   @Test
@@ -145,15 +145,13 @@ class EventPublicationIntegrationTest {
   }
 
   @Test
-  void tracksSuccessAndFailureIndependentlyForEachSubscriber() throws Exception {
-    failingIndependentSubscriber.failNextDelivery();
+  void displaySubscriberUseCaseIsIdempotentWhenCleanupIsRepeated() {
+    displayLikeRepository.save(DisplayLike.create(10L, new UserId(20L)));
 
-    new TransactionTemplate(transactionManager)
-        .executeWithoutResult(
-            status -> eventPublisher.publishEvent(new IndependentDeliveryEvent(UUID.randomUUID())));
+    cleanupDeletedDisplayService.cleanup(10L);
+    cleanupDeletedDisplayService.cleanup(10L);
 
-    awaitStatus("COMPLETED", 1L);
-    awaitStatus("FAILED", 1L);
+    assertEquals(0L, displayLikeRepository.countByDisplayId(10L));
   }
 
   private void publishInTransaction(DisplayDeletedEvent event) {
@@ -201,43 +199,5 @@ class EventPublicationIntegrationTest {
         "{}",
         Timestamp.from(completionDate.minusSeconds(1)),
         Timestamp.from(completionDate));
-  }
-
-  record IndependentDeliveryEvent(UUID eventId) {}
-
-  static class SuccessfulIndependentSubscriber {
-
-    @ApplicationModuleListener
-    void handle(IndependentDeliveryEvent event) {}
-  }
-
-  static class FailingIndependentSubscriber {
-
-    private final AtomicBoolean fail = new AtomicBoolean();
-
-    void failNextDelivery() {
-      fail.set(true);
-    }
-
-    @ApplicationModuleListener
-    void handle(IndependentDeliveryEvent event) {
-      if (fail.get()) {
-        throw new IllegalStateException("subscriber failed");
-      }
-    }
-  }
-
-  @TestConfiguration
-  static class IndependentSubscriberConfiguration {
-
-    @Bean
-    SuccessfulIndependentSubscriber successfulIndependentSubscriber() {
-      return new SuccessfulIndependentSubscriber();
-    }
-
-    @Bean
-    FailingIndependentSubscriber failingIndependentSubscriber() {
-      return new FailingIndependentSubscriber();
-    }
   }
 }
