@@ -1,8 +1,8 @@
 # 비동기 Domain Event 기반 도메인 간 의존 전환 계획
 
-> 상태: 구현 전 계획. 기술 선택과 업무 정합성 정책은 아직 확정하지 않았다.
+> 상태: 1차 구현 기준 확정. 중앙 전달 기반과 `DisplayDeleted` 첫 적용을 완료했다.
 > 조사 기준: 2026-09-17 프로젝트 소스, `AGENTS.md`, `docs/project_architecture_guide.md`.
-> 이번 변경은 이 문서 추가만 포함한다. Application 코드, 의존성, DB, API는 변경하지 않는다.
+> 결정 기준일: 2026-09-19.
 
 ## 1. 목적과 범위
 
@@ -32,6 +32,27 @@
 
 운영 DB의 실제 스키마·데이터, 실행 중 장애 동작, 실제 서버 수는 확인하지 않았다. 소스 조사 결과와 운영 환경의 일치 여부는 구현 전 확인한다.
 
+### 1.1 2026-09-19 확정 결정
+
+| ID | 확정 내용 |
+|---|---|
+| D1 | Spring Boot 4.0.7과 맞춘 **Spring Modulith 2.0.7 JDBC Event Publication Registry**를 사용한다. |
+| D2 | 학교 인증·검증된 대학 정보는 User, 프로필·작가 자격은 Artist가 소유한다. `User.isVerified`는 이행 기간 호환 투영으로 둔다. |
+| D3 | 대학 정보 변경은 User 공개 Command가 검증·변경하고 `UniversityChanged`를 발행한다. |
+| D4 | 일반 후속 처리는 최종 정합성으로 처리한다. 탈퇴, 권한 회수, 숨김·삭제, 공개→비공개 전환에는 강한 검증을 적용한다. |
+| D5 | 일반 API는 발신 도메인 상태와 Event Publication이 커밋된 뒤 기존 성공 응답을 반환한다. 첫 구현에서 202 응답이나 완료 조회 API는 추가하지 않는다. |
+| D6 | 민감 경로에 한해 소유 도메인의 공개 Query 계약을 JVM 내부에서 동기 호출할 수 있다. 내부 Service·Repository·Entity 참조와 localhost REST 호출은 금지한다. |
+
+강한 검증은 다음 경로에 적용한다.
+
+- 인증 요청 시 회원 활성 상태.
+- 전시 삭제·숨김·공개 상태가 영향을 주는 조회와 쓰기.
+- 전시 멤버 탈퇴·역할 회수 이후 작품 수정 권한.
+- Q&A 담당 권한과 비공개 질문 접근.
+- 개인 질문의 공개→비공개 전환이 통합 조회에 반영되기 전 접근.
+
+일반 프로필·닉네임·북마크 표시와 권한 부여에는 이벤트 반영 지연을 허용한다. 강한 검증용 공개 Query는 소유 도메인이 안정된 요청·응답 계약으로 제공하며, 호출자는 소유 도메인의 내부 구현을 참조하지 않는다.
+
 ## 2. 현재 구조와 의존 현황
 
 ### 2.1 프로젝트 기준
@@ -41,7 +62,7 @@
 - 도메인별 `presentation/application/domain/infrastructure` 구조와 Command/Query/UseCase/Result가 부분 적용되어 있다.
 - 실제 Aggregate는 상당수가 JPA Entity 자체다.
 - `build.gradle`: Java 21, Spring Boot 4.0.7, JPA/JDBC, Querydsl 5.1.0, MySQL, Flyway, Caffeine, Actuator/Prometheus.
-- Spring Modulith 및 이벤트 브로커 의존성은 없다.
+- 조사 시점에는 Spring Modulith 및 이벤트 브로커 의존성이 없었다.
 - 아키텍처 문서 §8.5는 `AbstractAggregateRoot/registerEvent()`를 기준으로 설명한다.
 - 조사 시점의 실제 이벤트 처리는 전시 삭제의 `ApplicationEventPublisher` 방식이며 `registerEvent()` 사용은 확인되지 않았다.
 
@@ -295,9 +316,59 @@ domain/<receiver>/
 | 신규 의존성 | 필요 | 기존 JDBC/MySQL로 가능 |
 | 유지보수 부담 | 상대적으로 낮음 | 높음 |
 
-**추천**: Boot 4.0.7에 호환되는 Modulith JDBC 레지스트리를 먼저 검증하고 요구를 충족하면 사용한다. 신규 라이브러리 배제 또는 복구·운영 요구 불충족 시 직접 Outbox를 선택한다. 버전·라이브러리는 아직 확정하지 않는다. 브로커는 필수가 아니다.
+**구현 기준**: Spring Boot 4.0.7과 Spring Modulith 2.0.7 JDBC Event Publication Registry를 사용한다. 직접 DB Outbox는 비교 후보로만 유지하며 1차 구현에는 넣지 않는다. Kafka, Redis, RabbitMQ 같은 브로커도 1차 구현의 필수 조건이 아니다.
 
 Modulith를 선택하면 기존 레지스트리와 별개인 일반 Outbox worker를 중복 구현하지 않는다. 중앙 distributor는 기존 레지스트리의 실행 기반과 프로젝트의 재시도·관측·운영 정책으로 구성한다. 도메인의 Inbox·업무 멱등성·버전 적용은 별도로 필요하다.
+
+#### 확정된 1차 중앙 Distributor 구조
+
+`Spring Event Multicaster`, JDBC `Event Publication Registry`, 복구 Scheduler가 논리적 중앙 distributor를 구성한다. 별도 커스텀 `EventForwarder`나 Outbox Poller는 만들지 않는다. `@ApplicationModuleListener`는 커밋 이후 별도 트랜잭션에서 수신 유스케이스를 실행하고, 성공과 실패는 listener별 publication 상태로 기록한다.
+
+```mermaid
+flowchart LR
+    client["Client"] --> api["REST Controller"]
+    api --> producer["Display Application Service"]
+
+    subgraph tx1["발신 트랜잭션"]
+        producer --> displayData[("Display 데이터")]
+        producer --> publisher["ApplicationEventPublisher"]
+        publisher --> multicaster["Spring Event Multicaster"]
+        multicaster --> registry[("MySQL EVENT_PUBLICATION<br/>listener별 전달 기록")]
+    end
+
+    registry --> listener["@ApplicationModuleListener"]
+
+    subgraph tx2["구독자 독립 트랜잭션"]
+        listener --> cleanup["DisplayDeletionCleanupPort"]
+        cleanup --> receiverData[("하위 데이터 cleanup")]
+    end
+
+    listener -->|성공| completed["Publication COMPLETED"]
+    listener -->|예외 전파| failed["Publication FAILED"]
+
+    subgraph maintenance["global/event 중앙 유지관리"]
+        recovery["Recovery Scheduler<br/>1분 / 최대 10회"]
+        metrics["JDBC 읽기 전용 Metrics"]
+        retention["완료 기록 정리<br/>30일"]
+    end
+
+    failed --> recovery
+    recovery --> registry
+    registry --> metrics
+    completed --> retention
+    retention --> registry
+```
+
+첫 적용인 `DisplayDeleted` cleanup은 기존 SQL 자체가 반복 실행에 안전하므로 별도 Inbox를 두지 않는다. 비멱등 subscriber가 처음 도입되는 책임 분리 PR에서 수신 도메인 소유 Inbox를 추가한다.
+
+1차 구현 파일과 운영 기준은 다음과 같다.
+
+- `build.gradle`: Modulith BOM/Starter JDBC 2.0.7, 전체 테스트 JVM heap 2 GiB.
+- `V20260919000100__create_event_publication.sql`: Modulith 2.0.7 공식 MySQL v2 `EVENT_PUBLICATION` 스키마.
+- `global/event`: 1분 주기 복구, 최대 완료 시도 10회, 동시 재처리 4개, 30일 완료 기록 정리, Registry 지표와 payload 없는 로그.
+- `display/contract/event/v1/DisplayDeletedEvent`: `eventId`, `displayId`, `deletedAt` 공개 계약.
+- `DisplayDeletionCleanupEventHandler`: `@ApplicationModuleListener`와 독립 수신 트랜잭션. 예외를 삼키지 않고 Registry에 전달한다.
+- `V20260919000200__add_display_cleanup_failure_recovery.sql` 및 legacy recovery runner: 미처리 기존 실패 행을 결정적 eventId로 재발행하고 같은 트랜잭션에서 `recoveredAt`을 기록한다.
 
 검증할 항목: Spring Boot/Jackson 호환, Flyway schema, listener별 완료, stale 작업 회수, 2서버 재발행 경합, 업무 커밋/완료 표시 사이 장애, 저장된 타입/리스너 rename, payload 크기.
 
@@ -841,16 +912,16 @@ PR별 변경 도메인 테스트와 compile/spotless를 수행한다. 전달·�
 - [ ] legacy 정리와 승인된 임시/최종 예외 구분이 완료된다.
 - [ ] 미처리·지연·실패 알림, 기록 보관·정리, 재구축 절차가 준비된다.
 
-## 10. 구현 시작 전 결정 목록
+## 10. 후속 구현 전 결정 목록
 
 | ID | 결정 | 기본 추천 |
 |---|---|---|
-| D1 | Modulith JDBC 또는 직접 Outbox, 호환 버전 | Modulith 요구 검증 후 선택 |
-| D2 | Artist 자격/User.isVerified 소유권 | 학교 User, 프로필 자격 Artist, User는 호환 투영 검토 |
-| D3 | 대학명 권위와 변경 요청 흐름 | User 검증 Command → 결과 Event |
-| D4 | 권한·탈퇴·숨김·삭제 최신성 | 민감 경로는 차단/승인, 표시 조회는 지연 허용 |
-| D5 | 공개·인증 완료 API 의미 | 기존 완료 의미 필수면 operation/완료 확인 |
-| D6 | 엄격 검증의 동기 공개 계약 예외 | 임시/최종 여부 명시. Event-only 목표와 충돌 기록 |
+| D1 | Modulith JDBC 또는 직접 Outbox, 호환 버전 | **확정: Modulith JDBC 2.0.7** |
+| D2 | Artist 자격/User.isVerified 소유권 | **확정: 학교 User, 프로필 자격 Artist, User.isVerified 호환 투영** |
+| D3 | 대학명 권위와 변경 요청 흐름 | **확정: User 공개 Command → UniversityChanged** |
+| D4 | 권한·탈퇴·숨김·삭제 최신성 | **확정: 민감 경로 강한 검증, 일반 표시는 지연 허용** |
+| D5 | 공개·인증 완료 API 의미 | **확정: 기존 성공 응답 유지, 202/완료 API 미도입** |
+| D6 | 엄격 검증의 동기 공개 계약 예외 | **확정: 소유 도메인 공개 Query의 JVM 동기 호출 허용** |
 | D7 | 초기 적재의 쓰기 차단/무중단 | 규모 측정 후 짧은 차단 또는 snapshot+재생 |
 | D8 | 외부 FK 유지·제거와 물리 삭제 | 객체 연관 먼저, FK는 별도 PR |
 | D9 | retry/lease/보관·운영 재처리 | §4 수치로 검증 후 조정 |
@@ -858,4 +929,4 @@ PR별 변경 도메인 테스트와 compile/spotless를 수행한다. 전달·�
 | D11 | 탈퇴 사용자의 존재·표시·AccessToken 정책 | 현재 차이를 먼저 보존하고 변경은 승인 후 적용 |
 | D12 | Creator 이름 갱신 범위 | 멤버 유래 이름과 직접 입력 이름 구분 |
 
-이 결정들을 확정한 뒤 단계 1부터 진행한다. 도메인 간 내부 참조를 제거한다는 목적을 유지하면서도, 비동기화 때문에 달라지는 업무 완료·권한·노출 의미를 숨기지 않는다.
+D1~D6은 2026-09-19에 확정되었다. D7~D12는 각 후속 단계 착수 전에 실제 데이터 규모와 운영 정책을 근거로 확정한다.

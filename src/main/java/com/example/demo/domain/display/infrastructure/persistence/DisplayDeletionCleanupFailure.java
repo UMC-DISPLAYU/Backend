@@ -39,6 +39,8 @@ public class DisplayDeletionCleanupFailure extends BaseTimeEntity {
   @Column(length = FAILURE_MESSAGE_MAX_LENGTH)
   private String failureMessage;
 
+  private LocalDateTime recoveredAt;
+
   protected DisplayDeletionCleanupFailure() {}
 
   private DisplayDeletionCleanupFailure(
@@ -67,6 +69,10 @@ public class DisplayDeletionCleanupFailure extends BaseTimeEntity {
         retryCount,
         safeException.getClass().getName(),
         safeException.getMessage());
+  }
+
+  public void markRecovered(LocalDateTime recoveredAt) {
+    this.recoveredAt = Objects.requireNonNull(recoveredAt, "recoveredAt must not be null.");
   }
 
   private static String truncate(String value, int maxLength) {

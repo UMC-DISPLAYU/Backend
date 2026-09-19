@@ -1,56 +1,45 @@
 package com.example.demo.domain.display.application.event;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import com.example.demo.domain.display.application.port.DisplayDeletionCleanupFailureRecorder;
 import com.example.demo.domain.display.application.port.DisplayDeletionCleanupPort;
+import com.example.demo.domain.display.contract.event.v1.DisplayDeletedEvent;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class DisplayDeletionCleanupEventHandlerTest {
 
   private final DisplayDeletionCleanupPort cleanupPort =
       org.mockito.Mockito.mock(DisplayDeletionCleanupPort.class);
-  private final DisplayDeletionCleanupFailureRecorder failureRecorder =
-      org.mockito.Mockito.mock(DisplayDeletionCleanupFailureRecorder.class);
   private final DisplayDeletionCleanupEventHandler handler =
-      new DisplayDeletionCleanupEventHandler(cleanupPort, failureRecorder);
+      new DisplayDeletionCleanupEventHandler(cleanupPort);
 
   @Test
-  void retriesCleanupAndRecordsFailureWhenAllAttemptsFail() {
-    DisplayDeletedEvent event = new DisplayDeletedEvent(10L, LocalDateTime.of(2026, 8, 13, 12, 0));
+  void propagatesCleanupFailureForRegistryRecovery() {
+    DisplayDeletedEvent event =
+        new DisplayDeletedEvent(UUID.randomUUID(), 10L, LocalDateTime.of(2026, 8, 13, 12, 0));
     RuntimeException exception = new RuntimeException("cleanup failed");
     doThrow(exception)
         .when(cleanupPort)
         .cleanupDisplayChildren(event.displayId(), event.deletedAt());
 
-    handler.handle(event);
+    assertThrows(RuntimeException.class, () -> handler.handle(event));
 
-    verify(cleanupPort, org.mockito.Mockito.times(3))
-        .cleanupDisplayChildren(event.displayId(), event.deletedAt());
-    verify(failureRecorder).recordFailure(event.displayId(), event.deletedAt(), 3, exception);
+    verify(cleanupPort).cleanupDisplayChildren(event.displayId(), event.deletedAt());
+    verifyNoMoreInteractions(cleanupPort);
   }
 
   @Test
-  void doesNotRecordFailureWhenRetrySucceeds() {
-    DisplayDeletedEvent event = new DisplayDeletedEvent(10L, LocalDateTime.of(2026, 8, 13, 12, 0));
-    RuntimeException exception = new RuntimeException("cleanup failed once");
-    doThrow(exception)
-        .doNothing()
-        .when(cleanupPort)
-        .cleanupDisplayChildren(event.displayId(), event.deletedAt());
+  void delegatesCleanupOnce() {
+    DisplayDeletedEvent event =
+        new DisplayDeletedEvent(UUID.randomUUID(), 10L, LocalDateTime.of(2026, 8, 13, 12, 0));
 
     handler.handle(event);
 
-    verify(cleanupPort, org.mockito.Mockito.times(2))
-        .cleanupDisplayChildren(event.displayId(), event.deletedAt());
-    verify(failureRecorder, never())
-        .recordFailure(
-            org.mockito.Mockito.anyLong(),
-            org.mockito.Mockito.any(LocalDateTime.class),
-            org.mockito.Mockito.anyInt(),
-            org.mockito.Mockito.any(RuntimeException.class));
+    verify(cleanupPort).cleanupDisplayChildren(event.displayId(), event.deletedAt());
   }
 }

@@ -4,6 +4,19 @@ spring:
   threads:
     virtual:
       enabled: true
+  modulith:
+    events:
+      completion-mode: update
+      republish-outstanding-events-on-restart: false
+      jdbc:
+        use-legacy-structure: false
+        schema-initialization:
+          enabled: false
+      staleness:
+        check-intervall: 1m
+        published: 5m
+        processing: 10m
+        resubmitted: 10m
 
 springdoc:
   api-docs:
@@ -27,6 +40,15 @@ management:
         http.server.requests: 100ms,300ms,1s,3s
 
 app:
+  domain-events:
+    publication:
+      recovery-interval: 1m
+      minimum-retry-age: 1m
+      batch-size: 100
+      max-in-flight: 4
+      max-completion-attempts: 10
+      completed-retention: 30d
+
   display:
     invitation:
       base-url: https://www.displayu.co.kr/display/invitation
