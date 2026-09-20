@@ -742,6 +742,7 @@ jobs:
           RUNTIME_KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           RUNTIME_KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
           RUNTIME_FRONTEND_BASE_URL: ${{ vars.FRONTEND_BASE_URL || 'https://www.displayu.co.kr' }}
+          RUNTIME_FRONTEND_ALLOWED_ORIGINS: ${{ vars.FRONTEND_ALLOWED_ORIGINS || 'http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app,https://displayu-admin.vercel.app' }}
           RUNTIME_OAUTH_COOKIE_SECURE: ${{ secrets.OAUTH_COOKIE_SECURE || 'true' }}
           RUNTIME_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           RUNTIME_JWT_ACCESS_EXPIRATION: ${{ secrets.JWT_ACCESS_EXPIRATION }}
@@ -773,6 +774,7 @@ jobs:
             printf 'KAKAO_CLIENT_SECRET=%s\n' "$RUNTIME_KAKAO_CLIENT_SECRET"
             printf 'KAKAO_REDIRECT_URI=%s\n' "$RUNTIME_KAKAO_REDIRECT_URI"
             printf 'FRONTEND_BASE_URL=%s\n' "$RUNTIME_FRONTEND_BASE_URL"
+            printf 'FRONTEND_ALLOWED_ORIGINS=%s\n' "$RUNTIME_FRONTEND_ALLOWED_ORIGINS"
             printf 'OAUTH_COOKIE_SECURE=%s\n' "$RUNTIME_OAUTH_COOKIE_SECURE"
             printf 'JWT_SECRET=%s\n' "$RUNTIME_JWT_SECRET"
             printf 'JWT_ACCESS_EXPIRATION=%s\n' "$RUNTIME_JWT_ACCESS_EXPIRATION"

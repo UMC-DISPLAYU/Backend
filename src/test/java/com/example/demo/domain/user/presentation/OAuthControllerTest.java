@@ -24,6 +24,9 @@ import com.example.demo.global.security.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -53,7 +56,7 @@ class OAuthControllerTest {
             refreshTokenCookieManager,
             signupTokenCookieManager,
             "https://www.displayu.co.kr",
-            "http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app",
+            "http://localhost:5173,https://www.displayu.co.kr,https://display-frontend-five.vercel.app,https://displayu-admin.vercel.app",
             cookieSecure);
     return MockMvcBuilders.standaloneSetup(controller)
         .setControllerAdvice(new GlobalExceptionHandler())
@@ -303,6 +306,82 @@ class OAuthControllerTest {
                 .param("state", "state")
                 .cookie(
                     new Cookie("kakao_oauth_state", "state"),
+                    new Cookie("oauth_frontend_origin", "https://malicious.example")))
+        .andExpect(status().isFound())
+        .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/onboarding"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "Kakao, https://displayu-admin.vercel.app, https://displayu-admin.vercel.app",
+    "Google, https://displayu-admin.vercel.app, https://displayu-admin.vercel.app",
+    "Kakao, https://www.displayu.co.kr, https://www.displayu.co.kr",
+    "Google, https://www.displayu.co.kr, https://www.displayu.co.kr",
+    "Kakao, http://localhost:5173, http://localhost:5173",
+    "Google, http://localhost:5173, http://localhost:5173",
+    "Kakao, https://display-frontend-five.vercel.app, https://display-frontend-five.vercel.app",
+    "Google, https://display-frontend-five.vercel.app, https://display-frontend-five.vercel.app",
+    "Kakao, https://malicious.example, https://www.displayu.co.kr",
+    "Google, https://malicious.example, https://www.displayu.co.kr",
+    "Kakao, https://displayu-admin.vercel.app.evil.example, https://www.displayu.co.kr",
+    "Google, https://displayu-admin.vercel.app.evil.example, https://www.displayu.co.kr"
+  })
+  void preservesValidatedOriginFromLoginRequestThroughCallback(
+      Provider provider, String origin, String expectedOrigin) throws Exception {
+    MockMvc secureMockMvc = createMockMvc(true);
+    String providerPath = provider == Provider.Kakao ? "kakao" : "google";
+    when(oauthLoginService.authorizationUrl(eq(provider), anyString()))
+        .thenReturn("https://provider.example/authorize");
+    User user = User.builder().id(1L).provider(provider).providerId("existing-user").build();
+    when(oauthLoginService.loginWithAuthorizationCode(provider, "authorization-code"))
+        .thenReturn(LoginResult.login(user, "access-token", "refresh-token"));
+
+    var loginResponse =
+        secureMockMvc
+            .perform(
+                get("/api/v1/auth/" + providerPath + "/login-url")
+                    .header(HttpHeaders.ORIGIN, origin))
+            .andExpect(status().isOk())
+            .andExpect(
+                header()
+                    .stringValues(
+                        HttpHeaders.SET_COOKIE,
+                        hasItem(containsString("oauth_frontend_origin=" + expectedOrigin + ";"))))
+            .andReturn()
+            .getResponse();
+    Cookie stateCookie = loginResponse.getCookie(providerPath + "_oauth_state");
+    Cookie originCookie = loginResponse.getCookie("oauth_frontend_origin");
+
+    secureMockMvc
+        .perform(
+            get("/api/v1/auth/" + providerPath + "/callback")
+                .param("code", "authorization-code")
+                .param("state", stateCookie.getValue())
+                .cookie(stateCookie, originCookie))
+        .andExpect(status().isFound())
+        .andExpect(header().string(HttpHeaders.LOCATION, expectedOrigin + "/home"))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.SET_COOKIE, hasItem(containsString("refreshToken=refresh-token"))));
+    verify(oauthLoginService).validateState(stateCookie.getValue(), stateCookie.getValue());
+  }
+
+  @ParameterizedTest
+  @EnumSource(
+      value = Provider.class,
+      names = {"Kakao", "Google"})
+  void revalidatesTamperedOriginCookie(Provider provider) throws Exception {
+    String providerPath = provider == Provider.Kakao ? "kakao" : "google";
+    when(oauthLoginService.loginWithAuthorizationCode(provider, "authorization-code"))
+        .thenReturn(signupResult(provider));
+    mockMvc
+        .perform(
+            get("/api/v1/auth/" + providerPath + "/callback")
+                .param("code", "authorization-code")
+                .param("state", "state")
+                .cookie(
+                    new Cookie(providerPath + "_oauth_state", "state"),
                     new Cookie("oauth_frontend_origin", "https://malicious.example")))
         .andExpect(status().isFound())
         .andExpect(header().string(HttpHeaders.LOCATION, "https://www.displayu.co.kr/onboarding"));
