@@ -726,6 +726,7 @@ jobs:
       - name: Prepare runtime env file
         env:
           RUNTIME_SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE || 'dev' }}
+          RUNTIME_ADMIN_REVIEW_ENABLED: ${{ vars.ADMIN_REVIEW_ENABLED || 'false' }}
           RUNTIME_DB_HOST: ${{ secrets.DB_HOST }}
           RUNTIME_DB_PORT: ${{ secrets.DB_PORT }}
           RUNTIME_DB_NAME: ${{ secrets.DB_NAME }}
@@ -755,6 +756,7 @@ jobs:
 
           {
             printf 'SPRING_PROFILES_ACTIVE=%s\n' "$RUNTIME_SPRING_PROFILES_ACTIVE"
+            printf 'ADMIN_REVIEW_ENABLED=%s\n' "$RUNTIME_ADMIN_REVIEW_ENABLED"
             printf 'SPRING_FLYWAY_ENABLED=false\n'
             printf 'SPRING_JPA_HIBERNATE_DDL_AUTO=validate\n'
             printf 'DB_HOST=%s\n' "$RUNTIME_DB_HOST"
