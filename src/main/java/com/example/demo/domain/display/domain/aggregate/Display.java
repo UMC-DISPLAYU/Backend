@@ -498,6 +498,32 @@ public class Display extends SoftDeleteBaseEntity {
     this.status = DisplayStatus.PUBLISHED;
   }
 
+  public void requestReview() {
+    if (status == DisplayStatus.PUBLISHED) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_PUBLISHED);
+    }
+    if (status == DisplayStatus.PENDING_REVIEW) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_REVIEW_ALREADY_PENDING);
+    }
+    this.status = DisplayStatus.PENDING_REVIEW;
+  }
+
+  public void approveReview() {
+    requirePendingReview();
+    publish();
+  }
+
+  public void rejectReview() {
+    requirePendingReview();
+    this.status = DisplayStatus.REJECTED;
+  }
+
+  private void requirePendingReview() {
+    if (status != DisplayStatus.PENDING_REVIEW) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_REVIEW_STATUS);
+    }
+  }
+
   // 전시를 다시 초안 상태로 전환한다.
   public void changeToDraft() {
     this.status = DisplayStatus.DRAFT;

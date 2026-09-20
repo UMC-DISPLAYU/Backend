@@ -13,6 +13,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -26,6 +27,41 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DisplayTest {
+
+  @Test
+  void reviewTransitionsFromDraftToPendingAndPublished() {
+    Display display = display();
+
+    display.requestReview();
+    assertThat(display.getStatus()).isEqualTo(DisplayStatus.PENDING_REVIEW);
+
+    display.approveReview();
+    assertThat(display.getStatus()).isEqualTo(DisplayStatus.PUBLISHED);
+  }
+
+  @Test
+  void rejectedDisplayCanRequestReviewAgain() {
+    Display display = display();
+    display.requestReview();
+    display.rejectReview();
+
+    assertThat(display.getStatus()).isEqualTo(DisplayStatus.REJECTED);
+
+    display.requestReview();
+    assertThat(display.getStatus()).isEqualTo(DisplayStatus.PENDING_REVIEW);
+  }
+
+  @Test
+  void reviewCannotBeProcessedUnlessPending() {
+    Display display = display();
+
+    assertThatThrownBy(display::approveReview)
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayErrorCode.INVALID_DISPLAY_REVIEW_STATUS));
+  }
 
   @Test
   void createContentAssignsNextSortOrder() {
