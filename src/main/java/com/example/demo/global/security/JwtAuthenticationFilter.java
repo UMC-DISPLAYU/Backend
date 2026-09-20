@@ -1,12 +1,15 @@
 package com.example.demo.global.security;
 
+import com.example.demo.domain.admin.application.port.AdminAccessPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final TokenProvider tokenProvider;
+  private final AdminAccessPort adminAccessPort;
 
   @Override
   protected void doFilterInternal(
@@ -41,7 +45,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       AuthUser authUser = new AuthUser(userId);
 
       UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(authUser, null, null);
+          new UsernamePasswordAuthenticationToken(
+              authUser,
+              null,
+              adminAccessPort.isAdmin(userId)
+                  ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                  : List.of());
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
