@@ -133,6 +133,21 @@ public final class DisplayApiDocs {
   public static final String MY_DISPLAY_SUCCESS_DESCRIPTION = "내 전시 목록 조회 성공";
   public static final String MY_DISPLAY_SUCCESS_EXAMPLE_NAME = "My display success";
 
+  public static final String REJECTION_REASON_SUMMARY = "전시 반려 사유 조회";
+  public static final String REJECTION_REASON_DESCRIPTION =
+      "인증된 활성 전시 팀원 또는 팀장이 현재 반려 상태인 전시의 최신 반려 사유를 조회합니다.";
+  public static final String REJECTION_REASON_SUCCESS_DESCRIPTION = "전시 반려 사유 조회 성공";
+  public static final String REJECTION_REASON_SUCCESS_EXAMPLE_NAME =
+      "Display rejection reason success";
+  public static final String REJECTION_REASON_UNAUTHORIZED_EXAMPLE_NAME =
+      "Display rejection reason unauthorized";
+  public static final String REJECTION_REASON_FORBIDDEN_EXAMPLE_NAME =
+      "Display rejection reason forbidden";
+  public static final String REJECTION_REASON_NOT_FOUND_EXAMPLE_NAME =
+      "Display rejection reason not found";
+  public static final String REJECTION_REASON_CONFLICT_EXAMPLE_NAME =
+      "Display rejection reason unavailable";
+
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
@@ -870,6 +885,93 @@ public final class DisplayApiDocs {
         "meta": {
           "timestamp": "2026-08-03T18:30:00",
           "path": "/api/v1/display/me"
+        }
+      }
+      """;
+
+  public static final String REJECTION_REASON_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 1,
+            "publishStatus": "REJECTED",
+            "rejectionReason": "전시 일정과 장소 정보를 보완해주세요."
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-09-20T18:30:00",
+          "path": "/api/v1/display/1/rejection-reason"
+        }
+      }
+      """;
+
+  public static final String REJECTION_REASON_UNAUTHORIZED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "인증이 필요합니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-09-20T18:30:00",
+          "path": "/api/v1/display/1/rejection-reason"
+        }
+      }
+      """;
+
+  public static final String REJECTION_REASON_FORBIDDEN_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "접근 권한이 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-09-20T18:30:00",
+          "path": "/api/v1/display/1/rejection-reason"
+        }
+      }
+      """;
+
+  public static final String REJECTION_REASON_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "DISPLAY_NOT_FOUND",
+          "message": "전시를 찾을 수 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-09-20T18:30:00",
+          "path": "/api/v1/display/1/rejection-reason"
+        }
+      }
+      """;
+
+  public static final String REJECTION_REASON_CONFLICT_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "DISPLAY_REJECTION_REASON_UNAVAILABLE",
+          "message": "반려 상태인 전시에서만 반려 사유를 조회할 수 있습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-09-20T18:30:00",
+          "path": "/api/v1/display/1/rejection-reason"
         }
       }
       """;

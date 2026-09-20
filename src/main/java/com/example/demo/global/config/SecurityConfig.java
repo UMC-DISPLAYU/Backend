@@ -66,12 +66,14 @@ public class SecurityConfig {
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/display/me",
+                        "/api/v1/display/*/rejection-reason",
                         "/api/v1/display-invitations",
                         "/api/v1/display-invitations/me")
                     .authenticated()
                     .requestMatchers(
                         HttpMethod.HEAD,
                         "/api/v1/display/me",
+                        "/api/v1/display/*/rejection-reason",
                         "/api/v1/display-invitations",
                         "/api/v1/display-invitations/me")
                     .authenticated()

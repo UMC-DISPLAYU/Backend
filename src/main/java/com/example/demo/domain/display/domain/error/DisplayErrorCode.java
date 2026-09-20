@@ -43,6 +43,10 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT, "DISPLAY_REVIEW_ALREADY_PENDING", "이미 심사 중인 전시입니다."),
   DISPLAY_SCREENING_NOT_FOUND(
       HttpStatus.NOT_FOUND, "DISPLAY_SCREENING_NOT_FOUND", "전시 심사 이력을 찾을 수 없습니다."),
+  DISPLAY_REJECTION_REASON_UNAVAILABLE(
+      HttpStatus.CONFLICT,
+      "DISPLAY_REJECTION_REASON_UNAVAILABLE",
+      "반려 상태인 전시에서만 반려 사유를 조회할 수 있습니다."),
   INVALID_DISPLAY_REVIEW_STATUS(
       HttpStatus.CONFLICT, "INVALID_DISPLAY_REVIEW_STATUS", "현재 상태에서는 전시 심사를 처리할 수 없습니다."),
   DISPLAY_CONTENT_PERMISSION_DENIED(

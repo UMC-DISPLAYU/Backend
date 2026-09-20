@@ -18,6 +18,12 @@ public class DisplayPermissionChecker {
     }
   }
 
+  public void requireAcceptedTeamMember(Display display, Long userId) {
+    if (!display.hasAcceptedTeamMember(userId)) {
+      throw new BusinessException(GlobalErrorCode.FORBIDDEN);
+    }
+  }
+
   public void requireContentEditor(Display display, Long userId) {
     if (!display.hasAcceptedTeamMember(userId)) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_PERMISSION_DENIED);

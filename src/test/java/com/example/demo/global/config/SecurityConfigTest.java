@@ -90,6 +90,7 @@ class SecurityConfigTest {
         "/api/v1/users/search",
         "/api/v1/lounge/me/posts",
         "/api/v1/display/me",
+        "/api/v1/display/1/rejection-reason",
         "/api/v1/display-invitations",
         "/api/v1/display-invitations/me",
         "/api/v1/artworks/1/edit",

@@ -9,6 +9,7 @@ import com.example.demo.domain.display.application.result.DisplayInvitationStatu
 import com.example.demo.domain.display.application.result.DisplayLikeResult;
 import com.example.demo.domain.display.application.result.DisplayLikeStatusResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
+import com.example.demo.domain.display.application.result.DisplayRejectionReasonResult;
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayListResult;
@@ -25,6 +26,7 @@ import com.example.demo.domain.display.presentation.response.DisplayInvitationSt
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
+import com.example.demo.domain.display.presentation.response.DisplayRejectionReasonResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
@@ -125,6 +127,11 @@ public class DisplayPresentationMapper {
             result.pagination().nextCursor(),
             result.pagination().size(),
             result.pagination().hasNext()));
+  }
+
+  public DisplayRejectionReasonResponse toResponse(DisplayRejectionReasonResult result) {
+    return new DisplayRejectionReasonResponse(
+        result.displayId(), result.publishStatus(), result.rejectionReason());
   }
 
   public MyDisplayListResponse toResponse(MyDisplayListResult result) {

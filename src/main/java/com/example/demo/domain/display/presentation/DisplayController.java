@@ -105,6 +105,19 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.P
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_CONFLICT_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_CONFLICT_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_FORBIDDEN_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_FORBIDDEN_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_NOT_FOUND_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_UNAUTHORIZED_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.REJECTION_REASON_UNAUTHORIZED_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.RESERVATION_REQUEST_EXAMPLE;
@@ -142,6 +155,7 @@ import com.example.demo.domain.display.application.command.UpdateDisplayService;
 import com.example.demo.domain.display.application.query.GetDisplayByInvitationService;
 import com.example.demo.domain.display.application.query.GetDisplayDetailService;
 import com.example.demo.domain.display.application.query.GetDisplayLikeStatusService;
+import com.example.demo.domain.display.application.query.GetDisplayRejectionReasonService;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationStatusResult;
@@ -174,6 +188,7 @@ import com.example.demo.domain.display.presentation.response.DisplayInvitationSt
 import com.example.demo.domain.display.presentation.response.DisplayLikeResponse;
 import com.example.demo.domain.display.presentation.response.DisplayLikeStatusResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMapResponse;
+import com.example.demo.domain.display.presentation.response.DisplayRejectionReasonResponse;
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
@@ -225,6 +240,7 @@ public class DisplayController {
   private final SearchDisplaysUseCase searchDisplaysUseCase;
   private final DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService;
   private final GetMyDisplaysService getMyDisplaysService;
+  private final GetDisplayRejectionReasonService getDisplayRejectionReasonService;
   private final ExitDisplayService exitDisplayService;
   private final DisplayPresentationMapper mapper;
 
@@ -247,6 +263,7 @@ public class DisplayController {
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
       GetMyDisplaysService getMyDisplaysService,
+      GetDisplayRejectionReasonService getDisplayRejectionReasonService,
       ExitDisplayService exitDisplayService,
       DisplayPresentationMapper mapper) {
     this.createDisplayService = createDisplayService;
@@ -267,6 +284,7 @@ public class DisplayController {
     this.searchDisplaysUseCase = searchDisplaysUseCase;
     this.displayBookmarkEnrichmentService = displayBookmarkEnrichmentService;
     this.getMyDisplaysService = getMyDisplaysService;
+    this.getDisplayRejectionReasonService = getDisplayRejectionReasonService;
     this.exitDisplayService = exitDisplayService;
     this.mapper = mapper;
   }
@@ -811,6 +829,71 @@ public class DisplayController {
       @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(getMyDisplaysService.getMyDisplays(requireUserId(user))), request);
+  }
+
+  @GetMapping("/api/v1/display/{displayId}/rejection-reason")
+  @Operation(summary = REJECTION_REASON_SUMMARY, description = REJECTION_REASON_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      description = REJECTION_REASON_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = REJECTION_REASON_SUCCESS_EXAMPLE_NAME,
+                      value = REJECTION_REASON_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = REJECTION_REASON_UNAUTHORIZED_EXAMPLE_NAME,
+                      value = REJECTION_REASON_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "전시 멤버가 아님",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = REJECTION_REASON_FORBIDDEN_EXAMPLE_NAME,
+                      value = REJECTION_REASON_FORBIDDEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "전시 또는 심사 이력을 찾을 수 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = REJECTION_REASON_NOT_FOUND_EXAMPLE_NAME,
+                      value = REJECTION_REASON_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "반려 상태가 아님",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = REJECTION_REASON_CONFLICT_EXAMPLE_NAME,
+                      value = REJECTION_REASON_CONFLICT_EXAMPLE)))
+  public ApiResponseBody<DisplayRejectionReasonResponse> getDisplayRejectionReason(
+      @Parameter(description = DETAIL_DISPLAY_ID_DESCRIPTION, example = DETAIL_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            getDisplayRejectionReasonService.getRejectionReason(displayId, requireUserId(user))),
+        request);
   }
 
   @GetMapping("/api/v1/display/{displayId}")
