@@ -42,6 +42,25 @@ class DisplayPermissionCheckerTest {
   }
 
   @Test
+  void requireAcceptedTeamMemberAllowsAcceptedMember() {
+    Display display = mock(Display.class);
+    when(display.hasAcceptedTeamMember(USER_ID)).thenReturn(true);
+
+    assertThatCode(() -> checker.requireAcceptedTeamMember(display, USER_ID))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void requireAcceptedTeamMemberRejectsNonMember() {
+    Display display = mock(Display.class);
+
+    assertThatThrownBy(() -> checker.requireAcceptedTeamMember(display, USER_ID))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception -> assertThat(exception.errorCode()).isEqualTo(GlobalErrorCode.FORBIDDEN));
+  }
+
+  @Test
   void requireContentEditorRejectsNonMemberWithExistingErrorCode() {
     Display display = mock(Display.class);
 

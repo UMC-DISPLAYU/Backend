@@ -25,6 +25,33 @@ class SecurityConfigTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TokenProvider tokenProvider;
 
+  @ParameterizedTest
+  @ValueSource(strings = {"/api/v1/admin/displays", "/api/v1/admin/users", "/api/v1/admin/reports"})
+  void rejectsAdminRequestWithoutAuthentication(String path) throws Exception {
+    mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"/api/v1/admin/displays", "/api/v1/admin/users", "/api/v1/admin/reports"})
+  void rejectsAdminRequestWithoutAdminAuthority(String path) throws Exception {
+    String accessToken = tokenProvider.createAccessToken(User.builder().id(1L).build());
+
+    mockMvc
+        .perform(get(path).header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void rejectsAdminMutationWithoutAdminAuthority() throws Exception {
+    String accessToken = tokenProvider.createAccessToken(User.builder().id(1L).build());
+
+    mockMvc
+        .perform(
+            post("/api/v1/admin/displays/1/approve")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isForbidden());
+  }
+
   @Test
   void rejectsAccessTokenRefreshWithoutRefreshTokenCookie() throws Exception {
     mockMvc.perform(post("/api/v1/auth/refresh")).andExpect(status().isUnauthorized());
@@ -63,6 +90,7 @@ class SecurityConfigTest {
         "/api/v1/users/search",
         "/api/v1/lounge/me/posts",
         "/api/v1/display/me",
+        "/api/v1/display/1/rejection-reason",
         "/api/v1/display-invitations",
         "/api/v1/display-invitations/me",
         "/api/v1/artworks/1/edit",

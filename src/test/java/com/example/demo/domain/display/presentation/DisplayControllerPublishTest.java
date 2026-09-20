@@ -15,6 +15,7 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayScreeningJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,10 +41,12 @@ class DisplayControllerPublishTest {
 
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
+  @Autowired private SpringDataDisplayScreeningJpaRepository screeningJpaRepository;
+
   @Autowired private JwtFactory jwtFactory;
 
   @Test
-  void publishDisplayChangesDraftDisplayToPublishedWhenRequesterIsTeamLeader() throws Exception {
+  void publishDisplayRequestsReviewWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithTeamMembers();
     displayJpaRepository.saveAndFlush(display);
 
@@ -56,8 +59,13 @@ class DisplayControllerPublishTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.status").value("PUBLISHED"))
+        .andExpect(jsonPath("$.success.data.status").value("PENDING_REVIEW"))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/publish"));
+
+    var screening = screeningJpaRepository.findFirstByDisplayIdOrderByIdDesc(display.getId());
+    org.assertj.core.api.Assertions.assertThat(screening).isPresent();
+    org.assertj.core.api.Assertions.assertThat(screening.orElseThrow().getRequesterId())
+        .isEqualTo(1L);
   }
 
   @Test

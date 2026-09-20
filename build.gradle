@@ -82,6 +82,7 @@ dependencies {
 tasks.named('test') {
   dependsOn 'spotlessCheck'
   useJUnitPlatform()
+  maxHeapSize = '1g'
   systemProperty 'spring.profiles.active', 'test'
 }
 

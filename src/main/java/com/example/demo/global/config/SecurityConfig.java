@@ -34,7 +34,9 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(HttpMethod.GET, "/api/v1/agreements")
+                auth.requestMatchers("/api/v1/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/agreements")
                     .permitAll()
                     .requestMatchers(
                         "/api/v1/users/me/**", "/api/v1/artists/me/**", "/api/v1/archives/**")
@@ -64,12 +66,14 @@ public class SecurityConfig {
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/display/me",
+                        "/api/v1/display/*/rejection-reason",
                         "/api/v1/display-invitations",
                         "/api/v1/display-invitations/me")
                     .authenticated()
                     .requestMatchers(
                         HttpMethod.HEAD,
                         "/api/v1/display/me",
+                        "/api/v1/display/*/rejection-reason",
                         "/api/v1/display-invitations",
                         "/api/v1/display-invitations/me")
                     .authenticated()

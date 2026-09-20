@@ -56,6 +56,7 @@ public final class UserApiDocs {
             "provider": "Kakao",
             "name": "홍길동",
             "nickname": "User1",
+            "role": "USER",
             "isVerified": false,
             "socialEmail": "user@gmail.com",
             "schoolEmail": null

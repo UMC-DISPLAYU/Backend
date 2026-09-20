@@ -6,6 +6,7 @@ public record MyUserResponse(
     String name,
     String nickname,
     String profileImageUrl,
+    String role,
     boolean isVerified,
     String socialEmail,
     String schoolEmail) {}

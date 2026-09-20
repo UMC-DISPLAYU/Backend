@@ -1,15 +1,17 @@
 package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
-import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
-import com.example.demo.domain.display.application.service.DisplayContentPublicationService;
 import com.example.demo.domain.display.domain.aggregate.Display;
-import com.example.demo.domain.display.domain.error.DisplayErrorCode;
+import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,21 +21,21 @@ public class PublishDisplayService {
 
   private final DisplayRepository displayRepository;
   private final DisplayLikeRepository displayLikeRepository;
-  private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
-  private final DisplayContentPublicationService displayContentPublicationService;
+  private final DisplayScreeningRepository screeningRepository;
   private final DisplayPermissionChecker displayPermissionChecker;
+  private final Clock clock;
 
   public PublishDisplayService(
       DisplayRepository displayRepository,
       DisplayLikeRepository displayLikeRepository,
-      DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      DisplayContentPublicationService displayContentPublicationService,
-      DisplayPermissionChecker displayPermissionChecker) {
+      DisplayScreeningRepository screeningRepository,
+      DisplayPermissionChecker displayPermissionChecker,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.displayLikeRepository = displayLikeRepository;
-    this.displayListCacheEvictionPort = displayListCacheEvictionPort;
-    this.displayContentPublicationService = displayContentPublicationService;
+    this.screeningRepository = screeningRepository;
     this.displayPermissionChecker = displayPermissionChecker;
+    this.clock = clock;
   }
 
   @Transactional
@@ -42,18 +44,15 @@ public class PublishDisplayService {
 
     Display display =
         displayRepository
-            .findById(command.displayId())
+            .findByIdWithOptimisticLock(command.displayId())
             .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
     displayPermissionChecker.requireTeamLeader(display, command.userId());
 
-    if (display.isPublished()) {
-      throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_PUBLISHED);
-    }
-
-    display.publish();
-    displayContentPublicationService.publishForDisplay(display.getId());
-    displayListCacheEvictionPort.evictAfterCommit();
+    display.requestReview();
+    screeningRepository.save(
+        DisplayScreening.request(
+            display, command.userId(), LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)));
     return DisplayDetailResult.from(
         display, displayLikeRepository.countByDisplayId(display.getId()));
   }
