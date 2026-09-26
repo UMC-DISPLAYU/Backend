@@ -43,6 +43,6 @@ public class GetArtistProfileService {
         areaOfActivityRepository.findByArtistProfile(profile).stream()
             .map(area -> area.getField())
             .toList(),
-        true);
+        true); // 작가 프로필이 존재하면, 인증된 작가라는 현재 규칙에 따라 true 반환
   }
 }

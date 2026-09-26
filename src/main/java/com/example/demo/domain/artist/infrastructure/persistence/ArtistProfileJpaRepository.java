@@ -8,5 +8,7 @@ public interface ArtistProfileJpaRepository extends JpaRepository<ArtistProfile,
 
   Optional<ArtistProfile> findByUserId(Long userId);
 
+  // User 엔티티 의존 제거
+
   boolean existsByArtistName(String artistName);
 }

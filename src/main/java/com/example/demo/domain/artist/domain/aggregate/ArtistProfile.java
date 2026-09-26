@@ -49,7 +49,9 @@ public class ArtistProfile extends BaseTimeEntity {
 
   private ArtistProfile(
       Long userId, String artistName, String schoolEmail, String univName, String portfolioUrl) {
-    this.userId = Objects.requireNonNull(userId, "userId must not be null.");
+    this.userId = Objects.requireNonNull(userId, "userId는 비어 있을 수 없습니다.");
+    // 내부 호출 계약 위반
+
     this.artistName = ArtistName.of(artistName).value();
     this.schoolEmail = schoolEmail;
     this.univName = univName;
