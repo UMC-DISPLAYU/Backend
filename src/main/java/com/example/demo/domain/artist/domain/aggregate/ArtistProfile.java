@@ -3,11 +3,11 @@ package com.example.demo.domain.artist.domain.aggregate;
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
 import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.vo.ArtistName;
-import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,9 +26,8 @@ public class ArtistProfile extends BaseTimeEntity {
   @Column(name = "artistProfileId")
   private Long id;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userId", nullable = false)
-  private User user;
+  @Column(name = "userId", nullable = false)
+  private Long userId;
 
   @Column(name = "artistName", nullable = false, length = 15)
   private String artistName;
@@ -49,8 +48,8 @@ public class ArtistProfile extends BaseTimeEntity {
   private String introduction;
 
   private ArtistProfile(
-      User user, String artistName, String schoolEmail, String univName, String portfolioUrl) {
-    this.user = user;
+      Long userId, String artistName, String schoolEmail, String univName, String portfolioUrl) {
+    this.userId = Objects.requireNonNull(userId, "userId must not be null.");
     this.artistName = ArtistName.of(artistName).value();
     this.schoolEmail = schoolEmail;
     this.univName = univName;
@@ -58,8 +57,8 @@ public class ArtistProfile extends BaseTimeEntity {
   }
 
   public static ArtistProfile create(
-      User user, String artistName, String schoolEmail, String univName, String portfolioUrl) {
-    return new ArtistProfile(user, artistName, schoolEmail, univName, portfolioUrl);
+      Long userId, String artistName, String schoolEmail, String univName, String portfolioUrl) {
+    return new ArtistProfile(userId, artistName, schoolEmail, univName, portfolioUrl);
   }
 
   public void updateArtistName(String artistName) {

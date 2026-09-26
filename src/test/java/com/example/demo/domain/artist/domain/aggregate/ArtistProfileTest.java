@@ -5,12 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
 import com.example.demo.domain.artist.domain.error.ArtistException;
-import com.example.demo.domain.user.domain.aggregate.User;
 import org.junit.jupiter.api.Test;
 
 class ArtistProfileTest {
-
-  private final User user = User.builder().id(1L).nickname("artist").build();
 
   @Test
   void updatesProfileWhenStateIsValid() {
@@ -46,6 +43,6 @@ class ArtistProfileTest {
   }
 
   private ArtistProfile createProfile() {
-    return ArtistProfile.create(user, "artist", "artist@du.ac.kr", "university", null);
+    return ArtistProfile.create(1L, "artist", "artist@du.ac.kr", "university", null);
   }
 }

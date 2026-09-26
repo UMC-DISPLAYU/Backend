@@ -38,7 +38,7 @@ public class JpaArtistProfileSummaryQueryRepositoryAdapter
     return queryFactory
         .select(
             artistProfile.id,
-            artistProfile.user.id,
+            artistProfile.userId,
             artistProfile.artistName,
             artistProfile.profileImageUrl)
         .from(artistProfile)
@@ -50,7 +50,7 @@ public class JpaArtistProfileSummaryQueryRepositoryAdapter
               Long id = tuple.get(artistProfile.id);
               return new ArtistProfileSummaryQueryResult(
                   id,
-                  tuple.get(artistProfile.user.id),
+                  tuple.get(artistProfile.userId),
                   tuple.get(artistProfile.artistName),
                   tuple.get(artistProfile.profileImageUrl),
                   fieldsByArtistProfileId.getOrDefault(id, List.of()));
@@ -68,11 +68,11 @@ public class JpaArtistProfileSummaryQueryRepositoryAdapter
         queryFactory
             .select(
                 artistProfile.id,
-                artistProfile.user.id,
+                artistProfile.userId,
                 artistProfile.artistName,
                 artistProfile.profileImageUrl)
             .from(artistProfile)
-            .where(artistProfile.user.id.in(userIds))
+            .where(artistProfile.userId.in(userIds))
             .fetch();
 
     List<Long> artistProfileIds =
@@ -86,7 +86,7 @@ public class JpaArtistProfileSummaryQueryRepositoryAdapter
               Long id = tuple.get(artistProfile.id);
               return new ArtistProfileSummaryQueryResult(
                   id,
-                  tuple.get(artistProfile.user.id),
+                  tuple.get(artistProfile.userId),
                   tuple.get(artistProfile.artistName),
                   tuple.get(artistProfile.profileImageUrl),
                   fieldsByArtistProfileId.getOrDefault(id, List.of()));

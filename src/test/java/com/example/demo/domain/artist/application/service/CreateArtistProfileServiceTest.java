@@ -52,9 +52,10 @@ class CreateArtistProfileServiceTest {
     ArtistProfile profile = mock(ArtistProfile.class);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(artistProfileRepository.findByUser(user)).thenReturn(Optional.empty());
+    when(artistProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
     when(artistProfileRepository.existsByArtistName("artist")).thenReturn(false);
-    when(artistProfileMapper.toEntity(user, command)).thenReturn(profile);
+    when(artistProfileMapper.toEntity(userId, user.getSchoolEmail(), user.getUnivName(), command))
+        .thenReturn(profile);
     when(artistProfileRepository.save(profile)).thenReturn(profile);
 
     ArtistProfile result = service.execute(userId, command);

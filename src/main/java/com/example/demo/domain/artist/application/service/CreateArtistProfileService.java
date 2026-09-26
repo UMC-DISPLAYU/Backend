@@ -43,7 +43,7 @@ public class CreateArtistProfileService {
     validateActivityFields(command.getActivityCategories());
     String artistName = ArtistName.of(command.getArtistName()).value();
 
-    if (artistProfileRepository.findByUser(user).isPresent()) {
+    if (artistProfileRepository.findByUserId(userId).isPresent()) {
       throw new ArtistException(ArtistErrorCode.ARTIST_PROFILE_ALREADY_EXISTS);
     }
 
@@ -59,7 +59,10 @@ public class CreateArtistProfileService {
       // 두 요청 모두 existsByArtistName()을 통과할 수 있음
       // 이때 DB Unique Constraint 위반 발생
       // 해당 예외를 잡아서 500이 아닌 409 Conflict로 변환
-      artistProfile = artistProfileRepository.save(artistProfileMapper.toEntity(user, command));
+      artistProfile =
+          artistProfileRepository.save(
+              artistProfileMapper.toEntity(
+                  user.getId(), user.getSchoolEmail(), user.getUnivName(), command));
 
     } catch (DataIntegrityViolationException e) {
       throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);

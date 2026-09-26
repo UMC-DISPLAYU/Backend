@@ -11,16 +11,15 @@ import com.example.demo.domain.artist.presentation.response.CreateArtistProfileR
 import com.example.demo.domain.artist.presentation.response.MyArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UpdateArtistProfileResponse;
 import com.example.demo.domain.artist.presentation.response.UserArtistProfileResponse;
-import com.example.demo.domain.user.domain.aggregate.User;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ArtistProfileMapper {
 
-  public ArtistProfile toEntity(User user, CreateArtistProfileCommand command) {
-    return ArtistProfile.create(
-        user, command.getArtistName(), user.getSchoolEmail(), user.getUnivName(), null);
+  public ArtistProfile toEntity(
+      Long userId, String schoolEmail, String univName, CreateArtistProfileCommand command) {
+    return ArtistProfile.create(userId, command.getArtistName(), schoolEmail, univName, null);
   }
 
   public CreateArtistProfileResponse toResponse(
@@ -31,7 +30,7 @@ public class ArtistProfileMapper {
         profile.getSchoolEmail(),
         profile.getUnivName(),
         activityFields,
-        profile.getUser().isVerified());
+        true);
   }
 
   public MyArtistProfileResponse toMyResponse(ArtistProfileResult result) {

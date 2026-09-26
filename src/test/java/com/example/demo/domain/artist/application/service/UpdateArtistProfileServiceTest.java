@@ -51,7 +51,8 @@ class UpdateArtistProfileServiceTest {
             .profileImageUrl("https://cdn.example.com/my-profile.jpg")
             .isVerified(true)
             .build();
-    ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
+    ArtistProfile profile =
+        ArtistProfile.create(USER_ID, "artist", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
     when(artistProfileRepository.existsByArtistName("newName")).thenReturn(false);
 
@@ -77,7 +78,7 @@ class UpdateArtistProfileServiceTest {
   void skipsDuplicateCheckWhenArtistNameIsUnchanged() {
     User user = verifiedUser("sameName");
     ArtistProfile profile =
-        ArtistProfile.create(user, "sameName", "artist@du.ac.kr", "기존대학교", null);
+        ArtistProfile.create(USER_ID, "sameName", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
 
     service.execute(command("sameName"));
@@ -90,7 +91,7 @@ class UpdateArtistProfileServiceTest {
   void rejectsDuplicateArtistName() {
     User user = verifiedUser("nickname");
     ArtistProfile profile =
-        ArtistProfile.create(user, "oldArtist", "artist@du.ac.kr", "기존대학교", null);
+        ArtistProfile.create(USER_ID, "oldArtist", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
     when(artistProfileRepository.existsByArtistName("newName")).thenReturn(true);
 
@@ -117,7 +118,8 @@ class UpdateArtistProfileServiceTest {
   @Test
   void rejectsDuplicateActivityFields() {
     User user = verifiedUser("oldName");
-    ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
+    ArtistProfile profile =
+        ArtistProfile.create(USER_ID, "artist", "artist@du.ac.kr", "기존대학교", null);
     prepare(user, profile);
     UpdateArtistProfileCommand command =
         new UpdateArtistProfileCommand(

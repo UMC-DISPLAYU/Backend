@@ -43,6 +43,6 @@ public class GetArtistProfileService {
         areaOfActivityRepository.findByArtistProfile(profile).stream()
             .map(area -> area.getField())
             .toList(),
-        profile.getUser().isVerified());
+        true);
   }
 }
