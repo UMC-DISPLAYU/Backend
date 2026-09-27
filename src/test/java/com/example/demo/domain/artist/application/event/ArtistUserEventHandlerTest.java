@@ -4,9 +4,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.example.demo.domain.artist.application.port.ArtistUserEventProjector;
-import com.example.demo.domain.user.application.event.UserSchoolVerifiedEvent;
-import com.example.demo.domain.user.application.event.UserUniversityChangedEvent;
-import com.example.demo.domain.user.application.event.UserWithdrawnEvent;
+import com.example.demo.domain.user.contract.event.v1.UserSchoolVerifiedEvent;
+import com.example.demo.domain.user.contract.event.v1.UserUniversityChangedEvent;
+import com.example.demo.domain.user.contract.event.v1.UserWithdrawnEvent;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

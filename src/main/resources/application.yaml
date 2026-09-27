@@ -4,6 +4,19 @@ spring:
   threads:
     virtual:
       enabled: true
+  modulith:
+    events:
+      completion-mode: update
+      republish-outstanding-events-on-restart: false
+      jdbc:
+        use-legacy-structure: false
+        schema-initialization:
+          enabled: false
+      staleness:
+        check-intervall: 1m
+        published: 5m
+        processing: 10m
+        resubmitted: 10m
 
 springdoc:
   api-docs:

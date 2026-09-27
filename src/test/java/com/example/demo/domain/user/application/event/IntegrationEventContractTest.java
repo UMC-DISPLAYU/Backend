@@ -2,7 +2,9 @@ package com.example.demo.domain.user.application.event;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import com.example.demo.domain.artist.application.event.ArtistProfileCreatedEvent;
+import com.example.demo.domain.artist.contract.event.v1.ArtistProfileCreatedEvent;
+import com.example.demo.domain.user.contract.event.v1.UserSchoolVerifiedEvent;
+import com.example.demo.domain.user.contract.event.v1.UserWithdrawnEvent;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

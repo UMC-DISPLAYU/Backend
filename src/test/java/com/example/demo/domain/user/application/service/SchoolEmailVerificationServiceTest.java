@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.command.VerifySchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.port.SchoolEmailSenderPort;
+import com.example.demo.domain.user.contract.event.v1.UserSchoolVerifiedEvent;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
@@ -17,8 +18,13 @@ import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 
 class SchoolEmailVerificationServiceTest {
 
@@ -26,14 +32,17 @@ class SchoolEmailVerificationServiceTest {
   private static final String SCHOOL_EMAIL = "student@school.ac.kr";
   private static final String UNIV_NAME = "대학교";
   private static final String VERIFICATION_CODE = "123456";
+  private static final Clock CLOCK =
+      Clock.fixed(Instant.parse("2026-09-27T00:00:00Z"), ZoneOffset.UTC);
 
   @Test
   void invalidCodeIncreasesFailureCountAndInvalidatesVerificationOnFifthFailure() {
     SchoolEmailVerification verification = createVerification();
     FakeVerificationRepository repository = new FakeVerificationRepository(verification);
     UserRepository userRepository = mock(UserRepository.class);
+    ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     VerifySchoolEmailVerificationService service =
-        new VerifySchoolEmailVerificationService(repository, userRepository);
+        new VerifySchoolEmailVerificationService(repository, userRepository, eventPublisher, CLOCK);
     VerifySchoolEmailVerificationCommand command =
         new VerifySchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, "000000");
 
@@ -66,8 +75,9 @@ class SchoolEmailVerificationServiceTest {
     verification.recordFailedAttempt();
     FakeVerificationRepository repository = new FakeVerificationRepository(verification);
     UserRepository userRepository = mock(UserRepository.class);
+    ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     VerifySchoolEmailVerificationService service =
-        new VerifySchoolEmailVerificationService(repository, userRepository);
+        new VerifySchoolEmailVerificationService(repository, userRepository, eventPublisher, CLOCK);
 
     service.execute(
         new VerifySchoolEmailVerificationCommand(USER_ID, SCHOOL_EMAIL, VERIFICATION_CODE));
@@ -77,6 +87,11 @@ class SchoolEmailVerificationServiceTest {
     assertThat(verification.getUser().getSchoolEmail()).isEqualTo(SCHOOL_EMAIL);
     assertThat(verification.getUser().getUnivName()).isEqualTo(UNIV_NAME);
     assertThat(verification.getUser().isVerified()).isFalse();
+    ArgumentCaptor<UserSchoolVerifiedEvent> eventCaptor =
+        ArgumentCaptor.forClass(UserSchoolVerifiedEvent.class);
+    verify(eventPublisher).publishEvent(eventCaptor.capture());
+    assertThat(eventCaptor.getValue().revision()).isEqualTo(1L);
+    assertThat(eventCaptor.getValue().schoolEmail()).isEqualTo(SCHOOL_EMAIL);
   }
 
   @Test
@@ -132,7 +147,8 @@ class SchoolEmailVerificationServiceTest {
     UserRepository userRepository = mock(UserRepository.class);
     when(userRepository.existsBySchoolEmail(SCHOOL_EMAIL)).thenReturn(true);
     VerifySchoolEmailVerificationService service =
-        new VerifySchoolEmailVerificationService(repository, userRepository);
+        new VerifySchoolEmailVerificationService(
+            repository, userRepository, mock(ApplicationEventPublisher.class), CLOCK);
 
     assertThatExceptionOfType(UserException.class)
         .isThrownBy(
@@ -181,7 +197,10 @@ class SchoolEmailVerificationServiceTest {
   void verificationRejectsBlankSchoolEmailAsInvalidEmail() {
     VerifySchoolEmailVerificationService service =
         new VerifySchoolEmailVerificationService(
-            new FakeVerificationRepository(null), mock(UserRepository.class));
+            new FakeVerificationRepository(null),
+            mock(UserRepository.class),
+            mock(ApplicationEventPublisher.class),
+            CLOCK);
 
     assertThatExceptionOfType(UserException.class)
         .isThrownBy(

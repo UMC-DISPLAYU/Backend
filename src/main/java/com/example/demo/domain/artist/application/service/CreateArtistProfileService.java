@@ -2,22 +2,23 @@ package com.example.demo.domain.artist.application.service;
 
 import com.example.demo.domain.artist.application.command.CreateArtistProfileCommand;
 import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
+import com.example.demo.domain.artist.contract.event.v1.ArtistProfileCreatedEvent;
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.entity.AreaOfActivity;
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
 import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
+import com.example.demo.domain.artist.domain.repository.ArtistUserQualificationRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.artist.domain.vo.ArtistName;
 import com.example.demo.domain.artist.presentation.mapper.ArtistProfileMapper;
-import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.error.UserErrorCode;
-import com.example.demo.domain.user.domain.error.UserException;
-import com.example.demo.domain.user.domain.repository.UserRepository;
+import java.time.Clock;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,20 +27,23 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CreateArtistProfileService {
 
-  private final UserRepository userRepository;
+  private final ArtistUserQualificationRepository qualificationRepository;
   private final ArtistProfileRepository artistProfileRepository;
   private final AreaOfActivityRepository areaOfActivityRepository;
   private final ArtistProfileMapper artistProfileMapper;
   private final ArtistPermissionChecker permissionChecker;
+  private final ApplicationEventPublisher eventPublisher;
+  private final Clock clock;
 
   @Transactional
   public ArtistProfile execute(Long userId, CreateArtistProfileCommand command) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    var qualification =
+        qualificationRepository
+            .findByUserId(userId)
+            .orElseThrow(
+                () -> new ArtistException(ArtistErrorCode.ARTIST_PROFILE_REQUIRES_VERIFIED_USER));
 
-    permissionChecker.requireProfileCreationEligible(user);
+    permissionChecker.requireProfileCreationEligible(qualification);
     validateActivityFields(command.getActivityCategories());
     String artistName = ArtistName.of(command.getArtistName()).value();
 
@@ -62,7 +66,10 @@ public class CreateArtistProfileService {
       artistProfile =
           artistProfileRepository.save(
               artistProfileMapper.toEntity(
-                  user.getId(), user.getSchoolEmail(), user.getUnivName(), command));
+                  userId,
+                  qualification.getSchoolEmail(),
+                  qualification.getUniversityName(),
+                  command));
 
     } catch (DataIntegrityViolationException e) {
       throw new ArtistException(ArtistErrorCode.DUPLICATE_ARTIST_NAME);
@@ -74,7 +81,14 @@ public class CreateArtistProfileService {
             category ->
                 areaOfActivityRepository.save(AreaOfActivity.create(artistProfile, category)));
 
-    user.completeArtistVerification();
+    eventPublisher.publishEvent(
+        new ArtistProfileCreatedEvent(
+            UUID.randomUUID(),
+            artistProfile.getId(),
+            userId,
+            artistProfile.getArtistName(),
+            1L,
+            clock.instant()));
 
     return artistProfile;
   }

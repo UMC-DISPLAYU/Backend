@@ -1,6 +1,5 @@
 package com.example.demo.domain.display.application.command;
 
-import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.CreateDisplayResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -26,17 +25,14 @@ public class CreateDisplayService {
   private final DisplayRepository displayRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final UserRepository userRepository;
-  private final ArtistPermissionChecker artistPermissionChecker;
 
   public CreateDisplayService(
       DisplayRepository displayRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      UserRepository userRepository,
-      ArtistPermissionChecker artistPermissionChecker) {
+      UserRepository userRepository) {
     this.displayRepository = displayRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.userRepository = userRepository;
-    this.artistPermissionChecker = artistPermissionChecker;
   }
 
   @Transactional
@@ -47,7 +43,9 @@ public class CreateDisplayService {
         userRepository
             .findById(command.ownerUserId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-    artistPermissionChecker.requireVerified(user);
+    if (!user.isVerified()) {
+      throw new UserException(UserErrorCode.ARTIST_VERIFICATION_REQUIRED);
+    }
 
     if (displayRepository.existsByOwnerUserIdAndTitle(command.ownerUserId(), command.title())) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_EXISTS);

@@ -3,8 +3,8 @@ package com.example.demo.domain.user.application.event;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.example.demo.domain.artist.application.event.ArtistProfileCreatedEvent;
-import com.example.demo.domain.artist.application.event.ArtistQualificationChangedEvent;
+import com.example.demo.domain.artist.contract.event.v1.ArtistProfileCreatedEvent;
+import com.example.demo.domain.artist.contract.event.v1.ArtistQualificationChangedEvent;
 import com.example.demo.domain.user.application.port.UserArtistEventProjector;
 import java.time.Instant;
 import java.util.UUID;

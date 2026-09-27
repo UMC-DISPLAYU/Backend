@@ -76,6 +76,10 @@ public class User extends BaseTimeEntity {
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
 
+  @Builder.Default
+  @Column(name = "qualificationRevision", nullable = false)
+  private long qualificationRevision = 0L;
+
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
@@ -85,10 +89,15 @@ public class User extends BaseTimeEntity {
     }
     this.schoolEmail = schoolEmail.trim().toLowerCase(Locale.ROOT);
     this.univName = univName;
+    this.qualificationRevision++;
   }
 
   public void completeArtistVerification() {
     this.isVerified = true;
+  }
+
+  public void changeArtistVerification(boolean verified) {
+    this.isVerified = verified;
   }
 
   public void withdraw(LocalDateTime withdrawnAt) {
@@ -98,6 +107,7 @@ public class User extends BaseTimeEntity {
     this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID(); // 탈퇴한 사용자의 닉네임 사용이 가능하도록 허용
     this.role = UserRole.USER;
     this.deletedAt = withdrawnAt;
+    this.qualificationRevision++;
   }
 
   public void changeNickname(Nickname nickname) {
@@ -110,5 +120,6 @@ public class User extends BaseTimeEntity {
 
   public void changeUnivName(String univName) {
     this.univName = univName;
+    this.qualificationRevision++;
   }
 }

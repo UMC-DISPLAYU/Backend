@@ -2,13 +2,17 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.VerifySchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.result.SchoolEmailConfirmVerificationResult;
+import com.example.demo.domain.user.contract.event.v1.UserSchoolVerifiedEvent;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import java.time.Clock;
 import java.util.Locale;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +22,8 @@ public class VerifySchoolEmailVerificationService {
 
   private final SchoolEmailVerificationRepository verificationRepository;
   private final UserRepository userRepository;
+  private final ApplicationEventPublisher eventPublisher;
+  private final Clock clock;
 
   @Transactional(noRollbackFor = UserException.class)
   public SchoolEmailConfirmVerificationResult execute(
@@ -59,6 +65,14 @@ public class VerifySchoolEmailVerificationService {
     verification
         .getUser()
         .verifySchoolEmail(verification.getSchoolEmail(), verification.getUnivName());
+    eventPublisher.publishEvent(
+        new UserSchoolVerifiedEvent(
+            UUID.randomUUID(),
+            verification.getUser().getId(),
+            verification.getSchoolEmail(),
+            verification.getUnivName(),
+            verification.getUser().getQualificationRevision(),
+            clock.instant()));
 
     return new SchoolEmailConfirmVerificationResult(
         verification.getSchoolEmail(), verification.isVerified());

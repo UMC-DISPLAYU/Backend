@@ -13,14 +13,15 @@ import com.example.demo.domain.artist.application.result.UpdateArtistProfileResu
 import com.example.demo.domain.artist.domain.aggregate.ArtistProfile;
 import com.example.demo.domain.artist.domain.error.ArtistErrorCode;
 import com.example.demo.domain.artist.domain.error.ArtistException;
+import com.example.demo.domain.artist.domain.model.ArtistUserQualification;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
+import com.example.demo.domain.artist.domain.repository.ArtistUserQualificationRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
-import com.example.demo.domain.user.domain.aggregate.User;
-import com.example.demo.domain.user.domain.error.UserErrorCode;
-import com.example.demo.domain.user.domain.error.UserException;
-import com.example.demo.domain.user.domain.repository.UserRepository;
-import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
+import com.example.demo.domain.user.contract.command.ChangeUserUniversityCommand;
+import com.example.demo.domain.user.contract.command.ChangeUserUniversityResult;
+import com.example.demo.domain.user.contract.command.ChangeUserUniversityUseCase;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -28,72 +29,67 @@ import org.junit.jupiter.api.Test;
 class UpdateArtistProfileServiceTest {
 
   private static final Long USER_ID = 1L;
-  private final UserRepository userRepository = mock(UserRepository.class);
+  private static final Instant UPDATED_AT = Instant.parse("2026-09-27T00:00:00Z");
+  private final ArtistUserQualificationRepository qualificationRepository =
+      mock(ArtistUserQualificationRepository.class);
   private final ArtistProfileRepository artistProfileRepository =
       mock(ArtistProfileRepository.class);
   private final AreaOfActivityRepository areaOfActivityRepository =
       mock(AreaOfActivityRepository.class);
-  private final SchoolEmailValidator schoolEmailValidator = mock(SchoolEmailValidator.class);
+  private final ChangeUserUniversityUseCase changeUserUniversityUseCase =
+      mock(ChangeUserUniversityUseCase.class);
   private final UpdateArtistProfileService service =
       new UpdateArtistProfileService(
-          userRepository,
+          qualificationRepository,
           artistProfileRepository,
           areaOfActivityRepository,
-          schoolEmailValidator,
+          changeUserUniversityUseCase,
           new ArtistPermissionChecker());
 
   @Test
   void updatesArtistProfileInOneFlow() {
-    User user =
-        User.builder()
-            .id(USER_ID)
-            .nickname("oldName")
-            .profileImageUrl("https://cdn.example.com/my-profile.jpg")
-            .isVerified(true)
-            .build();
     ArtistProfile profile =
         ArtistProfile.create(USER_ID, "artist", "artist@du.ac.kr", "기존대학교", null);
-    prepare(user, profile);
+    prepare(profile);
     when(artistProfileRepository.existsByArtistName("newName")).thenReturn(false);
+    when(changeUserUniversityUseCase.execute(new ChangeUserUniversityCommand(USER_ID, "서양대학교")))
+        .thenReturn(new ChangeUserUniversityResult("서양대학교"));
 
     UpdateArtistProfileResult result = service.execute(command("newName"));
 
-    assertThat(user.getNickname()).isEqualTo("oldName");
     assertThat(profile.getArtistName()).isEqualTo("newName");
     assertThat(profile.getProfileImageUrl())
         .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
-    assertThat(user.getProfileImageUrl()).isEqualTo("https://cdn.example.com/my-profile.jpg");
-    assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
-    assertThat(profile.getUnivName()).isEqualTo("한양대학교");
-    assertThat(result.profileImageUrl())
-        .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
+    assertThat(profile.getUnivName()).isEqualTo("서양대학교");
     assertThat(result.artistName()).isEqualTo("newName");
     assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);
   }
 
   @Test
-  void skipsDuplicateCheckWhenArtistNameIsUnchanged() {
-    User user = verifiedUser("sameName");
+  void skipsUniversityCommandWhenUniversityIsNotChanged() {
     ArtistProfile profile =
         ArtistProfile.create(USER_ID, "sameName", "artist@du.ac.kr", "기존대학교", null);
-    prepare(user, profile);
+    prepare(profile);
+    UpdateArtistProfileCommand command = command("sameName", null);
 
-    service.execute(command("sameName"));
+    service.execute(command);
 
-    verify(artistProfileRepository, never()).existsByArtistName("sameName");
-    assertThat(user.getNicknameChangeAt()).isNull();
+    verify(changeUserUniversityUseCase, never())
+        .execute(org.mockito.ArgumentMatchers.any(ChangeUserUniversityCommand.class));
+    assertThat(profile.getUnivName()).isEqualTo("기존대학교");
   }
 
   @Test
   void rejectsDuplicateArtistName() {
-    User user = verifiedUser("nickname");
     ArtistProfile profile =
         ArtistProfile.create(USER_ID, "oldArtist", "artist@du.ac.kr", "기존대학교", null);
-    prepare(user, profile);
+    prepare(profile);
     when(artistProfileRepository.existsByArtistName("newName")).thenReturn(true);
+    when(changeUserUniversityUseCase.execute(new ChangeUserUniversityCommand(USER_ID, "서양대학교")))
+        .thenReturn(new ChangeUserUniversityResult("서양대학교"));
 
     assertThatExceptionOfType(ArtistException.class)
         .isThrownBy(() -> service.execute(command("newName")))
@@ -103,29 +99,28 @@ class UpdateArtistProfileServiceTest {
   }
 
   @Test
-  void rejectsUnverifiedUser() {
-    User user = User.builder().id(USER_ID).nickname("oldName").isVerified(false).build();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+  void rejectsWithdrawnUserFromLocalQualification() {
+    when(qualificationRepository.findByUserId(USER_ID))
+        .thenReturn(Optional.of(qualification(true)));
 
-    assertThatExceptionOfType(UserException.class)
+    assertThatExceptionOfType(ArtistException.class)
         .isThrownBy(() -> service.execute(command("newName")))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode())
-                    .isEqualTo(UserErrorCode.ARTIST_VERIFICATION_REQUIRED));
+                    .isEqualTo(ArtistErrorCode.ARTIST_VERIFICATION_REQUIRED));
   }
 
   @Test
   void rejectsDuplicateActivityFields() {
-    User user = verifiedUser("oldName");
     ArtistProfile profile =
         ArtistProfile.create(USER_ID, "artist", "artist@du.ac.kr", "기존대학교", null);
-    prepare(user, profile);
+    prepare(profile);
     UpdateArtistProfileCommand command =
         new UpdateArtistProfileCommand(
             USER_ID,
             null,
-            "oldName",
+            "artist",
             "작가 소개",
             List.of(ActivityCategory.DESIGN, ActivityCategory.DESIGN),
             null,
@@ -139,16 +134,22 @@ class UpdateArtistProfileServiceTest {
                     .isEqualTo(ArtistErrorCode.INVALID_ACTIVITY_FIELDS));
   }
 
-  private User verifiedUser(String nickname) {
-    return User.builder().id(USER_ID).nickname(nickname).isVerified(true).build();
-  }
-
-  private void prepare(User user, ArtistProfile profile) {
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+  private void prepare(ArtistProfile profile) {
+    when(qualificationRepository.findByUserId(USER_ID))
+        .thenReturn(Optional.of(qualification(false)));
     when(artistProfileRepository.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
   }
 
+  private ArtistUserQualification qualification(boolean withdrawn) {
+    return ArtistUserQualification.restore(
+        USER_ID, "artist@du.ac.kr", "기존대학교", true, withdrawn, 1L, null, UPDATED_AT);
+  }
+
   private UpdateArtistProfileCommand command(String artistName) {
+    return command(artistName, "서양대학교");
+  }
+
+  private UpdateArtistProfileCommand command(String artistName, String universityName) {
     return new UpdateArtistProfileCommand(
         USER_ID,
         "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg",
@@ -156,6 +157,6 @@ class UpdateArtistProfileServiceTest {
         "작가 소개",
         List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),
         "https://portfolio.example.com",
-        "한양대학교");
+        universityName);
   }
 }

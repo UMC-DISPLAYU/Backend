@@ -3,9 +3,11 @@ package com.example.demo.domain.user.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.user.application.command.WithdrawUserCommand;
+import com.example.demo.domain.user.contract.event.v1.UserWithdrawnEvent;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
@@ -18,6 +20,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 
 class WithdrawUserServiceTest {
 
@@ -27,8 +31,9 @@ class WithdrawUserServiceTest {
 
   private final UserRepository userRepository = mock(UserRepository.class);
   private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+  private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
   private final WithdrawUserService service =
-      new WithdrawUserService(userRepository, refreshTokenRepository, CLOCK);
+      new WithdrawUserService(userRepository, refreshTokenRepository, CLOCK, eventPublisher);
 
   @Test
   void withdrawsUserImmediately() {
@@ -40,6 +45,10 @@ class WithdrawUserServiceTest {
 
     assertThat(user.getDeletedAt())
         .isEqualTo(LocalDateTime.ofInstant(CLOCK.instant(), ZoneOffset.UTC));
+    ArgumentCaptor<UserWithdrawnEvent> eventCaptor =
+        ArgumentCaptor.forClass(UserWithdrawnEvent.class);
+    verify(eventPublisher).publishEvent(eventCaptor.capture());
+    assertThat(eventCaptor.getValue().revision()).isEqualTo(1L);
   }
 
   @Test

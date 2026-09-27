@@ -12,6 +12,8 @@ public enum ArtistErrorCode implements BaseErrorCode {
       HttpStatus.FORBIDDEN,
       "ARTIST_PROFILE_REQUIRES_VERIFIED_USER",
       "학교 이메일 인증을 완료한 사용자만 작가 프로필을 생성할 수 있습니다."),
+  ARTIST_VERIFICATION_REQUIRED(
+      HttpStatus.FORBIDDEN, "ARTIST_VERIFICATION_REQUIRED", "작가 인증을 완료한 사용자만 이용할 수 있습니다."),
   ARTIST_PROFILE_ALREADY_EXISTS(
       HttpStatus.CONFLICT, "ARTIST_PROFILE_ALREADY_EXISTS", "이미 작가 프로필이 존재합니다."),
   DUPLICATE_ARTIST_NAME(HttpStatus.CONFLICT, "DUPLICATE_ARTIST_NAME", "이미 사용 중인 작가명입니다."),
@@ -26,7 +28,9 @@ public enum ArtistErrorCode implements BaseErrorCode {
   INVALID_INTRODUCTION(
       HttpStatus.BAD_REQUEST, "INVALID_INTRODUCTION", "작가 소개는 최대 100자까지 입력할 수 있습니다."),
   INVALID_EXTERNAL_LINK(
-      HttpStatus.BAD_REQUEST, "INVALID_EXTERNAL_LINK", "올바른 HTTP 또는 HTTPS URL을 입력해 주세요.");
+      HttpStatus.BAD_REQUEST, "INVALID_EXTERNAL_LINK", "올바른 HTTP 또는 HTTPS URL을 입력해 주세요."),
+  INVALID_PROFILE_IMAGE_URL(
+      HttpStatus.BAD_REQUEST, "INVALID_PROFILE_IMAGE_URL", "프로필 이미지 URL은 올바른 CDN URL이어야 합니다.");
 
   private final HttpStatus status;
   private final String code;

@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.application.event;
+package com.example.demo.domain.user.contract.event.v1;
 
 import java.time.Instant;
 import java.util.Objects;
