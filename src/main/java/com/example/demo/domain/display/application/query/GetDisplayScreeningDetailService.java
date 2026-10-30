@@ -7,6 +7,7 @@ import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class GetDisplayScreeningDetailService {
             .findById(displayId)
             .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-    DisplayScreening screening = screeningRepository.findLatestByDisplayId(displayId).orElse(null);
-    return DisplayScreeningDetailResult.from(display, screening);
+    List<DisplayScreening> screenings = screeningRepository.findAllByDisplayId(displayId);
+    return DisplayScreeningDetailResult.from(display, screenings);
   }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.domain.admin.presentation.mapper;
 
 import com.example.demo.domain.admin.application.result.ReviewDetail;
+import com.example.demo.domain.admin.application.result.ReviewHistory;
 import com.example.demo.domain.admin.application.result.ReviewPage;
 import com.example.demo.domain.admin.application.result.ReviewSummary;
 import com.example.demo.domain.admin.presentation.response.ReviewResponses;
@@ -13,4 +14,6 @@ public interface AdminReviewMapper {
   ReviewResponses.Summary toResponse(ReviewSummary result);
 
   ReviewResponses.Detail toResponse(ReviewDetail result);
+
+  ReviewResponses.History toResponse(ReviewHistory result);
 }

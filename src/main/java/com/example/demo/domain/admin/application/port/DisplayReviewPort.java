@@ -15,7 +15,10 @@ public interface DisplayReviewPort {
    */
   ReviewPage search(ReviewSearchQuery query);
 
-  /** school·leaderName·requesterId는 목록과 같은 의미와 null 정책을 적용한다. */
+  /**
+   * school·leaderName·requesterId는 목록과 같은 의미와 null 정책을 적용한다. history는 이 전시의 모든 심사 요청을 최신순으로 담고, 요청이
+   * 없으면 빈 목록이다.
+   */
   ReviewDetail getDetail(Long displayId);
 
   void approve(Long displayId, Long reviewerId);

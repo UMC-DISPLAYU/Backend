@@ -63,7 +63,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, 20), 21);
+            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, null, 20), 21);
 
     assertThat(results).hasSize(1);
     DisplayScreeningSummaryQueryResult result = results.getFirst();
@@ -86,7 +86,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PUBLISHED, newer.getId(), 20), 21);
+            new DisplayScreeningSearchQuery(DisplayStatus.PUBLISHED, null, newer.getId(), 20), 21);
 
     assertThat(results).hasSize(1);
     assertThat(results.getFirst().displayId()).isEqualTo(older.getId());
@@ -108,7 +108,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, 20), 21);
+            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, null, 20), 21);
 
     assertThat(results)
         .singleElement()
@@ -140,6 +140,82 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
     assertThat(result.imageUrls()).containsExactly("https://cdn.displayu.com/poster.png");
     assertThat(result.school()).isEqualTo("중앙대학교");
     assertThat(result.leaderName()).isEqualTo("대표자");
+    assertThat(result.history())
+        .singleElement()
+        .satisfies(
+            history -> {
+              assertThat(history.status()).isEqualTo("REJECTED");
+              assertThat(history.rejectionReason()).isEqualTo("일정 수정");
+            });
+  }
+
+  @Test
+  void detailListsEveryRequestNewestFirst() {
+    Display display = display("재요청 전시");
+    displayJpaRepository.saveAndFlush(display);
+    display.requestReview();
+    DisplayScreening first =
+        DisplayScreening.request(display, 1L, LocalDateTime.of(2026, 9, 20, 1, 0));
+    screeningJpaRepository.saveAndFlush(first);
+    display.rejectReview();
+    first.reject(7L, "포스터 교체", LocalDateTime.of(2026, 9, 20, 2, 0));
+    display.requestReview();
+    screeningJpaRepository.saveAndFlush(
+        DisplayScreening.request(display, 1L, LocalDateTime.of(2026, 9, 21, 1, 0)));
+    displayJpaRepository.flush();
+
+    DisplayScreeningDetailResult result = detailService.getDetail(display.getId());
+
+    assertThat(result.status()).isEqualTo("PENDING_REVIEW");
+    assertThat(result.rejectionReason()).isNull();
+    assertThat(result.history())
+        .extracting(history -> history.status() + ":" + history.rejectionReason())
+        .containsExactly("PENDING_REVIEW:null", "REJECTED:포스터 교체");
+  }
+
+  @Test
+  void detailReturnsEmptyHistoryWithoutRequests() {
+    Display display = display("기존 공개 전시");
+    display.publish();
+    displayJpaRepository.saveAndFlush(display);
+
+    assertThat(detailService.getDetail(display.getId()).history()).isEmpty();
+  }
+
+  @Test
+  void searchMatchesTitleSchoolDepartmentOrId() {
+    Display byTitle = display("빛의 정원");
+    Display byDepartment = display("다른 전시");
+    byDepartment.changeBasicInfo(
+        byDepartment.getTitle(),
+        byDepartment.getSubtitle(),
+        byDepartment.getContent(),
+        byDepartment.getQnaAccount(),
+        byDepartment.getNote(),
+        "홍익대학교",
+        "조소과");
+    displayJpaRepository.saveAllAndFlush(List.of(byTitle, byDepartment));
+    for (Display display : List.of(byTitle, byDepartment)) {
+      display.requestReview();
+      screeningJpaRepository.saveAndFlush(
+          DisplayScreening.request(display, 1L, LocalDateTime.of(2026, 9, 20, 1, 0)));
+    }
+    displayJpaRepository.flush();
+
+    assertThat(searchIds("정원")).containsExactly(byTitle.getId());
+    assertThat(searchIds("홍익")).containsExactly(byDepartment.getId());
+    assertThat(searchIds("조소")).containsExactly(byDepartment.getId());
+    assertThat(searchIds(String.valueOf(byTitle.getId()))).contains(byTitle.getId());
+    assertThat(searchIds("없는 전시")).isEmpty();
+  }
+
+  private List<Long> searchIds(String keyword) {
+    return queryRepository
+        .search(
+            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, keyword, null, 20), 21)
+        .stream()
+        .map(DisplayScreeningSummaryQueryResult::displayId)
+        .toList();
   }
 
   private static Display display(String title) {

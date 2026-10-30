@@ -21,7 +21,7 @@ class SearchDisplayScreeningsServiceTest {
   @Test
   void searchUsesExtraRowToBuildNextCursor() {
     DisplayScreeningSearchQuery query =
-        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, 2);
+        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, null, 2);
     when(repository.search(query, 3)).thenReturn(List.of(summary(3L), summary(2L), summary(1L)));
 
     DisplayScreeningPageResult result = service.search(query);

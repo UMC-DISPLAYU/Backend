@@ -3,6 +3,7 @@ package com.example.demo.domain.admin.infrastructure.adapter;
 import com.example.demo.domain.admin.application.port.DisplayReviewPort;
 import com.example.demo.domain.admin.application.query.ReviewSearchQuery;
 import com.example.demo.domain.admin.application.result.ReviewDetail;
+import com.example.demo.domain.admin.application.result.ReviewHistory;
 import com.example.demo.domain.admin.application.result.ReviewPage;
 import com.example.demo.domain.admin.application.result.ReviewSummary;
 import com.example.demo.domain.display.application.command.ApproveDisplayScreeningService;
@@ -11,6 +12,7 @@ import com.example.demo.domain.display.application.query.DisplayScreeningSearchQ
 import com.example.demo.domain.display.application.query.GetDisplayScreeningDetailService;
 import com.example.demo.domain.display.application.query.SearchDisplayScreeningsService;
 import com.example.demo.domain.display.application.result.DisplayScreeningDetailResult;
+import com.example.demo.domain.display.application.result.DisplayScreeningHistoryResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
@@ -40,7 +42,10 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
     DisplayScreeningPageResult result =
         searchService.search(
             new DisplayScreeningSearchQuery(
-                DisplayStatus.valueOf(query.status()), query.cursor(), query.size()));
+                DisplayStatus.valueOf(query.status()),
+                query.keyword(),
+                query.cursor(),
+                query.size()));
     return new ReviewPage(
         result.items().stream().map(this::toSummary).toList(),
         result.nextCursor(),
@@ -66,7 +71,8 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.location(),
         result.imageUrls(),
         result.school(),
-        result.leaderName());
+        result.leaderName(),
+        result.history().stream().map(this::toHistory).toList());
   }
 
   @Override
@@ -77,6 +83,16 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
   @Override
   public void reject(Long displayId, Long reviewerId, String reason) {
     rejectService.reject(displayId, reviewerId, reason);
+  }
+
+  private ReviewHistory toHistory(DisplayScreeningHistoryResult result) {
+    return new ReviewHistory(
+        result.screeningId(),
+        result.status(),
+        result.requestedAt(),
+        result.processedAt(),
+        result.reviewerId(),
+        result.rejectionReason());
   }
 
   private ReviewSummary toSummary(DisplayScreeningSummaryResult result) {

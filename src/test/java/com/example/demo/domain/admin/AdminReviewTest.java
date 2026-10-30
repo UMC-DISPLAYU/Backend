@@ -65,7 +65,8 @@ class AdminReviewTest {
 
   @Test
   void checksAuthorityBeforeEveryOperation() {
-    assertThatThrownBy(() -> service.search(8L, new ReviewSearchQuery("PENDING_REVIEW", null, 20)))
+    assertThatThrownBy(
+            () -> service.search(8L, new ReviewSearchQuery("PENDING_REVIEW", null, null, 20)))
         .isInstanceOf(BusinessException.class);
     assertThatThrownBy(() -> service.getDetail(8L, 1L)).isInstanceOf(BusinessException.class);
     assertThatThrownBy(() -> service.approve(8L, 1L)).isInstanceOf(BusinessException.class);
@@ -76,7 +77,7 @@ class AdminReviewTest {
 
   @Test
   void returnsListWithDefaultsAndPagination() throws Exception {
-    when(reviews.search(new ReviewSearchQuery("PENDING_REVIEW", null, 20)))
+    when(reviews.search(new ReviewSearchQuery("PENDING_REVIEW", null, null, 20)))
         .thenReturn(
             new ReviewPage(
                 List.of(
@@ -122,7 +123,7 @@ class AdminReviewTest {
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
             null);
-    when(reviews.search(new ReviewSearchQuery("REJECTED", 3L, 10)))
+    when(reviews.search(new ReviewSearchQuery("REJECTED", null, 3L, 10)))
         .thenReturn(new ReviewPage(List.of(summary), null, false));
     var mapped = Mappers.getMapper(AdminReviewMapper.class).toResponse(summary);
     assertThat(mapped.requesterId()).isNull();
@@ -139,7 +140,7 @@ class AdminReviewTest {
         .andExpect(jsonPath("$.success.data.items[0].posterImageUrl").doesNotExist())
         .andExpect(jsonPath("$.success.data.nextCursor").doesNotExist())
         .andExpect(jsonPath("$.success.data.hasNext").value(false));
-    verify(reviews).search(new ReviewSearchQuery("REJECTED", 3L, 10));
+    verify(reviews).search(new ReviewSearchQuery("REJECTED", null, 3L, 10));
   }
 
   @Test
@@ -162,14 +163,33 @@ class AdminReviewTest {
                 "서울",
                 List.of("poster"),
                 "전시대학교",
-                "전시 대표자"));
+                "전시 대표자",
+                List.of(
+                    new ReviewHistory(
+                        11L,
+                        "REJECTED",
+                        Instant.parse("2026-09-19T00:00:00Z"),
+                        Instant.parse("2026-09-19T01:00:00Z"),
+                        7L,
+                        "일정 수정"),
+                    new ReviewHistory(
+                        10L,
+                        "REJECTED",
+                        Instant.parse("2026-09-18T00:00:00Z"),
+                        Instant.parse("2026-09-18T01:00:00Z"),
+                        7L,
+                        "포스터 교체"))));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
         .andExpect(jsonPath("$.success.data.school").value("전시대학교"))
         .andExpect(jsonPath("$.success.data.leaderName").value("전시 대표자"))
         .andExpect(jsonPath("$.success.data.requesterId").value(2))
-        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"));
+        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"))
+        .andExpect(jsonPath("$.success.data.history.length()").value(2))
+        .andExpect(jsonPath("$.success.data.history[1].screeningId").value(10))
+        .andExpect(jsonPath("$.success.data.history[1].rejectionReason").value("포스터 교체"))
+        .andExpect(jsonPath("$.success.data.history[1].requestedAt").value("2026-09-18T00:00:00Z"));
   }
 
   @Test
@@ -191,7 +211,8 @@ class AdminReviewTest {
             "서울",
             List.of(),
             "전시대학교",
-            null);
+            null,
+            List.of());
     when(reviews.getDetail(3L)).thenReturn(detail);
     assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();
     mvc.perform(get("/api/v1/admin/displays/3"))
@@ -224,6 +245,15 @@ class AdminReviewTest {
   }
 
   @Test
+  void forwardsTrimmedKeywordAndTreatsBlankAsNone() throws Exception {
+    when(reviews.search(any())).thenReturn(new ReviewPage(List.of(), null, false));
+    mvc.perform(get("/api/v1/admin/displays").param("q", "  중앙대  ")).andExpect(status().isOk());
+    mvc.perform(get("/api/v1/admin/displays").param("q", "   ")).andExpect(status().isOk());
+    verify(reviews).search(new ReviewSearchQuery("PENDING_REVIEW", "중앙대", null, 20));
+    verify(reviews).search(new ReviewSearchQuery("PENDING_REVIEW", null, null, 20));
+  }
+
+  @Test
   void validatesHttpInputAndDoesNotCallDisplay() throws Exception {
     mvc.perform(
             post("/api/v1/admin/displays/3/reject").contentType("application/json").content("{}"))
@@ -238,6 +268,8 @@ class AdminReviewTest {
     mvc.perform(get("/api/v1/admin/displays").param("status", "DRAFT"))
         .andExpect(status().isBadRequest());
     mvc.perform(get("/api/v1/admin/displays").param("cursor", "0"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(get("/api/v1/admin/displays").param("q", "가".repeat(101)))
         .andExpect(status().isBadRequest());
     mvc.perform(post("/api/v1/admin/displays/0/approve")).andExpect(status().isBadRequest());
     verifyNoInteractions(reviews);

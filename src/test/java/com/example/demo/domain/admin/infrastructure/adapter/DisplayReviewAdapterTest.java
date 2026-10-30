@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.admin.application.query.ReviewSearchQuery;
 import com.example.demo.domain.admin.application.result.ReviewDetail;
+import com.example.demo.domain.admin.application.result.ReviewHistory;
 import com.example.demo.domain.admin.application.result.ReviewPage;
 import com.example.demo.domain.display.application.command.ApproveDisplayScreeningService;
 import com.example.demo.domain.display.application.command.RejectDisplayScreeningService;
@@ -14,6 +15,7 @@ import com.example.demo.domain.display.application.query.DisplayScreeningSearchQ
 import com.example.demo.domain.display.application.query.GetDisplayScreeningDetailService;
 import com.example.demo.domain.display.application.query.SearchDisplayScreeningsService;
 import com.example.demo.domain.display.application.result.DisplayScreeningDetailResult;
+import com.example.demo.domain.display.application.result.DisplayScreeningHistoryResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
@@ -38,7 +40,7 @@ class DisplayReviewAdapterTest {
   @Test
   void searchMapsAdminContractToDisplayUseCase() {
     DisplayScreeningSearchQuery displayQuery =
-        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, 10L, 2);
+        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, "전시", 10L, 2);
     DisplayScreeningSummaryResult item =
         new DisplayScreeningSummaryResult(
             9L,
@@ -54,7 +56,7 @@ class DisplayReviewAdapterTest {
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 
-    ReviewPage result = adapter.search(new ReviewSearchQuery("PENDING_REVIEW", 10L, 2));
+    ReviewPage result = adapter.search(new ReviewSearchQuery("PENDING_REVIEW", " 전시 ", 10L, 2));
 
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().leaderName()).isEqualTo("대표자");
@@ -85,7 +87,10 @@ class DisplayReviewAdapterTest {
                 "전시장",
                 List.of("poster"),
                 "학교",
-                null));
+                null,
+                List.of(
+                    new DisplayScreeningHistoryResult(
+                        12L, "REJECTED", requestedAt, processedAt, 7L, "일정 수정"))));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);
@@ -95,6 +100,8 @@ class DisplayReviewAdapterTest {
     assertThat(detail.processedAt()).isEqualTo(processedAt);
     assertThat(detail.rejectionReason()).isEqualTo("일정 수정");
     assertThat(detail.leaderName()).isNull();
+    assertThat(detail.history())
+        .containsExactly(new ReviewHistory(12L, "REJECTED", requestedAt, processedAt, 7L, "일정 수정"));
     verify(approveService).approve(4L, 7L);
     verify(rejectService).reject(5L, 7L, "보완 필요");
   }

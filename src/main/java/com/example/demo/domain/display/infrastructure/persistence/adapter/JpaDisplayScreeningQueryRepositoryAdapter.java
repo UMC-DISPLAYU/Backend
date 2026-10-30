@@ -62,6 +62,7 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
             .where(
                 display.status.eq(query.status()),
                 display.deletedAt.isNull(),
+                keywordMatches(query.keyword()),
                 cursorBefore(query.cursor()))
             .orderBy(display.id.desc())
             .limit(limit)
@@ -69,6 +70,21 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
 
     Map<Long, String> leaderNames = uniqueLeaderNames(displayIds(rows));
     return rows.stream().map(row -> toResult(row, leaderNames)).toList();
+  }
+
+  private BooleanExpression keywordMatches(String keyword) {
+    if (keyword == null) {
+      return null;
+    }
+    BooleanExpression matches =
+        display
+            .title
+            .containsIgnoreCase(keyword)
+            .or(display.organization.containsIgnoreCase(keyword))
+            .or(display.department.containsIgnoreCase(keyword));
+    return keyword.matches("\\d{1,18}")
+        ? matches.or(display.id.eq(Long.valueOf(keyword)))
+        : matches;
   }
 
   private BooleanExpression cursorBefore(Long cursor) {

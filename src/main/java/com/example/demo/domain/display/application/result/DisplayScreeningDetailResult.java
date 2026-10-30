@@ -28,9 +28,13 @@ public record DisplayScreeningDetailResult(
     String location,
     List<String> imageUrls,
     String school,
-    String leaderName) {
+    String leaderName,
+    List<DisplayScreeningHistoryResult> history) {
 
-  public static DisplayScreeningDetailResult from(Display display, DisplayScreening screening) {
+  /** screenings는 최신 요청이 먼저 오도록 정렬된 이 전시의 모든 심사 요청이다. */
+  public static DisplayScreeningDetailResult from(
+      Display display, List<DisplayScreening> screenings) {
+    DisplayScreening screening = screenings.isEmpty() ? null : screenings.getFirst();
     return new DisplayScreeningDetailResult(
         display.getId(),
         display.getTitle(),
@@ -54,7 +58,8 @@ public record DisplayScreeningDetailResult(
             .map(DisplayImage::getImageUrl)
             .toList(),
         display.getOrganization(),
-        uniqueLeaderName(display));
+        uniqueLeaderName(display),
+        screenings.stream().map(DisplayScreeningHistoryResult::from).toList());
   }
 
   private static Instant toInstant(java.time.LocalDateTime value) {

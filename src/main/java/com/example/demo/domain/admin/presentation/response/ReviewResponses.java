@@ -37,5 +37,14 @@ public final class ReviewResponses {
       String location,
       List<String> imageUrls,
       String school,
-      String leaderName) {}
+      String leaderName,
+      List<History> history) {}
+
+  public record History(
+      Long screeningId,
+      String status,
+      Instant requestedAt,
+      Instant processedAt,
+      Long reviewerId,
+      String rejectionReason) {}
 }

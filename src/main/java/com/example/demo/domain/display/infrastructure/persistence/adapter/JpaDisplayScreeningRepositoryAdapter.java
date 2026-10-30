@@ -3,6 +3,7 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayScreeningJpaRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +20,11 @@ public class JpaDisplayScreeningRepositoryAdapter implements DisplayScreeningRep
   @Override
   public Optional<DisplayScreening> findLatestByDisplayId(Long displayId) {
     return jpaRepository.findFirstByDisplayIdOrderByIdDesc(displayId);
+  }
+
+  @Override
+  public List<DisplayScreening> findAllByDisplayId(Long displayId) {
+    return jpaRepository.findAllByDisplayIdOrderByIdDesc(displayId);
   }
 
   @Override
