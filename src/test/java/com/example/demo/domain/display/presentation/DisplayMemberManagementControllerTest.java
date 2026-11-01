@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,7 +18,14 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
+import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
+import com.example.demo.domain.displayartwork.infrastructure.persistence.SpringDataDisplayArtworkJpaRepository;
 import com.example.demo.global.security.JwtFactory;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -45,6 +53,87 @@ class DisplayMemberManagementControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private JwtFactory jwtFactory;
   @Autowired private SpringDataDisplayJpaRepository displayRepository;
+  @Autowired private SpringDataDisplayArtworkJpaRepository artworkRepository;
+  @Autowired private EntityManager entityManager;
+
+  @Test
+  void teamLeaderCanRemoveMemberAndDeletesOnlyArtworksLinkedByArtistAccount() throws Exception {
+    Display display = displayRepository.saveAndFlush(display());
+    TeamMember member = memberByUserId(display, MEMBER_USER_ID);
+    DisplayArtwork sharedArtwork = persistArtwork(display, "공동 작품", MANAGER_USER_ID, 0);
+    DisplayArtwork proxyRegistered = persistArtwork(display, "대리 등록 작품", MEMBER_USER_ID, 1);
+    persistCreator(
+        sharedArtwork.getId(), "다른 작가", CreatorRole.LEAD_ARTIST, MANAGER_USER_ID, 900001L);
+    persistCreator(
+        sharedArtwork.getId(), "나가는 공동 작가", CreatorRole.CO_AUTHOR, MEMBER_USER_ID, 900002L);
+    persistCreator(proxyRegistered.getId(), "이름만 있는 작가", CreatorRole.LEAD_ARTIST, null, 900003L);
+    persistCreator(
+        proxyRegistered.getId(), "QnA 담당자", CreatorRole.QA_ONLY, MEMBER_USER_ID, 900004L);
+
+    mockMvc
+        .perform(
+            delete(
+                    "/api/v1/display/{displayId}/members/{memberId}",
+                    display.getId(),
+                    member.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(LEADER_USER_ID)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.removedMemberId").value(member.getId()))
+        .andExpect(jsonPath("$.success.data.removedUserId").value(MEMBER_USER_ID))
+        .andExpect(jsonPath("$.success.data.deletedArtworkCount").value(1));
+
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(artworkRepository.findById(sharedArtwork.getId()).orElseThrow().isDeleted())
+        .isTrue();
+    assertThat(artworkRepository.findById(proxyRegistered.getId()).orElseThrow().isDeleted())
+        .isFalse();
+    assertThat(
+            displayRepository.findById(display.getId()).orElseThrow().hasTeamMember(MEMBER_USER_ID))
+        .isFalse();
+  }
+
+  @Test
+  void removeMemberEnforcesLeaderPermissionAndRemovalPolicy() throws Exception {
+    Display display = displayRepository.saveAndFlush(display());
+    TeamMember leader = memberByUserId(display, LEADER_USER_ID);
+    TeamMember member = memberByUserId(display, MEMBER_USER_ID);
+
+    mockMvc
+        .perform(
+            delete(
+                    "/api/v1/display/{displayId}/members/{memberId}",
+                    display.getId(),
+                    member.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(MANAGER_USER_ID)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+
+    mockMvc
+        .perform(
+            delete(
+                    "/api/v1/display/{displayId}/members/{memberId}",
+                    display.getId(),
+                    leader.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(LEADER_USER_ID)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_LEADER_REMOVAL_NOT_ALLOWED"));
+
+    mockMvc
+        .perform(
+            delete("/api/v1/display/{displayId}/members/{memberId}", display.getId(), 999999L)
+                .header(HttpHeaders.AUTHORIZATION, bearer(LEADER_USER_ID)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_MEMBER_NOT_FOUND"));
+
+    mockMvc
+        .perform(
+            delete(
+                "/api/v1/display/{displayId}/members/{memberId}", display.getId(), member.getId()))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
 
   @Test
   void teamLeaderCanAssignAndReleaseManager() throws Exception {
@@ -274,6 +363,53 @@ class DisplayMemberManagementControllerTest {
         .filter(member -> member.getUserId().value().equals(userId))
         .findFirst()
         .orElseThrow();
+  }
+
+  private DisplayArtwork persistArtwork(
+      Display display, String artworkName, Long registeredByUserId, int sortOrder) {
+    DisplayArtwork artwork =
+        DisplayArtwork.create(
+            display,
+            artworkName,
+            "설명",
+            List.of(ArtworkType.PAINTING),
+            2026,
+            "재료",
+            "10 x 10 cm",
+            "감상 포인트",
+            sortOrder,
+            registeredByUserId,
+            List.of(
+                new ArtworkImage(
+                    null,
+                    "https://cdn.displayu.com/artworks/" + artworkName + ".png",
+                    true,
+                    ArtworkImageType.ARTWORK,
+                    0,
+                    null,
+                    100,
+                    100)));
+    return artworkRepository.saveAndFlush(artwork);
+  }
+
+  private void persistCreator(
+      Long artworkId, String name, CreatorRole role, Long userId, Long creatorId) {
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO creator
+              (creator_id, display_artwork_id, creator_name, is_contact, is_leader, role, user_id)
+            VALUES (?, ?, ?, FALSE, ?, ?, ?)
+            """)
+        .setParameter(1, creatorId)
+        .setParameter(2, artworkId)
+        .setParameter(3, name)
+        .setParameter(4, role == CreatorRole.LEAD_ARTIST)
+        .setParameter(5, role.name())
+        .setParameter(6, userId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
   }
 
   private static Display display() {

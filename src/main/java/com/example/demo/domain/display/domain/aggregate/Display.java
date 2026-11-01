@@ -832,6 +832,16 @@ public class Display extends SoftDeleteBaseEntity {
     return member;
   }
 
+  /** 수락 완료된 일반 팀원 또는 관리자를 전시에서 내보낸다. */
+  public TeamMember removeAcceptedMember(Long teamMemberId, LocalDateTime removedAt) {
+    TeamMember member = findAcceptedActiveTeamMember(teamMemberId);
+    if (member.getRole() == TeamMemberRole.TEAM_LEADER) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LEADER_REMOVAL_NOT_ALLOWED);
+    }
+    member.softDelete(removedAt);
+    return member;
+  }
+
   /** 현재 대표자와 대상 팀원의 역할을 한 Aggregate 안에서 함께 변경해 대표자가 한 명만 남도록 한다. */
   public LeaderTransfer transferLeadership(Long requesterUserId, Long targetMemberId) {
     List<TeamMember> activeLeaders =

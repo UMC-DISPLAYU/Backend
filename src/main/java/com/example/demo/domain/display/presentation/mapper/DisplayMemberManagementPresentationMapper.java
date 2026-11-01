@@ -4,12 +4,14 @@ import com.example.demo.domain.display.application.command.ChangeDisplayMemberRo
 import com.example.demo.domain.display.application.command.TransferDisplayLeaderCommand;
 import com.example.demo.domain.display.application.result.DisplayLeaderTransferResult;
 import com.example.demo.domain.display.application.result.DisplayMemberRoleResult;
+import com.example.demo.domain.display.application.result.RemoveDisplayMemberResult;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.presentation.request.ChangeDisplayMemberRoleRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMemberRoleRequest;
 import com.example.demo.domain.display.presentation.request.TransferDisplayLeaderRequest;
 import com.example.demo.domain.display.presentation.response.DisplayLeaderTransferResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberRoleResponse;
+import com.example.demo.domain.display.presentation.response.RemoveDisplayMemberResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,6 +41,14 @@ public class DisplayMemberManagementPresentationMapper {
         result.displayId(),
         toMemberResponse(result.previousLeader()),
         toMemberResponse(result.newLeader()));
+  }
+
+  public RemoveDisplayMemberResponse toResponse(RemoveDisplayMemberResult result) {
+    return new RemoveDisplayMemberResponse(
+        result.displayId(),
+        result.removedMemberId(),
+        result.removedUserId(),
+        result.deletedArtworkCount());
   }
 
   private DisplayLeaderTransferResponse.MemberResponse toMemberResponse(

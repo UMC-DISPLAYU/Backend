@@ -4,6 +4,7 @@ import com.example.demo.domain.display.presentation.request.ChangeDisplayMemberR
 import com.example.demo.domain.display.presentation.request.TransferDisplayLeaderRequest;
 import com.example.demo.domain.display.presentation.response.DisplayLeaderTransferResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberRoleResponse;
+import com.example.demo.domain.display.presentation.response.RemoveDisplayMemberResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,23 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface DisplayMemberManagementControllerDocs {
+
+  @Operation(
+      summary = "전시 팀원 내보내기",
+      description = "전시 대표자가 수락 완료된 일반 팀원 또는 관리자를 내보내고, 해당 사용자가 작가로 연결된 작품을 삭제합니다.")
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "팀원 내보내기 성공",
+        content = @Content(examples = @ExampleObject(value = MEMBER_REMOVAL_SUCCESS))),
+    @ApiResponse(responseCode = "401", description = "인증 실패"),
+    @ApiResponse(responseCode = "403", description = "대표자 권한 없음"),
+    @ApiResponse(responseCode = "404", description = "전시 또는 대상 팀원 없음"),
+    @ApiResponse(responseCode = "409", description = "대표자 내보내기 시도")
+  })
+  ApiResponseBody<RemoveDisplayMemberResponse> removeMember(
+      Long displayId, Long memberId, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(
       summary = "전시 관리자 지정·해제",
@@ -64,6 +82,15 @@ public interface DisplayMemberManagementControllerDocs {
       {
         "resultType": "SUCCESS",
         "success": {"data": {"displayId": 1, "teamMemberId": 11, "userId": 12, "role": "MANAGER"}},
+        "error": null
+      }
+      """;
+
+  String MEMBER_REMOVAL_SUCCESS =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {"data": {"displayId": 1, "removedMemberId": 12, "removedUserId": 3, "deletedArtworkCount": 2}},
         "error": null
       }
       """;

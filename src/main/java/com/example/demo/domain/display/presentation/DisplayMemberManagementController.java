@@ -2,7 +2,9 @@ package com.example.demo.domain.display.presentation;
 
 import com.example.demo.domain.display.application.result.DisplayLeaderTransferResult;
 import com.example.demo.domain.display.application.result.DisplayMemberRoleResult;
+import com.example.demo.domain.display.application.result.RemoveDisplayMemberResult;
 import com.example.demo.domain.display.application.service.ChangeDisplayMemberRoleService;
+import com.example.demo.domain.display.application.service.RemoveDisplayMemberService;
 import com.example.demo.domain.display.application.service.TransferDisplayLeaderService;
 import com.example.demo.domain.display.presentation.docs.DisplayMemberManagementControllerDocs;
 import com.example.demo.domain.display.presentation.mapper.DisplayMemberManagementPresentationMapper;
@@ -10,6 +12,7 @@ import com.example.demo.domain.display.presentation.request.ChangeDisplayMemberR
 import com.example.demo.domain.display.presentation.request.TransferDisplayLeaderRequest;
 import com.example.demo.domain.display.presentation.response.DisplayLeaderTransferResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberRoleResponse;
+import com.example.demo.domain.display.presentation.response.RemoveDisplayMemberResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
@@ -19,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,7 +38,20 @@ public class DisplayMemberManagementController implements DisplayMemberManagemen
 
   private final ChangeDisplayMemberRoleService changeDisplayMemberRoleService;
   private final TransferDisplayLeaderService transferDisplayLeaderService;
+  private final RemoveDisplayMemberService removeDisplayMemberService;
   private final DisplayMemberManagementPresentationMapper mapper;
+
+  @Override
+  @DeleteMapping("/members/{memberId}")
+  public ApiResponseBody<RemoveDisplayMemberResponse> removeMember(
+      @PathVariable Long displayId,
+      @PathVariable Long memberId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    RemoveDisplayMemberResult result =
+        removeDisplayMemberService.remove(requireUserId(user), displayId, memberId);
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
 
   @Override
   @PatchMapping("/members/{memberId}/role")
