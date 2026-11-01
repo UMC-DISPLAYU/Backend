@@ -36,6 +36,8 @@ class DisplayArtworkPermissionCheckerTest {
   private static final Long ARTIST = 2L;
   private static final Long MEMBER = 3L;
   private static final Long TEAM_LEADER = 4L;
+  private static final Long MANAGER = 5L;
+  private static final Long OUTSIDER_ARTIST = 6L;
 
   private final CreatorRepository creatorRepository = mock(CreatorRepository.class);
   private final ArtistVerificationRepository artistVerificationRepository =
@@ -95,6 +97,33 @@ class DisplayArtworkPermissionCheckerTest {
   }
 
   @Test
+  void managerCanEditAndDeleteAnyArtwork() {
+    assertThatCode(() -> checker.requireArtworkEditor(MANAGER, display(), ARTWORK_ID))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> checker.requireArtworkDeleter(MANAGER, display(), ARTWORK_ID))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void linkedArtistWhoIsNotARegularTeamMemberCannotEditArtwork() {
+    when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
+        .thenReturn(
+            List.of(
+                new Creator(
+                    null,
+                    "outside artist",
+                    false,
+                    CreatorRole.LEAD_ARTIST,
+                    OUTSIDER_ARTIST,
+                    ARTWORK_ID)));
+
+    assertThatThrownBy(() -> checker.requireArtworkEditor(OUTSIDER_ARTIST, display(), ARTWORK_ID))
+        .isInstanceOf(BusinessException.class)
+        .extracting(exception -> ((BusinessException) exception).errorCode())
+        .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_EDIT);
+  }
+
+  @Test
   void onlyDisplayLeaderCanEditArtworkRegisteredWithCreatorNameOnly() {
     when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
         .thenReturn(
@@ -123,10 +152,14 @@ class DisplayArtworkPermissionCheckerTest {
   }
 
   @Test
-  void onlyOwnerCanEditArtworkOrder() {
+  void leaderAndManagerCanEditArtworkOrder() {
     assertThatCode(() -> checker.requireArtworkOrderEditor(OWNER, display()))
         .doesNotThrowAnyException();
-    assertThatThrownBy(() -> checker.requireArtworkOrderEditor(TEAM_LEADER, display()))
+    assertThatCode(() -> checker.requireArtworkOrderEditor(TEAM_LEADER, display()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> checker.requireArtworkOrderEditor(MANAGER, display()))
+        .doesNotThrowAnyException();
+    assertThatThrownBy(() -> checker.requireArtworkOrderEditor(MEMBER, display()))
         .isInstanceOf(BusinessException.class)
         .extracting(exception -> ((BusinessException) exception).errorCode())
         .isEqualTo(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
@@ -217,6 +250,8 @@ class DisplayArtworkPermissionCheckerTest {
         new TeamMember(2L, new UserId(MEMBER), "member", TeamMemberRole.TEAM_MEM, true));
     display.addTeamMember(
         new TeamMember(3L, new UserId(TEAM_LEADER), "leader", TeamMemberRole.TEAM_LEADER, true));
+    display.addTeamMember(
+        new TeamMember(4L, new UserId(MANAGER), "manager", TeamMemberRole.MANAGER, true));
     return display;
   }
 }

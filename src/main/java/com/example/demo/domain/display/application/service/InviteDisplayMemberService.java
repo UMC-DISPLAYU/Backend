@@ -67,6 +67,7 @@ public class InviteDisplayMemberService {
             null,
             new UserId(command.requesterUserId()),
             new UserId(command.inviteeUserId()),
+            command.role(),
             null,
             null);
     display.addInvitation(invitation);
@@ -79,7 +80,8 @@ public class InviteDisplayMemberService {
   }
 
   private void validateRole(TeamMemberRole role) {
-    if (role != TeamMemberRole.TEAM_MEM) {
+    // 대표자는 전시 생성 시 한 명만 지정되므로 초대에서는 팀원과 관리자 역할만 허용한다.
+    if (role != TeamMemberRole.TEAM_MEM && role != TeamMemberRole.MANAGER) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
     }
   }

@@ -155,6 +155,31 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void inviteReturnsForbiddenWhenRequesterIsManager() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User manager = userJpaRepository.save(user("manager"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayWithLeader(leader);
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(manager.getId()),
+            manager.getNickname(),
+            TeamMemberRole.MANAGER,
+            true));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(invitee.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
+  }
+
+  @Test
   void acceptUpdatesInvitationAndCreatesTeamMember() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -186,6 +211,41 @@ class DisplayMemberInvitationControllerTest {
               assertThat(teamMember.getUserId().value()).isEqualTo(invitee.getId());
               assertThat(teamMember.getDisplayNickname()).isEqualTo("전시용 닉네임");
             });
+  }
+
+  @Test
+  void acceptManagerInvitationCreatesManagerTeamMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User manager = userJpaRepository.save(user("manager"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    MvcResult inviteResult =
+        mockMvc
+            .perform(
+                post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                    .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(inviteRequest(manager.getId(), "MANAGER")))
+            .andExpect(status().isCreated())
+            .andReturn();
+    Number invitationId =
+        JsonPath.read(
+            inviteResult.getResponse().getContentAsString(), "$.success.data.invitationId");
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", invitationId.longValue())
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시 관리자")))
+        .andExpect(status().isOk());
+
+    TeamMember savedManager =
+        teamMemberJpaRepository
+            .findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                display.getId(), manager.getId())
+            .orElseThrow();
+    assertThat(savedManager.getRole()).isEqualTo(TeamMemberRole.MANAGER);
   }
 
   @Test
@@ -258,6 +318,7 @@ class DisplayMemberInvitationControllerTest {
     member.verifySchoolEmail("member@school.ac.kr", "중앙대학교");
     member.completeArtistVerification();
     userJpaRepository.save(member);
+    User manager = userJpaRepository.save(user("manager"));
     User pendingInvitee = userJpaRepository.save(user("pending"));
     User withdrawn = user("withdrawn");
     withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
@@ -267,6 +328,13 @@ class DisplayMemberInvitationControllerTest {
     display.addTeamMember(
         new TeamMember(
             null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(manager.getId()),
+            manager.getNickname(),
+            TeamMemberRole.MANAGER,
+            true));
     display.addTeamMember(
         new TeamMember(
             null,
@@ -289,7 +357,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(3))
+        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(4))
         .andExpect(jsonPath("$.success.data.memberAccept[0].userId").value(leader.getId()))
         .andExpect(jsonPath("$.success.data.memberAccept[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.memberAccept[1].userId").value(member.getId()))
@@ -297,9 +365,11 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.memberAccept[1].artistVerified").value(true))
         .andExpect(jsonPath("$.success.data.memberAccept[1].accepted").value(true))
         .andExpect(jsonPath("$.success.data.memberAccept[1].role").value("TEAM_MEM"))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].userId").value(withdrawn.getId()))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].loggedIn").value(false))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].artistVerified").value(false))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].userId").value(manager.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].role").value("MANAGER"))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].userId").value(withdrawn.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].loggedIn").value(false))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].artistVerified").value(false))
         .andExpect(jsonPath("$.success.data.memberPending.length()").value(1))
         .andExpect(jsonPath("$.success.data.memberPending[0].teamMemberId").value(nullValue()))
         .andExpect(jsonPath("$.success.data.memberPending[0].userId").value(pendingInvitee.getId()))
@@ -609,13 +679,17 @@ class DisplayMemberInvitationControllerTest {
   }
 
   private static String inviteRequest(Long inviteeUserId) {
+    return inviteRequest(inviteeUserId, "TEAM_MEM");
+  }
+
+  private static String inviteRequest(Long inviteeUserId, String role) {
     return """
         {
           "inviteeUserId": %d,
-          "role": "TEAM_MEM"
+          "role": "%s"
         }
         """
-        .formatted(inviteeUserId);
+        .formatted(inviteeUserId, role);
   }
 
   private static String inviteRequestWithoutRole(Long inviteeUserId) {

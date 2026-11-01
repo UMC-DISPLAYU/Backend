@@ -754,13 +754,11 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean isTeamLeader(Long userId) {
-    return teamMembers.stream()
-        .anyMatch(
-            teamMember ->
-                teamMember.isAccepted()
-                    && !teamMember.isDeleted()
-                    && teamMember.getUserId().value().equals(userId)
-                    && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
+    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.TEAM_LEADER);
+  }
+
+  public boolean isManager(Long userId) {
+    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.MANAGER);
   }
 
   public boolean hasAcceptedTeamMember(Long userId) {
@@ -770,6 +768,16 @@ public class Display extends SoftDeleteBaseEntity {
                 teamMember.isAccepted()
                     && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId));
+  }
+
+  private boolean hasAcceptedTeamMemberRole(Long userId, TeamMemberRole role) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId)
+                    && teamMember.getRole() == role);
   }
 
   public boolean hasPendingInvitation(Long inviteeUserId) {
@@ -797,7 +805,7 @@ public class Display extends SoftDeleteBaseEntity {
             null,
             displayInvitation.getInviteeUserId(),
             displayNickname,
-            TeamMemberRole.TEAM_MEM,
+            displayInvitation.getRole(),
             true);
     addTeamMember(teamMember);
     return teamMember;
