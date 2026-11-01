@@ -11,7 +11,9 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAM
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NICKNAME_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_SEARCH_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
@@ -33,30 +35,31 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface UserControllerDocs {
 
   @Operation(
-      summary = "닉네임 기반 사용자 검색",
-      description =
-          """
-          닉네임에 검색어가 포함된 활성 사용자를 조회합니다.
-
-          - 검색어의 앞뒤 공백은 제거합니다.
-          - 영문 검색은 대소문자를 구분하지 않습니다.
-          - 작가 인증 여부와 관계없이 조회합니다.
-          - 탈퇴한 사용자는 제외합니다.
-          - 닉네임 오름차순, 사용자 ID 오름차순으로 정렬합니다.
-          - 검색 결과는 최대 20명까지 반환합니다.
-          """)
-  @ApiResponse(responseCode = "200", description = "사용자 검색 성공")
+      summary = "닉네임으로 사용자 검색",
+      description = "닉네임이 정확히 일치하는 활성 사용자 한 명을 조회합니다. 작가 인증 여부와 관계없이 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "사용자 검색 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "검색 성공", value = USER_SEARCH_SUCCESS_EXAMPLE)))
   @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")
   @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
-  @ApiResponse(responseCode = "404", description = "해당 닉네임을 가진 사용자 없음")
+  @ApiResponse(
+      responseCode = "404",
+      description = "정확히 일치하는 닉네임의 사용자가 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NICKNAME_NOT_FOUND_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
-  ApiResponseBody<List<UserSearchResponse>> searchUsers(
+  ApiResponseBody<UserSearchResponse> searchUsers(
       UserSearchRequest request, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 사용자 정보 조회", description = "로그인한 사용자의 기본 정보를 조회합니다.")

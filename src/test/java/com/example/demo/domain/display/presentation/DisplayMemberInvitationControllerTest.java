@@ -154,6 +154,22 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void inviteReturnsForbiddenWhenInviteeIsNotArtistVerified() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(unverifiedUser("unverified-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(invitee.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("ARTIST_VERIFICATION_REQUIRED"));
+  }
+
+  @Test
   void inviteReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(
@@ -200,9 +216,7 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("전시용 닉네임")))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationId").value(invitationId))
         .andExpect(jsonPath("$.success.data.status").value("ACCEPTED"))
@@ -220,7 +234,7 @@ class DisplayMemberInvitationControllerTest {
         .anySatisfy(
             teamMember -> {
               assertThat(teamMember.getUserId().value()).isEqualTo(invitee.getId());
-              assertThat(teamMember.getDisplayNickname()).isEqualTo("전시용 닉네임");
+              assertThat(teamMember.getDisplayNickname()).isEqualTo(invitee.getNickname());
             });
   }
 
@@ -246,9 +260,7 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId.longValue())
-                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("전시 관리자")))
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId())))
         .andExpect(status().isOk());
 
     TeamMember savedManager =
@@ -270,9 +282,7 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("다른 사용자")))
+                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_INVITEE_MISMATCH"));
   }
@@ -280,13 +290,34 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void acceptReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
-        .perform(
-            post("/api/v1/display-invitations/{invitationId}/accept", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("전시용 닉네임")))
+        .perform(post("/api/v1/display-invitations/{invitationId}/accept", 1L))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void acceptReturnsForbiddenWhenInviteeIsNotArtistVerified() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(unverifiedUser("unverified-accept-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    DisplayInvitation invitation =
+        new DisplayInvitation(
+            null,
+            new UserId(leader.getId()),
+            new UserId(invitee.getId()),
+            TeamMemberRole.TEAM_MEM,
+            null,
+            null);
+    display.addInvitation(invitation);
+    DisplayInvitation savedInvitation = invitationJpaRepository.saveAndFlush(invitation);
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", savedInvitation.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("ARTIST_VERIFICATION_REQUIRED"));
   }
 
   @Test
@@ -331,7 +362,7 @@ class DisplayMemberInvitationControllerTest {
     userJpaRepository.save(member);
     User manager = userJpaRepository.save(user("manager"));
     User pendingInvitee = userJpaRepository.save(user("pending"));
-    User withdrawn = user("withdrawn");
+    User withdrawn = unverifiedUser("withdrawn");
     withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
     userJpaRepository.save(withdrawn);
     User exited = userJpaRepository.save(user("exited"));
@@ -597,9 +628,7 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", acceptedInvitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("전시용 닉네임")))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk());
 
     Display rejectedDisplay = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
@@ -663,9 +692,7 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(acceptRequest("전시용 닉네임")))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
         .andExpect(status().isOk());
 
     mockMvc
@@ -727,15 +754,6 @@ class DisplayMemberInvitationControllerTest {
         .formatted(inviteeUserId);
   }
 
-  private static String acceptRequest(String displayNickname) {
-    return """
-        {
-          "displayNickname": "%s"
-        }
-        """
-        .formatted(displayNickname);
-  }
-
   private static String updateNicknameRequest(Long displayId, String displayNickname) {
     return """
         {
@@ -794,6 +812,12 @@ class DisplayMemberInvitationControllerTest {
   }
 
   private static User user(String nickname) {
+    User user = unverifiedUser(nickname);
+    user.completeArtistVerification();
+    return user;
+  }
+
+  private static User unverifiedUser(String nickname) {
     return User.builder()
         .provider(Provider.Google)
         .providerId("provider-" + nickname)

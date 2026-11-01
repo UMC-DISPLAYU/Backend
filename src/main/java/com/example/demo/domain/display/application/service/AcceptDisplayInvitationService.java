@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.display.application.command.AcceptDisplayInvitationCommand;
 import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
@@ -10,6 +11,10 @@ import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayInvitationRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.repository.TeamMemberRepository;
+import com.example.demo.domain.user.domain.aggregate.User;
+import com.example.demo.domain.user.domain.error.UserErrorCode;
+import com.example.demo.domain.user.domain.error.UserException;
+import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.error.BusinessException;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -27,18 +32,24 @@ public class AcceptDisplayInvitationService {
   private final DisplayRepository displayRepository;
   private final DisplayMemberInvitationMapper mapper;
   private final Clock clock;
+  private final UserRepository userRepository;
+  private final ArtistPermissionChecker artistPermissionChecker;
 
   public AcceptDisplayInvitationService(
       DisplayInvitationRepository invitationRepository,
       TeamMemberRepository teamMemberRepository,
       DisplayRepository displayRepository,
       DisplayMemberInvitationMapper mapper,
-      Clock clock) {
+      Clock clock,
+      UserRepository userRepository,
+      ArtistPermissionChecker artistPermissionChecker) {
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.displayRepository = displayRepository;
     this.mapper = mapper;
     this.clock = clock;
+    this.userRepository = userRepository;
+    this.artistPermissionChecker = artistPermissionChecker;
   }
 
   @Transactional
@@ -50,6 +61,7 @@ public class AcceptDisplayInvitationService {
       throw new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_INVITATION_NOT_FOUND);
     }
     validateInvitee(invitation, command.requesterUserId());
+    User invitee = findVerifiedInvitee(command.requesterUserId());
 
     Long displayId = invitation.getDisplay().getId();
     Long inviteeUserId = invitation.getInviteeUserId().value();
@@ -59,7 +71,7 @@ public class AcceptDisplayInvitationService {
 
     invitation.accept(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     Display display = invitation.getDisplay();
-    TeamMember teamMember = display.inviteeAsTeamMember(invitation, command.displayNickname());
+    TeamMember teamMember = display.inviteeAsTeamMember(invitation, invitee.getNickname());
 
     try {
       teamMemberRepository.save(teamMember);
@@ -81,5 +93,15 @@ public class AcceptDisplayInvitationService {
     if (!invitation.isInvitee(requesterUserId)) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_INVITEE_MISMATCH);
     }
+  }
+
+  private User findVerifiedInvitee(Long inviteeUserId) {
+    User invitee =
+        userRepository
+            .findById(inviteeUserId)
+            .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    // 초대 이후 인증 상태가 달라질 수 있으므로 수락 시점에도 작가 인증을 다시 확인한다.
+    artistPermissionChecker.requireVerified(invitee);
+    return invitee;
   }
 }

@@ -1,6 +1,5 @@
 package com.example.demo.domain.display.presentation.docs;
 
-import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
@@ -19,7 +18,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface DisplayMemberInvitationControllerDocs {
 
-  @Operation(summary = "전시 멤버 초대 생성", description = "전시 팀장이 특정 사용자를 전시 멤버로 초대합니다.")
+  @Operation(
+      summary = "전시 멤버 초대 생성",
+      description = "기존 초대 권한을 가진 사용자가 작가 인증을 완료한 사용자를 전시 멤버로 초대합니다. 역할을 생략하면 TEAM_MEM으로 처리합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "201",
@@ -31,13 +32,23 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display invitation created",
                       value = INVITATION_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "초대 권한 없음 또는 초대 대상의 작가 인증 미완료",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> invite(
       Long displayId,
       InviteDisplayMemberRequest request,
       AuthUser user,
       HttpServletRequest httpRequest);
 
-  @Operation(summary = "전시 멤버 초대 수락", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 수락합니다.")
+  @Operation(
+      summary = "전시 멤버 초대 수락",
+      description = "작가 인증을 완료한 초대 대상자가 본인에게 온 전시 멤버 초대를 요청 본문 없이 수락합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
@@ -49,11 +60,16 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display invitation accepted",
                       value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "초대 대상 불일치 또는 수락 사용자의 작가 인증 미완료",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
-      Long invitationId,
-      AcceptDisplayInvitationRequest request,
-      AuthUser user,
-      HttpServletRequest httpRequest);
+      Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 멤버 초대 거절", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 거절합니다.")
   @SecurityRequirement(name = "Authorization")
@@ -254,6 +270,23 @@ public interface DisplayMemberInvitationControllerDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display-invitations/1/accept"
+        }
+      }
+      """;
+
+  String ARTIST_VERIFICATION_REQUIRED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "ARTIST_VERIFICATION_REQUIRED",
+          "message": "작가 인증이 완료된 사용자만 이용할 수 있습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-11-01T12:00:00",
           "path": "/api/v1/display-invitations/1/accept"
         }
       }

@@ -1,8 +1,8 @@
 package com.example.demo.domain.user.application.query;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface UserSearchQueryRepository {
 
-  List<UserSearchQueryResult> searchByNickname(String nickname, int limit);
+  Optional<UserSearchQueryResult> findByNickname(String nickname);
 }
