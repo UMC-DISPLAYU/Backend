@@ -21,6 +21,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -754,13 +755,11 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean isTeamLeader(Long userId) {
-    return teamMembers.stream()
-        .anyMatch(
-            teamMember ->
-                teamMember.isAccepted()
-                    && !teamMember.isDeleted()
-                    && teamMember.getUserId().value().equals(userId)
-                    && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
+    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.TEAM_LEADER);
+  }
+
+  public boolean isManager(Long userId) {
+    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.MANAGER);
   }
 
   public boolean hasAcceptedTeamMember(Long userId) {
@@ -770,6 +769,16 @@ public class Display extends SoftDeleteBaseEntity {
                 teamMember.isAccepted()
                     && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId));
+  }
+
+  private boolean hasAcceptedTeamMemberRole(Long userId, TeamMemberRole role) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId)
+                    && teamMember.getRole() == role);
   }
 
   public boolean hasPendingInvitation(Long inviteeUserId) {
@@ -797,7 +806,7 @@ public class Display extends SoftDeleteBaseEntity {
             null,
             displayInvitation.getInviteeUserId(),
             displayNickname,
-            TeamMemberRole.TEAM_MEM,
+            displayInvitation.getRole(),
             true);
     addTeamMember(teamMember);
     return teamMember;
@@ -808,8 +817,68 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean canInviteMember(Long userId) {
-    return isOwner(userId) || isTeamLeader(userId);
+    return isTeamLeader(userId);
   }
+
+  /** 대표자가 수락 완료된 일반 팀원과 관리자의 역할만 서로 변경한다. */
+  public TeamMember changeMemberRole(Long teamMemberId, TeamMemberRole targetRole) {
+    TeamMember member = findAcceptedActiveTeamMember(teamMemberId);
+    if (member.getRole() == TeamMemberRole.TEAM_LEADER
+        || targetRole == TeamMemberRole.TEAM_LEADER
+        || member.getRole() == targetRole) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_MEMBER_ROLE_CHANGE);
+    }
+    member.changeRole(targetRole);
+    return member;
+  }
+
+  /** 수락 완료된 일반 팀원 또는 관리자를 전시에서 내보낸다. */
+  public TeamMember removeAcceptedMember(Long teamMemberId, LocalDateTime removedAt) {
+    TeamMember member = findAcceptedActiveTeamMember(teamMemberId);
+    if (member.getRole() == TeamMemberRole.TEAM_LEADER) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LEADER_REMOVAL_NOT_ALLOWED);
+    }
+    member.softDelete(removedAt);
+    return member;
+  }
+
+  /** 현재 대표자와 대상 팀원의 역할을 한 Aggregate 안에서 함께 변경해 대표자가 한 명만 남도록 한다. */
+  public LeaderTransfer transferLeadership(Long requesterUserId, Long targetMemberId) {
+    List<TeamMember> activeLeaders =
+        teamMembers.stream()
+            .filter(member -> member.isAccepted() && !member.isDeleted())
+            .filter(member -> member.getRole() == TeamMemberRole.TEAM_LEADER)
+            .toList();
+    if (activeLeaders.size() != 1) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LEADER_TRANSFER_CONFLICT);
+    }
+    TeamMember previousLeader =
+        activeLeaders.stream()
+            .filter(member -> Objects.equals(member.getUserId().value(), requesterUserId))
+            .findFirst()
+            .orElseThrow(() -> new BusinessException(GlobalErrorCode.FORBIDDEN));
+    TeamMember newLeader = findAcceptedActiveTeamMember(targetMemberId);
+    if (Objects.equals(previousLeader.getId(), newLeader.getId())) {
+      throw new BusinessException(DisplayErrorCode.SELF_LEADER_TRANSFER_NOT_ALLOWED);
+    }
+    if (newLeader.getRole() == TeamMemberRole.TEAM_LEADER) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_MEMBER_ROLE_CHANGE);
+    }
+
+    previousLeader.changeRole(TeamMemberRole.MANAGER);
+    newLeader.changeRole(TeamMemberRole.TEAM_LEADER);
+    return new LeaderTransfer(previousLeader, newLeader);
+  }
+
+  private TeamMember findAcceptedActiveTeamMember(Long teamMemberId) {
+    return teamMembers.stream()
+        .filter(member -> member.isAccepted() && !member.isDeleted())
+        .filter(member -> Objects.equals(member.getId(), teamMemberId))
+        .findFirst()
+        .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_NOT_FOUND));
+  }
+
+  public record LeaderTransfer(TeamMember previousLeader, TeamMember newLeader) {}
 
   public boolean hasTeamMember(Long userId) {
     return teamMembers.stream()

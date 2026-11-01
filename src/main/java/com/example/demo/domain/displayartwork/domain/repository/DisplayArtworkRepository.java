@@ -16,6 +16,9 @@ public interface DisplayArtworkRepository {
 
   List<DisplayArtwork> findAllByDisplayId(Long displayId);
 
+  /** 해당 전시에서 사용자 계정이 대표 작가 또는 공동 작업자로 연결된 활성 작품을 조회한다. */
+  List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(Long displayId, Long userId);
+
   List<DisplayArtwork> findPublishedByDisplayId(Long displayId);
 
   /** 대표 작가/공동 작업자 구분 없이 해당 유저가 참여한 출품작을 등록순으로 조회한다. */

@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
@@ -30,6 +31,7 @@ public class InviteDisplayMemberService {
   private final UserRepository userRepository;
   private final DisplayMemberInvitationMapper mapper;
   private final DisplayPermissionChecker displayPermissionChecker;
+  private final ArtistPermissionChecker artistPermissionChecker;
 
   public InviteDisplayMemberService(
       DisplayRepository displayRepository,
@@ -37,13 +39,15 @@ public class InviteDisplayMemberService {
       TeamMemberRepository teamMemberRepository,
       UserRepository userRepository,
       DisplayMemberInvitationMapper mapper,
-      DisplayPermissionChecker displayPermissionChecker) {
+      DisplayPermissionChecker displayPermissionChecker,
+      ArtistPermissionChecker artistPermissionChecker) {
     this.displayRepository = displayRepository;
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.userRepository = userRepository;
     this.mapper = mapper;
     this.displayPermissionChecker = displayPermissionChecker;
+    this.artistPermissionChecker = artistPermissionChecker;
   }
 
   @Transactional
@@ -67,6 +71,7 @@ public class InviteDisplayMemberService {
             null,
             new UserId(command.requesterUserId()),
             new UserId(command.inviteeUserId()),
+            command.role(),
             null,
             null);
     display.addInvitation(invitation);
@@ -79,7 +84,8 @@ public class InviteDisplayMemberService {
   }
 
   private void validateRole(TeamMemberRole role) {
-    if (role != TeamMemberRole.TEAM_MEM) {
+    // 대표자는 전시 생성 시 한 명만 지정되므로 초대에서는 팀원과 관리자 역할만 허용한다.
+    if (role != TeamMemberRole.TEAM_MEM && role != TeamMemberRole.MANAGER) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_PERMISSION_DENIED);
     }
   }
@@ -95,6 +101,8 @@ public class InviteDisplayMemberService {
     if (invitee.getDeletedAt() != null) {
       throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
     }
+    // 전시 팀에는 작가 인증을 완료한 사용자만 초대할 수 있다.
+    artistPermissionChecker.requireVerified(invitee);
   }
 
   private void validateNotMember(Long displayId, Long inviteeUserId) {

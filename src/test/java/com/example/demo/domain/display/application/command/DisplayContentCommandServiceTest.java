@@ -46,7 +46,7 @@ class DisplayContentCommandServiceTest {
   @Test
   void createContentCreatesDraftWhenDisplayIsDraftEvenAfterDisplayStarted() {
     Display display = display();
-    display.addTeamMember(new TeamMember(1L, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(new TeamMember(1L, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));
     DisplayContentCategory category =
         new DisplayContentCategory(1L, "전시 소개", "전시 소개 이미지입니다.", 0, List.of());
     display.addContentCategory(category);
@@ -63,7 +63,7 @@ class DisplayContentCommandServiceTest {
   @Test
   void updateContentKeepsOriginalUploaderUserId() {
     Display display = display();
-    display.addTeamMember(new TeamMember(1L, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(new TeamMember(1L, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));
     display.addContentCategory(
         new DisplayContentCategory(
             1L,
@@ -109,7 +109,7 @@ class DisplayContentCommandServiceTest {
 
   private static Display displayWithThreeContents() {
     Display display = display();
-    display.addTeamMember(new TeamMember(1L, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(new TeamMember(1L, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));
     display.addContentCategory(
         new DisplayContentCategory(
             1L,

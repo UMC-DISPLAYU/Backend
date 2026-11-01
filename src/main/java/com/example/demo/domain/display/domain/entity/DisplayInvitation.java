@@ -3,6 +3,7 @@ package com.example.demo.domain.display.domain.entity;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
+import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import jakarta.persistence.AttributeOverride;
@@ -50,6 +51,10 @@ public class DisplayInvitation {
   @Column(nullable = false)
   private DisplayInvitationStatus status;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TeamMemberRole role;
+
   @Column(nullable = false)
   private LocalDateTime createdAt;
 
@@ -65,10 +70,21 @@ public class DisplayInvitation {
       UserId inviteeUserId,
       LocalDateTime createdAt,
       LocalDateTime deletedAt) {
+    this(id, inviterUserId, inviteeUserId, TeamMemberRole.TEAM_MEM, createdAt, deletedAt);
+  }
+
+  public DisplayInvitation(
+      Long id,
+      UserId inviterUserId,
+      UserId inviteeUserId,
+      TeamMemberRole role,
+      LocalDateTime createdAt,
+      LocalDateTime deletedAt) {
     this(
         id,
         inviterUserId,
         inviteeUserId,
+        role,
         DisplayInvitationStatus.PENDING,
         createdAt,
         null,
@@ -83,9 +99,30 @@ public class DisplayInvitation {
       LocalDateTime createdAt,
       LocalDateTime respondedAt,
       LocalDateTime deletedAt) {
+    this(
+        id,
+        inviterUserId,
+        inviteeUserId,
+        TeamMemberRole.TEAM_MEM,
+        status,
+        createdAt,
+        respondedAt,
+        deletedAt);
+  }
+
+  public DisplayInvitation(
+      Long id,
+      UserId inviterUserId,
+      UserId inviteeUserId,
+      TeamMemberRole role,
+      DisplayInvitationStatus status,
+      LocalDateTime createdAt,
+      LocalDateTime respondedAt,
+      LocalDateTime deletedAt) {
     this.id = id;
     this.inviterUserId = Objects.requireNonNull(inviterUserId, "inviterUserId must not be null.");
     this.inviteeUserId = Objects.requireNonNull(inviteeUserId, "inviteeUserId must not be null.");
+    this.role = Objects.requireNonNull(role, "role must not be null.");
     this.status = Objects.requireNonNull(status, "status must not be null.");
     this.createdAt = createdAt;
     this.respondedAt = respondedAt;
