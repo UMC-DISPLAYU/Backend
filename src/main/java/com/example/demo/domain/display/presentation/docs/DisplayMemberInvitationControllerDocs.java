@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.docs;
 
+import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
@@ -48,7 +49,7 @@ public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(
       summary = "전시 멤버 초대 수락",
-      description = "작가 인증을 완료한 초대 대상자가 본인에게 온 전시 멤버 초대를 요청 본문 없이 수락합니다.")
+      description = "작가 인증을 완료한 초대 대상자가 전시에서 사용할 닉네임을 입력해 본인에게 온 초대를 수락합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
@@ -69,7 +70,20 @@ public interface DisplayMemberInvitationControllerDocs {
               examples =
                   @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
-      Long invitationId, AuthUser user, HttpServletRequest httpRequest);
+      Long invitationId,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "전시에서 사용할 팀원 닉네임",
+              required = true,
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      examples =
+                          @ExampleObject(
+                              name = "초대 수락 요청",
+                              value = INVITATION_ACCEPT_REQUEST_EXAMPLE)))
+          AcceptDisplayInvitationRequest request,
+      AuthUser user,
+      HttpServletRequest httpRequest);
 
   @Operation(summary = "전시 멤버 초대 거절", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 거절합니다.")
   @SecurityRequirement(name = "Authorization")
@@ -249,6 +263,13 @@ public interface DisplayMemberInvitationControllerDocs {
           "timestamp": "2026-08-03T23:00:00",
           "path": "/api/v1/display-invitations/displays/1"
         }
+      }
+      """;
+
+  String INVITATION_ACCEPT_REQUEST_EXAMPLE =
+      """
+      {
+        "displayNickname": "전시용 닉네임"
       }
       """;
 

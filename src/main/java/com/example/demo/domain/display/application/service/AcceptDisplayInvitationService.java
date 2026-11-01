@@ -71,7 +71,8 @@ public class AcceptDisplayInvitationService {
 
     invitation.accept(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     Display display = invitation.getDisplay();
-    TeamMember teamMember = display.inviteeAsTeamMember(invitation, invitee.getNickname());
+    // 수락 요청에서 검증된 전시 닉네임을 새 팀원의 표시 이름으로 저장한다.
+    TeamMember teamMember = display.inviteeAsTeamMember(invitation, command.displayNickname());
 
     try {
       teamMemberRepository.save(teamMember);

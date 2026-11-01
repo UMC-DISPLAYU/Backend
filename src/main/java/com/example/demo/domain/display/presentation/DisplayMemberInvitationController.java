@@ -13,6 +13,7 @@ import com.example.demo.domain.display.application.service.RejectDisplayInvitati
 import com.example.demo.domain.display.application.service.UpdateMyDisplayNicknameService;
 import com.example.demo.domain.display.presentation.docs.DisplayMemberInvitationControllerDocs;
 import com.example.demo.domain.display.presentation.mapper.DisplayMemberInvitationPresentationMapper;
+import com.example.demo.domain.display.presentation.request.AcceptDisplayInvitationRequest;
 import com.example.demo.domain.display.presentation.request.InviteDisplayMemberRequest;
 import com.example.demo.domain.display.presentation.request.UpdateMyDisplayNicknameRequest;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationDisplayResponse;
@@ -71,11 +72,12 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   @PostMapping("/display-invitations/{invitationId}/accept")
   public ApiResponseBody<DisplayMemberInvitationResponse> accept(
       @PathVariable Long invitationId,
+      @Valid @RequestBody AcceptDisplayInvitationRequest request,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     DisplayMemberInvitationResult result =
         acceptDisplayInvitationService.accept(
-            mapper.toAcceptCommand(requireUserId(user), invitationId));
+            mapper.toAcceptCommand(requireUserId(user), invitationId, request));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

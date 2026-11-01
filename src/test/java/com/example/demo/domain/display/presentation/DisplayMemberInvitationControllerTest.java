@@ -216,7 +216,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.invitationId").value(invitationId))
         .andExpect(jsonPath("$.success.data.status").value("ACCEPTED"))
@@ -234,7 +236,7 @@ class DisplayMemberInvitationControllerTest {
         .anySatisfy(
             teamMember -> {
               assertThat(teamMember.getUserId().value()).isEqualTo(invitee.getId());
-              assertThat(teamMember.getDisplayNickname()).isEqualTo(invitee.getNickname());
+              assertThat(teamMember.getDisplayNickname()).isEqualTo("전시용 닉네임");
             });
   }
 
@@ -260,7 +262,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId.longValue())
-                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시 관리자")))
         .andExpect(status().isOk());
 
     TeamMember savedManager =
@@ -282,7 +286,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(other.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("다른 사용자")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_INVITEE_MISMATCH"));
   }
@@ -290,10 +296,33 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void acceptReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
-        .perform(post("/api/v1/display-invitations/{invitationId}/accept", 1L))
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void acceptReturnsBadRequestWhenDisplayNicknameIsBlank() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("   ")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+
+    assertThat(invitationJpaRepository.findById(invitationId).orElseThrow().getStatus())
+        .isEqualTo(DisplayInvitationStatus.PENDING);
   }
 
   @Test
@@ -315,7 +344,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", savedInvitation.getId())
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("미인증 사용자")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("ARTIST_VERIFICATION_REQUIRED"));
   }
@@ -628,7 +659,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", acceptedInvitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
         .andExpect(status().isOk());
 
     Display rejectedDisplay = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
@@ -692,7 +725,9 @@ class DisplayMemberInvitationControllerTest {
     mockMvc
         .perform(
             post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시용 닉네임")))
         .andExpect(status().isOk());
 
     mockMvc
@@ -752,6 +787,15 @@ class DisplayMemberInvitationControllerTest {
         }
         """
         .formatted(inviteeUserId);
+  }
+
+  private static String acceptRequest(String displayNickname) {
+    return """
+        {
+          "displayNickname": "%s"
+        }
+        """
+        .formatted(displayNickname);
   }
 
   private static String updateNicknameRequest(Long displayId, String displayNickname) {
