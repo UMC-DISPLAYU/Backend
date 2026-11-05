@@ -2,6 +2,7 @@ package com.example.demo.domain.user.application.service;
 
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.port.SchoolEmailSenderPort;
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
@@ -32,7 +33,7 @@ public class SendSchoolEmailVerificationService {
     String schoolEmail = normalize(command.schoolEmail());
 
     // 학교 이메일 + 도메인 검증
-    schoolEmailValidator.validate(command.univName(), schoolEmail);
+    University university = schoolEmailValidator.validate(command.univName(), schoolEmail);
 
     User user =
         userRepository
@@ -63,7 +64,8 @@ public class SendSchoolEmailVerificationService {
 
     // 새 인증 정보 저장
     SchoolEmailVerification verification =
-        SchoolEmailVerification.create(user, schoolEmail, command.univName(), verificationCode);
+        SchoolEmailVerification.create(
+            user, schoolEmail, university.getName(), university, verificationCode);
 
     verificationRepository.save(verification);
 
