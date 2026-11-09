@@ -126,18 +126,22 @@ class DisplayCacheIntegrationTest {
 
   @Test
   void graduationDisplaysCacheSameSizeRequest() {
-    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(5))
+    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class)))
         .thenReturn(List.of(displayQueryResult(1L, LocalDate.of(2026, 7, 20))));
 
     graduationDisplaysService.getRandomGraduationDisplays(5);
     graduationDisplaysService.getRandomGraduationDisplays(5);
 
-    verify(graduationDisplayQueryRepository, times(1)).findRandomGraduationDisplays(5);
+    verify(graduationDisplayQueryRepository, times(1))
+        .findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class));
   }
 
   @Test
   void graduationDisplaysCacheSameSizeRequestSeparatelyByDate() {
-    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(5))
+    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class)))
         .thenReturn(
             List.of(displayQueryResult(1L, LocalDate.of(2026, 7, 20))),
             List.of(displayQueryResult(2L, LocalDate.of(2026, 7, 21))));
@@ -147,7 +151,9 @@ class DisplayCacheIntegrationTest {
     clock.setInstant(Instant.parse("2026-07-14T00:00:00Z"));
     graduationDisplaysService.getRandomGraduationDisplays(5);
 
-    verify(graduationDisplayQueryRepository, times(2)).findRandomGraduationDisplays(5);
+    verify(graduationDisplayQueryRepository, times(2))
+        .findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class));
   }
 
   @Test
@@ -246,7 +252,8 @@ class DisplayCacheIntegrationTest {
     CountDownLatch staleReadStarted = new CountDownLatch(1);
     CountDownLatch commitEvicted = new CountDownLatch(1);
     AtomicInteger callCount = new AtomicInteger();
-    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(5))
+    when(graduationDisplayQueryRepository.findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class)))
         .thenAnswer(
             invocation -> {
               if (callCount.incrementAndGet() == 1) {
@@ -276,7 +283,9 @@ class DisplayCacheIntegrationTest {
     GraduationDisplayResult result = graduationDisplaysService.getRandomGraduationDisplays(5);
 
     assertThat(result.exhibitions()).extracting(ExhibitionResult::displayId).containsExactly(2L);
-    verify(graduationDisplayQueryRepository, times(2)).findRandomGraduationDisplays(5);
+    verify(graduationDisplayQueryRepository, times(2))
+        .findRandomGraduationDisplays(
+            org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any(LocalDate.class));
   }
 
   private void clearCache(String cacheName) {

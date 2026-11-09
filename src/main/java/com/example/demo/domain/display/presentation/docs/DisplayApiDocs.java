@@ -118,7 +118,8 @@ public final class DisplayApiDocs {
   public static final String CLOSING_SOON_SUCCESS_EXAMPLE_NAME = "Closing soon display success";
 
   public static final String GRADUATION_SUMMARY = "졸업 전시 랜덤 추천 조회";
-  public static final String GRADUATION_DESCRIPTION = "발행된 졸업 전시 중 요청한 개수만큼 랜덤 추천 목록을 조회합니다.";
+  public static final String GRADUATION_DESCRIPTION =
+      "발행된 졸업 전시 중 진행 중이거나 예정된 전시를 요청한 개수만큼 랜덤 조회합니다. 오늘 종료하는 전시는 포함합니다.";
   public static final String GRADUATION_SUCCESS_DESCRIPTION = "졸업 전시 랜덤 추천 조회 성공";
   public static final String GRADUATION_SUCCESS_EXAMPLE_NAME = "Graduation display success";
 

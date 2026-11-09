@@ -31,6 +31,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class DisplayControllerGraduationTest {
 
+  @org.springframework.test.context.bean.override.mockito.MockitoBean private java.time.Clock clock;
+
+  @org.junit.jupiter.api.BeforeEach
+  void setClock() {
+    org.mockito.Mockito.when(clock.instant())
+        .thenReturn(java.time.Instant.parse("2026-05-20T00:00:00Z"));
+    org.mockito.Mockito.when(clock.getZone()).thenReturn(java.time.ZoneId.of("Asia/Seoul"));
+  }
+
   @Autowired private MockMvc mockMvc;
 
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;

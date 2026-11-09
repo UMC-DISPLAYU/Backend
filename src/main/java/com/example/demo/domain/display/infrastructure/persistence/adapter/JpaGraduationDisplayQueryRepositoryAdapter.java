@@ -11,6 +11,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,12 +35,13 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
   }
 
   @Override
-  public List<ClosingSoonDisplayQueryResult> findRandomGraduationDisplays(int size) {
+  public List<ClosingSoonDisplayQueryResult> findRandomGraduationDisplays(
+      int size, LocalDate today) {
     if (size <= 0) {
       return List.of();
     }
 
-    List<Long> selectedDisplayIds = selectRandomDisplayIds(size);
+    List<Long> selectedDisplayIds = selectRandomDisplayIds(size, today);
     if (selectedDisplayIds.isEmpty()) {
       return List.of();
     }
@@ -59,7 +61,7 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))
-        .where(publishedGraduationDisplay(), display.id.in(selectedDisplayIds))
+        .where(publishedGraduationDisplay(today), display.id.in(selectedDisplayIds))
         .fetch()
         .stream()
         .sorted(
@@ -68,14 +70,14 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
         .toList();
   }
 
-  private List<Long> selectRandomDisplayIds(int size) {
+  private List<Long> selectRandomDisplayIds(int size, LocalDate today) {
     NumberExpression<Long> minDisplayId = display.id.min();
     NumberExpression<Long> maxDisplayId = display.id.max();
     Tuple idRange =
         queryFactory
             .select(minDisplayId, maxDisplayId)
             .from(display)
-            .where(publishedGraduationDisplay())
+            .where(publishedGraduationDisplay(today))
             .fetchOne();
     if (idRange == null || idRange.get(minDisplayId) == null || idRange.get(maxDisplayId) == null) {
       return List.of();
@@ -87,7 +89,7 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
             queryFactory
                 .select(display.id)
                 .from(display)
-                .where(publishedGraduationDisplay(), display.id.goe(pivot))
+                .where(publishedGraduationDisplay(today), display.id.goe(pivot))
                 .orderBy(display.id.asc())
                 .limit(size)
                 .fetch());
@@ -96,7 +98,7 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
           queryFactory
               .select(display.id)
               .from(display)
-              .where(publishedGraduationDisplay(), display.id.lt(pivot))
+              .where(publishedGraduationDisplay(today), display.id.lt(pivot))
               .orderBy(display.id.asc())
               .limit(size - selectedDisplayIds.size())
               .fetch());
@@ -120,11 +122,12 @@ public class JpaGraduationDisplayQueryRepositoryAdapter
     return displayIdOrder;
   }
 
-  private BooleanExpression publishedGraduationDisplay() {
+  private BooleanExpression publishedGraduationDisplay(LocalDate today) {
     return display
         .status
         .eq(DisplayStatus.PUBLISHED)
         .and(display.deletedAt.isNull())
-        .and(display.displayType.eq(DisplayType.GRADUATION));
+        .and(display.displayType.eq(DisplayType.GRADUATION))
+        .and(display.period.endDate.goe(today));
   }
 }
