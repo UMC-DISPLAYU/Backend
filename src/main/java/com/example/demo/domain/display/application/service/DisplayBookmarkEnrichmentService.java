@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.result.ClosingSoonDisplayResu
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.application.result.PopularDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +75,22 @@ public class DisplayBookmarkEnrichmentService {
                 .map(GraduationDisplayResult.ExhibitionResult::displayId)
                 .toList());
     return new GraduationDisplayResult(
+        result.exhibitions().stream()
+            .map(
+                exhibition ->
+                    exhibition.withArchived(archivedDisplayIds.contains(exhibition.displayId())))
+            .toList());
+  }
+
+  @Transactional(readOnly = true)
+  public PopularDisplayResult enrich(PopularDisplayResult result, Long userId) {
+    Set<Long> archivedDisplayIds =
+        findArchivedDisplayIds(
+            userId,
+            result.exhibitions().stream()
+                .map(PopularDisplayResult.ExhibitionResult::displayId)
+                .toList());
+    return new PopularDisplayResult(
         result.exhibitions().stream()
             .map(
                 exhibition ->

@@ -167,6 +167,7 @@ import com.example.demo.domain.display.application.service.GetMyDisplaysService;
 import com.example.demo.domain.display.application.usecase.GetClosingSoonDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetDisplayMapUseCase;
 import com.example.demo.domain.display.application.usecase.GetDuPicksUseCase;
+import com.example.demo.domain.display.application.usecase.GetPopularDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.GetRandomGraduationDisplaysUseCase;
 import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
@@ -192,6 +193,7 @@ import com.example.demo.domain.display.presentation.response.DisplayRejectionRea
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
+import com.example.demo.domain.display.presentation.response.PopularDisplayResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -235,6 +237,7 @@ public class DisplayController {
   private final GetDisplayByInvitationService getDisplayByInvitationService;
   private final GetDisplayMapUseCase getDisplayMapUseCase;
   private final GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase;
+  private final GetPopularDisplaysUseCase getPopularDisplaysUseCase;
   private final GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase;
   private final GetDuPicksUseCase getDuPicksUseCase;
   private final SearchDisplaysUseCase searchDisplaysUseCase;
@@ -259,6 +262,7 @@ public class DisplayController {
       GetDisplayMapUseCase getDisplayMapUseCase,
       GetClosingSoonDisplaysUseCase getClosingSoonDisplaysUseCase,
       GetRandomGraduationDisplaysUseCase getRandomGraduationDisplaysUseCase,
+      GetPopularDisplaysUseCase getPopularDisplaysUseCase,
       GetDuPicksUseCase getDuPicksUseCase,
       SearchDisplaysUseCase searchDisplaysUseCase,
       DisplayBookmarkEnrichmentService displayBookmarkEnrichmentService,
@@ -279,6 +283,7 @@ public class DisplayController {
     this.getDisplayByInvitationService = getDisplayByInvitationService;
     this.getDisplayMapUseCase = getDisplayMapUseCase;
     this.getClosingSoonDisplaysUseCase = getClosingSoonDisplaysUseCase;
+    this.getPopularDisplaysUseCase = getPopularDisplaysUseCase;
     this.getRandomGraduationDisplaysUseCase = getRandomGraduationDisplaysUseCase;
     this.getDuPicksUseCase = getDuPicksUseCase;
     this.searchDisplaysUseCase = searchDisplaysUseCase;
@@ -766,6 +771,19 @@ public class DisplayController {
                 getClosingSoonDisplaysUseCase.getClosingSoonDisplays(
                     closingSoonDisplayRequest.toQuery()),
                 userIdOrNull(user))),
+        request);
+  }
+
+  @GetMapping("/api/v1/display/popular")
+  @Operation(
+      summary = "인기 전시 조회",
+      description = "공개된 진행 중·예정 전시를 누적 좋아요 내림차순으로 최대 10개 반환합니다. 동점은 전시 ID 내림차순입니다.")
+  public ApiResponseBody<PopularDisplayResponse> getPopularDisplays(
+      @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            displayBookmarkEnrichmentService.enrich(
+                getPopularDisplaysUseCase.getPopularDisplays(), userIdOrNull(user))),
         request);
   }
 

@@ -13,6 +13,7 @@ import com.example.demo.domain.display.application.result.DisplayRejectionReason
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayListResult;
+import com.example.demo.domain.display.application.result.PopularDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
@@ -30,6 +31,7 @@ import com.example.demo.domain.display.presentation.response.DisplayRejectionRea
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
+import com.example.demo.domain.display.presentation.response.PopularDisplayResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -109,6 +111,10 @@ public class DisplayPresentationMapper {
   public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
     return new GraduationDisplayResponse(
         result.exhibitions().stream().map(this::toResponse).toList());
+  }
+
+  public PopularDisplayResponse toResponse(PopularDisplayResult result) {
+    return new PopularDisplayResponse(result.exhibitions().stream().map(this::toResponse).toList());
   }
 
   public SearchDisplayResponse toResponse(SearchDisplayResult result) {
@@ -216,6 +222,20 @@ public class DisplayPresentationMapper {
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
       GraduationDisplayResult.ExhibitionResult result) {
     return new GraduationDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft(),
+        result.isArchived(),
+        result.placeName());
+  }
+
+  private PopularDisplayResponse.ExhibitionResponse toResponse(
+      PopularDisplayResult.ExhibitionResult result) {
+    return new PopularDisplayResponse.ExhibitionResponse(
         result.displayId(),
         result.title(),
         result.posterImageUrl(),
