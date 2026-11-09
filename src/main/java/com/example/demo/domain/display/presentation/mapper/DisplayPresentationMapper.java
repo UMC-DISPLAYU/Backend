@@ -65,7 +65,9 @@ public class DisplayPresentationMapper {
         request.openTime(),
         request.closeTime(),
         ContentOpenPolicy.IMMEDIATELY,
-        ContentOpenPolicy.ON_EXHIBITION);
+        ContentOpenPolicy.ON_EXHIBITION,
+        request.instagramUrl(),
+        request.websiteUrl());
   }
 
   public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
@@ -193,7 +195,9 @@ public class DisplayPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
-        result.invitations().stream().map(this::toResponse).toList());
+        result.invitations().stream().map(this::toResponse).toList(),
+        result.instagramUrl(),
+        result.websiteUrl());
   }
 
   private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {

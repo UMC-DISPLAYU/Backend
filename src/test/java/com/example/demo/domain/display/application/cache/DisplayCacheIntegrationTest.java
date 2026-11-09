@@ -353,7 +353,9 @@ class DisplayCacheIntegrationTest {
         LocalTime.of(10, 0),
         LocalTime.of(18, 0),
         ContentOpenPolicy.IMMEDIATELY,
-        ContentOpenPolicy.ON_EXHIBITION);
+        ContentOpenPolicy.ON_EXHIBITION,
+        null,
+        null);
   }
 
   private static UpdateDisplayCommand updateDisplayCommand() {

@@ -40,7 +40,9 @@ public record DisplayDetailResult(
     List<ImageResult> images,
     List<ContentCategoryResult> contentCategories,
     List<TeamMemberResult> teamMembers,
-    List<InvitationResult> invitations) {
+    List<InvitationResult> invitations,
+    String instagramUrl,
+    String websiteUrl) {
 
   public static DisplayDetailResult from(Display display, long likeCount) {
     return new DisplayDetailResult(
@@ -75,7 +77,9 @@ public record DisplayDetailResult(
         display.getInvitations().stream()
             .filter(invitation -> !invitation.isDeleted())
             .map(InvitationResult::from)
-            .toList());
+            .toList(),
+        display.getInstagramUrl(),
+        display.getWebsiteUrl());
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -105,7 +109,9 @@ public record DisplayDetailResult(
         images,
         contentCategories,
         teamMembers,
-        invitations);
+        invitations,
+        instagramUrl,
+        websiteUrl);
   }
 
   public record LocationResult(

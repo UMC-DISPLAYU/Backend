@@ -77,6 +77,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.location.roadAddress,
             display.qnaAccount,
             display.contract,
+            display.instagramUrl,
+            display.websiteUrl,
             display.note,
             display.organization,
             display.department,
@@ -274,6 +276,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         images,
         contentCategories,
         teamMembers,
-        invitations);
+        invitations,
+        base.get(display.instagramUrl),
+        base.get(display.websiteUrl));
   }
 }

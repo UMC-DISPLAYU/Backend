@@ -33,7 +33,9 @@ public record DisplayDetailResponse(
     List<ImageResponse> images,
     List<ContentCategoryResponse> contentCategories,
     List<TeamMemberResponse> teamMembers,
-    List<InvitationResponse> invitations) {
+    List<InvitationResponse> invitations,
+    String instagramUrl,
+    String websiteUrl) {
 
   public record LocationResponse(
       String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
