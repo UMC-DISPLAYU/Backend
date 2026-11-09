@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayLike;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -73,6 +74,36 @@ class PopularDisplaysTest {
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
                     "$.success.data.exhibitions[0].placeName")
                 .value("전시장"));
+  }
+
+  @Test
+  void updatesRankingAfterUnlikeAndPreservesCardImages() {
+    Display first = jpaRepository.saveAndFlush(publishedDisplay("first", DisplayType.GRADUATION));
+    Display second = jpaRepository.saveAndFlush(publishedDisplay("second", DisplayType.GRADUATION));
+    DisplayLike firstLike = DisplayLike.create(first.getId(), new UserId(100L));
+    em.persist(firstLike);
+    em.flush();
+    LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"));
+
+    var before = repository.findPopularDisplays(today);
+    assertThat(before)
+        .extracting(ClosingSoonDisplayQueryResult::displayId)
+        .containsExactly(first.getId(), second.getId());
+    assertThat(before)
+        .extracting(ClosingSoonDisplayQueryResult::posterImageUrl)
+        .containsOnly("https://cdn.displayu.com/posters/main.png");
+
+    em.remove(firstLike);
+    em.flush();
+    em.clear();
+    assertThat(repository.findPopularDisplays(today))
+        .extracting(ClosingSoonDisplayQueryResult::displayId)
+        .containsExactly(second.getId(), first.getId());
+  }
+
+  @Test
+  void returnsEmptyWhenNoEligibleDisplaysExist() {
+    assertThat(repository.findPopularDisplays(LocalDate.of(2026, 11, 9))).isEmpty();
   }
 
   private static Display publishedDisplay(String title, DisplayType displayType) {

@@ -10,7 +10,10 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,6 +32,27 @@ public class JpaPopularDisplayQueryRepositoryAdapter implements PopularDisplayQu
 
   @Override
   public List<ClosingSoonDisplayQueryResult> findPopularDisplays(LocalDate today) {
+    List<Long> rankedIds =
+        queryFactory
+            .select(display.id)
+            .from(display)
+            .leftJoin(like)
+            .on(like.displayId.eq(display.id))
+            .where(
+                display.status.eq(DisplayStatus.PUBLISHED),
+                display.deletedAt.isNull(),
+                display.period.endDate.goe(today))
+            .groupBy(display.id)
+            .orderBy(like.id.count().desc(), display.id.desc())
+            .limit(10)
+            .fetch();
+    if (rankedIds.isEmpty()) {
+      return List.of();
+    }
+    Map<Long, Integer> rankById = new HashMap<>();
+    for (int rank = 0; rank < rankedIds.size(); rank++) {
+      rankById.put(rankedIds.get(rank), rank);
+    }
     return queryFactory
         .select(
             Projections.constructor(
@@ -47,15 +71,14 @@ public class JpaPopularDisplayQueryRepositoryAdapter implements PopularDisplayQu
             image.imageType.eq(DisplayImageType.MAIN),
             image.deletedAt.isNull(),
             image.sortOrder.eq(0))
-        .leftJoin(like)
-        .on(like.displayId.eq(display.id))
         .where(
+            display.id.in(rankedIds),
             display.status.eq(DisplayStatus.PUBLISHED),
             display.deletedAt.isNull(),
             display.period.endDate.goe(today))
-        .groupBy(display.id, image.imageUrl)
-        .orderBy(like.id.countDistinct().desc(), display.id.desc())
-        .limit(10)
-        .fetch();
+        .fetch()
+        .stream()
+        .sorted(Comparator.comparingInt(result -> rankById.get(result.displayId())))
+        .toList();
   }
 }
