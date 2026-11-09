@@ -112,7 +112,7 @@ public final class DisplayApiDocs {
 
   public static final String CLOSING_SOON_SUMMARY = "마감 임박 전시 조회";
   public static final String CLOSING_SOON_DESCRIPTION =
-      "현재 날짜 기준 종료되지 않은 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
+      "한국 날짜 기준 이미 시작했고 오늘부터 3일 후까지 종료하는 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
           + "cursor는 마지막으로 조회한 전시의 endedAt과 displayId를 ':'로 연결한 값입니다. 예: 2026-07-15:5";
   public static final String CLOSING_SOON_SUCCESS_DESCRIPTION = "마감 임박 전시 조회 성공";
   public static final String CLOSING_SOON_SUCCESS_EXAMPLE_NAME = "Closing soon display success";

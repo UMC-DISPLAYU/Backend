@@ -50,7 +50,7 @@ public class JpaClosingSoonDisplayQueryRepositoryAdapter
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.deletedAt.isNull(),
-            display.period.endDate.goe(today),
+            QDisplayPeriodConditions.closingSoon(display, today),
             cursorAfter(query.cursor()))
         .orderBy(display.period.endDate.asc(), display.id.asc())
         .limit(limit)
