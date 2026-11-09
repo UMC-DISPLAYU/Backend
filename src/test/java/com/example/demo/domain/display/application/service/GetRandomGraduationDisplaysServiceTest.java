@@ -40,7 +40,8 @@ class GetRandomGraduationDisplaysServiceTest {
         "organization",
         "department",
         endedAt.minusDays(7),
-        endedAt);
+        endedAt,
+        null);
   }
 
   private static class FakeGraduationDisplayQueryRepository

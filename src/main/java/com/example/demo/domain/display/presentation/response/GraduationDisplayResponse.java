@@ -14,5 +14,6 @@ public record GraduationDisplayResponse(List<ExhibitionResponse> exhibitions) {
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      @JsonProperty("isArchived") boolean isArchived) {}
+      @JsonProperty("isArchived") boolean isArchived,
+      String placeName) {}
 }

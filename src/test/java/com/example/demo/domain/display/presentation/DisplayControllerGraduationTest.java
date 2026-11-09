@@ -53,6 +53,7 @@ class DisplayControllerGraduationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].displayId", notNullValue()))
+        .andExpect(jsonPath("$.success.data.exhibitions[0].placeName").value("전시장"))
         .andExpect(jsonPath("$.success.data.exhibitions[0].title").value("졸업 전시"))
         .andExpect(
             jsonPath("$.success.data.exhibitions[0].posterImageUrl")

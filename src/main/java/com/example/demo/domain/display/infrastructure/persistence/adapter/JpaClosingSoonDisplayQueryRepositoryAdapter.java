@@ -40,7 +40,8 @@ public class JpaClosingSoonDisplayQueryRepositoryAdapter
                 display.organization,
                 display.department,
                 display.period.startDate,
-                display.period.endDate))
+                display.period.endDate,
+                display.location.placeName))
         .from(display)
         .leftJoin(display.images, image)
         .on(

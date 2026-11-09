@@ -209,7 +209,8 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -222,7 +223,8 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -235,7 +237,8 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {

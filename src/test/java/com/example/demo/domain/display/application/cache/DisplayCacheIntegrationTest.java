@@ -314,7 +314,8 @@ class DisplayCacheIntegrationTest {
         "organization",
         "department",
         endedAt.minusDays(7),
-        endedAt);
+        endedAt,
+        null);
   }
 
   private static DuPickQueryResult duPickQueryResult(Long duPickId) {

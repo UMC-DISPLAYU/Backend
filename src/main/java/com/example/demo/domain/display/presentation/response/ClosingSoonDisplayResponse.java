@@ -15,7 +15,8 @@ public record ClosingSoonDisplayResponse(
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      @JsonProperty("isArchived") boolean isArchived) {}
+      @JsonProperty("isArchived") boolean isArchived,
+      String placeName) {}
 
   public record CursorPaginationResponse(String nextCursor, int size, boolean hasNext) {}
 }
