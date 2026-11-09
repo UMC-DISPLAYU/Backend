@@ -12,6 +12,8 @@ public interface CreatorRepository {
 
   List<Creator> findLeadersByDisplayArtworkIds(List<Long> displayArtworkIds);
 
+  List<Creator> findArtistsByDisplayArtworkIds(List<Long> displayArtworkIds);
+
   Creator save(Creator creator);
 
   List<Creator> saveAll(List<Creator> creators);

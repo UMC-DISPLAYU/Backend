@@ -13,7 +13,10 @@ public record DisplayArtworkPreviewResponse(
       String artworkImageUrl,
       int imageWidth,
       int imageHeight,
-      ExhibitionInfoResponse exhibitionInfo) {}
+      ExhibitionInfoResponse exhibitionInfo,
+      List<ArtistResponse> artists) {}
+
+  public record ArtistResponse(Long userId, String name) {}
 
   public record ExhibitionInfoResponse(
       Long displayId, String exhibitionTitle, String exhibitionPeriod, String exhibitionLocation) {}
