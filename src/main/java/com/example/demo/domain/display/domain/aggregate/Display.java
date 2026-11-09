@@ -524,6 +524,11 @@ public class Display extends SoftDeleteBaseEntity {
     publish();
   }
 
+  public void cancelReview() {
+    requirePendingReview();
+    this.status = DisplayStatus.DRAFT;
+  }
+
   public void rejectReview() {
     requirePendingReview();
     this.status = DisplayStatus.REJECTED;

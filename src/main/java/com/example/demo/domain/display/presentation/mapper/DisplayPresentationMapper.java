@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
+import com.example.demo.domain.display.application.result.CancelDisplayScreeningResult;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
@@ -20,6 +21,7 @@ import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.response.CancelDisplayScreeningResponse;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
@@ -38,6 +40,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+  public CancelDisplayScreeningResponse toResponse(CancelDisplayScreeningResult result) {
+    return new CancelDisplayScreeningResponse(
+        result.displayId(), result.screeningId(), result.status(), result.screeningStatus());
+  }
 
   public CreateDisplayCommand toCommand(CreateDisplayRequest request, Long ownerUserId) {
     return new CreateDisplayCommand(
@@ -197,7 +203,8 @@ public class DisplayPresentationMapper {
         result.teamMembers().stream().map(this::toResponse).toList(),
         result.invitations().stream().map(this::toResponse).toList(),
         result.instagramUrl(),
-        result.websiteUrl());
+        result.websiteUrl(),
+        result.currentScreeningId());
   }
 
   private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {

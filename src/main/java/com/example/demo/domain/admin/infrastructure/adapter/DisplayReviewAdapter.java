@@ -66,7 +66,9 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.location(),
         result.imageUrls(),
         result.school(),
-        result.leaderName());
+        result.leaderName(),
+        result.screeningStatus(),
+        result.cancelledBy());
   }
 
   @Override

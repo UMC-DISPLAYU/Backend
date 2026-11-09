@@ -85,6 +85,8 @@ class DisplayReviewAdapterTest {
                 "전시장",
                 List.of("poster"),
                 "학교",
+                null,
+                null,
                 null));
 
     ReviewDetail detail = adapter.getDetail(3L);

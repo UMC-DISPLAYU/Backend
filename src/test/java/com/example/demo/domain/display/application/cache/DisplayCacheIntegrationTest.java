@@ -433,6 +433,13 @@ class DisplayCacheIntegrationTest {
     }
 
     @Bean
+    com.example.demo.domain.display.domain.repository.DisplayScreeningRepository
+        screeningRepository() {
+      return mock(
+          com.example.demo.domain.display.domain.repository.DisplayScreeningRepository.class);
+    }
+
+    @Bean
     DisplayLikeRepository displayLikeRepository() {
       return mock(DisplayLikeRepository.class);
     }

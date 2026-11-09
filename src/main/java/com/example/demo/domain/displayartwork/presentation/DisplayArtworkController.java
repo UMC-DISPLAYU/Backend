@@ -81,7 +81,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     this.mapper = mapper;
   }
 
-  @GetMapping("/api/v1/artworks/preview")
+  @GetMapping(value = "/api/v1/artworks/preview", produces = "application/json")
   @Override
   public ApiResponseBody<DisplayArtworkPreviewResponse> getPreview(
       @RequestParam PreviewFilterType type,

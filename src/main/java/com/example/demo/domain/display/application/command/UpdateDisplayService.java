@@ -4,8 +4,11 @@ import com.example.demo.domain.display.application.permission.DisplayPermissionC
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -19,16 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDisplayService {
 
   private final DisplayRepository displayRepository;
+  private final DisplayScreeningRepository screeningRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayPermissionChecker displayPermissionChecker;
 
   public UpdateDisplayService(
       DisplayRepository displayRepository,
+      DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
+    this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
@@ -84,7 +90,14 @@ public class UpdateDisplayService {
 
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayId(display.getId()));
+        display,
+        displayLikeRepository.countByDisplayId(display.getId()),
+        display.getStatus() == DisplayStatus.PENDING_REVIEW
+            ? screeningRepository
+                .findLatestByDisplayId(display.getId())
+                .map(DisplayScreening::getId)
+                .orElse(null)
+            : null);
   }
 
   private String organization(

@@ -7,5 +7,7 @@ public interface DisplayScreeningRepository {
 
   Optional<DisplayScreening> findLatestByDisplayId(Long displayId);
 
+  Optional<DisplayScreening> findByIdAndDisplayId(Long screeningId, Long displayId);
+
   DisplayScreening save(DisplayScreening screening);
 }

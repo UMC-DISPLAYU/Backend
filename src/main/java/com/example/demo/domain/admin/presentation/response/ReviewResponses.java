@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.presentation.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,5 +38,13 @@ public final class ReviewResponses {
       String location,
       List<String> imageUrls,
       String school,
-      String leaderName) {}
+      String leaderName,
+      @Schema(
+              description = "최신 심사 요청 상태. 취소 시 CANCELLED이며 전시 status는 DRAFT입니다.",
+              types = {"string", "null"})
+          String screeningStatus,
+      @Schema(
+              description = "심사 요청 취소자 ID. 취소되지 않았으면 null입니다.",
+              types = {"integer", "null"})
+          Long cancelledBy) {}
 }

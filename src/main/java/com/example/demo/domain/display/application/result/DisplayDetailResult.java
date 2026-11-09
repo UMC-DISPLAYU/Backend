@@ -42,9 +42,14 @@ public record DisplayDetailResult(
     List<TeamMemberResult> teamMembers,
     List<InvitationResult> invitations,
     String instagramUrl,
-    String websiteUrl) {
+    String websiteUrl,
+    Long currentScreeningId) {
 
   public static DisplayDetailResult from(Display display, long likeCount) {
+    return from(display, likeCount, null);
+  }
+
+  public static DisplayDetailResult from(Display display, long likeCount, Long currentScreeningId) {
     return new DisplayDetailResult(
         display.getId(),
         display.getOwnerUserId().value(),
@@ -79,7 +84,8 @@ public record DisplayDetailResult(
             .map(InvitationResult::from)
             .toList(),
         display.getInstagramUrl(),
-        display.getWebsiteUrl());
+        display.getWebsiteUrl(),
+        currentScreeningId);
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -111,7 +117,8 @@ public record DisplayDetailResult(
         teamMembers,
         invitations,
         instagramUrl,
-        websiteUrl);
+        websiteUrl,
+        currentScreeningId);
   }
 
   public record LocationResult(

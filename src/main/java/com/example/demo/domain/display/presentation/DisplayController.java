@@ -1,5 +1,10 @@
 package com.example.demo.domain.display.presentation;
 
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CANCEL_SCREENING_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CANCEL_SCREENING_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CANCEL_SCREENING_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CANCEL_SCREENING_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CANCEL_SCREENING_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUCCESS_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.CLOSING_SOON_SUCCESS_EXAMPLE;
@@ -97,6 +102,11 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.M
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.MY_DISPLAY_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.POPULAR_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.POPULAR_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.POPULAR_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.POPULAR_SUCCESS_EXAMPLE_NAME;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.POPULAR_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.PUBLISH_REQUEST_EXAMPLE;
@@ -142,6 +152,7 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.U
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.UPDATE_SUMMARY;
 
+import com.example.demo.domain.display.application.command.CancelDisplayScreeningService;
 import com.example.demo.domain.display.application.command.CreateDisplayService;
 import com.example.demo.domain.display.application.command.DeleteDisplayCommand;
 import com.example.demo.domain.display.application.command.DeleteDisplayService;
@@ -182,6 +193,7 @@ import com.example.demo.domain.display.presentation.request.SearchDisplayRequest
 import com.example.demo.domain.display.presentation.request.UpdateDisplayInvitationStatusRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayReservationRequest;
+import com.example.demo.domain.display.presentation.response.CancelDisplayScreeningResponse;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
@@ -230,6 +242,7 @@ public class DisplayController {
   private final DisplayInvitationCommandService displayInvitationCommandService;
   private final UpdateDisplayService updateDisplayService;
   private final PublishDisplayService publishDisplayService;
+  private final CancelDisplayScreeningService cancelDisplayScreeningService;
   private final HideDisplayService hideDisplayService;
   private final UpdateDisplayReservationService updateDisplayReservationService;
   private final GetDisplayDetailService getDisplayDetailService;
@@ -254,6 +267,7 @@ public class DisplayController {
       DisplayInvitationCommandService displayInvitationCommandService,
       UpdateDisplayService updateDisplayService,
       PublishDisplayService publishDisplayService,
+      CancelDisplayScreeningService cancelDisplayScreeningService,
       HideDisplayService hideDisplayService,
       UpdateDisplayReservationService updateDisplayReservationService,
       GetDisplayDetailService getDisplayDetailService,
@@ -276,6 +290,7 @@ public class DisplayController {
     this.displayInvitationCommandService = displayInvitationCommandService;
     this.updateDisplayService = updateDisplayService;
     this.publishDisplayService = publishDisplayService;
+    this.cancelDisplayScreeningService = cancelDisplayScreeningService;
     this.hideDisplayService = hideDisplayService;
     this.updateDisplayReservationService = updateDisplayReservationService;
     this.getDisplayDetailService = getDisplayDetailService;
@@ -294,7 +309,7 @@ public class DisplayController {
     this.mapper = mapper;
   }
 
-  @PostMapping("/api/v1/display")
+  @PostMapping(value = "/api/v1/display", produces = "application/json")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = CREATE_SUMMARY, description = CREATE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
@@ -310,6 +325,7 @@ public class DisplayController {
                       value = CREATE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "201",
+      useReturnTypeSchema = true,
       description = CREATE_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -383,7 +399,7 @@ public class DisplayController {
     return ApiResponseBody.success(null, request);
   }
 
-  @PatchMapping("/api/v1/display")
+  @PatchMapping(value = "/api/v1/display", produces = "application/json")
   @Operation(summary = UPDATE_SUMMARY, description = UPDATE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -398,6 +414,7 @@ public class DisplayController {
                       value = UPDATE_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = UPDATE_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -417,7 +434,7 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/publish")
+  @PatchMapping(value = "/api/v1/display/publish", produces = "application/json")
   @Operation(summary = PUBLISH_SUMMARY, description = PUBLISH_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -432,6 +449,7 @@ public class DisplayController {
                       value = PUBLISH_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = PUBLISH_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -450,11 +468,43 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/draft")
+  @PostMapping(
+      value = "/api/v1/display/{displayId}/screenings/{screeningId}/cancel",
+      produces = "application/json")
+  @Operation(summary = CANCEL_SCREENING_SUMMARY, description = CANCEL_SCREENING_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      useReturnTypeSchema = true,
+      description = CANCEL_SCREENING_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = CANCEL_SCREENING_SUCCESS_EXAMPLE_NAME,
+                      value = CANCEL_SCREENING_SUCCESS_EXAMPLE)))
+  @ApiResponse(responseCode = "401", description = "인증 필요")
+  @ApiResponse(responseCode = "403", description = "전시 팀장 권한 필요")
+  @ApiResponse(responseCode = "404", description = "전시 또는 해당 전시의 심사 요청 없음")
+  @ApiResponse(responseCode = "409", description = "이미 처리된 요청, 이전 심사 요청 또는 동시 변경 충돌")
+  public ApiResponseBody<CancelDisplayScreeningResponse> cancelScreening(
+      @PathVariable Long displayId,
+      @PathVariable Long screeningId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            cancelDisplayScreeningService.cancel(displayId, screeningId, requireUserId(user))),
+        request);
+  }
+
+  @PatchMapping(value = "/api/v1/display/{displayId}/draft", produces = "application/json")
   @Operation(summary = HIDE_SUMMARY, description = HIDE_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = HIDE_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -504,7 +554,7 @@ public class DisplayController {
     }
   }
 
-  @PatchMapping("/api/v1/display/{displayId}/reservation")
+  @PatchMapping(value = "/api/v1/display/{displayId}/reservation", produces = "application/json")
   @Operation(summary = RESERVATION_SUMMARY, description = RESERVATION_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -519,6 +569,7 @@ public class DisplayController {
                       value = RESERVATION_REQUEST_EXAMPLE)))
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = RESERVATION_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -725,10 +776,11 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/search")
+  @GetMapping(value = "/api/v1/display/search", produces = "application/json")
   @Operation(summary = SEARCH_SUMMARY, description = SEARCH_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = SEARCH_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -749,10 +801,11 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/closing-soon")
+  @GetMapping(value = "/api/v1/display/closing-soon", produces = "application/json")
   @Operation(summary = CLOSING_SOON_SUMMARY, description = CLOSING_SOON_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = CLOSING_SOON_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -774,10 +827,19 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/popular")
-  @Operation(
-      summary = "인기 전시 조회",
-      description = "공개된 진행 중·예정 전시를 누적 좋아요 내림차순으로 최대 10개 반환합니다. 동점은 전시 ID 내림차순입니다.")
+  @GetMapping(value = "/api/v1/display/popular", produces = "application/json")
+  @Operation(summary = POPULAR_SUMMARY, description = POPULAR_DESCRIPTION)
+  @ApiResponse(
+      responseCode = "200",
+      useReturnTypeSchema = true,
+      description = POPULAR_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = POPULAR_SUCCESS_EXAMPLE_NAME,
+                      value = POPULAR_SUCCESS_EXAMPLE)))
   public ApiResponseBody<PopularDisplayResponse> getPopularDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest request) {
     return ApiResponseBody.success(
@@ -787,10 +849,11 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/graduation")
+  @GetMapping(value = "/api/v1/display/graduation", produces = "application/json")
   @Operation(summary = GRADUATION_SUMMARY, description = GRADUATION_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = GRADUATION_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -914,10 +977,11 @@ public class DisplayController {
         request);
   }
 
-  @GetMapping("/api/v1/display/{displayId}")
+  @GetMapping(value = "/api/v1/display/{displayId}", produces = "application/json")
   @Operation(summary = DETAIL_SUMMARY, description = DETAIL_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = DETAIL_SUCCESS_DESCRIPTION,
       content =
           @Content(

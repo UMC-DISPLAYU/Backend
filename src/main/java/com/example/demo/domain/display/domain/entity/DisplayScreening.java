@@ -45,6 +45,8 @@ public class DisplayScreening {
 
   private Long reviewerId;
 
+  private Long cancelledBy;
+
   private LocalDateTime processedAt;
 
   @Column(length = 1000)
@@ -62,6 +64,13 @@ public class DisplayScreening {
   public static DisplayScreening request(
       Display display, Long requesterId, LocalDateTime requestedAt) {
     return new DisplayScreening(display, requesterId, requestedAt);
+  }
+
+  public void cancel(Long cancelledBy, LocalDateTime processedAt) {
+    requirePending();
+    this.status = DisplayScreeningStatus.CANCELLED;
+    this.cancelledBy = Objects.requireNonNull(cancelledBy, "cancelledBy must not be null.");
+    this.processedAt = Objects.requireNonNull(processedAt, "processedAt must not be null.");
   }
 
   public void approve(Long reviewerId, LocalDateTime processedAt) {
