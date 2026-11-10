@@ -9,7 +9,8 @@ public final class DisplayApiDocs {
   public static final String CREATE_DESCRIPTION =
       "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
           + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다. "
-          + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다.";
+          + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다. "
+          + "instagramUrl과 websiteUrl은 생략하거나 null로 전달할 수 있습니다. 입력할 때는 공백 없는 HTTP(S) URL을 최대 255자로 전달하며 빈 문자열은 허용하지 않습니다.";
   public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
@@ -27,7 +28,7 @@ public final class DisplayApiDocs {
   public static final String PUBLISH_SUMMARY = "전시 공개 심사 신청";
   public static final String PUBLISH_DESCRIPTION =
       "전시 팀장 권한을 가진 사용자가 비공개(DRAFT) 또는 반려(REJECTED) 상태의 전시를 심사 중(PENDING_REVIEW) 상태로 변경합니다. "
-          + "이미 심사 중인 전시는 DISPLAY_REVIEW_ALREADY_PENDING, 공개된 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
+          + "응답의 currentScreeningId는 현재 심사 요청 ID이며 취소 API에 전달합니다. 이미 심사 중인 전시는 DISPLAY_REVIEW_ALREADY_PENDING, 공개된 전시는 DISPLAY_ALREADY_PUBLISHED 에러를 반환합니다.";
   public static final String PUBLISH_REQUEST_DESCRIPTION = "전시 공개 심사 신청 요청";
   public static final String PUBLISH_REQUEST_EXAMPLE_NAME = "Display publish request";
   public static final String PUBLISH_SUCCESS_DESCRIPTION = "전시 공개 심사 신청 성공";
@@ -104,21 +105,22 @@ public final class DisplayApiDocs {
 
   public static final String SEARCH_SUMMARY = "전시 검색";
   public static final String SEARCH_DESCRIPTION =
-      "발행된 전시를 displayId 오름차순 커서 방식으로 검색합니다. "
+      "발행된 전시를 displayId 내림차순 커서 방식으로 검색합니다. "
           + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다. "
-          + "status=CLOSING_SOON은 현재 날짜 기준 3일 이내 종료되는 전시를 조회합니다.";
+          + "status=CLOSING_SOON은 한국 날짜 기준 이미 시작했고 오늘부터 3일 후까지 종료하는 전시를 조회합니다. 오늘과 3일 후를 모두 포함합니다.";
   public static final String SEARCH_SUCCESS_DESCRIPTION = "전시 검색 성공";
   public static final String SEARCH_SUCCESS_EXAMPLE_NAME = "Display search success";
 
   public static final String CLOSING_SOON_SUMMARY = "마감 임박 전시 조회";
   public static final String CLOSING_SOON_DESCRIPTION =
-      "현재 날짜 기준 종료되지 않은 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
+      "한국 날짜 기준 이미 시작했고 오늘부터 3일 후까지 종료하는 발행 전시를 종료일 오름차순, 같은 종료일은 displayId 오름차순 커서 방식으로 조회합니다. "
           + "cursor는 마지막으로 조회한 전시의 endedAt과 displayId를 ':'로 연결한 값입니다. 예: 2026-07-15:5";
   public static final String CLOSING_SOON_SUCCESS_DESCRIPTION = "마감 임박 전시 조회 성공";
   public static final String CLOSING_SOON_SUCCESS_EXAMPLE_NAME = "Closing soon display success";
 
   public static final String GRADUATION_SUMMARY = "졸업 전시 랜덤 추천 조회";
-  public static final String GRADUATION_DESCRIPTION = "발행된 졸업 전시 중 요청한 개수만큼 랜덤 추천 목록을 조회합니다.";
+  public static final String GRADUATION_DESCRIPTION =
+      "발행된 졸업 전시 중 진행 중이거나 예정된 전시를 요청한 개수만큼 랜덤 조회합니다. 오늘 종료하는 전시는 포함합니다.";
   public static final String GRADUATION_SUCCESS_DESCRIPTION = "졸업 전시 랜덤 추천 조회 성공";
   public static final String GRADUATION_SUCCESS_EXAMPLE_NAME = "Graduation display success";
 
@@ -149,7 +151,8 @@ public final class DisplayApiDocs {
       "Display rejection reason unavailable";
 
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
-  public static final String DETAIL_DESCRIPTION = "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다.";
+  public static final String DETAIL_DESCRIPTION =
+      "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다. currentScreeningId는 현재 심사 중인 요청 ID이며, 심사 중이 아니면 null입니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
   public static final String DETAIL_SUCCESS_EXAMPLE_NAME = "Display detail success";
   public static final String DETAIL_DISPLAY_ID_DESCRIPTION = "전시 ID";
@@ -184,6 +187,8 @@ public final class DisplayApiDocs {
         "qnaAccount": "@displayu",
         "displayNickname": "전시 리더",
         "contract": "Instagram DM",
+        "instagramUrl": "https://www.instagram.com/displayu",
+        "websiteUrl": "https://displayu.com",
         "subtitle": "중앙대학교 디자인학부 졸업전시",
         "description": "디자인학부 학생들의...",
         "startDate": "2026-05-28",
@@ -217,6 +222,8 @@ public final class DisplayApiDocs {
             },
             "qnaAccount": "@displayu",
             "contract": "Instagram DM",
+            "instagramUrl": "https://www.instagram.com/displayu",
+            "websiteUrl": "https://displayu.com",
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -234,6 +241,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
             "status": "DRAFT",
+            "currentScreeningId": null,
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [
@@ -373,6 +381,8 @@ public final class DisplayApiDocs {
             },
             "qnaAccount": "",
             "contract": "Email",
+            "instagramUrl": null,
+            "websiteUrl": null,
             "note": "물품 보관소를 운영하지 않습니다.",
             "organization": "중앙대학교",
             "department": "디자인학부 시각디자인",
@@ -390,6 +400,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
             "status": "DRAFT",
+            "currentScreeningId": null,
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [],
@@ -430,6 +441,8 @@ public final class DisplayApiDocs {
               "longitude": 127.2267
             },
             "qnaAccount": "",
+            "instagramUrl": null,
+            "websiteUrl": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -447,6 +460,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
             "status": "PENDING_REVIEW",
+            "currentScreeningId": 42,
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [],
@@ -480,6 +494,8 @@ public final class DisplayApiDocs {
               "longitude": 127.2267
             },
             "qnaAccount": "",
+            "instagramUrl": null,
+            "websiteUrl": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -497,6 +513,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
             "status": "DRAFT",
+            "currentScreeningId": null,
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [],
@@ -553,6 +570,8 @@ public final class DisplayApiDocs {
               "longitude": 127.2267
             },
             "qnaAccount": "",
+            "instagramUrl": null,
+            "websiteUrl": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
             "department": "디자인학부",
@@ -570,6 +589,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "ON_EXHIBITION",
             "exhibitionContentOpen": "IMMEDIATELY",
             "status": "PUBLISHED",
+            "currentScreeningId": null,
             "invitationToken": null,
             "invitationDisabledAt": null,
             "images": [],
@@ -730,6 +750,7 @@ public final class DisplayApiDocs {
                 "displayId": 5,
                 "title": "ABOUT THE FLOW OF TIME",
                 "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-06-20",
                 "endedAt": "2026-07-15",
@@ -763,6 +784,7 @@ public final class DisplayApiDocs {
                 "displayId": 15,
                 "title": "2026 디자인 졸업전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-07-10",
                 "endedAt": "2026-07-20",
@@ -796,9 +818,10 @@ public final class DisplayApiDocs {
                 "displayId": 7,
                 "title": "2026 졸업 전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
-                "startedAt": "2026-05-20",
-                "endedAt": "2026-05-28",
+                "startedAt": "2026-07-10",
+                "endedAt": "2026-07-12",
                 "dayLeft": 0,
                 "isArchived": true
               }
@@ -995,6 +1018,8 @@ public final class DisplayApiDocs {
             },
             "qnaAccount": "@displayu",
             "contract": "Instagram DM",
+            "instagramUrl": "https://www.instagram.com/displayu",
+            "websiteUrl": "https://displayu.com",
             "note": "입장 무료",
             "organization": "디스플레이유",
             "department": "디자인학과",
@@ -1012,6 +1037,7 @@ public final class DisplayApiDocs {
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
             "status": "PUBLISHED",
+            "currentScreeningId": null,
             "invitationToken": "token-value",
             "invitationDisabledAt": null,
             "images": [
@@ -1079,6 +1105,72 @@ public final class DisplayApiDocs {
       """;
 
   public static final String INVITATION_DETAIL_SUCCESS_EXAMPLE = DETAIL_SUCCESS_EXAMPLE;
+
+  public static final String POPULAR_SUMMARY = "인기 전시 조회";
+  public static final String POPULAR_DESCRIPTION =
+      "삭제되지 않은 발행 전시 중 진행 중이거나 예정된 전시를 누적 좋아요 수 내림차순으로 최대 10개 조회합니다. "
+          + "좋아요 수가 같으면 displayId 내림차순이며 좋아요가 없는 전시도 포함합니다. "
+          + "인증 없이 조회할 수 있고, 인증된 사용자에게는 본인의 isArchived 상태를 반환합니다.";
+  public static final String POPULAR_SUCCESS_DESCRIPTION = "인기 전시 조회 성공";
+  public static final String POPULAR_SUCCESS_EXAMPLE_NAME = "Popular display success";
+  public static final String POPULAR_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "exhibitions": [
+              {
+                "displayId": 7,
+                "title": "2026 졸업 전시",
+                "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "placeName": "디유 갤러리",
+                "schoolDepartmentName": "중앙대학교 디자인학부",
+                "startedAt": "2026-07-10",
+                "endedAt": "2026-07-15",
+                "dayLeft": 3,
+                "isArchived": false
+              }
+            ]
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-07-12T07:00:00",
+          "path": "/api/v1/display/popular"
+        }
+      }
+      """;
+
+  public static final String CANCEL_SCREENING_SUMMARY = "전시 심사 요청 취소";
+  public static final String CANCEL_SCREENING_DESCRIPTION =
+      "전시 팀장만 해당 전시의 현재 심사 중인 요청을 취소할 수 있습니다. 요청 본문은 없습니다. "
+          + "제출 또는 상세 응답의 currentScreeningId를 screeningId 경로 값으로 전달합니다. "
+          + "전시는 DRAFT로 돌아가고 심사 이력은 CANCELLED로 남으며 전시·작품 데이터는 유지됩니다. "
+          + "인증이 없으면 401, 팀장이 아니면 403, 전시 또는 해당 전시의 심사 요청이 없으면 404를 반환합니다. "
+          + "승인·반려·취소된 요청, 이전 심사 요청 또는 동시 변경 충돌은 409를 반환합니다. 취소 후 다시 제출하면 새 심사 요청 ID가 발급됩니다.";
+  public static final String CANCEL_SCREENING_SUCCESS_DESCRIPTION = "심사 요청 취소 성공";
+  public static final String CANCEL_SCREENING_SUCCESS_EXAMPLE_NAME =
+      "Display screening cancellation success";
+  public static final String CANCEL_SCREENING_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "displayId": 12,
+            "screeningId": 42,
+            "status": "DRAFT",
+            "screeningStatus": "CANCELLED"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-11-09T14:00:00",
+          "path": "/api/v1/display/12/screenings/42/cancel"
+        }
+      }
+      """;
 
   private DisplayApiDocs() {}
 }

@@ -28,7 +28,9 @@ public record DisplayScreeningDetailResult(
     String location,
     List<String> imageUrls,
     String school,
-    String leaderName) {
+    String leaderName,
+    String screeningStatus,
+    Long cancelledBy) {
 
   public static DisplayScreeningDetailResult from(Display display, DisplayScreening screening) {
     return new DisplayScreeningDetailResult(
@@ -54,7 +56,9 @@ public record DisplayScreeningDetailResult(
             .map(DisplayImage::getImageUrl)
             .toList(),
         display.getOrganization(),
-        uniqueLeaderName(display));
+        uniqueLeaderName(display),
+        screening == null ? null : screening.getStatus().name(),
+        screening == null ? null : screening.getCancelledBy());
   }
 
   private static Instant toInstant(java.time.LocalDateTime value) {

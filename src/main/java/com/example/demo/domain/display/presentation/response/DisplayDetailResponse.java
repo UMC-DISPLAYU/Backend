@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,7 +34,21 @@ public record DisplayDetailResponse(
     List<ImageResponse> images,
     List<ContentCategoryResponse> contentCategories,
     List<TeamMemberResponse> teamMembers,
-    List<InvitationResponse> invitations) {
+    List<InvitationResponse> invitations,
+    @Schema(
+            description = "등록 시 저장한 Instagram URL",
+            types = {"string", "null"},
+            maxLength = 255)
+        String instagramUrl,
+    @Schema(
+            description = "등록 시 저장한 웹사이트 URL",
+            types = {"string", "null"},
+            maxLength = 255)
+        String websiteUrl,
+    @Schema(
+            description = "현재 심사 중인 요청 ID. 심사 중이 아니면 null이며 취소 API의 screeningId로 사용합니다.",
+            types = {"integer", "null"})
+        Long currentScreeningId) {
 
   public record LocationResponse(
       String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}

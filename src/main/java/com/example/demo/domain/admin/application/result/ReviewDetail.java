@@ -20,4 +20,6 @@ public record ReviewDetail(
     String location,
     List<String> imageUrls,
     String school,
-    String leaderName) {}
+    String leaderName,
+    String screeningStatus,
+    Long cancelledBy) {}

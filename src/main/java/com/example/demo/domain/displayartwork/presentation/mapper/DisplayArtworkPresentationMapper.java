@@ -64,7 +64,13 @@ public class DisplayArtworkPresentationMapper {
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
-        toResponse(result.exhibitionInfo()));
+        toResponse(result.exhibitionInfo()),
+        result.artists().stream()
+            .map(
+                artist ->
+                    new DisplayArtworkPreviewResponse.ArtistResponse(
+                        artist.userId(), artist.name()))
+            .toList());
   }
 
   private DisplayArtworkPreviewResponse.ExhibitionInfoResponse toResponse(

@@ -40,9 +40,16 @@ public record DisplayDetailResult(
     List<ImageResult> images,
     List<ContentCategoryResult> contentCategories,
     List<TeamMemberResult> teamMembers,
-    List<InvitationResult> invitations) {
+    List<InvitationResult> invitations,
+    String instagramUrl,
+    String websiteUrl,
+    Long currentScreeningId) {
 
   public static DisplayDetailResult from(Display display, long likeCount) {
+    return from(display, likeCount, null);
+  }
+
+  public static DisplayDetailResult from(Display display, long likeCount, Long currentScreeningId) {
     return new DisplayDetailResult(
         display.getId(),
         display.getOwnerUserId().value(),
@@ -75,7 +82,10 @@ public record DisplayDetailResult(
         display.getInvitations().stream()
             .filter(invitation -> !invitation.isDeleted())
             .map(InvitationResult::from)
-            .toList());
+            .toList(),
+        display.getInstagramUrl(),
+        display.getWebsiteUrl(),
+        currentScreeningId);
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -105,7 +115,10 @@ public record DisplayDetailResult(
         images,
         contentCategories,
         teamMembers,
-        invitations);
+        invitations,
+        instagramUrl,
+        websiteUrl,
+        currentScreeningId);
   }
 
   public record LocationResult(

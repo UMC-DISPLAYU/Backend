@@ -45,7 +45,7 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
   @Test
   void findClosingSoonDisplaysReturnsPublishedDisplaysOrderedByEndDateAsc() {
     LocalDate today = LocalDate.of(2026, 7, 11);
-    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(5));
+    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(3));
     Display second = publishedDisplay("두 번째 전시", today.minusDays(3), today);
     Display draft = draftDisplay("초안 전시", today.minusDays(1), today.plusDays(1));
     Display ended = publishedDisplay("종료된 전시", today.minusDays(10), today.minusDays(1));
@@ -67,9 +67,9 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
   @Test
   void findClosingSoonDisplaysAppliesCursorAndLimit() {
     LocalDate today = LocalDate.of(2026, 7, 11);
-    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(5));
+    Display first = publishedDisplay("첫 번째 전시", today.minusDays(5), today.plusDays(3));
     Display second = publishedDisplay("두 번째 전시", today.minusDays(3), today);
-    Display third = publishedDisplay("세 번째 전시", today.minusDays(3), today.plusDays(3));
+    Display third = publishedDisplay("세 번째 전시", today.minusDays(3), today.plusDays(2));
     jpaRepository.saveAllAndFlush(List.of(first, second, third));
 
     List<ClosingSoonDisplayQueryResult> firstPage =
@@ -111,6 +111,22 @@ class JpaClosingSoonDisplayQueryRepositoryAdapterTest {
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::posterImageUrl)
         .containsExactly("https://cdn.displayu.com/posters/main.png");
+  }
+
+  @Test
+  void excludesUpcomingAndMoreThanThreeDaysAway() {
+    LocalDate today = LocalDate.of(2026, 7, 11);
+    jpaRepository.saveAllAndFlush(
+        List.of(
+            publishedDisplay("today", today, today),
+            publishedDisplay("boundary", today.minusDays(1), today.plusDays(3)),
+            publishedDisplay("later", today.minusDays(1), today.plusDays(4)),
+            publishedDisplay("upcoming", today.plusDays(1), today.plusDays(3))));
+    assertThat(
+            queryRepository.findClosingSoonDisplays(
+                new ClosingSoonDisplayQuery(null, 20), today, 20))
+        .extracting(ClosingSoonDisplayQueryResult::title)
+        .containsExactly("today", "boundary");
   }
 
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {

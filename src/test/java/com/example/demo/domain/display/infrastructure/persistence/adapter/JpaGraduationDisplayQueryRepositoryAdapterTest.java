@@ -48,7 +48,8 @@ class JpaGraduationDisplayQueryRepositoryAdapterTest {
     deleted.delete();
     jpaRepository.saveAllAndFlush(List.of(first, second, third, assignment, draft, deleted));
 
-    List<ClosingSoonDisplayQueryResult> results = queryRepository.findRandomGraduationDisplays(2);
+    List<ClosingSoonDisplayQueryResult> results =
+        queryRepository.findRandomGraduationDisplays(2, LocalDate.of(2026, 5, 20));
 
     assertThat(results).hasSize(2);
     assertThat(results)
@@ -58,6 +59,17 @@ class JpaGraduationDisplayQueryRepositoryAdapterTest {
     assertThat(results)
         .extracting(ClosingSoonDisplayQueryResult::posterImageUrl)
         .containsOnly("https://cdn.displayu.com/posters/main.png");
+  }
+
+  @Test
+  void excludesEndedDisplaysButIncludesUpcomingAndEndingToday() {
+    jpaRepository.saveAndFlush(publishedDisplay("졸업 전시", DisplayType.GRADUATION));
+    assertThat(queryRepository.findRandomGraduationDisplays(10, LocalDate.of(2026, 5, 19)))
+        .hasSize(1);
+    assertThat(queryRepository.findRandomGraduationDisplays(10, LocalDate.of(2026, 5, 28)))
+        .hasSize(1);
+    assertThat(queryRepository.findRandomGraduationDisplays(10, LocalDate.of(2026, 5, 29)))
+        .isEmpty();
   }
 
   private static Display publishedDisplay(String title, DisplayType displayType) {

@@ -50,10 +50,13 @@ public class PublishDisplayService {
     displayPermissionChecker.requireTeamLeader(display, command.userId());
 
     display.requestReview();
-    screeningRepository.save(
-        DisplayScreening.request(
-            display, command.userId(), LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)));
+    DisplayScreening screening =
+        screeningRepository.save(
+            DisplayScreening.request(
+                display,
+                command.userId(),
+                LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)));
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayId(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()), screening.getId());
   }
 }

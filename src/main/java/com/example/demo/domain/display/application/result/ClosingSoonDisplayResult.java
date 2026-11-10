@@ -17,7 +17,8 @@ public record ClosingSoonDisplayResult(
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isArchived) {
+      boolean isArchived,
+      String placeName) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -30,7 +31,8 @@ public record ClosingSoonDisplayResult(
           queryResult.startedAt(),
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
-          false);
+          false,
+          queryResult.placeName());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -43,7 +45,8 @@ public record ClosingSoonDisplayResult(
           startedAt,
           endedAt,
           dayLeft,
-          isArchived);
+          isArchived,
+          placeName);
     }
   }
 

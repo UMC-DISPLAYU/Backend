@@ -38,7 +38,8 @@ public class JpaDisplayInvitationDisplayQueryRepositoryAdapter
                 display.organization,
                 display.department,
                 display.period.startDate,
-                display.period.endDate))
+                display.period.endDate,
+                display.location.placeName))
         .from(invitation)
         .join(invitation.display, display)
         .leftJoin(display.images, image)

@@ -1,0 +1,3 @@
+ALTER TABLE Display
+    ADD COLUMN instagramUrl VARCHAR(255) NULL,
+    ADD COLUMN websiteUrl VARCHAR(255) NULL;

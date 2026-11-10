@@ -32,6 +32,11 @@ public class JpaCreatorRepositoryAdapter implements CreatorRepository {
   }
 
   @Override
+  public List<Creator> findArtistsByDisplayArtworkIds(List<Long> displayArtworkIds) {
+    return displayArtworkIds.isEmpty() ? List.of() : jpaRepository.findArtists(displayArtworkIds);
+  }
+
+  @Override
   public Creator save(Creator creator) {
     return jpaRepository.save(creator);
   }

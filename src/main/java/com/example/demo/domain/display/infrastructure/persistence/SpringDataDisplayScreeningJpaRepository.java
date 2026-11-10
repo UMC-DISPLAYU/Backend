@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SpringDataDisplayScreeningJpaRepository
     extends JpaRepository<DisplayScreening, Long> {
 
+  Optional<DisplayScreening> findByIdAndDisplayId(Long screeningId, Long displayId);
+
   Optional<DisplayScreening> findFirstByDisplayIdOrderByIdDesc(Long displayId);
 }

@@ -41,7 +41,8 @@ class DisplayBookmarkEnrichmentServiceTest {
         LocalDate.of(2026, 7, 1),
         LocalDate.of(2026, 7, 10),
         9,
-        false);
+        false,
+        null);
   }
 
   private static class FakeArchiveDisplayRepository implements ArchiveDisplayRepository {

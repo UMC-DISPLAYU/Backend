@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.command.CreateDisplayCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayCommand;
+import com.example.demo.domain.display.application.result.CancelDisplayScreeningResult;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.application.result.DisplayInvitationResult;
@@ -13,12 +14,14 @@ import com.example.demo.domain.display.application.result.DisplayRejectionReason
 import com.example.demo.domain.display.application.result.DuPickResult;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayListResult;
+import com.example.demo.domain.display.application.result.PopularDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.response.CancelDisplayScreeningResponse;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
 import com.example.demo.domain.display.presentation.response.DisplayInvitationResponse;
@@ -30,12 +33,17 @@ import com.example.demo.domain.display.presentation.response.DisplayRejectionRea
 import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
+import com.example.demo.domain.display.presentation.response.PopularDisplayResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DisplayPresentationMapper {
+  public CancelDisplayScreeningResponse toResponse(CancelDisplayScreeningResult result) {
+    return new CancelDisplayScreeningResponse(
+        result.displayId(), result.screeningId(), result.status(), result.screeningStatus());
+  }
 
   public CreateDisplayCommand toCommand(CreateDisplayRequest request, Long ownerUserId) {
     return new CreateDisplayCommand(
@@ -63,7 +71,9 @@ public class DisplayPresentationMapper {
         request.openTime(),
         request.closeTime(),
         ContentOpenPolicy.IMMEDIATELY,
-        ContentOpenPolicy.ON_EXHIBITION);
+        ContentOpenPolicy.ON_EXHIBITION,
+        request.instagramUrl(),
+        request.websiteUrl());
   }
 
   public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
@@ -109,6 +119,10 @@ public class DisplayPresentationMapper {
   public GraduationDisplayResponse toResponse(GraduationDisplayResult result) {
     return new GraduationDisplayResponse(
         result.exhibitions().stream().map(this::toResponse).toList());
+  }
+
+  public PopularDisplayResponse toResponse(PopularDisplayResult result) {
+    return new PopularDisplayResponse(result.exhibitions().stream().map(this::toResponse).toList());
   }
 
   public SearchDisplayResponse toResponse(SearchDisplayResult result) {
@@ -187,7 +201,10 @@ public class DisplayPresentationMapper {
         result.images().stream().map(this::toResponse).toList(),
         result.contentCategories().stream().map(this::toResponse).toList(),
         result.teamMembers().stream().map(this::toResponse).toList(),
-        result.invitations().stream().map(this::toResponse).toList());
+        result.invitations().stream().map(this::toResponse).toList(),
+        result.instagramUrl(),
+        result.websiteUrl(),
+        result.currentScreeningId());
   }
 
   private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {
@@ -209,7 +226,8 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -222,7 +240,22 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
+  }
+
+  private PopularDisplayResponse.ExhibitionResponse toResponse(
+      PopularDisplayResult.ExhibitionResult result) {
+    return new PopularDisplayResponse.ExhibitionResponse(
+        result.displayId(),
+        result.title(),
+        result.posterImageUrl(),
+        schoolDepartmentName(result.organization(), result.department()),
+        result.startedAt(),
+        result.endedAt(),
+        result.dayLeft(),
+        result.isArchived(),
+        result.placeName());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -235,7 +268,8 @@ public class DisplayPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        result.placeName());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {

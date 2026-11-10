@@ -22,6 +22,11 @@ public class JpaDisplayScreeningRepositoryAdapter implements DisplayScreeningRep
   }
 
   @Override
+  public Optional<DisplayScreening> findByIdAndDisplayId(Long screeningId, Long displayId) {
+    return jpaRepository.findByIdAndDisplayId(screeningId, displayId);
+  }
+
+  @Override
   public DisplayScreening save(DisplayScreening screening) {
     return jpaRepository.save(screening);
   }

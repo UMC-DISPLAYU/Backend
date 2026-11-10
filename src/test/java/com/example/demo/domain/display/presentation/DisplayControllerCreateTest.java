@@ -1,14 +1,20 @@
 package com.example.demo.domain.display.presentation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -29,6 +35,58 @@ class DisplayControllerCreateTest {
   @Autowired private JwtFactory jwtFactory;
 
   @Autowired private UserJpaRepository userJpaRepository;
+
+  @Autowired private EntityManager entityManager;
+
+  @Test
+  void externalLinksSurviveRegistrationAndDetailReload() throws Exception {
+    User user = userJpaRepository.save(user("링크 작가"));
+    String request =
+        requestBody("SEOUL")
+            .replaceFirst(
+                "\\{",
+                "{\"instagramUrl\":\"https://www.instagram.com/displayu\",\"websiteUrl\":\"https://displayu.com\",");
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isCreated())
+        .andExpect(
+            jsonPath("$.success.data.instagramUrl").value("https://www.instagram.com/displayu"))
+        .andExpect(jsonPath("$.success.data.websiteUrl").value("https://displayu.com"));
+    entityManager.flush();
+    entityManager.clear();
+    var display =
+        entityManager
+            .createQuery("select d from Display d where d.title = :title", Display.class)
+            .setParameter("title", "FORM 2026")
+            .getSingleResult();
+    assertThat(display.getInstagramUrl()).isEqualTo("https://www.instagram.com/displayu");
+    mockMvc
+        .perform(
+            get("/api/v1/display/" + display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId())))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.success.data.instagramUrl").value("https://www.instagram.com/displayu"))
+        .andExpect(jsonPath("$.success.data.websiteUrl").value("https://displayu.com"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"javascript:alert(1)", "", "ftp://displayu.com"})
+  void rejectsInvalidExternalLinks(String url) throws Exception {
+    User user = userJpaRepository.save(user("링크 작가"));
+    String request = requestBody("SEOUL").replaceFirst("\\{", "{\"websiteUrl\":\"" + url + "\",");
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isBadRequest());
+  }
 
   @Test
   void createDisplayReturnsRegionInDetailResponse() throws Exception {

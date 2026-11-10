@@ -9,4 +9,5 @@ public record DisplayInvitationDisplayQueryResult(
     String organization,
     String department,
     LocalDate startedAt,
-    LocalDate endedAt) {}
+    LocalDate endedAt,
+    String placeName) {}

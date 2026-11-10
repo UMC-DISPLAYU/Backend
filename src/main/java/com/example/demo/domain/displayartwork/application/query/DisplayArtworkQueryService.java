@@ -169,10 +169,21 @@ public class DisplayArtworkQueryService {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
-    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(pageItems);
+    Map<Long, List<Creator>> artistsByArtworkId =
+        creatorRepository
+            .findArtistsByDisplayArtworkIds(pageItems.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.groupingBy(Creator::getDisplayArtworkId));
+    Map<Long, Creator> leadersByArtworkId =
+        artistsByArtworkId.values().stream()
+            .flatMap(List::stream)
+            .filter(Creator::isLeader)
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Function.identity()));
 
     List<ArtworkCardResult> cards =
-        pageItems.stream().map(artwork -> toCard(artwork, leadersByArtworkId)).toList();
+        pageItems.stream()
+            .map(artwork -> toCard(artwork, leadersByArtworkId, artistsByArtworkId))
+            .toList();
     return new DisplayArtworkPreviewResult(cards, page, size, isLast);
   }
 
@@ -185,7 +196,9 @@ public class DisplayArtworkQueryService {
   }
 
   private ArtworkCardResult toCard(
-      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
+      DisplayArtwork displayArtwork,
+      Map<Long, Creator> leadersByArtworkId,
+      Map<Long, List<Creator>> artistsByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
@@ -205,7 +218,13 @@ public class DisplayArtworkQueryService {
             display.getId(),
             display.getTitle(),
             formattedPeriod,
-            display.getLocation().placeName()));
+            display.getLocation().placeName()),
+        artistsByArtworkId.getOrDefault(displayArtwork.getId(), List.of()).stream()
+            .map(
+                creator ->
+                    new DisplayArtworkPreviewResult.ArtistResult(
+                        creator.getUserId(), creator.getCreatorName()))
+            .toList());
   }
 
   @Transactional(readOnly = true)

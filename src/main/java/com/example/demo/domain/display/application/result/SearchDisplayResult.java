@@ -16,7 +16,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       LocalDate startedAt,
       LocalDate endedAt,
       long dayLeft,
-      boolean isArchived) {
+      boolean isArchived,
+      String placeName) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
@@ -28,7 +29,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           queryResult.startedAt(),
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
-          false);
+          false,
+          queryResult.placeName());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -41,7 +43,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           startedAt,
           endedAt,
           dayLeft,
-          isArchived);
+          isArchived,
+          placeName);
     }
   }
 

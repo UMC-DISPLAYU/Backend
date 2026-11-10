@@ -34,4 +34,6 @@ public record CreateDisplayCommand(
     LocalTime startTime,
     LocalTime endTime,
     ContentOpenPolicy artworkContentOpen,
-    ContentOpenPolicy exhibitionContentOpen) {}
+    ContentOpenPolicy exhibitionContentOpen,
+    String instagramUrl,
+    String websiteUrl) {}
