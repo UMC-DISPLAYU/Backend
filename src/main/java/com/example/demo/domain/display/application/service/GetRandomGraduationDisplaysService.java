@@ -31,7 +31,7 @@ public class GetRandomGraduationDisplaysService implements GetRandomGraduationDi
   public GraduationDisplayResult getRandomGraduationDisplays(int size) {
     LocalDate today = LocalDate.now(clock);
     return new GraduationDisplayResult(
-        queryRepository.findRandomGraduationDisplays(size).stream()
+        queryRepository.findRandomGraduationDisplays(size, today).stream()
             .map(queryResult -> ExhibitionResult.from(queryResult, today))
             .toList());
   }

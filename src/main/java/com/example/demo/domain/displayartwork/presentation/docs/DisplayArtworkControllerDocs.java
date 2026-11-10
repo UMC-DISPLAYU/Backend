@@ -40,9 +40,11 @@ public interface DisplayArtworkControllerDocs {
 
   @Operation(
       summary = "홈 화면 - 작품 미리보기 목록 조회",
-      description = "더보기 페이징을 포함한 작품 미리보기 카드 목록을 조회합니다. 비회원도 조회 가능합니다.")
+      description =
+          "더보기 페이징을 포함한 작품 미리보기 카드 목록을 조회합니다. artists는 대표 작가 우선 배열이며 계정 없는 작가는 userId가 null입니다. Q&A 전용 담당자는 제외합니다. 비회원도 조회 가능합니다.")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "작품 미리보기 목록 조회 성공",
       content =
           @Content(
@@ -62,6 +64,7 @@ public interface DisplayArtworkControllerDocs {
                                     "artworkName": "Blue Moment",
                                     "artistName": "김마야",
                                     "artistUserId": 5,
+                                    "artists": [{"userId": 5, "name": "김마야"}],
                                     "artworkImageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "imageWidth": 1200,
                                     "imageHeight": 1600,

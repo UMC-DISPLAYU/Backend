@@ -162,7 +162,9 @@ class AdminReviewTest {
                 "서울",
                 List.of("poster"),
                 "전시대학교",
-                "전시 대표자"));
+                "전시 대표자",
+                null,
+                null));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
@@ -191,6 +193,8 @@ class AdminReviewTest {
             "서울",
             List.of(),
             "전시대학교",
+            null,
+            null,
             null);
     when(reviews.getDetail(3L)).thenReturn(detail);
     assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();

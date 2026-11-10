@@ -4,8 +4,11 @@ import com.example.demo.domain.display.application.permission.DisplayPermissionC
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import java.util.Objects;
@@ -16,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDisplayReservationService {
 
   private final DisplayRepository displayRepository;
+  private final DisplayScreeningRepository screeningRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayPermissionChecker displayPermissionChecker;
 
   public UpdateDisplayReservationService(
       DisplayRepository displayRepository,
+      DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       DisplayPermissionChecker displayPermissionChecker) {
     this.displayRepository = displayRepository;
+    this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
@@ -45,6 +51,13 @@ public class UpdateDisplayReservationService {
     display.changeOpenPolicy(command.artworkContentOpen(), command.exhibitionContentOpen());
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayId(display.getId()));
+        display,
+        displayLikeRepository.countByDisplayId(display.getId()),
+        display.getStatus() == DisplayStatus.PENDING_REVIEW
+            ? screeningRepository
+                .findLatestByDisplayId(display.getId())
+                .map(DisplayScreening::getId)
+                .orElse(null)
+            : null);
   }
 }

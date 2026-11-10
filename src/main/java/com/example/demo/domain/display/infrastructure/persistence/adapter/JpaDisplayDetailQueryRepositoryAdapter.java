@@ -9,8 +9,10 @@ import com.example.demo.domain.display.domain.entity.QDisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.QDisplayImage;
 import com.example.demo.domain.display.domain.entity.QDisplayInvitation;
 import com.example.demo.domain.display.domain.entity.QDisplayLike;
+import com.example.demo.domain.display.domain.entity.QDisplayScreening;
 import com.example.demo.domain.display.domain.entity.QTeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.DisplayScreeningStatus;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -77,6 +79,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.location.roadAddress,
             display.qnaAccount,
             display.contract,
+            display.instagramUrl,
+            display.websiteUrl,
             display.note,
             display.organization,
             display.department,
@@ -274,6 +278,23 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         images,
         contentCategories,
         teamMembers,
-        invitations);
+        invitations,
+        base.get(display.instagramUrl),
+        base.get(display.websiteUrl),
+        base.get(display.status) == DisplayStatus.PENDING_REVIEW
+            ? currentScreeningId(base.get(display.id))
+            : null);
+  }
+
+  private Long currentScreeningId(Long displayId) {
+    QDisplayScreening screening = QDisplayScreening.displayScreening;
+    return queryFactory
+        .select(screening.id)
+        .from(screening)
+        .where(
+            screening.display.id.eq(displayId),
+            screening.status.eq(DisplayScreeningStatus.PENDING_REVIEW))
+        .orderBy(screening.id.desc())
+        .fetchFirst();
   }
 }

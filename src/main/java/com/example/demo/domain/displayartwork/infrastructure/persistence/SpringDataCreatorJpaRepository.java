@@ -16,6 +16,10 @@ public interface SpringDataCreatorJpaRepository extends JpaRepository<Creator, L
 
   List<Creator> findByDisplayArtworkIdInAndIsLeaderTrue(List<Long> displayArtworkIds);
 
+  @Query(
+      "SELECT c FROM Creator c WHERE c.displayArtworkId IN :ids AND c.role <> com.example.demo.domain.displayartwork.domain.type.CreatorRole.QA_ONLY ORDER BY c.isLeader DESC, c.id ASC")
+  List<Creator> findArtists(@Param("ids") List<Long> ids);
+
   /**
    * 작가 정보를 다시 저장하기 전에 기존 Creator를 지운다.
    *

@@ -3,10 +3,13 @@ package com.example.demo.domain.display.application.query;
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
+import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayInvitationRepository;
 import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.DisplayInvitationTokenHasher;
 import com.example.demo.global.error.BusinessException;
@@ -22,16 +25,19 @@ public class GetDisplayByInvitationService {
       "UQ_DISPLAYINVITATION_PENDING_DISPLAY_INVITEE";
 
   private final DisplayRepository displayRepository;
+  private final DisplayScreeningRepository screeningRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayInvitationRepository invitationRepository;
   private final DisplayInvitationTokenHasher tokenHasher;
 
   public GetDisplayByInvitationService(
       DisplayRepository displayRepository,
+      DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayInvitationRepository invitationRepository,
       DisplayInvitationTokenHasher tokenHasher) {
     this.displayRepository = displayRepository;
+    this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.invitationRepository = invitationRepository;
     this.tokenHasher = tokenHasher;
@@ -48,7 +54,14 @@ public class GetDisplayByInvitationService {
               display.validateInvitationAccessible();
               createPendingInvitationIfNeeded(display, requesterUserId);
               return DisplayDetailResult.from(
-                  display, displayLikeRepository.countByDisplayId(display.getId()));
+                  display,
+                  displayLikeRepository.countByDisplayId(display.getId()),
+                  display.getStatus() == DisplayStatus.PENDING_REVIEW
+                      ? screeningRepository
+                          .findLatestByDisplayId(display.getId())
+                          .map(DisplayScreening::getId)
+                          .orElse(null)
+                      : null);
             })
         .orElseThrow(
             () -> new BusinessException(DisplayErrorCode.INVALID_DISPLAY_INVITATION_TOKEN));

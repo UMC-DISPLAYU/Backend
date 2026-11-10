@@ -87,6 +87,12 @@ public class Display extends SoftDeleteBaseEntity {
   @Column(length = 50)
   private String contract;
 
+  @Column(length = 255)
+  private String instagramUrl;
+
+  @Column(length = 255)
+  private String websiteUrl;
+
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
   @AttributeOverrides({
@@ -455,6 +461,11 @@ public class Display extends SoftDeleteBaseEntity {
     this.department = nullToEmpty(department);
   }
 
+  public void changeExternalLinks(String instagramUrl, String websiteUrl) {
+    this.instagramUrl = instagramUrl;
+    this.websiteUrl = websiteUrl;
+  }
+
   public void changeContract(String contract) {
     this.contract = contract;
   }
@@ -511,6 +522,11 @@ public class Display extends SoftDeleteBaseEntity {
   public void approveReview() {
     requirePendingReview();
     publish();
+  }
+
+  public void cancelReview() {
+    requirePendingReview();
+    this.status = DisplayStatus.DRAFT;
   }
 
   public void rejectReview() {

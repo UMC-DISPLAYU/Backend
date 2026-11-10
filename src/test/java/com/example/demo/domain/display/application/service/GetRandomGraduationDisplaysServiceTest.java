@@ -40,7 +40,8 @@ class GetRandomGraduationDisplaysServiceTest {
         "organization",
         "department",
         endedAt.minusDays(7),
-        endedAt);
+        endedAt,
+        null);
   }
 
   private static class FakeGraduationDisplayQueryRepository
@@ -54,7 +55,8 @@ class GetRandomGraduationDisplaysServiceTest {
     }
 
     @Override
-    public List<ClosingSoonDisplayQueryResult> findRandomGraduationDisplays(int size) {
+    public List<ClosingSoonDisplayQueryResult> findRandomGraduationDisplays(
+        int size, LocalDate today) {
       requestedSize = size;
       return results;
     }
