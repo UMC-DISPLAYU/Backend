@@ -22,6 +22,7 @@ class UniversityFlywayMigrationTest {
             .dataSource(URL, "sa", "")
             .baselineOnMigrate(true)
             .baselineVersion("20261105000000")
+            .target("20261105000300")
             .locations("classpath:db/migration")
             .load();
 
