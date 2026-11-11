@@ -131,7 +131,8 @@ public final class DisplayApiDocs {
 
   public static final String MY_DISPLAY_SUMMARY = "내 전시 목록 조회";
   public static final String MY_DISPLAY_DESCRIPTION =
-      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안·심사 중·반려 상태의 전시도 포함합니다.";
+      "인증된 사용자가 직접 만든 전시와 참여 중인 전시 목록을 조회합니다. 초안·심사 중·반려 상태의 전시도 포함합니다. "
+          + "role은 해당 전시에서 로그인 사용자의 역할이며 TEAM_LEADER(대표자), MANAGER(관리자), TEAM_MEM(팀원) 중 하나입니다.";
   public static final String MY_DISPLAY_SUCCESS_DESCRIPTION = "내 전시 목록 조회 성공";
   public static final String MY_DISPLAY_SUCCESS_EXAMPLE_NAME = "My display success";
 
@@ -884,7 +885,8 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
-                "isLeader": true
+                "isLeader": true,
+                "role": "TEAM_LEADER"
               }
             ],
             "participatedDisplays": [
@@ -899,7 +901,22 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
-                "isLeader": false
+                "isLeader": false,
+                "role": "MANAGER"
+              },
+              {
+                "displayId": 3,
+                "title": "내가 팀원으로 참여한 전시",
+                "displayStatus": "UPCOMING",
+                "publishStatus": "PUBLISHED",
+                "startDate": "2026-08-10",
+                "endDate": "2026-08-15",
+                "school": "디유대학교",
+                "department": "디자인학부",
+                "placeName": "디유 갤러리",
+                "postImageUrl": "https://cdn.displayu.com/posters/member.png",
+                "isLeader": false,
+                "role": "TEAM_MEM"
               }
             ]
           }

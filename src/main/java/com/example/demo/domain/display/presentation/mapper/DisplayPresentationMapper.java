@@ -21,6 +21,7 @@ import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
+import com.example.demo.domain.display.presentation.response.ArtistDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.CancelDisplayScreeningResponse;
 import com.example.demo.domain.display.presentation.response.ClosingSoonDisplayResponse;
 import com.example.demo.domain.display.presentation.response.DisplayDetailResponse;
@@ -152,6 +153,12 @@ public class DisplayPresentationMapper {
     return new MyDisplayListResponse(
         result.createdDisplays().stream().map(this::toResponse).toList(),
         result.participatedDisplays().stream().map(this::toResponse).toList());
+  }
+
+  public ArtistDisplayListResponse toArtistResponse(MyDisplayListResult result) {
+    return new ArtistDisplayListResponse(
+        result.createdDisplays().stream().map(this::toArtistResponse).toList(),
+        result.participatedDisplays().stream().map(this::toArtistResponse).toList());
   }
 
   public DisplayLikeResponse toResponse(DisplayLikeResult result) {
@@ -289,6 +296,23 @@ public class DisplayPresentationMapper {
   private MyDisplayListResponse.MyDisplayResponse toResponse(
       MyDisplayListResult.MyDisplayResult result) {
     return new MyDisplayListResponse.MyDisplayResponse(
+        result.displayId(),
+        result.title(),
+        result.displayStatus(),
+        result.publishStatus(),
+        result.startDate(),
+        result.endDate(),
+        result.school(),
+        result.department(),
+        result.placeName(),
+        result.postImageUrl(),
+        result.isLeader(),
+        result.role());
+  }
+
+  private ArtistDisplayListResponse.ArtistDisplayResponse toArtistResponse(
+      MyDisplayListResult.MyDisplayResult result) {
+    return new ArtistDisplayListResponse.ArtistDisplayResponse(
         result.displayId(),
         result.title(),
         result.displayStatus(),

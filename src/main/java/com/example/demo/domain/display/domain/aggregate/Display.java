@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.Getter;
 
 @Getter
@@ -771,7 +772,9 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean isTeamLeader(Long userId) {
-    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.TEAM_LEADER);
+    return findAcceptedTeamMemberRole(userId)
+        .filter(role -> role == TeamMemberRole.TEAM_LEADER)
+        .isPresent();
   }
 
   public boolean isManager(Long userId) {
@@ -785,6 +788,17 @@ public class Display extends SoftDeleteBaseEntity {
                 teamMember.isAccepted()
                     && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId));
+  }
+
+  public Optional<TeamMemberRole> findAcceptedTeamMemberRole(Long userId) {
+    return teamMembers.stream()
+        .filter(
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId))
+        .map(TeamMember::getRole)
+        .findFirst();
   }
 
   private boolean hasAcceptedTeamMemberRole(Long userId, TeamMemberRole role) {

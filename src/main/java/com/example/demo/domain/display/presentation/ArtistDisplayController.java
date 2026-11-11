@@ -2,7 +2,7 @@ package com.example.demo.domain.display.presentation;
 
 import com.example.demo.domain.display.application.service.GetArtistDisplaysService;
 import com.example.demo.domain.display.presentation.mapper.DisplayPresentationMapper;
-import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
+import com.example.demo.domain.display.presentation.response.ArtistDisplayListResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -69,12 +69,13 @@ public class ArtistDisplayController {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "조회 성공", value = ARTIST_DISPLAY_SUCCESS_EXAMPLE)))
-  public ApiResponseBody<MyDisplayListResponse> getArtistDisplays(
+  public ApiResponseBody<ArtistDisplayListResponse> getArtistDisplays(
       @Parameter(description = "조회할 사용자 ID", required = true, example = "15") @PathVariable
           Long userId,
       HttpServletRequest request) {
     return ApiResponseBody.success(
-        displayPresentationMapper.toResponse(getArtistDisplaysService.getArtistDisplays(userId)),
+        displayPresentationMapper.toArtistResponse(
+            getArtistDisplaysService.getArtistDisplays(userId)),
         request);
   }
 }
