@@ -28,6 +28,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
@@ -63,7 +65,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, 20), 21);
+            new DisplayScreeningSearchQuery(null, DisplayStatus.PENDING_REVIEW, null, 20), 21);
 
     assertThat(results).hasSize(1);
     DisplayScreeningSummaryQueryResult result = results.getFirst();
@@ -86,7 +88,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PUBLISHED, newer.getId(), 20), 21);
+            new DisplayScreeningSearchQuery(null, DisplayStatus.PUBLISHED, newer.getId(), 20), 21);
 
     assertThat(results).hasSize(1);
     assertThat(results.getFirst().displayId()).isEqualTo(older.getId());
@@ -108,7 +110,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
 
     List<DisplayScreeningSummaryQueryResult> results =
         queryRepository.search(
-            new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, null, 20), 21);
+            new DisplayScreeningSearchQuery(null, DisplayStatus.PENDING_REVIEW, null, 20), 21);
 
     assertThat(results)
         .singleElement()
@@ -140,6 +142,63 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
     assertThat(result.imageUrls()).containsExactly("https://cdn.displayu.com/poster.png");
     assertThat(result.school()).isEqualTo("중앙대학교");
     assertThat(result.leaderName()).isEqualTo("대표자");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"alpha", "중앙", "디자인", "%_"})
+  void searchesTextFieldsAndKeepsStatusDeletedAndCursorFilters(String keyword) {
+    Display matching = display("Alpha%_전시");
+    Display other = display("다른 전시");
+    other.changeBasicInfo("다른 전시", "부제", "내용", "", "", "다른학교", "다른학과");
+    Display published = display("Alpha%_공개 전시");
+    Display deleted = display("Alpha%_삭제 전시");
+    displayJpaRepository.saveAllAndFlush(List.of(matching, other, published, deleted));
+    matching.requestReview();
+    other.requestReview();
+    published.publish();
+    deleted.requestReview();
+    deleted.delete();
+    displayJpaRepository.flush();
+    assertThat(
+            queryRepository.search(
+                new DisplayScreeningSearchQuery(keyword, DisplayStatus.PENDING_REVIEW, null, 20),
+                21))
+        .extracting(DisplayScreeningSummaryQueryResult::displayId)
+        .containsExactly(matching.getId());
+    assertThat(
+            queryRepository.search(
+                new DisplayScreeningSearchQuery(
+                    keyword, DisplayStatus.PENDING_REVIEW, matching.getId(), 20),
+                21))
+        .isEmpty();
+  }
+
+  @Test
+  void searchesExactIdAndHandlesNumericOverflowAsText() {
+    Display matching = display("대상 전시");
+    Display other = display("다른 전시");
+    displayJpaRepository.saveAllAndFlush(List.of(matching, other));
+    matching.requestReview();
+    other.requestReview();
+    displayJpaRepository.flush();
+    assertThat(
+            queryRepository.search(
+                new DisplayScreeningSearchQuery(
+                    matching.getId().toString(), DisplayStatus.PENDING_REVIEW, null, 20),
+                21))
+        .extracting(DisplayScreeningSummaryQueryResult::displayId)
+        .containsExactly(matching.getId());
+    assertThat(
+            queryRepository.search(
+                new DisplayScreeningSearchQuery(
+                    "9".repeat(100), DisplayStatus.PENDING_REVIEW, null, 20),
+                21))
+        .isEmpty();
+    assertThat(
+            queryRepository.search(
+                new DisplayScreeningSearchQuery("  ", DisplayStatus.PENDING_REVIEW, null, 20), 21))
+        .extracting(DisplayScreeningSummaryQueryResult::displayId)
+        .containsExactly(other.getId(), matching.getId());
   }
 
   private static Display display(String title) {
