@@ -47,6 +47,43 @@ class AdminAuthorizationIntegrationTest {
   @Autowired private EntityManager entityManager;
 
   @Test
+  void administratorCanSearchAndReadStoredReviewRounds() throws Exception {
+    User admin = user(UserRole.ADMIN);
+    String token = tokens.createAccessToken(admin);
+    Display display = pending(admin.getId(), "검색 대상");
+    pending(admin.getId(), "다른 전시");
+    DisplayScreening rejected =
+        screenings.findFirstByDisplayIdOrderByIdDesc(display.getId()).orElseThrow();
+    rejected.reject(admin.getId(), "수정 요청", LocalDateTime.now(ZoneOffset.UTC));
+    display.rejectReview();
+    display.requestReview();
+    DisplayScreening latest =
+        screenings.saveAndFlush(
+            DisplayScreening.request(display, admin.getId(), LocalDateTime.now(ZoneOffset.UTC)));
+    entityManager.flush();
+    entityManager.clear();
+
+    mvc.perform(
+            get("/api/v1/admin/displays")
+                .param("q", " 검색 대상 ")
+                .header("Authorization", bearer(token)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.items.length()").value(1))
+        .andExpect(jsonPath("$.success.data.items[0].displayId").value(display.getId()));
+    mvc.perform(
+            get("/api/v1/admin/displays/" + display.getId()).header("Authorization", bearer(token)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.history.length()").value(2))
+        .andExpect(jsonPath("$.success.data.history[0].screeningId").value(latest.getId()))
+        .andExpect(jsonPath("$.success.data.history[0].status").value("PENDING_REVIEW"))
+        .andExpect(jsonPath("$.success.data.history[0].processedAt").doesNotExist())
+        .andExpect(jsonPath("$.success.data.history[1].screeningId").value(rejected.getId()))
+        .andExpect(jsonPath("$.success.data.history[1].status").value("REJECTED"))
+        .andExpect(jsonPath("$.success.data.history[1].reviewerId").value(admin.getId()))
+        .andExpect(jsonPath("$.success.data.history[1].rejectionReason").value("수정 요청"));
+  }
+
+  @Test
   void administratorCanListReadApproveAndRejectUsingRealAdapters() throws Exception {
     User admin = user(UserRole.ADMIN);
     String token = tokens.createAccessToken(admin);
