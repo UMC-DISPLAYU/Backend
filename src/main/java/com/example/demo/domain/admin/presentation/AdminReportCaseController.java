@@ -27,7 +27,7 @@ public class AdminReportCaseController {
   @Operation(summary = "관리자 댓글 신고 묶음 목록 조회")
   public ApiResponseBody<ReportCaseResponses.Page> search(
       @AuthenticationPrincipal AuthUser admin,
-      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "PENDING") String status,
       @RequestParam(required = false) Long cursor,
       @RequestParam(defaultValue = "20") int size,
       HttpServletRequest request) {

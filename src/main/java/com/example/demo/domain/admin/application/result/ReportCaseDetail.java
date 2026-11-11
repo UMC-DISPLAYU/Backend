@@ -19,8 +19,6 @@ public record ReportCaseDetail(
   public record Attachment(String url, String type) {}
 
   public record Comment(
-      String commentType,
-      Long commentId,
       Long authorUserId,
       String authorNickname,
       String content,

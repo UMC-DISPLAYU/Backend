@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
@@ -72,16 +73,19 @@ class AdminReportCaseTest {
             .build();
   }
 
-  @Test
-  void returnsDefaultPageInCommonEnvelope() throws Exception {
-    when(reports.search(new ReportCaseSearchQuery(null, null, 20)))
+  @ParameterizedTest
+  @NullAndEmptySource
+  void returnsDefaultPageInCommonEnvelope(String statusFilter) throws Exception {
+    when(reports.search(new ReportCaseSearchQuery("PENDING", null, 20)))
         .thenReturn(
             new ReportCasePage(
                 List.of(
                     new ReportCaseSummary(301L, "PENDING", "COMMENT_KIND", 401L, 2L, CREATED_AT)),
                 301L,
                 true));
-    mvc.perform(get("/api/v1/admin/report-cases"))
+    var request = get("/api/v1/admin/report-cases");
+    if (statusFilter != null) request.param("status", statusFilter);
+    mvc.perform(request)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.items[0].reportCaseId").value(301))
         .andExpect(jsonPath("$.success.data.items[0].commentType").value("COMMENT_KIND"))
@@ -118,13 +122,22 @@ class AdminReportCaseTest {
     "size,101",
     "status,UNKNOWN",
     "status,pending",
-    "status,''"
+    "status,' '"
   })
   void rejectsInvalidFiltersWithoutCallingPort(String parameter, String value) throws Exception {
     mvc.perform(get("/api/v1/admin/report-cases").param(parameter, value))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
     verifyNoInteractions(reports);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  void queryRejectsMissingStatusInsteadOfApplyingDefault(String statusFilter) {
+    assertThatThrownBy(() -> new ReportCaseSearchQuery(statusFilter, null, 20))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            ex -> assertThat(ex.errorCode()).isEqualTo(GlobalErrorCode.INVALID_INPUT_VALUE));
   }
 
   @ParameterizedTest
@@ -139,9 +152,7 @@ class AdminReportCaseTest {
   @Test
   void mapsCurrentCommentParentReportsAndResolutionWithoutInferringCodes() throws Exception {
     var attachment = new ReportCaseDetail.Attachment("https://example.com/image", "IMAGE");
-    var comment =
-        new ReportCaseDetail.Comment(
-            "COMMENT_KIND", 401L, null, null, null, List.of(), CREATED_AT, CREATED_AT);
+    var comment = new ReportCaseDetail.Comment(null, null, null, List.of(), CREATED_AT, CREATED_AT);
     var parent =
         new ReportCaseDetail.Parent(
             "PARENT_KIND", 11L, 12L, "작성자", "부모 원문", List.of(attachment), CREATED_AT, null);
@@ -164,6 +175,10 @@ class AdminReportCaseTest {
                 resolution));
     mvc.perform(get("/api/v1/admin/report-cases/301"))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.commentType").value("COMMENT_KIND"))
+        .andExpect(jsonPath("$.success.data.commentId").value(401))
+        .andExpect(jsonPath("$.success.data.comment.commentType").doesNotHaveJsonPath())
+        .andExpect(jsonPath("$.success.data.comment.commentId").doesNotHaveJsonPath())
         .andExpect(jsonPath("$.success.data.comment.content").value(nullValue()))
         .andExpect(jsonPath("$.success.data.comment.deletedAt").value(CREATED_AT.toString()))
         .andExpect(jsonPath("$.success.data.comment.attachments").isEmpty())
@@ -197,6 +212,8 @@ class AdminReportCaseTest {
                 null));
     mvc.perform(get("/api/v1/admin/report-cases/301"))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.commentType").value("COMMENT_KIND"))
+        .andExpect(jsonPath("$.success.data.commentId").value(401))
         .andExpect(jsonPath("$.success.data.comment").value(nullValue()))
         .andExpect(jsonPath("$.success.data.parent").value(nullValue()))
         .andExpect(jsonPath("$.success.data.reports").isEmpty())
@@ -247,7 +264,8 @@ class AdminReportCaseTest {
   void rejectsUnauthorizedCallersBeforeQueryingReports(Long adminId) {
     GlobalErrorCode error =
         adminId == null ? GlobalErrorCode.UNAUTHORIZED : GlobalErrorCode.FORBIDDEN;
-    assertThatThrownBy(() -> service.search(adminId, new ReportCaseSearchQuery(null, null, 20)))
+    assertThatThrownBy(
+            () -> service.search(adminId, new ReportCaseSearchQuery("PENDING", null, 20)))
         .isInstanceOfSatisfying(
             BusinessException.class, ex -> assertThat(ex.errorCode()).isEqualTo(error));
     assertThatThrownBy(() -> service.getDetail(adminId, 10L))

@@ -6,8 +6,8 @@ import java.util.Set;
 
 public record ReportCaseSearchQuery(String status, Long cursor, int size) {
   public ReportCaseSearchQuery {
-    status = status == null ? "PENDING" : status;
-    if (!Set.of("PENDING", "RESOLVED").contains(status)
+    if (status == null
+        || !Set.of("PENDING", "RESOLVED").contains(status)
         || (cursor != null && cursor <= 0)
         || size < 1
         || size > 100) {
