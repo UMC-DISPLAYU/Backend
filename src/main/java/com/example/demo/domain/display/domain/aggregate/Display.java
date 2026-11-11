@@ -722,6 +722,20 @@ public class Display extends SoftDeleteBaseEntity {
     }
   }
 
+  public void changeDetailImages(List<String> imageUrls) {
+    Objects.requireNonNull(imageUrls, "imageUrls must not be null.");
+    if (imageUrls.size() > MAX_DETAIL_IMAGE_COUNT) {
+      throw new IllegalArgumentException("displayImageUrls must contain at most 4 images.");
+    }
+    List<DisplayImage> replacements = new ArrayList<>();
+    for (int index = 0; index < imageUrls.size(); index++) {
+      replacements.add(
+          new DisplayImage(null, imageUrls.get(index), DisplayImageType.DETAIL, index, null));
+    }
+    images.removeIf(image -> image.getImageType() == DisplayImageType.DETAIL);
+    replacements.forEach(this::addImage);
+  }
+
   public void changePosterImageUrl(String posterImageUrl) {
     DisplayImage mainImage =
         images.stream()

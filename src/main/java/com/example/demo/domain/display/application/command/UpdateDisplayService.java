@@ -79,13 +79,26 @@ public class UpdateDisplayService {
             command.openTime() == null ? display.getPeriod().startTime() : command.openTime(),
             command.closeTime() == null ? display.getPeriod().endTime() : command.closeTime()));
 
-    if (command.placeName() != null) {
+    if (command.placeName() != null
+        || command.latitude() != null
+        || command.longitude() != null
+        || command.roadAddress() != null) {
       display.changeLocation(
           new DisplayLocation(
-              command.placeName(),
-              display.getLocation().latitude(),
-              display.getLocation().longitude(),
-              display.getLocation().roadAddress()));
+              valueOrCurrent(command.placeName(), display.getLocation().placeName()),
+              command.latitude() == null ? display.getLocation().latitude() : command.latitude(),
+              command.longitude() == null ? display.getLocation().longitude() : command.longitude(),
+              valueOrCurrent(command.roadAddress(), display.getLocation().roadAddress())));
+    }
+
+    if (command.region() != null) {
+      display.changeRegion(command.region());
+    }
+    display.changeExternalLinks(
+        updatedLink(command.instagramUrl(), display.getInstagramUrl()),
+        updatedLink(command.websiteUrl(), display.getWebsiteUrl()));
+    if (command.displayImageUrls() != null) {
+      display.changeDetailImages(command.displayImageUrls());
     }
 
     displayListCacheEvictionPort.evictAfterCommit();
@@ -114,6 +127,10 @@ public class UpdateDisplayService {
       return valueOrCurrent(command.departmentOrClub(), currentDepartment);
     }
     return "";
+  }
+
+  private static String updatedLink(String value, String current) {
+    return value == null ? current : value.isEmpty() ? null : value;
   }
 
   private static String valueOrCurrent(String value, String current) {

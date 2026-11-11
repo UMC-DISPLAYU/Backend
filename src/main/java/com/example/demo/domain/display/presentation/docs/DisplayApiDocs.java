@@ -20,7 +20,10 @@ public final class DisplayApiDocs {
   public static final String UPDATE_DESCRIPTION =
       "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다. "
           + "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다.";
-  public static final String UPDATE_REQUEST_DESCRIPTION = "전시 수정 요청";
+  public static final String UPDATE_REQUEST_DESCRIPTION =
+      "생략 또는 null인 필드는 유지합니다. instagramUrl/websiteUrl은 빈 문자열로 삭제할 수 있습니다. "
+          + "roadAddress, latitude, longitude, region을 수정할 수 있으며 region=ALL은 허용하지 않습니다. "
+          + "displayImageUrl은 대표 이미지 외 최대 4장이며 빈 배열은 전체 삭제합니다.";
   public static final String UPDATE_REQUEST_EXAMPLE_NAME = "Display update request";
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
   public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
@@ -359,7 +362,14 @@ public final class DisplayApiDocs {
         "openTime": "09:00",
         "closeTime": "19:00",
         "placeName": "중앙대학교 301관 갤러리 3층 전시장",
-        "precautions": "물품 보관소를 운영하지 않습니다."
+        "precautions": "물품 보관소를 운영하지 않습니다.",
+        "instagramUrl": "https://www.instagram.com/displayu",
+        "websiteUrl": "https://displayu.com",
+        "roadAddress": "서울특별시 동작구 흑석로 84",
+        "latitude": 37.505,
+        "longitude": 126.957,
+        "region": "SEOUL",
+        "displayImageUrl": ["https://cdn.displayu.com/posters/detail.png"]
       }
       """;
 

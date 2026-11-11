@@ -17,11 +17,14 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.global.security.JwtFactory;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -42,6 +45,8 @@ class DisplayControllerUpdateTest {
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
   @Autowired private JwtFactory jwtFactory;
+
+  @Autowired private EntityManager entityManager;
 
   @Test
   void getDraftDisplayDetailSucceedsWhenRequesterIsAcceptedTeamMember() throws Exception {
@@ -117,6 +122,114 @@ class DisplayControllerUpdateTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void updatesLinksLocationAndDetailImagesAndPersistsThem() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.changeDetailImages(List.of("https://example.com/old.png"));
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "instagramUrl": "https://instagram.com/new",
+             "websiteUrl": "https://example.com", "roadAddress": "새 주소",
+             "latitude": 35.1, "longitude": 129.1, "region": "OTHERS",
+             "displayImageUrl": ["https://example.com/1.png", "https://example.com/2.png"]}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk());
+    displayJpaRepository.flush();
+    entityManager.clear();
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.instagramUrl").value("https://instagram.com/new"))
+        .andExpect(jsonPath("$.success.data.websiteUrl").value("https://example.com"))
+        .andExpect(jsonPath("$.success.data.location.roadAddress").value("새 주소"))
+        .andExpect(jsonPath("$.success.data.location.latitude").value(35.1))
+        .andExpect(jsonPath("$.success.data.location.longitude").value(129.1))
+        .andExpect(jsonPath("$.success.data.location.placeName").value("기존 전시장"))
+        .andExpect(jsonPath("$.success.data.region").value("OTHERS"))
+        .andExpect(jsonPath("$.success.data.images.length()").value(3))
+        .andExpect(
+            jsonPath("$.success.data.images[?(@.imageType == 'DETAIL')].imageUrl")
+                .value(
+                    org.hamcrest.Matchers.contains(
+                        "https://example.com/1.png", "https://example.com/2.png")));
+  }
+
+  @Test
+  void omittedFieldsAreKeptAndExplicitEmptyValuesClearLinksAndDetails() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.changeExternalLinks("https://instagram.com/old", "https://example.com");
+    display.changeDetailImages(List.of("https://example.com/old.png"));
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayId\": %d, \"instagramUrl\": null}".formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.instagramUrl").value("https://instagram.com/old"))
+        .andExpect(jsonPath("$.success.data.images.length()").value(2));
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "instagramUrl": "", "displayImageUrl": []}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.instagramUrl").doesNotExist())
+        .andExpect(jsonPath("$.success.data.websiteUrl").value("https://example.com"))
+        .andExpect(jsonPath("$.success.data.images.length()").value(1))
+        .andExpect(jsonPath("$.success.data.images[0].imageType").value("MAIN"));
+    displayJpaRepository.flush();
+    entityManager.clear();
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.instagramUrl").doesNotExist())
+        .andExpect(jsonPath("$.success.data.websiteUrl").value("https://example.com"))
+        .andExpect(jsonPath("$.success.data.images.length()").value(1))
+        .andExpect(jsonPath("$.success.data.images[0].imageType").value("MAIN"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "\"instagramUrl\": \"ftp://example.com\"",
+        "\"websiteUrl\": \" \"",
+        "\"latitude\": 91",
+        "\"longitude\": -181",
+        "\"region\": \"ALL\"",
+        "\"roadAddress\": \" \"",
+        "\"displayImageUrl\": [\"1\", \"2\", \"3\", \"4\", \"5\"]",
+        "\"displayImageUrl\": [\"\"]"
+      })
+  void rejectsInvalidNewFields(String field) throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayId\": %d, %s}".formatted(display.getId(), field)))
+        .andExpect(status().isBadRequest());
   }
 
   private static String updateRequest(Long displayId) {

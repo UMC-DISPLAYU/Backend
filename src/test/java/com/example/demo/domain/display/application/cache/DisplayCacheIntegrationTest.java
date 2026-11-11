@@ -377,7 +377,14 @@ class DisplayCacheIntegrationTest {
         LocalTime.of(11, 0),
         LocalTime.of(19, 0),
         "수정 전시장",
-        "수정 유의사항");
+        "수정 유의사항",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   private static Display displayWithTeamLeader() {

@@ -95,7 +95,14 @@ public class DisplayPresentationMapper {
         request.openTime(),
         request.closeTime(),
         request.placeName(),
-        request.precautions());
+        request.precautions(),
+        request.instagramUrl(),
+        request.websiteUrl(),
+        request.roadAddress(),
+        request.latitude(),
+        request.longitude(),
+        request.region(),
+        request.displayImageUrls());
   }
 
   public DuPickResponse toResponse(DuPickResult result) {
