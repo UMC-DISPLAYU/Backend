@@ -25,5 +25,9 @@ public record MyDisplayListResponse(
               description = "해당 전시에서 조회 사용자의 역할 (대표자: TEAM_LEADER, 관리자: MANAGER, 팀원: TEAM_MEM)",
               allowableValues = {"TEAM_LEADER", "MANAGER", "TEAM_MEM"},
               example = "TEAM_LEADER")
-          TeamMemberRole role) {}
+          TeamMemberRole role,
+      @Schema(
+              types = {"object", "null"},
+              description = "대표 포스터 표시 범위. null이면 조정 없음.")
+          PosterCropResponse posterCrop) {}
 }

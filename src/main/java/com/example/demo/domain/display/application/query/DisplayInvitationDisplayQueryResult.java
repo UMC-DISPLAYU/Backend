@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.query;
 
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 
 public record DisplayInvitationDisplayQueryResult(
@@ -10,4 +11,5 @@ public record DisplayInvitationDisplayQueryResult(
     String department,
     LocalDate startedAt,
     LocalDate endedAt,
-    String placeName) {}
+    String placeName,
+    PosterCrop posterCrop) {}

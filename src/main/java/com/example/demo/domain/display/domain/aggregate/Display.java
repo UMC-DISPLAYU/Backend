@@ -18,6 +18,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
@@ -94,6 +95,8 @@ public class Display extends SoftDeleteBaseEntity {
 
   @Column(length = 255)
   private String websiteUrl;
+
+  @Embedded private PosterCrop posterCrop;
 
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
@@ -723,7 +726,44 @@ public class Display extends SoftDeleteBaseEntity {
     }
   }
 
+  public void changeDetailImages(List<String> imageUrls) {
+    Objects.requireNonNull(imageUrls, "imageUrls must not be null.");
+    if (imageUrls.size() > MAX_DETAIL_IMAGE_COUNT) {
+      throw new IllegalArgumentException("displayImageUrls must contain at most 4 images.");
+    }
+    imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
+    List<DisplayImage> replacements = new ArrayList<>();
+    for (int index = 0; index < imageUrls.size(); index++) {
+      int sortOrder = index;
+      DisplayImage existing =
+          images.stream()
+              .filter(
+                  image -> image.getImageType() == DisplayImageType.DETAIL && !image.isDeleted())
+              .filter(image -> image.getSortOrder() == sortOrder)
+              .findFirst()
+              .orElse(null);
+      if (existing == null) {
+        replacements.add(
+            new DisplayImage(null, imageUrls.get(index), DisplayImageType.DETAIL, index, null));
+      } else {
+        existing.changeImageUrl(imageUrls.get(index));
+        replacements.add(existing);
+      }
+    }
+    images.removeIf(
+        image -> image.getImageType() == DisplayImageType.DETAIL && !replacements.contains(image));
+    replacements.stream().filter(image -> !images.contains(image)).forEach(this::addImage);
+  }
+
+  public void changePosterCrop(PosterCrop posterCrop) {
+    this.posterCrop = posterCrop;
+  }
+
   public void changePosterImageUrl(String posterImageUrl) {
+    requireNonBlank(posterImageUrl, "posterImageUrl");
+    if (!Objects.equals(getPosterImageUrl(), posterImageUrl)) {
+      this.posterCrop = null;
+    }
     DisplayImage mainImage =
         images.stream()
             .filter(image -> image.getImageType() == DisplayImageType.MAIN)

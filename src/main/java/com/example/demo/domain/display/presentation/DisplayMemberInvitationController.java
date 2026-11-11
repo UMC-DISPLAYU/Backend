@@ -114,7 +114,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @GetMapping("/display-invitations/me")
+  @GetMapping(value = "/display-invitations/me", produces = "application/json")
   public ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyDisplayInvitationListResult result =
@@ -123,7 +123,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @GetMapping("/display-invitations")
+  @GetMapping(value = "/display-invitations", produces = "application/json")
   public ApiResponseBody<DisplayInvitationDisplayResponse> getInvitationDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     GraduationDisplayResult result =

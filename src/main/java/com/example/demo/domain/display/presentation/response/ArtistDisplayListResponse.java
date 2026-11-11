@@ -18,5 +18,6 @@ public record ArtistDisplayListResponse(
       String department,
       String placeName,
       String postImageUrl,
-      boolean isLeader) {}
+      boolean isLeader,
+      PosterCropResponse posterCrop) {}
 }

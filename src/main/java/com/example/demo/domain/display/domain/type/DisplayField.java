@@ -1,27 +1,28 @@
 package com.example.demo.domain.display.domain.type;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 public enum DisplayField {
   PAINTING,
-  DESIGN,
-  PHOTOGRAPHY,
-  ARCHITECTURE,
-  VIDEO,
-  CRAFTS,
   SCULPTURE,
+  PHOTOGRAPHY,
+  GRAPHIC,
+  BRANDING,
+  PRODUCT,
+  VIDEO,
+  SPACE,
+  ARCHITECTURE,
+  UXUI,
+  CRAFTS,
+  OTHERS,
+  @Deprecated
+  DESIGN,
+  @Deprecated
   FASHION,
   @Deprecated
   INTERDISCIPLINARY,
-  ILLUSTRATION,
-  OTHERS;
+  @Deprecated
+  ILLUSTRATION;
 
-  @JsonCreator
-  public static DisplayField from(String value) {
-    DisplayField field = valueOf(value);
-    if (field == INTERDISCIPLINARY) {
-      throw new IllegalArgumentException("INTERDISCIPLINARY is no longer supported");
-    }
-    return field;
+  public boolean isSelectable() {
+    return this != DESIGN && this != FASHION && this != INTERDISCIPLINARY && this != ILLUSTRATION;
   }
 }

@@ -147,8 +147,10 @@ public interface ArchiveDisplayControllerDocs {
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       content =
           @Content(
+              mediaType = "application/json",
               examples =
                   @ExampleObject(
                       value =
@@ -160,6 +162,7 @@ public interface ArchiveDisplayControllerDocs {
                                 "displays": [
                                   {
                                     "posterImageUrl": "https://cdn.displayu.co.kr/posters/5.png",
+                                    "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                                     "status": "ENDED",
                                     "title": "syzygy",
                                     "organization": "건국대학교",
@@ -175,6 +178,7 @@ public interface ArchiveDisplayControllerDocs {
                                   },
                                   {
                                     "posterImageUrl": "https://cdn.displayu.co.kr/posters/3.png",
+                                    "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                                     "status": "ENDED",
                                     "title": "형태의 침묵",
                                     "organization": "중앙대학교",

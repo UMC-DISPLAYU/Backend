@@ -131,13 +131,28 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
   }
 
-  @Test
-  void createDisplaySucceedsWithSmallGroupTypeAndIllustrationField() throws Exception {
+  @org.junit.jupiter.params.ParameterizedTest
+  @org.junit.jupiter.params.provider.ValueSource(
+      strings = {
+        "PAINTING",
+        "SCULPTURE",
+        "PHOTOGRAPHY",
+        "GRAPHIC",
+        "BRANDING",
+        "PRODUCT",
+        "VIDEO",
+        "SPACE",
+        "ARCHITECTURE",
+        "UXUI",
+        "CRAFTS",
+        "OTHERS"
+      })
+  void createDisplaySucceedsWithEveryNewField(String field) throws Exception {
     User user = userJpaRepository.save(user("소모임장"));
     String request =
         requestBody("SEOUL")
             .replace("\"GRADUATION\"", "\"SMALL_GROUP\"")
-            .replace("[\"DESIGN\", \"VIDEO\"]", "[\"ILLUSTRATION\"]");
+            .replace("[\"GRAPHIC\", \"VIDEO\"]", "[\"" + field + "\"]");
 
     mockMvc
         .perform(
@@ -146,14 +161,17 @@ class DisplayControllerCreateTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.success.data.displayType").value("SMALL_GROUP"));
+        .andExpect(jsonPath("$.success.data.displayType").value("SMALL_GROUP"))
+        .andExpect(jsonPath("$.success.data.displayFields[0]").value(field));
   }
 
-  @Test
-  void createDisplayRejectsLegacyInterdisciplinaryField() throws Exception {
+  @org.junit.jupiter.params.ParameterizedTest
+  @org.junit.jupiter.params.provider.ValueSource(
+      strings = {"DESIGN", "FASHION", "INTERDISCIPLINARY", "ILLUSTRATION"})
+  void createDisplayRejectsLegacyField(String field) throws Exception {
     User user = userJpaRepository.save(user("소모임장"));
     String request =
-        requestBody("SEOUL").replace("[\"DESIGN\", \"VIDEO\"]", "[\"INTERDISCIPLINARY\"]");
+        requestBody("SEOUL").replace("[\"GRAPHIC\", \"VIDEO\"]", "[\"" + field + "\"]");
 
     mockMvc
         .perform(
@@ -162,7 +180,40 @@ class DisplayControllerCreateTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error.code").value("MALFORMED_JSON"));
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  @org.junit.jupiter.params.ParameterizedTest
+  @org.junit.jupiter.params.provider.ValueSource(strings = {"[]", "[null]"})
+  void rejectsEmptyOrNullFields(String fields) throws Exception {
+    User user = userJpaRepository.save(user("팀장"));
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody("SEOUL").replace("[\"GRAPHIC\", \"VIDEO\"]", fields)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createsDisplayWithPosterCrop() throws Exception {
+    User user = userJpaRepository.save(user("팀장"));
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    requestBody("SEOUL")
+                        .replace(
+                            "\"title\":",
+                            "\"posterCrop\": {\"x\": 0.1, \"y\": 0.2, \"w\": 0.8, \"h\": 0.7}, \"title\":")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.posterCrop.x").value(0.1))
+        .andExpect(jsonPath("$.success.data.posterCrop.y").value(0.2))
+        .andExpect(jsonPath("$.success.data.posterCrop.w").value(0.8))
+        .andExpect(jsonPath("$.success.data.posterCrop.h").value(0.7));
   }
 
   @Test
@@ -274,7 +325,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "VIDEO"],
+          "fields": ["GRAPHIC", "VIDEO"],
           "region": "%s",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -307,7 +358,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "VIDEO"],
+          "fields": ["GRAPHIC", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -338,7 +389,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "VIDEO"],
+          "fields": ["GRAPHIC", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",
@@ -372,7 +423,7 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-5.png"
           ],
           "type": "GRADUATION",
-          "fields": ["DESIGN", "VIDEO"],
+          "fields": ["GRAPHIC", "VIDEO"],
           "region": "SEOUL",
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부",

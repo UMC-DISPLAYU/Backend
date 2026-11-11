@@ -19,7 +19,9 @@ import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.PosterCropRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ArtistDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.CancelDisplayScreeningResponse;
@@ -35,6 +37,7 @@ import com.example.demo.domain.display.presentation.response.DuPickResponse;
 import com.example.demo.domain.display.presentation.response.GraduationDisplayResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayListResponse;
 import com.example.demo.domain.display.presentation.response.PopularDisplayResponse;
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -74,7 +77,8 @@ public class DisplayPresentationMapper {
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION,
         request.instagramUrl(),
-        request.websiteUrl());
+        request.websiteUrl(),
+        toPosterCrop(request.posterCrop()));
   }
 
   public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
@@ -96,7 +100,15 @@ public class DisplayPresentationMapper {
         request.openTime(),
         request.closeTime(),
         request.placeName(),
-        request.precautions());
+        request.precautions(),
+        request.instagramUrl(),
+        request.websiteUrl(),
+        request.roadAddress(),
+        request.latitude(),
+        request.longitude(),
+        request.region(),
+        request.displayImageUrls(),
+        toPosterCrop(request.posterCrop()));
   }
 
   public DuPickResponse toResponse(DuPickResult result) {
@@ -211,7 +223,8 @@ public class DisplayPresentationMapper {
         result.invitations().stream().map(this::toResponse).toList(),
         result.instagramUrl(),
         result.websiteUrl(),
-        result.currentScreeningId());
+        result.currentScreeningId(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {
@@ -234,7 +247,8 @@ public class DisplayPresentationMapper {
         result.endedAt(),
         result.dayLeft(),
         result.isArchived(),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -248,7 +262,8 @@ public class DisplayPresentationMapper {
         result.endedAt(),
         result.dayLeft(),
         result.isArchived(),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private PopularDisplayResponse.ExhibitionResponse toResponse(
@@ -262,7 +277,8 @@ public class DisplayPresentationMapper {
         result.endedAt(),
         result.dayLeft(),
         result.isArchived(),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -276,7 +292,8 @@ public class DisplayPresentationMapper {
         result.endedAt(),
         result.dayLeft(),
         result.isArchived(),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -290,7 +307,8 @@ public class DisplayPresentationMapper {
         schoolDepartmentName(result.organization(), result.department()),
         result.latitude(),
         result.longitude(),
-        result.isArchived());
+        result.isArchived(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private MyDisplayListResponse.MyDisplayResponse toResponse(
@@ -307,7 +325,8 @@ public class DisplayPresentationMapper {
         result.placeName(),
         result.postImageUrl(),
         result.isLeader(),
-        result.role());
+        result.role(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private ArtistDisplayListResponse.ArtistDisplayResponse toArtistResponse(
@@ -323,7 +342,8 @@ public class DisplayPresentationMapper {
         result.department(),
         result.placeName(),
         result.postImageUrl(),
-        result.isLeader());
+        result.isLeader(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(
@@ -409,5 +429,9 @@ public class DisplayPresentationMapper {
       case GYEONGGI_INCHEON -> DisplayRegion.GYEONGGI_INCHEON;
       case OTHERS -> DisplayRegion.OTHERS;
     };
+  }
+
+  private PosterCrop toPosterCrop(PosterCropRequest crop) {
+    return crop == null ? null : new PosterCrop(crop.x(), crop.y(), crop.w(), crop.h());
   }
 }
