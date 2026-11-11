@@ -21,8 +21,8 @@ class UniversityFlywayMigrationTest {
         Flyway.configure()
             .dataSource(URL, "sa", "")
             .baselineOnMigrate(true)
-            .baselineVersion("20261105000000")
-            .target("20261105000300")
+            .baselineVersion("20261111000200")
+            .target("20261111000500")
             .locations("classpath:db/migration")
             .load();
 

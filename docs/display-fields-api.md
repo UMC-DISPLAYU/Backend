@@ -110,8 +110,8 @@
 
 ## DB 변경
 
-- `V20261111000100__expand_display_fields.sql`은 기존 enum을 보존하며 신규 분야 5개를 추가합니다.
-- `V20261111000200__add_display_poster_crop.sql`은 nullable `DECIMAL(11,10)` 컬럼 4개와 범위 제약을 추가합니다.
+- `V20261111000600__expand_display_fields.sql`은 기존 enum을 보존하며 신규 분야 5개를 추가합니다.
+- `V20261111000700__add_display_poster_crop.sql`은 nullable `DECIMAL(11,10)` 컬럼 4개와 범위 제약을 추가합니다.
 - 조정 값은 네 컬럼이 모두 `null`이거나 유효한 사각형이어야 합니다.
 - 새 애플리케이션 코드가 실행되기 전에 마이그레이션을 적용해야 합니다.
 
