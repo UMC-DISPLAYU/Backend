@@ -127,6 +127,7 @@ class SaveArchiveDisplayServiceTest {
         "디유갤러리",
         LocalDate.now().minusDays(1),
         LocalDate.now().plusDays(10),
-        "https://cdn.displayu.com/posters/main.png");
+        "https://cdn.displayu.com/posters/main.png",
+        null);
   }
 }

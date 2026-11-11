@@ -24,7 +24,8 @@ class GetDisplaySummariesServiceTest {
                     "place",
                     LocalDate.of(2026, 7, 1),
                     LocalDate.of(2026, 7, 10),
-                    "https://cdn.displayu.com/posters/main.png")));
+                    "https://cdn.displayu.com/posters/main.png",
+                    null)));
     GetDisplaySummariesService service = new GetDisplaySummariesService(queryRepository);
 
     List<DisplaySummaryResult> results = service.getDisplaySummaries(List.of(1L, 2L));

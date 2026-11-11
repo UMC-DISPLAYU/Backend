@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.DisplayScreeningSummaryQueryResult;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -15,7 +16,8 @@ public record DisplayScreeningSummaryResult(
     String leaderName,
     LocalDate startDate,
     LocalDate endDate,
-    String posterImageUrl) {
+    String posterImageUrl,
+    PosterCrop posterCrop) {
 
   public static DisplayScreeningSummaryResult from(DisplayScreeningSummaryQueryResult result) {
     return new DisplayScreeningSummaryResult(
@@ -28,6 +30,7 @@ public record DisplayScreeningSummaryResult(
         result.leaderName(),
         result.startDate(),
         result.endDate(),
-        result.posterImageUrl());
+        result.posterImageUrl(),
+        result.posterCrop());
   }
 }

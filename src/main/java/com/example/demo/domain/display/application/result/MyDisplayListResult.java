@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +37,8 @@ public record MyDisplayListResult(
       String department,
       String placeName,
       String postImageUrl,
-      boolean isLeader) {
+      boolean isLeader,
+      PosterCrop posterCrop) {
 
     private static MyDisplayResult from(Display display, LocalDateTime now, Long requesterUserId) {
       LocalDate startDate = display.getPeriod().startDate();
@@ -52,7 +54,8 @@ public record MyDisplayListResult(
           display.getDepartment(),
           display.getLocation().placeName(),
           postImageUrl(display),
-          requesterUserId != null && display.isTeamLeader(requesterUserId));
+          requesterUserId != null && display.isTeamLeader(requesterUserId),
+          display.getPosterCrop());
     }
 
     private static String postImageUrl(Display display) {

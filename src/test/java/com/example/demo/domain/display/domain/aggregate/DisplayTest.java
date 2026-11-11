@@ -17,6 +17,7 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
@@ -213,6 +214,17 @@ class DisplayTest {
             exception ->
                 assertThat(exception.errorCode())
                     .isEqualTo(DisplayErrorCode.DISPLAY_INVITATION_ALREADY_REJECTED));
+  }
+
+  @Test
+  void invalidPosterReplacementKeepsExistingImageAndCrop() {
+    Display display = display();
+    PosterCrop crop = new PosterCrop(bd("0.1"), bd("0.2"), bd("0.8"), bd("0.7"));
+    display.changePosterCrop(crop);
+    assertThatThrownBy(() -> display.changePosterImageUrl(" "))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThat(display.getPosterImageUrl()).isEqualTo("https://cdn.displayu.com/posters/main.png");
+    assertThat(display.getPosterCrop()).isEqualTo(crop);
   }
 
   private static Display display() {

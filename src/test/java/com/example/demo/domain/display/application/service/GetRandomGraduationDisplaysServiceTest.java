@@ -41,6 +41,7 @@ class GetRandomGraduationDisplaysServiceTest {
         "department",
         endedAt.minusDays(7),
         endedAt,
+        null,
         null);
   }
 

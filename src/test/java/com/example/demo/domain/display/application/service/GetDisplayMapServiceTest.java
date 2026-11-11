@@ -62,7 +62,8 @@ class GetDisplayMapServiceTest {
         "organization",
         "department",
         bd("37.5513"),
-        bd("126.9248"));
+        bd("126.9248"),
+        null);
   }
 
   private static BigDecimal bd(String value) {

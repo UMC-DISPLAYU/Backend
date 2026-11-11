@@ -45,7 +45,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 display.department,
                 display.period.startDate,
                 display.period.endDate,
-                display.location.placeName))
+                display.location.placeName,
+                display.posterCrop))
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))
