@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
@@ -23,7 +24,24 @@ public record UpdateDisplayRequest(
     String title,
     String posterImageUrl,
     DisplayType type,
-    List<DisplayField> fields,
+    @ArraySchema(
+            schema =
+                @Schema(
+                    allowableValues = {
+                      "PAINTING",
+                      "SCULPTURE",
+                      "PHOTOGRAPHY",
+                      "GRAPHIC",
+                      "BRANDING",
+                      "PRODUCT",
+                      "VIDEO",
+                      "SPACE",
+                      "ARCHITECTURE",
+                      "UXUI",
+                      "CRAFTS",
+                      "OTHERS"
+                    }))
+        List<DisplayField> fields,
     String schoolOrOrganization,
     String departmentOrClub,
     String hostOrganizationName,
@@ -58,7 +76,9 @@ public record UpdateDisplayRequest(
     return region != DisplayRegion.ALL;
   }
 
-  @AssertTrue(message = "fields는 비어 있을 수 없습니다.") public boolean isFieldsValid() {
-    return fields == null || !fields.isEmpty();
+  @AssertTrue(message = "fields는 비어 있을 수 없으며 신규 전시 분야만 선택할 수 있습니다.") public boolean isFieldsValid() {
+    return fields == null
+        || (!fields.isEmpty()
+            && fields.stream().allMatch(field -> field != null && field.isSelectable()));
   }
 }

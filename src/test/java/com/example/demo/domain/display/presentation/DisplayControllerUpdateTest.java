@@ -84,7 +84,7 @@ class DisplayControllerUpdateTest {
         .andExpect(jsonPath("$.success.data.note").value("물품 보관소를 운영하지 않습니다."))
         .andExpect(jsonPath("$.success.data.location.placeName").value("중앙대학교 301관 갤러리 3층 전시장"))
         .andExpect(jsonPath("$.success.data.displayType").value("GRADUATION"))
-        .andExpect(jsonPath("$.success.data.displayFields[0]").value("DESIGN"))
+        .andExpect(jsonPath("$.success.data.displayFields[0]").value("GRAPHIC"))
         .andExpect(jsonPath("$.success.data.displayFields[1]").value("VIDEO"))
         .andExpect(jsonPath("$.success.data.period.startDate").value("2026-05-29"))
         .andExpect(jsonPath("$.success.data.period.endDate").value("2026-06-06"))
@@ -211,6 +211,8 @@ class DisplayControllerUpdateTest {
   @ParameterizedTest
   @ValueSource(
       strings = {
+        "\"fields\": []",
+        "\"fields\": [null]",
         "\"instagramUrl\": \"ftp://example.com\"",
         "\"websiteUrl\": \" \"",
         "\"latitude\": 91",
@@ -232,6 +234,31 @@ class DisplayControllerUpdateTest {
         .andExpect(status().isBadRequest());
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"DESIGN", "FASHION", "INTERDISCIPLINARY", "ILLUSTRATION"})
+  void rejectsLegacyFieldSelectionButPreservesExistingFieldsWhenOmitted(String field)
+      throws Exception {
+    Display display = displayWithTeamMembers();
+    display.changeDisplayFields(List.of(DisplayField.valueOf(field)));
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayId\": %d, \"title\": \"수정\"}".formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.displayFields[0]").value(field));
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"displayId\": %d, \"fields\": [\"%s\"]}".formatted(display.getId(), field)))
+        .andExpect(status().isBadRequest());
+  }
+
   private static String updateRequest(Long displayId) {
     return """
         {
@@ -239,7 +266,7 @@ class DisplayControllerUpdateTest {
           "title": "FORM 2026 (수정본)",
           "posterImageUrl": "https://cdn.displayu.com/posters/updated.png",
           "type": "GRADUATION",
-          "fields": ["DESIGN", "VIDEO"],
+          "fields": ["GRAPHIC", "VIDEO"],
           "schoolOrOrganization": "중앙대학교",
           "departmentOrClub": "디자인학부 시각디자인",
           "hostOrganizationName": null,

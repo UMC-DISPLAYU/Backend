@@ -11,7 +11,8 @@ public final class DisplayApiDocs {
           + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다. "
           + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다. "
           + "instagramUrl과 websiteUrl은 생략하거나 null로 전달할 수 있습니다. 입력할 때는 공백 없는 HTTP(S) URL을 최대 255자로 전달하며 빈 문자열은 허용하지 않습니다.";
-  public static final String CREATE_REQUEST_DESCRIPTION = "전시 생성 요청";
+  public static final String CREATE_REQUEST_DESCRIPTION =
+      "전시 생성 요청. fields는 신규 디자인의 12개 분야만 허용합니다.";
   public static final String CREATE_REQUEST_EXAMPLE_NAME = "Display create request";
   public static final String CREATE_SUCCESS_DESCRIPTION = "전시 생성 성공";
   public static final String CREATE_SUCCESS_EXAMPLE_NAME = "Display create success";
@@ -183,7 +184,7 @@ public final class DisplayApiDocs {
         ],
         "_displayImageUrlRule": "최대 4개까지 전달할 수 있으며 imageType=DETAIL, sortOrder=0부터 순서대로 저장됩니다.",
         "type": "GRADUATION",
-        "fields": ["DESIGN", "VIDEO"],
+        "fields": ["GRAPHIC", "VIDEO"],
         "region": "SEOUL",
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부",
@@ -350,7 +351,7 @@ public final class DisplayApiDocs {
         "posterImageUrl": "https://cdn...",
         "_posterImageUrlRule": "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다.",
         "type": "GRADUATION",
-        "fields": ["DESIGN", "VIDEO"],
+        "fields": ["GRAPHIC", "VIDEO"],
         "schoolOrOrganization": "중앙대학교",
         "departmentOrClub": "디자인학부 시각디자인",
         "hostOrganizationName": null,

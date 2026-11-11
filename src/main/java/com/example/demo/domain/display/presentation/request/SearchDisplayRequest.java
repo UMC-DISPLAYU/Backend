@@ -28,8 +28,14 @@ public record SearchDisplayRequest(
             description =
                 "전시 분야. PAINTING: 회화, DESIGN: 디자인, PHOTOGRAPHY: 사진, ARCHITECTURE: 건축, "
                     + "VIDEO: 영상, CRAFTS: 공예, SCULPTURE: 조소, FASHION: 패션, "
-                    + "ILLUSTRATION: 일러스트, OTHERS: 기타",
+                    + "ILLUSTRATION: 일러스트, OTHERS: 기타. GRAPHIC: 그래픽, BRANDING: 브랜딩, PRODUCT: 제품, SPACE: 공간, UXUI: UXUI. 기존 분야도 검색할 수 있습니다.",
             allowableValues = {
+              "GRAPHIC",
+              "BRANDING",
+              "PRODUCT",
+              "SPACE",
+              "UXUI",
+              "INTERDISCIPLINARY",
               "PAINTING",
               "DESIGN",
               "PHOTOGRAPHY",
@@ -41,7 +47,7 @@ public record SearchDisplayRequest(
               "ILLUSTRATION",
               "OTHERS"
             },
-            example = "DESIGN")
+            example = "GRAPHIC")
         DisplayField field,
     @Schema(
             description =

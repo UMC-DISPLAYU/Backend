@@ -68,6 +68,34 @@ class DisplayOpenApiTest {
       assertThat(request.path("required").toString()).doesNotContain('"' + field + '"');
     }
 
+    for (String method : List.of("post", "patch")) {
+      JsonNode writeRequest =
+          resolve(
+              document,
+              operation(document, "/api/v1/display", method)
+                  .path("requestBody")
+                  .path("content")
+                  .path("application/json")
+                  .path("schema"));
+      JsonNode fields = resolve(document, property(document, writeRequest, "fields").path("items"));
+      java.util.ArrayList<String> values = new java.util.ArrayList<>();
+      fields.path("enum").forEach(value -> values.add(value.asText()));
+      assertThat(values)
+          .containsExactlyInAnyOrder(
+              "PAINTING",
+              "SCULPTURE",
+              "PHOTOGRAPHY",
+              "GRAPHIC",
+              "BRANDING",
+              "PRODUCT",
+              "VIDEO",
+              "SPACE",
+              "ARCHITECTURE",
+              "UXUI",
+              "CRAFTS",
+              "OTHERS");
+    }
+
     JsonNode cancel =
         operation(document, "/api/v1/display/{displayId}/screenings/{screeningId}/cancel", "post");
     assertThat(cancel.has("requestBody")).isFalse();
