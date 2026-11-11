@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.domain.entity;
 
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -28,6 +29,10 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   @Column(name = "univName", nullable = false)
   private String univName;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "universityId")
+  private University university;
+
   @Column(name = "verificationCode", nullable = false)
   private String verificationCode;
 
@@ -51,12 +56,14 @@ public class SchoolEmailVerification extends BaseTimeEntity {
       User user,
       String schoolEmail,
       String univName,
+      University university,
       String verificationCode,
       LocalDateTime expiresAt) {
 
     this.user = user;
     this.schoolEmail = schoolEmail;
     this.univName = univName;
+    this.university = university;
     this.verificationCode = verificationCode;
     this.expiresAt = expiresAt;
     this.sentAt = LocalDateTime.now(ZoneOffset.UTC);
@@ -67,10 +74,21 @@ public class SchoolEmailVerification extends BaseTimeEntity {
   public static SchoolEmailVerification create(
       User user, String schoolEmail, String univName, String verificationCode) {
 
+    return create(user, schoolEmail, univName, null, verificationCode);
+  }
+
+  public static SchoolEmailVerification create(
+      User user,
+      String schoolEmail,
+      String univName,
+      University university,
+      String verificationCode) {
+
     return new SchoolEmailVerification(
         user,
         schoolEmail,
         univName,
+        university,
         verificationCode,
         LocalDateTime.now(ZoneOffset.UTC).plusMinutes(5)); // 인증코드 유효시간: 5분
   }

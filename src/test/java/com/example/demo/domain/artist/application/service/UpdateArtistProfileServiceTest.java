@@ -16,6 +16,7 @@ import com.example.demo.domain.artist.domain.error.ArtistException;
 import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository;
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
@@ -144,6 +145,9 @@ class UpdateArtistProfileServiceTest {
   private void prepare(User user, ArtistProfile profile) {
     when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
     when(artistProfileRepository.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
+    University university = mock(University.class);
+    when(university.getName()).thenReturn("한양대학교");
+    when(schoolEmailValidator.validate("한양대학교", user.getSchoolEmail())).thenReturn(university);
   }
 
   private UpdateArtistProfileCommand command(String artistName) {
