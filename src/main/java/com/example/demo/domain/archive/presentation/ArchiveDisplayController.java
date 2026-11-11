@@ -70,7 +70,7 @@ public class ArchiveDisplayController implements ArchiveDisplayControllerDocs {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/archives/exhibitions")
+  @GetMapping(value = "/api/v1/archives/exhibitions", produces = "application/json")
   @Override
   public ApiResponseBody<ArchiveDisplayCursorResponse> getArchivedDisplays(
       @RequestParam(required = false) Long cursorId,

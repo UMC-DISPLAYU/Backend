@@ -41,6 +41,7 @@ public class ArtistDisplayController {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "isLeader": true
               }
             ],
@@ -58,12 +59,13 @@ public class ArtistDisplayController {
   private final GetArtistDisplaysService getArtistDisplaysService;
   private final DisplayPresentationMapper displayPresentationMapper;
 
-  @GetMapping("/artists/{userId}")
+  @GetMapping(value = "/artists/{userId}", produces = "application/json")
   @Operation(
       summary = "작가 공개 전시 목록 조회",
       description = "특정 작가가 만들거나 참여한 발행 전시 목록을 display 도메인 기준으로 조회합니다.")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "작가 공개 전시 목록 조회 성공",
       content =
           @Content(

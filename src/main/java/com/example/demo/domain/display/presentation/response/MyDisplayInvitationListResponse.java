@@ -6,6 +6,7 @@ import java.util.List;
 
 public record MyDisplayInvitationListResponse(List<InvitationResponse> invitations) {
 
+  @Schema(name = "MyDisplayInvitation")
   public record InvitationResponse(
       Long invitationId,
       Long displayId,

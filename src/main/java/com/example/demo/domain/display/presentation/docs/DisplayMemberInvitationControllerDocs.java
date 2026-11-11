@@ -140,6 +140,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "내 전시 멤버 초대 목록 조회 성공",
       content =
           @Content(
@@ -158,6 +159,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "내가 받은 전시 초대 조회 성공",
       content =
           @Content(
@@ -226,6 +228,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "displayId": 1,
                 "title": "FORM 2026",
                 "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-05-28",
                 "endedAt": "2026-06-05",
@@ -370,6 +373,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "invitationId": 1,
                 "displayId": 1,
                 "thumbnailUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "startDate": "2026-05-28",
                 "endDate": "2026-06-05",
                 "location": "서울시 종로구",

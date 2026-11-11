@@ -14,8 +14,11 @@ import java.math.BigDecimal;
 public record PosterCropRequest(
     @NotNull @DecimalMin("0") @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal x,
     @NotNull @DecimalMin("0") @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal y,
-    @NotNull @DecimalMin(value = "0", inclusive = false) @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal w,
-    @NotNull @DecimalMin(value = "0", inclusive = false) @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal h) {
+    @Schema(description = "소수점 이하 최대 10자리의 양수. 최소 0.0000000001.")
+        @NotNull @DecimalMin("0.0000000001") @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal w,
+    @Schema(description = "소수점 이하 최대 10자리의 양수. 최소 0.0000000001.")
+        @NotNull @DecimalMin("0.0000000001") @DecimalMax("1") @Digits(integer = 1, fraction = 10) BigDecimal h) {
+  @Schema(hidden = true)
   @AssertTrue(message = "posterCrop은 원본 이미지 범위를 벗어날 수 없습니다.") public boolean isContained() {
     return x == null
         || y == null

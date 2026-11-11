@@ -36,12 +36,12 @@ public record DisplayDetailResponse(
     List<TeamMemberResponse> teamMembers,
     List<InvitationResponse> invitations,
     @Schema(
-            description = "등록 시 저장한 Instagram URL",
+            description = "현재 저장된 Instagram URL",
             types = {"string", "null"},
             maxLength = 255)
         String instagramUrl,
     @Schema(
-            description = "등록 시 저장한 웹사이트 URL",
+            description = "현재 저장된 웹사이트 URL",
             types = {"string", "null"},
             maxLength = 255)
         String websiteUrl,

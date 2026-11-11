@@ -21,7 +21,7 @@ public final class DisplayApiDocs {
   public static final String UPDATE_SUMMARY = "전시 수정";
   public static final String UPDATE_DESCRIPTION =
       "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다. "
-          + "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다. URL이 달라지면 이전 posterCrop을 초기화하며, 새 posterCrop을 함께 전달하면 그 값을 저장합니다.";
+          + "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다. URL이 달라지면 이전 posterCrop을 초기화하며, 새 posterCrop을 함께 전달하면 그 값을 저장합니다. 같은 URL은 기존 범위를 유지합니다. 전체 이미지는 x=0, y=0, w=1, h=1로 지정합니다.";
   public static final String UPDATE_REQUEST_DESCRIPTION =
       "생략 또는 null인 필드는 유지합니다. instagramUrl/websiteUrl은 빈 문자열로 삭제할 수 있습니다. "
           + "roadAddress, latitude, longitude, region을 수정할 수 있으며 region=ALL은 허용하지 않습니다. "
@@ -738,6 +738,7 @@ public final class DisplayApiDocs {
                 "endDate": "2026-05-28",
                 "locationName": "홍익대학교 현대미술관",
                 "posterImageUrl": "https://cdn.displayu.com/posters/inner_view.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "latitude": 37.5513,
                 "longitude": 126.9248,
@@ -770,6 +771,7 @@ public final class DisplayApiDocs {
                 "displayId": 5,
                 "title": "ABOUT THE FLOW OF TIME",
                 "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-06-20",
@@ -804,6 +806,7 @@ public final class DisplayApiDocs {
                 "displayId": 15,
                 "title": "2026 디자인 졸업전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-07-10",
@@ -838,6 +841,7 @@ public final class DisplayApiDocs {
                 "displayId": 7,
                 "title": "2026 졸업 전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-07-10",
@@ -904,6 +908,7 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "isLeader": true
               }
             ],
@@ -919,6 +924,7 @@ public final class DisplayApiDocs {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "isLeader": false
               }
             ]
@@ -1145,6 +1151,7 @@ public final class DisplayApiDocs {
                 "displayId": 7,
                 "title": "2026 졸업 전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "디유 갤러리",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-07-10",

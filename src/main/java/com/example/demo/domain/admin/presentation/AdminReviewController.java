@@ -25,7 +25,7 @@ public class AdminReviewController {
   private final AdminReviewService service;
   private final AdminReviewMapper mapper;
 
-  @GetMapping
+  @GetMapping(produces = "application/json")
   @Operation(summary = "운영자 전시 심사 목록 조회")
   public ApiResponseBody<ReviewResponses.Page> search(
       @AuthenticationPrincipal AuthUser user,
