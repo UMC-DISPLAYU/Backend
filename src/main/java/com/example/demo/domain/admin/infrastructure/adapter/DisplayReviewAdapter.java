@@ -40,7 +40,7 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
     DisplayScreeningPageResult result =
         searchService.search(
             new DisplayScreeningSearchQuery(
-                DisplayStatus.valueOf(query.status()), query.cursor(), query.size()));
+                query.q(), DisplayStatus.valueOf(query.status()), query.cursor(), query.size()));
     return new ReviewPage(
         result.items().stream().map(this::toSummary).toList(),
         result.nextCursor(),

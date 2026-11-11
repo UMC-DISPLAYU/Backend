@@ -29,13 +29,14 @@ public class AdminReviewController {
   @Operation(summary = "운영자 전시 심사 목록 조회")
   public ApiResponseBody<ReviewResponses.Page> search(
       @AuthenticationPrincipal AuthUser user,
+      @RequestParam(required = false) String q,
       @RequestParam(defaultValue = "PENDING_REVIEW") String status,
       @RequestParam(required = false) Long cursor,
       @RequestParam(defaultValue = "20") int size,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
-            service.search(userId(user), new ReviewSearchQuery(status, cursor, size))),
+            service.search(userId(user), new ReviewSearchQuery(q, status, cursor, size))),
         request);
   }
 
