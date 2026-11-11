@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.infrastructure.persistence.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.demo.domain.display.application.query.DisplayScreeningQueryRepository;
 import com.example.demo.domain.display.application.query.DisplayScreeningSearchQuery;
@@ -22,10 +23,13 @@ import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisp
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayScreeningJpaRepository;
 import com.example.demo.global.config.JpaAuditingConfig;
 import com.example.demo.global.config.QuerydslConfig;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -199,6 +203,64 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
                 new DisplayScreeningSearchQuery("  ", DisplayStatus.PENDING_REVIEW, null, 20), 21))
         .extracting(DisplayScreeningSummaryQueryResult::displayId)
         .containsExactly(other.getId(), matching.getId());
+  }
+
+  @Test
+  void historyKeepsRejectedCancelledAndPendingRoundsNewestFirst() {
+    Display display = displayJpaRepository.saveAndFlush(display("회차 전시"));
+    LocalDateTime requestedAt = LocalDateTime.of(2026, 11, 11, 1, 0);
+    display.requestReview();
+    DisplayScreening rejected =
+        screeningJpaRepository.saveAndFlush(DisplayScreening.request(display, 1L, requestedAt));
+    rejected.reject(7L, "수정 요청", requestedAt.plusMinutes(1));
+    display.rejectReview();
+    display.requestReview();
+    DisplayScreening cancelled =
+        screeningJpaRepository.saveAndFlush(DisplayScreening.request(display, 2L, requestedAt));
+    cancelled.cancel(2L, requestedAt.plusMinutes(2));
+    display.cancelReview();
+    display.requestReview();
+    DisplayScreening pending =
+        screeningJpaRepository.saveAndFlush(DisplayScreening.request(display, 3L, requestedAt));
+    Display other = displayJpaRepository.saveAndFlush(display("다른 전시"));
+    screeningJpaRepository.saveAndFlush(DisplayScreening.request(other, 9L, requestedAt));
+    displayJpaRepository.flush();
+
+    var result = detailService.getDetail(display.getId());
+    assertThat(result.history())
+        .extracting(item -> item.screeningId())
+        .containsExactly(pending.getId(), cancelled.getId(), rejected.getId());
+    assertThat(result.history())
+        .extracting(item -> item.status())
+        .containsExactly("PENDING_REVIEW", "CANCELLED", "REJECTED");
+    assertThat(result.requesterId()).isEqualTo(3L);
+    assertThat(result.screeningStatus()).isEqualTo("PENDING_REVIEW");
+    assertThat(result.history().getFirst().requestedAt())
+        .isEqualTo(requestedAt.toInstant(ZoneOffset.UTC));
+    assertThat(result.history().getFirst().processedAt()).isNull();
+    assertThat(result.history().get(1).cancelledBy()).isEqualTo(2L);
+    assertThat(result.history().get(1).reviewerId()).isNull();
+    assertThat(result.history().getLast().reviewerId()).isEqualTo(7L);
+    assertThat(result.history().getLast().rejectionReason()).isEqualTo("수정 요청");
+    assertThat(result.history().getLast().processedAt())
+        .isEqualTo(requestedAt.plusMinutes(1).toInstant(ZoneOffset.UTC));
+  }
+
+  @Test
+  void legacyDisplayHasEmptyHistoryAndDeletedDisplayIsNotExposed() {
+    Display legacy = display("기존 전시");
+    legacy.publish();
+    displayJpaRepository.saveAndFlush(legacy);
+    var detail = detailService.getDetail(legacy.getId());
+    assertThat(detail.history()).isEmpty();
+    assertThat(detail.requesterId()).isNull();
+    assertThat(detail.screeningStatus()).isNull();
+    legacy.delete();
+    displayJpaRepository.flush();
+    assertThatThrownBy(() -> detailService.getDetail(legacy.getId()))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e -> assertThat(e.errorCode()).isEqualTo(GlobalErrorCode.NOT_FOUND));
   }
 
   private static Display display(String title) {
