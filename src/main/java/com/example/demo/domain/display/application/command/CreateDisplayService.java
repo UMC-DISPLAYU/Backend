@@ -78,6 +78,7 @@ public class CreateDisplayService {
                 command.startDate(), command.endDate(), command.startTime(), command.endTime()),
             command.artworkContentOpen(),
             command.exhibitionContentOpen());
+    display.changePosterCrop(command.posterCrop());
     display.changeExternalLinks(command.instagramUrl(), command.websiteUrl());
     display.addTeamMember(
         new TeamMember(

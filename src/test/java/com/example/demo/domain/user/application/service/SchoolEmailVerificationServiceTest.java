@@ -10,11 +10,13 @@ import static org.mockito.Mockito.when;
 import com.example.demo.domain.user.application.command.SendSchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.command.VerifySchoolEmailVerificationCommand;
 import com.example.demo.domain.user.application.port.SchoolEmailSenderPort;
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.SchoolEmailVerificationRepository;
+import com.example.demo.domain.user.domain.repository.UniversityRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import java.util.Optional;
@@ -254,7 +256,17 @@ class SchoolEmailVerificationServiceTest {
 
   private static class NoOpSchoolEmailValidator extends SchoolEmailValidator {
 
+    private final University university;
+
+    private NoOpSchoolEmailValidator() {
+      super(mock(UniversityRepository.class));
+      university = mock(University.class);
+      when(university.getName()).thenReturn(UNIV_NAME);
+    }
+
     @Override
-    public void validate(String univName, String email) {}
+    public University validate(String univName, String email) {
+      return university;
+    }
   }
 }

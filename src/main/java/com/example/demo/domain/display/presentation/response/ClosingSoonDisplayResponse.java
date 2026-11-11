@@ -18,7 +18,11 @@ public record ClosingSoonDisplayResponse(
       LocalDate endedAt,
       long dayLeft,
       @JsonProperty("isArchived") boolean isArchived,
-      String placeName) {}
+      String placeName,
+      @Schema(
+              types = {"object", "null"},
+              description = "대표 포스터 표시 범위. null이면 조정 없음.")
+          PosterCropResponse posterCrop) {}
 
   public record CursorPaginationResponse(String nextCursor, int size, boolean hasNext) {}
 }

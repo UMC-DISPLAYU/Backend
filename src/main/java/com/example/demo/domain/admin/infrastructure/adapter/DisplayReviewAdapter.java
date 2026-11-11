@@ -92,6 +92,7 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.leaderName(),
         result.startDate(),
         result.endDate(),
-        result.posterImageUrl());
+        result.posterImageUrl(),
+        result.posterCrop());
   }
 }

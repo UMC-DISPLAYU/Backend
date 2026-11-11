@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.presentation.response;
 
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,7 +19,11 @@ public final class ReviewResponses {
       String leaderName,
       LocalDate startDate,
       LocalDate endDate,
-      String posterImageUrl) {}
+      String posterImageUrl,
+      @Schema(
+              types = {"object", "null"},
+              description = "대표 포스터 표시 범위. null이면 조정 없음.")
+          PosterCropResponse posterCrop) {}
 
   public record Page(List<Summary> items, Long nextCursor, boolean hasNext) {}
 

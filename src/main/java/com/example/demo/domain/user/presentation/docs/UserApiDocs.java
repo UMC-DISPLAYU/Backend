@@ -199,5 +199,41 @@ public final class UserApiDocs {
       }
       """;
 
+  public static final String USER_SEARCH_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": {
+          "data": {
+            "userId": 12,
+            "name": "홍길동",
+            "nickname": "display_artist"
+          }
+        },
+        "error": null,
+        "meta": {
+          "timestamp": "2026-11-01T12:00:00",
+          "path": "/api/v1/users/search"
+        }
+      }
+      """;
+
+  public static final String USER_NICKNAME_NOT_FOUND_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "USER_NICKNAME_NOT_FOUND",
+          "message": "해당 닉네임을 가진 사용자를 찾을 수 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-11-01T12:00:00",
+          "path": "/api/v1/users/search"
+        }
+      }
+      """;
+
   private UserApiDocs() {}
 }

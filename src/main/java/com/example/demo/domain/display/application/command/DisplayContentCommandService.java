@@ -46,7 +46,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
         display.createContentCategory(command.name(), command.description());
     displayRepository.flush();
@@ -59,7 +59,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
         display.changeContentCategory(command.categoryId(), command.name(), command.description());
 
@@ -72,7 +72,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContentCategory(command.categoryId());
 
     return new DeleteDisplayContentCategoryResult(command.displayId(), command.categoryId());
@@ -100,8 +100,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    DisplayContent targetContent = display.findContent(command.categoryId(), command.contentId());
-    displayPermissionChecker.requireContentOwner(targetContent, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContent content =
         display.changeContent(command.categoryId(), command.contentId(), command.imageUrl());
 
@@ -113,8 +112,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    DisplayContent content = display.findContent(command.categoryId(), command.contentId());
-    displayPermissionChecker.requireContentOwner(content, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContent(command.categoryId(), command.contentId());
 
     return new DeleteDisplayContentResult(

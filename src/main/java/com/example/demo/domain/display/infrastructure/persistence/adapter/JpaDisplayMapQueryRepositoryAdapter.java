@@ -39,7 +39,8 @@ public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepos
                 display.organization,
                 display.department,
                 display.location.latitude,
-                display.location.longitude))
+                display.location.longitude,
+                display.posterCrop))
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))

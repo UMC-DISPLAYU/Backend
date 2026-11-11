@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,7 +44,8 @@ public record DisplayDetailResult(
     List<InvitationResult> invitations,
     String instagramUrl,
     String websiteUrl,
-    Long currentScreeningId) {
+    Long currentScreeningId,
+    PosterCrop posterCrop) {
 
   public static DisplayDetailResult from(Display display, long likeCount) {
     return from(display, likeCount, null);
@@ -85,7 +87,8 @@ public record DisplayDetailResult(
             .toList(),
         display.getInstagramUrl(),
         display.getWebsiteUrl(),
-        currentScreeningId);
+        currentScreeningId,
+        display.getPosterCrop());
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -118,7 +121,8 @@ public record DisplayDetailResult(
         invitations,
         instagramUrl,
         websiteUrl,
-        currentScreeningId);
+        currentScreeningId,
+        posterCrop);
   }
 
   public record LocationResult(

@@ -13,6 +13,7 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.artist.domain.vo.ArtistName;
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
@@ -55,16 +56,20 @@ public class UpdateArtistProfileService {
     String introduction = normalize(command.introduction());
     String externalLink = normalize(command.externalLink());
     String univName = normalize(command.univName());
+    University university = null;
     if (univName == null) {
       univName = profile.getUnivName();
     } else {
-      schoolEmailValidator.validate(univName, user.getSchoolEmail());
+      university = schoolEmailValidator.validate(univName, user.getSchoolEmail());
+      univName = university.getName();
     }
     validateActivityFields(command.fields());
 
     changeArtistName(profile, artistName);
     profile.updateProfileImage(profileImageUrl.value());
-    user.changeUnivName(univName);
+    if (university != null) {
+      user.changeUniversity(university);
+    }
     profile.updateProfile(introduction, externalLink, univName);
     areaOfActivityRepository.deleteAllByArtistProfile(profile);
     command

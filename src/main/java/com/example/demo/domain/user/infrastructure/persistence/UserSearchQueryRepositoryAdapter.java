@@ -5,7 +5,7 @@ import com.example.demo.domain.user.application.query.UserSearchQueryResult;
 import com.example.demo.domain.user.domain.aggregate.QUser;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -18,14 +18,15 @@ public class UserSearchQueryRepositoryAdapter implements UserSearchQueryReposito
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<UserSearchQueryResult> searchByNickname(String nickname, int limit) {
-    return queryFactory
-        .select(
-            Projections.constructor(UserSearchQueryResult.class, user.id, user.name, user.nickname))
-        .from(user)
-        .where(user.nickname.lower().contains(nickname.toLowerCase()), user.deletedAt.isNull())
-        .orderBy(user.nickname.asc(), user.id.asc())
-        .limit(limit)
-        .fetch();
+  public Optional<UserSearchQueryResult> findByNickname(String nickname) {
+    UserSearchQueryResult result =
+        queryFactory
+            .select(
+                Projections.constructor(
+                    UserSearchQueryResult.class, user.id, user.name, user.nickname))
+            .from(user)
+            .where(user.nickname.eq(nickname), user.deletedAt.isNull())
+            .fetchOne();
+    return Optional.ofNullable(result);
   }
 }

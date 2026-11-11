@@ -70,6 +70,10 @@ public class User extends BaseTimeEntity {
   @Column(name = "univName", nullable = true)
   private String univName;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "universityId")
+  private University university;
+
   @Column(name = "deletedAt")
   private LocalDateTime deletedAt;
 
@@ -80,11 +84,16 @@ public class User extends BaseTimeEntity {
   private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
   public void verifySchoolEmail(String schoolEmail, String univName) {
+    verifySchoolEmail(schoolEmail, univName, null);
+  }
+
+  public void verifySchoolEmail(String schoolEmail, String univName, University university) {
     if (this.schoolEmail != null) {
       throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
     this.schoolEmail = schoolEmail.trim().toLowerCase(Locale.ROOT);
     this.univName = univName;
+    this.university = university;
   }
 
   public void completeArtistVerification() {
@@ -108,7 +117,8 @@ public class User extends BaseTimeEntity {
     this.profileImageUrl = profileImageUrl;
   }
 
-  public void changeUnivName(String univName) {
-    this.univName = univName;
+  public void changeUniversity(University university) {
+    this.university = university;
+    this.univName = university.getName();
   }
 }

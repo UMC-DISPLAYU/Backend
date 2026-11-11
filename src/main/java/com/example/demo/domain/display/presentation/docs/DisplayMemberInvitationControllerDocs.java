@@ -19,7 +19,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface DisplayMemberInvitationControllerDocs {
 
-  @Operation(summary = "전시 멤버 초대 생성", description = "전시 팀장이 특정 사용자를 전시 멤버로 초대합니다.")
+  @Operation(
+      summary = "전시 멤버 초대 생성",
+      description = "기존 초대 권한을 가진 사용자가 작가 인증을 완료한 사용자를 전시 멤버로 초대합니다. 역할을 생략하면 TEAM_MEM으로 처리합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "201",
@@ -31,13 +33,23 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display invitation created",
                       value = INVITATION_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "초대 권한 없음 또는 초대 대상의 작가 인증 미완료",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> invite(
       Long displayId,
       InviteDisplayMemberRequest request,
       AuthUser user,
       HttpServletRequest httpRequest);
 
-  @Operation(summary = "전시 멤버 초대 수락", description = "초대 대상자가 본인에게 온 전시 멤버 초대를 수락합니다.")
+  @Operation(
+      summary = "전시 멤버 초대 수락",
+      description = "작가 인증을 완료한 초대 대상자가 전시에서 사용할 닉네임을 입력해 본인에게 온 초대를 수락합니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
@@ -49,9 +61,27 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display invitation accepted",
                       value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "초대 대상 불일치 또는 수락 사용자의 작가 인증 미완료",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
       Long invitationId,
-      AcceptDisplayInvitationRequest request,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "전시에서 사용할 팀원 닉네임",
+              required = true,
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      examples =
+                          @ExampleObject(
+                              name = "초대 수락 요청",
+                              value = INVITATION_ACCEPT_REQUEST_EXAMPLE)))
+          AcceptDisplayInvitationRequest request,
       AuthUser user,
       HttpServletRequest httpRequest);
 
@@ -110,6 +140,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "내 전시 멤버 초대 목록 조회 성공",
       content =
           @Content(
@@ -128,6 +159,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = "내가 받은 전시 초대 조회 성공",
       content =
           @Content(
@@ -196,6 +228,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "displayId": 1,
                 "title": "FORM 2026",
                 "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-05-28",
                 "endedAt": "2026-06-05",
@@ -236,6 +269,13 @@ public interface DisplayMemberInvitationControllerDocs {
       }
       """;
 
+  String INVITATION_ACCEPT_REQUEST_EXAMPLE =
+      """
+      {
+        "displayNickname": "전시용 닉네임"
+      }
+      """;
+
   String INVITATION_ACCEPT_SUCCESS_EXAMPLE =
       """
       {
@@ -254,6 +294,23 @@ public interface DisplayMemberInvitationControllerDocs {
         "error": null,
         "meta": {
           "timestamp": "2026-08-04T09:00:00",
+          "path": "/api/v1/display-invitations/1/accept"
+        }
+      }
+      """;
+
+  String ARTIST_VERIFICATION_REQUIRED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "ARTIST_VERIFICATION_REQUIRED",
+          "message": "작가 인증이 완료된 사용자만 이용할 수 있습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-11-01T12:00:00",
           "path": "/api/v1/display-invitations/1/accept"
         }
       }
@@ -316,6 +373,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "invitationId": 1,
                 "displayId": 1,
                 "thumbnailUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "startDate": "2026-05-28",
                 "endDate": "2026-06-05",
                 "location": "서울시 종로구",

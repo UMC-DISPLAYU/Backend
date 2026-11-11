@@ -10,7 +10,7 @@ import com.example.demo.domain.user.application.query.UserSearchQueryRepository;
 import com.example.demo.domain.user.application.query.UserSearchQueryResult;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
-import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class SearchUserServiceTest {
@@ -20,26 +20,22 @@ class SearchUserServiceTest {
   private final SearchUserService service = new SearchUserService(userSearchQueryRepository);
 
   @Test
-  void trimsNicknameAndMapsSearchResults() {
-    UserSearchQueryResult queryResult = new UserSearchQueryResult(12L, "이정우", "quietroom");
-    when(userSearchQueryRepository.searchByNickname("quiet", 20)).thenReturn(List.of(queryResult));
+  void trimsNicknameAndMapsExactSearchResult() {
+    UserSearchQueryResult queryResult = new UserSearchQueryResult(12L, "홍길동", "quietroom");
+    when(userSearchQueryRepository.findByNickname("quietroom"))
+        .thenReturn(Optional.of(queryResult));
 
-    var results = service.execute("  quiet  ");
+    var result = service.execute("  quietroom  ");
 
-    assertThat(results)
-        .singleElement()
-        .satisfies(
-            result -> {
-              assertThat(result.userId()).isEqualTo(12L);
-              assertThat(result.name()).isEqualTo("이정우");
-              assertThat(result.nickname()).isEqualTo("quietroom");
-            });
-    verify(userSearchQueryRepository).searchByNickname("quiet", 20);
+    assertThat(result.userId()).isEqualTo(12L);
+    assertThat(result.name()).isEqualTo("홍길동");
+    assertThat(result.nickname()).isEqualTo("quietroom");
+    verify(userSearchQueryRepository).findByNickname("quietroom");
   }
 
   @Test
-  void throwsExceptionWhenNoUserMatches() {
-    when(userSearchQueryRepository.searchByNickname("unknown", 20)).thenReturn(List.of());
+  void throwsExceptionWhenNoExactUserMatches() {
+    when(userSearchQueryRepository.findByNickname("unknown")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.execute("unknown"))
         .isInstanceOf(UserException.class)
