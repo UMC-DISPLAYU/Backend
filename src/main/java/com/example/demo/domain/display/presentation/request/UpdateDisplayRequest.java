@@ -6,6 +6,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -70,7 +71,11 @@ public record UpdateDisplayRequest(
     DisplayRegion region,
     @Schema(description = "대표 이미지 외 최대 4장. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
         @JsonProperty("displayImageUrl")
-        @Size(max = 4) List<@NotBlank String> displayImageUrls) {
+        @Size(max = 4) List<@NotBlank String> displayImageUrls,
+    @Valid @Schema(
+            types = {"object", "null"},
+            description = "원본 이미지 기준 표시 범위. 생략 또는 null이면 생성 시 조정 없음, 수정 시 기존 값 유지.")
+        PosterCropRequest posterCrop) {
 
   @AssertTrue(message = "region은 ALL이 될 수 없습니다.") public boolean isRegionValid() {
     return region != DisplayRegion.ALL;

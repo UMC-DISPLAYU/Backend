@@ -81,6 +81,7 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.contract,
             display.instagramUrl,
             display.websiteUrl,
+            display.posterCrop,
             display.note,
             display.organization,
             display.department,
@@ -283,7 +284,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         base.get(display.websiteUrl),
         base.get(display.status) == DisplayStatus.PENDING_REVIEW
             ? currentScreeningId(base.get(display.id))
-            : null);
+            : null,
+        base.get(display.posterCrop));
   }
 
   private Long currentScreeningId(Long displayId) {

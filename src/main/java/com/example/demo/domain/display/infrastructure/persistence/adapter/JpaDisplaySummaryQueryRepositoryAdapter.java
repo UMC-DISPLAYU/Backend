@@ -39,7 +39,8 @@ public class JpaDisplaySummaryQueryRepositoryAdapter implements DisplaySummaryQu
                 display.location.placeName,
                 display.period.startDate,
                 display.period.endDate,
-                image.imageUrl))
+                image.imageUrl,
+                display.posterCrop))
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))

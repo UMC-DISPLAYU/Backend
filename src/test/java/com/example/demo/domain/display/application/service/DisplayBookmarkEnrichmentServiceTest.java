@@ -42,6 +42,7 @@ class DisplayBookmarkEnrichmentServiceTest {
         LocalDate.of(2026, 7, 10),
         9,
         false,
+        null,
         null);
   }
 

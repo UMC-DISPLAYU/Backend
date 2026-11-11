@@ -43,6 +43,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheVersion;
@@ -242,7 +243,8 @@ class DisplayCacheIntegrationTest {
     when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
     when(displayLikeRepository.countByDisplayId(display.getId())).thenReturn(0L);
 
-    updateDisplayService.updateDisplay(updateDisplayCommand());
+    var updated = updateDisplayService.updateDisplay(updateDisplayCommand());
+    assertThat(updated.posterCrop()).isEqualTo(updateDisplayCommand().posterCrop());
 
     assertDisplayListCachesEmpty();
   }
@@ -315,6 +317,7 @@ class DisplayCacheIntegrationTest {
         "department",
         endedAt.minusDays(7),
         endedAt,
+        null,
         null);
   }
 
@@ -355,6 +358,7 @@ class DisplayCacheIntegrationTest {
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION,
         null,
+        null,
         null);
   }
 
@@ -384,7 +388,8 @@ class DisplayCacheIntegrationTest {
         null,
         null,
         null,
-        null);
+        null,
+        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE));
   }
 
   private static Display displayWithTeamLeader() {

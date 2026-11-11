@@ -90,7 +90,8 @@ class AdminReviewTest {
                         "전시 대표자",
                         LocalDate.of(2026, 10, 1),
                         LocalDate.of(2026, 10, 7),
-                        "https://example.com/poster.png")),
+                        "https://example.com/poster.png",
+                        null)),
                 3L,
                 true));
     mvc.perform(get("/api/v1/admin/displays"))
@@ -121,6 +122,7 @@ class AdminReviewTest {
             null,
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
+            null,
             null);
     when(reviews.search(new ReviewSearchQuery("REJECTED", 3L, 10)))
         .thenReturn(new ReviewPage(List.of(summary), null, false));

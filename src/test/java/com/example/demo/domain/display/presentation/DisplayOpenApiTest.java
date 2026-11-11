@@ -42,6 +42,7 @@ class DisplayOpenApiTest {
       JsonNode data = responseData(document, path, "get");
       JsonNode card = resolve(document, property(document, data, "exhibitions").path("items"));
       assertThat(property(document, card, "placeName").isMissingNode()).as(path).isFalse();
+      assertCrop(document, property(document, card, "posterCrop"));
     }
 
     JsonNode preview = responseData(document, "/api/v1/artworks/preview", "get");
@@ -77,6 +78,7 @@ class DisplayOpenApiTest {
                   .path("content")
                   .path("application/json")
                   .path("schema"));
+      assertCrop(document, property(document, writeRequest, "posterCrop"));
       JsonNode fields = resolve(document, property(document, writeRequest, "fields").path("items"));
       java.util.ArrayList<String> values = new java.util.ArrayList<>();
       fields.path("enum").forEach(value -> values.add(value.asText()));
@@ -110,7 +112,17 @@ class DisplayOpenApiTest {
     }
   }
 
+  private void assertCrop(JsonNode document, JsonNode crop) {
+    assertNullable(crop);
+    JsonNode schema = resolve(document, crop);
+    for (String coordinate : List.of("x", "y", "w", "h")) {
+      assertThat(property(document, schema, coordinate).isMissingNode()).isFalse();
+      assertThat(schema.path("required").toString()).contains('"' + coordinate + '"');
+    }
+  }
+
   private void assertDetailFields(JsonNode document, JsonNode data) {
+    assertCrop(document, property(document, data, "posterCrop"));
     for (String field : List.of("instagramUrl", "websiteUrl", "currentScreeningId")) {
       JsonNode schema = property(document, data, field);
       assertThat(schema.isMissingNode()).as(field).isFalse();

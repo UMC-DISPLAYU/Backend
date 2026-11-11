@@ -50,7 +50,8 @@ class DisplayReviewAdapterTest {
             "대표자",
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
-            "poster");
+            "poster",
+            null);
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 

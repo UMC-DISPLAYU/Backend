@@ -14,6 +14,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.global.security.JwtFactory;
@@ -256,6 +257,113 @@ class DisplayControllerUpdateTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"displayId\": %d, \"fields\": [\"%s\"]}".formatted(display.getId(), field)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void persistsCropAndKeepsItUnlessPosterChanges() throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7}}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterCrop.x").value(0.1));
+    displayJpaRepository.flush();
+    entityManager.clear();
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterCrop.w").value(0.8));
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "posterImageUrl": "https://cdn.displayu.com/posters/main.png", "posterCrop": null}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterCrop.h").value(0.7));
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "posterImageUrl": "https://example.com/new.png"}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterCrop").doesNotExist());
+    displayJpaRepository.flush();
+    entityManager.clear();
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterCrop").doesNotExist());
+  }
+
+  @Test
+  void changingPosterAndCropTogetherUsesTheNewCrop() throws Exception {
+    Display display = displayWithTeamMembers();
+    display.changePosterCrop(
+        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE));
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+            {"displayId": %d, "posterImageUrl": "https://example.com/new.png",
+             "posterCrop": {"x": 0.9999999999, "y": 0, "w": 0.0000000001, "h": 1}}
+            """
+                        .formatted(display.getId())))
+        .andExpect(status().isOk());
+    displayJpaRepository.flush();
+    entityManager.clear();
+    org.assertj.core.api.Assertions.assertThat(
+            displayJpaRepository.findById(display.getId()).orElseThrow().getPosterCrop().getW())
+        .isEqualByComparingTo("0.0000000001");
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "{\"x\":0,\"y\":0,\"w\":0,\"h\":1}",
+        "{\"x\":-0.1,\"y\":0,\"w\":1,\"h\":1}",
+        "{\"x\":0.5,\"y\":0,\"w\":0.6,\"h\":1}",
+        "{\"x\":0,\"y\":0.5,\"w\":1,\"h\":0.6}",
+        "{\"x\":0,\"y\":0,\"w\":0.00000000001,\"h\":1}",
+        "{\"x\":0,\"y\":0,\"w\":1}",
+        "{}"
+      })
+  void rejectsInvalidCrop(String crop) throws Exception {
+    Display display = displayWithTeamMembers();
+    displayJpaRepository.saveAndFlush(display);
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"displayId\": %d, \"posterCrop\": %s}".formatted(display.getId(), crop)))
         .andExpect(status().isBadRequest());
   }
 

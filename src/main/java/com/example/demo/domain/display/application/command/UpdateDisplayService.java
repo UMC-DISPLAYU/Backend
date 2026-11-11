@@ -54,6 +54,9 @@ public class UpdateDisplayService {
     if (command.posterImageUrl() != null) {
       display.changePosterImageUrl(command.posterImageUrl());
     }
+    if (command.posterCrop() != null) {
+      display.changePosterCrop(command.posterCrop());
+    }
     if (command.displayFields() != null) {
       display.changeDisplayFields(command.displayFields());
     }

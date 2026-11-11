@@ -16,6 +16,7 @@ import com.example.demo.domain.display.presentation.response.DisplayInvitationDi
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -112,7 +113,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.leaderName(),
         result.title(),
         schoolDepartmentName(result.school(), result.department()),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private DisplayInvitationDisplayResponse.ExhibitionResponse toInvitationDisplayResponse(
@@ -125,7 +127,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private String schoolDepartmentName(String organization, String department) {

@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.application.result;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.type.ArchiveDisplayStatus;
 import com.example.demo.domain.display.application.result.DisplaySummaryResult;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -19,7 +20,8 @@ public record ArchiveDisplayResult(
     Long archiveDisplayId,
     Long displayId,
     Long userId,
-    LocalDateTime savedAt) {
+    LocalDateTime savedAt,
+    PosterCrop posterCrop) {
 
   public static ArchiveDisplayResult from(
       ArchiveDisplay archiveDisplay, String memo, DisplaySummaryResult summary, LocalDate today) {
@@ -38,6 +40,7 @@ public record ArchiveDisplayResult(
         archiveDisplay.getId(),
         archiveDisplay.getDisplayId(),
         archiveDisplay.getUserId(),
-        archiveDisplay.getSavedAt());
+        archiveDisplay.getSavedAt(),
+        summary == null ? null : summary.posterCrop());
   }
 }

@@ -5,6 +5,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -67,7 +68,11 @@ public record CreateDisplayRequest(
             description = "선택 입력 HTTP(S) URL. 생략 또는 null 허용, 빈 문자열 불가, 최대 255자.",
             types = {"string", "null"},
             maxLength = 255)
-        @Size(max = 255) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String websiteUrl) {
+        @Size(max = 255) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String websiteUrl,
+    @Valid @Schema(
+            types = {"object", "null"},
+            description = "원본 이미지 기준 표시 범위. 생략 또는 null이면 생성 시 조정 없음, 수정 시 기존 값 유지.")
+        PosterCropRequest posterCrop) {
 
   @AssertTrue(message = "GRADUATION, ASSIGNMENTS 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {
     return !requiresSchoolInfo() || hasText(departmentOrClub);

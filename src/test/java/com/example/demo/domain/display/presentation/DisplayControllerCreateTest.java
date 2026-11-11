@@ -197,6 +197,26 @@ class DisplayControllerCreateTest {
   }
 
   @Test
+  void createsDisplayWithPosterCrop() throws Exception {
+    User user = userJpaRepository.save(user("팀장"));
+    mockMvc
+        .perform(
+            post("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    requestBody("SEOUL")
+                        .replace(
+                            "\"title\":",
+                            "\"posterCrop\": {\"x\": 0.1, \"y\": 0.2, \"w\": 0.8, \"h\": 0.7}, \"title\":")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.posterCrop.x").value(0.1))
+        .andExpect(jsonPath("$.success.data.posterCrop.y").value(0.2))
+        .andExpect(jsonPath("$.success.data.posterCrop.w").value(0.8))
+        .andExpect(jsonPath("$.success.data.posterCrop.h").value(0.7));
+  }
+
+  @Test
   void createDisplayReturnsBadRequestWhenRegionIsAll() throws Exception {
     User user = userJpaRepository.save(user("홍길동"));
 

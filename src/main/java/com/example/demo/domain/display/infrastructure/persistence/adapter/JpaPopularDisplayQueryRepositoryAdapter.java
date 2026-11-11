@@ -64,7 +64,8 @@ public class JpaPopularDisplayQueryRepositoryAdapter implements PopularDisplayQu
                 display.department,
                 display.period.startDate,
                 display.period.endDate,
-                display.location.placeName))
+                display.location.placeName,
+                display.posterCrop))
         .from(display)
         .leftJoin(display.images, image)
         .on(

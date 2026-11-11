@@ -48,7 +48,11 @@ public record DisplayDetailResponse(
     @Schema(
             description = "현재 심사 중인 요청 ID. 심사 중이 아니면 null이며 취소 API의 screeningId로 사용합니다.",
             types = {"integer", "null"})
-        Long currentScreeningId) {
+        Long currentScreeningId,
+    @Schema(
+            types = {"object", "null"},
+            description = "대표 포스터 표시 범위. null이면 조정 없음.")
+        PosterCropResponse posterCrop) {
 
   public record LocationResponse(
       String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
