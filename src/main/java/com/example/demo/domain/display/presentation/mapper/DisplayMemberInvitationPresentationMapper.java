@@ -33,6 +33,7 @@ public class DisplayMemberInvitationPresentationMapper {
     }
     return switch (role) {
       case TEAM_MEM -> TeamMemberRole.TEAM_MEM;
+      case MANAGER -> TeamMemberRole.MANAGER;
     };
   }
 

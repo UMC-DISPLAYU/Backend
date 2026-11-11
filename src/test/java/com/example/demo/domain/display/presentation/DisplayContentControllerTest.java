@@ -86,7 +86,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void createCategoryReturnsForbiddenWhenRequesterIsNotTeamLeader() throws Exception {
+  void createCategorySucceedsWhenRequesterIsManager() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(displayWithMember());
 
     mockMvc
@@ -95,9 +95,8 @@ class DisplayContentControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(2L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"));
   }
 
   @Test
@@ -115,7 +114,7 @@ class DisplayContentControllerTest {
                 .content(categoryRequest("전시장 전경", "전시장 이미지입니다.")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
   }
 
   @Test
@@ -275,7 +274,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void updateContentSucceedsWhenRequesterIsContentUploader() throws Exception {
+  void updateContentSucceedsWhenRequesterIsManager() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -322,7 +321,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void deleteContentSucceedsWhenRequesterIsContentUploader() throws Exception {
+  void deleteContentSucceedsWhenRequesterIsManager() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -346,7 +345,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void deleteContentReturnsForbiddenWhenRequesterIsNotAcceptedTeamMember() throws Exception {
+  void deleteContentReturnsForbiddenWhenRequesterIsRegularTeamMember() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -366,7 +365,7 @@ class DisplayContentControllerTest {
   }
 
   @Test
-  void deleteContentReturnsForbiddenWhenRequesterIsNotContentUploader() throws Exception {
+  void deleteContentSucceedsWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -380,13 +379,12 @@ class DisplayContentControllerTest {
                     category.getId(),
                     contentId)
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"));
   }
 
   @Test
-  void updateContentReturnsForbiddenWhenRequesterIsNotContentUploader() throws Exception {
+  void updateContentSucceedsWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithCategory();
     Display savedDisplay = displayJpaRepository.saveAndFlush(display);
     DisplayContentCategory category = savedDisplay.getContentCategories().getFirst();
@@ -402,9 +400,8 @@ class DisplayContentControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(1L))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(contentRequest("https://cdn.displayu.com/display/content-updated.jpg")))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultType").value("SUCCESS"));
   }
 
   @Test
@@ -524,7 +521,9 @@ class DisplayContentControllerTest {
     display.addTeamMember(
         new TeamMember(null, new UserId(1L), "팀 리더", TeamMemberRole.TEAM_LEADER, true));
     display.addTeamMember(
-        new TeamMember(null, new UserId(2L), "팀원", TeamMemberRole.TEAM_MEM, true));
+        new TeamMember(null, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));
+    display.addTeamMember(
+        new TeamMember(null, new UserId(3L), "일반 팀원", TeamMemberRole.TEAM_MEM, true));
     return display;
   }
 

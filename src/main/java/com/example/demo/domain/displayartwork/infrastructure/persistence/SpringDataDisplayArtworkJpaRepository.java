@@ -42,6 +42,23 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       """)
   List<DisplayArtwork> findAllByDisplayId(@Param("displayId") Long displayId);
 
+  @Query(
+      """
+      SELECT artwork
+      FROM DisplayArtwork artwork
+      WHERE artwork.display.id = :displayId
+        AND artwork.deletedAt IS NULL
+        AND artwork.id IN (
+          SELECT creator.displayArtworkId
+          FROM Creator creator
+          WHERE creator.userId = :userId
+            AND creator.role <> com.example.demo.domain.displayartwork.domain.type.CreatorRole.QA_ONLY
+        )
+      ORDER BY artwork.id ASC
+      """)
+  List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(
+      @Param("displayId") Long displayId, @Param("userId") Long userId);
+
   /**
    * 해당 유저가 <b>작가로</b> 참여한 출품작을 등록순으로 조회한다.
    *

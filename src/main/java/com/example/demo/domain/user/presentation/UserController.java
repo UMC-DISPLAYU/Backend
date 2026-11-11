@@ -29,7 +29,6 @@ import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -112,15 +111,13 @@ public class UserController implements UserControllerDocs {
 
   @Override
   @GetMapping("/search")
-  public ApiResponseBody<List<UserSearchResponse>> searchUsers(
+  public ApiResponseBody<UserSearchResponse> searchUsers(
       @Valid UserSearchRequest request,
       @AuthenticationPrincipal AuthUser user,
       HttpServletRequest httpRequest) {
     requireUserId(user);
-    List<UserSearchResponse> response =
-        searchUserService.execute(request.normalizedNickname()).stream()
-            .map(userPresentationMapper::toResponse)
-            .toList();
+    UserSearchResponse response =
+        userPresentationMapper.toResponse(searchUserService.execute(request.normalizedNickname()));
     return ApiResponseBody.success(response, httpRequest);
   }
 

@@ -38,75 +38,49 @@ class UserSearchControllerTest {
   }
 
   @Test
-  void searchesByFullAndPartialNicknameIgnoringCaseAndIncludesUnverifiedUsers() throws Exception {
-    User quietRoom = saveUser("quietroom", "이정우", false, null);
-    User quietRoomTwo = saveUser("QuietRoom2", "최유성", true, null);
-    saveUser("another", "다른 사용자", true, null);
+  void returnsSingleUserWhenNicknameMatchesExactly() throws Exception {
+    User quietRoom = saveUser("quietroom", "홍길동", false, null);
+    saveUser("quietroom2", "다른 사용자", true, null);
 
     mockMvc
         .perform(
             get("/api/v1/users/search")
-                .param("nickname", "  QUIETROOM  ")
+                .param("nickname", "  quietroom  ")
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
-        .andExpect(jsonPath("$.success.data.length()").value(2))
-        .andExpect(jsonPath("$.success.data[0].userId").value(quietRoomTwo.getId()))
-        .andExpect(jsonPath("$.success.data[0].name").value("최유성"))
-        .andExpect(jsonPath("$.success.data[0].nickname").value("QuietRoom2"))
-        .andExpect(jsonPath("$.success.data[1].userId").value(quietRoom.getId()))
-        .andExpect(jsonPath("$.success.data[1].name").value("이정우"))
-        .andExpect(jsonPath("$.success.data[1].nickname").value("quietroom"))
-        .andExpect(jsonPath("$.success.data[0].socialEmail").doesNotExist())
-        .andExpect(jsonPath("$.success.data[0].provider").doesNotExist())
+        .andExpect(jsonPath("$.success.data.userId").value(quietRoom.getId()))
+        .andExpect(jsonPath("$.success.data.name").value("홍길동"))
+        .andExpect(jsonPath("$.success.data.nickname").value("quietroom"))
+        .andExpect(jsonPath("$.success.data.socialEmail").doesNotExist())
+        .andExpect(jsonPath("$.success.data.provider").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/users/search"));
   }
 
   @Test
-  void excludesWithdrawnUsers() throws Exception {
+  void returnsNotFoundWhenOnlyPartialNicknameMatches() throws Exception {
     saveUser("quiet-active", "활성 사용자", false, null);
-    saveUser("quiet-deleted", "탈퇴 사용자", false, LocalDateTime.now());
 
     mockMvc
         .perform(
             get("/api/v1/users/search")
                 .param("nickname", "quiet")
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.length()").value(1))
-        .andExpect(jsonPath("$.success.data[0].nickname").value("quiet-active"));
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("USER_NICKNAME_NOT_FOUND"));
   }
 
   @Test
-  void sortsSameNicknamesByUserId() throws Exception {
-    User first = saveUser("sameNickname", "첫 번째", false, null);
-    User second = saveUser("sameNickname", "두 번째", true, null);
+  void excludesWithdrawnUserWithExactNickname() throws Exception {
+    saveUser("quiet-deleted", "탈퇴 사용자", false, LocalDateTime.now());
 
     mockMvc
         .perform(
             get("/api/v1/users/search")
-                .param("nickname", "sameNickname")
+                .param("nickname", "quiet-deleted")
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data[0].userId").value(first.getId()))
-        .andExpect(jsonPath("$.success.data[1].userId").value(second.getId()));
-  }
-
-  @Test
-  void returnsAtMostTwentyUsers() throws Exception {
-    for (int index = 0; index < 21; index++) {
-      saveUser("limited%02d".formatted(index), "사용자 " + index, false, null);
-    }
-
-    mockMvc
-        .perform(
-            get("/api/v1/users/search")
-                .param("nickname", "limited")
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.length()").value(20))
-        .andExpect(jsonPath("$.success.data[0].nickname").value("limited00"))
-        .andExpect(jsonPath("$.success.data[19].nickname").value("limited19"));
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("USER_NICKNAME_NOT_FOUND"));
   }
 
   @Test
@@ -118,8 +92,7 @@ class UserSearchControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
-        .andExpect(jsonPath("$.error.code").value("USER_NICKNAME_NOT_FOUND"))
-        .andExpect(jsonPath("$.error.message").value("해당 닉네임을 가진 사용자를 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.error.code").value("USER_NICKNAME_NOT_FOUND"));
   }
 
   @Test
