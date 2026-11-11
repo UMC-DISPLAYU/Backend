@@ -127,6 +127,7 @@ jobs:
           elif git diff --name-only "$base_ref" HEAD -- \
             'src/main/resources/db/migration/V*.sql' \
             '.github/workflows/cd.yml' '.github/scripts/diagnose-apt-network.sh' \
+            '.github/scripts/install-mysql-client.sh' \
             | grep -q .; then
             changed="true"
           else
@@ -165,9 +166,7 @@ jobs:
       - name: Install MySQL client
         id: install-mysql-client
         if: steps.migration-changes.outputs.changed == 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y default-mysql-client
+        run: sudo bash .github/scripts/install-mysql-client.sh
 
       - name: Diagnose APT network after installation failure
         if: failure() && steps.install-mysql-client.outcome == 'failure'
@@ -629,9 +628,7 @@ jobs:
 
       - name: Install MySQL client
         id: install-mysql-client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y default-mysql-client
+        run: sudo bash .github/scripts/install-mysql-client.sh
 
       - name: Diagnose APT network after installation failure
         if: failure() && steps.install-mysql-client.outcome == 'failure'
