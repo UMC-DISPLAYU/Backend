@@ -13,4 +13,6 @@ public interface AdminReviewMapper {
   ReviewResponses.Summary toResponse(ReviewSummary result);
 
   ReviewResponses.Detail toResponse(ReviewDetail result);
+
+  ReviewResponses.History toResponse(ReviewDetail.History result);
 }

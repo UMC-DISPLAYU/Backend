@@ -87,7 +87,8 @@ class DisplayReviewAdapterTest {
                 "학교",
                 null,
                 null,
-                null));
+                null,
+                List.of()));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);
