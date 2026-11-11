@@ -64,7 +64,7 @@ public record DisplayScreeningDetailResult(
         history.stream().map(DisplayScreeningHistoryResult::from).toList());
   }
 
-  private static Instant toInstant(java.time.LocalDateTime value) {
+  static Instant toInstant(java.time.LocalDateTime value) {
     return value == null ? null : value.toInstant(ZoneOffset.UTC);
   }
 

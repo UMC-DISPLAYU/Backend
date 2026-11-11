@@ -1,8 +1,9 @@
 package com.example.demo.domain.display.application.result;
 
+import static com.example.demo.domain.display.application.result.DisplayScreeningDetailResult.toInstant;
+
 import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import java.time.Instant;
-import java.time.ZoneOffset;
 
 public record DisplayScreeningHistoryResult(
     Long screeningId,
@@ -18,10 +19,8 @@ public record DisplayScreeningHistoryResult(
         screening.getId(),
         screening.getStatus().name(),
         screening.getRequesterId(),
-        screening.getRequestedAt().toInstant(ZoneOffset.UTC),
-        screening.getProcessedAt() == null
-            ? null
-            : screening.getProcessedAt().toInstant(ZoneOffset.UTC),
+        toInstant(screening.getRequestedAt()),
+        toInstant(screening.getProcessedAt()),
         screening.getReviewerId(),
         screening.getRejectionReason(),
         screening.getCancelledBy());
