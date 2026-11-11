@@ -11,7 +11,7 @@ public interface DisplayReviewPort {
    * startDate·endDate는 Display.period이며 필수. leaderName은 승인되고 삭제되지 않은 TEAM_LEADER의
    * displayNickname(전시 내 대표자 표시명)이며, User.name·nickname이나 신청자 이름으로 대체하지 않는다. 대표자가 없거나 여러 명이라 단일 식별이
    * 불가능하면 null. posterImageUrl은 삭제되지 않은 MAIN 이미지의 imageUrl이며 없으면 null. 목록과 items는 null 대신 빈 목록을
-   * 사용하며 기존 상태 필터·ID 커서 정렬을 유지한다. q는 전시명·학교·학과 부분 검색과 숫자 ID 정확 일치 검색이다.
+   * 사용하며 기존 상태 필터·ID 커서 정렬을 유지한다. q는 전시명·학교·학과 부분 일치로 검색하며, 숫자이면 ID 정확 일치도 OR 조건으로 함께 검색한다.
    */
   ReviewPage search(ReviewSearchQuery query);
 

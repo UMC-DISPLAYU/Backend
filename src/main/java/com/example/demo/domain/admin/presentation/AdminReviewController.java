@@ -8,6 +8,7 @@ import com.example.demo.domain.admin.presentation.response.ReviewResponses;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -29,7 +30,9 @@ public class AdminReviewController {
   @Operation(summary = "운영자 전시 심사 목록 조회")
   public ApiResponseBody<ReviewResponses.Page> search(
       @AuthenticationPrincipal AuthUser user,
-      @RequestParam(required = false) String q,
+      @Parameter(description = "전시명·학교·학과 부분 일치 검색. 숫자이면 ID 정확 일치도 OR 조건으로 함께 검색")
+          @RequestParam(required = false)
+          String q,
       @RequestParam(defaultValue = "PENDING_REVIEW") String status,
       @RequestParam(required = false) Long cursor,
       @RequestParam(defaultValue = "20") int size,
