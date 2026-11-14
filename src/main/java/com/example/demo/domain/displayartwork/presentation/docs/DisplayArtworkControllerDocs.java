@@ -221,6 +221,7 @@ public interface DisplayArtworkControllerDocs {
   @ApiResponse(
       responseCode = "201",
       description = "전시 출품작 등록 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -247,8 +248,10 @@ public interface DisplayArtworkControllerDocs {
                                   {
                                     "imageId": 1,
                                     "imageUrl": "https://cdn.displayu.com/artworks/blue.png",
+                                    "mediaType": "IMAGE",
+                                    "thumbnailUrl": null,
                                     "isThumbnail": true,
-                                    "imageType": "MAIN",
+                                    "imageType": "ARTWORK",
                                     "sortOrder": 1,
                                     "caption": "대표 이미지",
                                     "width": 1200,
@@ -307,6 +310,7 @@ public interface DisplayArtworkControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "전시 출품작 상세 조회 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -331,8 +335,10 @@ public interface DisplayArtworkControllerDocs {
                                   {
                                     "imageId": 1,
                                     "imageUrl": "https://cdn.displayu.com/artworks/blue.png",
+                                    "mediaType": "IMAGE",
+                                    "thumbnailUrl": null,
                                     "isThumbnail": true,
-                                    "imageType": "MAIN",
+                                    "imageType": "ARTWORK",
                                     "sortOrder": 1,
                                     "caption": "대표 이미지",
                                     "width": 1200,

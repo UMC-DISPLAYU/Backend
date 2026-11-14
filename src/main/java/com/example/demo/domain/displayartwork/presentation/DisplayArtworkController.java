@@ -118,7 +118,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PostMapping("/api/v1/artworks")
+  @PostMapping(value = "/api/v1/artworks", produces = "application/json")
   @ResponseStatus(HttpStatus.CREATED)
   @Override
   public ApiResponseBody<DisplayArtworkResponse> createDisplayArtwork(
@@ -142,7 +142,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @GetMapping("/api/v1/artworks/{artworkId}")
+  @GetMapping(value = "/api/v1/artworks/{artworkId}", produces = "application/json")
   @Override
   public ApiResponseBody<DisplayArtworkDetailResponse> getDisplayArtworkFullDetail(
       @PathVariable Long artworkId,
@@ -153,7 +153,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @GetMapping("/api/v1/artworks/{artworkId}/edit")
+  @GetMapping(value = "/api/v1/artworks/{artworkId}/edit", produces = "application/json")
   @Override
   public ApiResponseBody<DisplayArtworkEditResponse> getDisplayArtworkForEdit(
       @PathVariable Long artworkId,
@@ -164,7 +164,7 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
-  @PatchMapping("/api/v1/artworks/{artworkId}")
+  @PatchMapping(value = "/api/v1/artworks/{artworkId}", produces = "application/json")
   @Override
   public ApiResponseBody<DisplayArtworkResponse> updateDisplayArtwork(
       @PathVariable Long artworkId,

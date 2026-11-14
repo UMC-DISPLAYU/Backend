@@ -67,6 +67,44 @@ class DisplayOpenApiTest {
   }
 
   @Test
+  void artworkSchemasKeepOriginalTypeAndThumbnailTogether() throws Exception {
+    JsonNode document = document();
+    for (OperationRef ref :
+        List.of(
+            new OperationRef("/api/v1/artworks", "post", "201"),
+            new OperationRef("/api/v1/artworks/{artworkId}", "patch", "200"),
+            new OperationRef("/api/v1/artworks/{artworkId}", "get", "200"),
+            new OperationRef("/api/v1/artworks/{artworkId}/edit", "get", "200"))) {
+      String path = ref.path();
+      JsonNode data = responseData(document, path, ref.method(), ref.status());
+      assertThat(data.isMissingNode())
+          .as("%s responses: %s", ref, operation(document, path, ref.method()).path("responses"))
+          .isFalse();
+      JsonNode images = property(document, data, "images");
+      assertThat(images.path("items").path("$ref").asText())
+          .as("%s images schema: %s", path, images)
+          .startsWith("#/components/schemas/DisplayArtwork");
+      JsonNode image = resolve(document, images.path("items"));
+      for (String field :
+          List.of(
+              "imageUrl",
+              "imageType",
+              "isThumbnail",
+              "mediaType",
+              "thumbnailUrl",
+              "width",
+              "height")) {
+        assertThat(property(document, image, field).isMissingNode())
+            .as(path + " " + field)
+            .isFalse();
+      }
+      assertThat(property(document, image, "mediaType").path("enum").toString())
+          .contains("IMAGE", "VIDEO");
+      assertThat(property(document, image, "personalQuestionImageId").isMissingNode()).isTrue();
+    }
+  }
+
+  @Test
   void documentsFrontendListArtworkAndCancellationContracts() throws Exception {
     JsonNode document =
         JsonMapper.builder()
