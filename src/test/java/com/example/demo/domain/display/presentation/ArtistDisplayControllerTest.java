@@ -73,6 +73,7 @@ class ArtistDisplayControllerTest {
         .andExpect(
             jsonPath("$.success.data.createdDisplays[0].postImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].role").doesNotExist())
         .andExpect(jsonPath("$.success.data.createdDisplays[1].title").value("공개 만든 전시"))
         .andExpect(jsonPath("$.success.data.participatedDisplays.length()").value(1))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].title").value("공개 참여 전시"))

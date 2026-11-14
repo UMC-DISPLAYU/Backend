@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation.response;
 
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,11 @@ public record MyDisplayListResponse(
       String placeName,
       String postImageUrl,
       boolean isLeader,
+      @Schema(
+              description = "해당 전시에서 조회 사용자의 역할 (대표자: TEAM_LEADER, 관리자: MANAGER, 팀원: TEAM_MEM)",
+              allowableValues = {"TEAM_LEADER", "MANAGER", "TEAM_MEM"},
+              example = "TEAM_LEADER")
+          TeamMemberRole role,
       @Schema(
               types = {"object", "null"},
               description = "대표 포스터 표시 범위. null이면 조정 없음.")
