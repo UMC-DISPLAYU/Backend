@@ -2,14 +2,23 @@ package com.example.demo.domain.user.presentation.docs;
 
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.ALREADY_WITHDRAWN_USER_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHANGE_NICKNAME_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHECK_INVALID_NICKNAME_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DUPLICATE_NICKNAME_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MISSING_NICKNAME_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_UNAUTHORIZED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SEARCH_INVALID_INPUT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SEARCH_UNAUTHORIZED_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_DUPLICATE_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_INVALID_INPUT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_INVALID_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NICKNAME_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_SEARCH_SUCCESS_EXAMPLE;
@@ -48,8 +57,20 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "검색 성공", value = USER_SEARCH_SUCCESS_EXAMPLE)))
-  @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")
-  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
+  @ApiResponse(
+      responseCode = "400",
+      description = "닉네임 검색어 누락 또는 공백",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "검색어 오류", value = SEARCH_INVALID_INPUT_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = SEARCH_UNAUTHORIZED_EXAMPLE)))
   @ApiResponse(
       responseCode = "404",
       description = "정확히 일치하는 닉네임의 사용자가 없음",
@@ -69,16 +90,69 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "조회 성공", value = MY_USER_SUCCESS_EXAMPLE)))
-  @ApiResponse(responseCode = "401", description = "Access Token verification failed")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = MY_USER_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyUserResponse> getMe(AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 프로필 수정", description = "프로필 이미지와 닉네임을 한 번에 수정합니다.")
-  @ApiResponse(responseCode = "200", description = "내 프로필 수정 성공")
-  @ApiResponse(responseCode = "400", description = "프로필 이미지 URL 또는 닉네임 형식 오류")
-  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
-  @ApiResponse(responseCode = "404", description = "사용자 없음")
-  @ApiResponse(responseCode = "409", description = "닉네임 중복")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내 프로필 수정 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "수정 성공", value = UPDATE_MY_PROFILE_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "프로필 이미지 URL 또는 닉네임 형식 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(
+                    name = "프로필 이미지 URL 오류",
+                    value = UPDATE_MY_PROFILE_INVALID_INPUT_EXAMPLE),
+                @ExampleObject(
+                    name = "닉네임 형식 오류",
+                    value = UPDATE_MY_PROFILE_INVALID_NICKNAME_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = MY_USER_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "닉네임 중복",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "닉네임 중복",
+                      value = UPDATE_MY_PROFILE_DUPLICATE_NICKNAME_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<UpdateMyProfileResponse> updateMe(
       AuthUser user, UpdateMyProfileRequest request, HttpServletRequest httpRequest);
@@ -198,6 +272,16 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "사용 가능", value = NICKNAME_CHECK_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "닉네임 누락 또는 형식 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "닉네임 누락", value = MISSING_NICKNAME_EXAMPLE),
+                @ExampleObject(name = "닉네임 형식 오류", value = CHECK_INVALID_NICKNAME_EXAMPLE)
+              }))
   ApiResponseBody<NicknameCheckResponse> checkNickname(
       String nickname, HttpServletRequest httpRequest);
 }
