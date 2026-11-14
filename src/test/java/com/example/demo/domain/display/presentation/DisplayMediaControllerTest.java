@@ -21,6 +21,7 @@ import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.security.JwtFactory;
@@ -35,6 +36,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@RecordApplicationEvents
 @Transactional
 class DisplayMediaControllerTest {
   private static final String VIDEO = "https://cdn.displayu.com/display/poster.mp4";
@@ -57,6 +61,7 @@ class DisplayMediaControllerTest {
       "{\"imageUrl\":\"" + IMAGE + "\",\"mediaType\":\"IMAGE\"}";
 
   @Autowired private MockMvc mvc;
+  @Autowired private ApplicationEvents events;
   @Autowired private JwtFactory jwtFactory;
   @Autowired private UserJpaRepository users;
   @Autowired private EntityManager entityManager;
@@ -211,6 +216,25 @@ class DisplayMediaControllerTest {
     create(fields).andExpect(status().isBadRequest());
     assertThat(entityManager.createQuery("select d from Display d", Display.class).getResultList())
         .isEmpty();
+  }
+
+  @Test
+  void replacementCleanupKeepsThumbnailReusedAsNewPoster() throws Exception {
+    create("\"posterMedia\":" + VIDEO_MEDIA).andExpect(status().isCreated());
+    Display display = reload();
+    update(display.getId(), "\"posterImageUrl\":\"" + THUMBNAIL + "\"").andExpect(status().isOk());
+    assertThat(events.stream(MediaFilesRemovedEvent.class).toList())
+        .singleElement()
+        .satisfies(event -> assertThat(event.fileUrls()).containsExactly(VIDEO));
+  }
+
+  @Test
+  void rejectedReplacementPublishesNoCleanupEvent() throws Exception {
+    create("\"posterMedia\":" + VIDEO_MEDIA).andExpect(status().isCreated());
+    Display display = reload();
+    update(display.getId(), "\"displayMedia\":[" + VIDEO_MEDIA + "]")
+        .andExpect(status().isBadRequest());
+    assertThat(events.stream(MediaFilesRemovedEvent.class)).isEmpty();
   }
 
   private ResultActions create(String mediaFields) throws Exception {

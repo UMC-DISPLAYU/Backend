@@ -6,6 +6,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,6 +26,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.security.JwtFactory;
@@ -46,6 +48,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,12 +64,14 @@ import org.springframework.transaction.annotation.Transactional;
     })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@RecordApplicationEvents
 @Transactional
 class DisplayArtworkMediaControllerTest {
   private static final String VIDEO = "https://cdn.example/artwork/movie.mp4";
   private static final String THUMBNAIL = "https://cdn.example/artwork/thumbnail.png";
   private static final String IMAGE = "https://cdn.example/artwork/image.png";
   @Autowired private MockMvc mvc;
+  @Autowired private ApplicationEvents events;
   @Autowired private JwtFactory jwtFactory;
   @Autowired private EntityManager entityManager;
   @Autowired private ArtworkSummaryQueryRepository summaries;
@@ -240,6 +246,37 @@ class DisplayArtworkMediaControllerTest {
                 .content(body(videoJson())))
         .andExpect(status().isForbidden());
     verifyNoInteractions(storageVerifier);
+  }
+
+  @Test
+  void videoReplacementCleanupPreservesReusedThumbnail() throws Exception {
+    create(videoJson());
+    Long id = artworkId();
+    update(id, videoJson().replace(VIDEO, "https://cdn.example/artwork/new.mp4"))
+        .andExpect(status().isOk());
+    assertThat(events.stream(MediaFilesRemovedEvent.class).toList())
+        .singleElement()
+        .satisfies(event -> assertThat(event.fileUrls()).containsExactly(VIDEO));
+  }
+
+  @Test
+  void deletingVideoArtworkSchedulesOriginalAndThumbnail() throws Exception {
+    create(videoJson());
+    Long id = artworkId();
+    mvc.perform(
+            delete("/api/v1/artworks/{id}", id).header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+        .andExpect(status().isOk());
+    assertThat(events.stream(MediaFilesRemovedEvent.class).toList())
+        .singleElement()
+        .satisfies(
+            event -> assertThat(event.fileUrls()).containsExactlyInAnyOrder(VIDEO, THUMBNAIL));
+  }
+
+  @Test
+  void rejectedVideoReplacementCannotScheduleCleanup() throws Exception {
+    create(videoJson());
+    update(artworkId(), videoJson() + "," + videoJson()).andExpect(status().isBadRequest());
+    assertThat(events.stream(MediaFilesRemovedEvent.class)).isEmpty();
   }
 
   private ResultActions create(String images) throws Exception {

@@ -167,6 +167,10 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     this.status = Objects.requireNonNull(status, "status must not be null.");
   }
 
+  public List<String> getMediaFileUrls() {
+    return images.stream().flatMap(image -> image.media().fileUrls().stream()).distinct().toList();
+  }
+
   public List<ArtworkImage> getImages() {
     return Collections.unmodifiableList(images);
   }

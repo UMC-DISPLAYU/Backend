@@ -421,6 +421,14 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   // 전시 대표(포스터) 이미지 URL을 반환한다. 등록된 MAIN 이미지가 없으면 null이다.
+  public List<String> getMediaFileUrls() {
+    return images.stream()
+        .filter(image -> !image.isDeleted())
+        .flatMap(image -> image.media().fileUrls().stream())
+        .distinct()
+        .toList();
+  }
+
   public String getPosterImageUrl() {
     return images.stream()
         .filter(image -> image.getImageType() == DisplayImageType.MAIN)

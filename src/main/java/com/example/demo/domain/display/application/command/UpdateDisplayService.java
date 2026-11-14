@@ -15,8 +15,11 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import java.util.List;
 import java.util.Objects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ public class UpdateDisplayService {
 
   private final DisplayRepository displayRepository;
   private final MediaStorageVerifier mediaStorageVerifier;
+  private final ApplicationEventPublisher eventPublisher;
   private final DisplayScreeningRepository screeningRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
@@ -36,13 +40,15 @@ public class UpdateDisplayService {
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       DisplayPermissionChecker displayPermissionChecker,
-      MediaStorageVerifier mediaStorageVerifier) {
+      MediaStorageVerifier mediaStorageVerifier,
+      ApplicationEventPublisher eventPublisher) {
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
     this.mediaStorageVerifier = mediaStorageVerifier;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -64,6 +70,7 @@ public class UpdateDisplayService {
           .displayMedia()
           .forEach(media -> mediaStorageVerifier.verifyVideo(media, MediaUsage.DISPLAY));
     }
+    List<String> previousFileUrls = display.getMediaFileUrls();
     display.changeMedia(command.posterMedia(), command.displayMedia(), command.posterCrop());
     if (command.displayFields() != null) {
       display.changeDisplayFields(command.displayFields());
@@ -109,6 +116,11 @@ public class UpdateDisplayService {
         updatedLink(command.instagramUrl(), display.getInstagramUrl()),
         updatedLink(command.websiteUrl(), display.getWebsiteUrl()));
 
+    MediaFilesRemovedEvent removed =
+        MediaFilesRemovedEvent.between(previousFileUrls, display.getMediaFileUrls());
+    if (!removed.fileUrls().isEmpty()) {
+      eventPublisher.publishEvent(removed);
+    }
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
         display,
