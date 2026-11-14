@@ -6,4 +6,6 @@ import java.util.Optional;
 public interface GetUserRoleUseCase {
 
   Optional<UserRoleResult> findActiveRole(Long userId);
+
+  boolean isWithdrawn(Long userId);
 }

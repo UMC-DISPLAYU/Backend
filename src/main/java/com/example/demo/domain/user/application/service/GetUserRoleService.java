@@ -22,4 +22,10 @@ public class GetUserRoleService implements GetUserRoleUseCase {
         .filter(user -> user.getDeletedAt() == null)
         .map(user -> new UserRoleResult(user.getId(), user.getRole()));
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public boolean isWithdrawn(Long userId) {
+    return userRepository.findById(userId).map(user -> user.getDeletedAt() != null).orElse(false);
+  }
 }

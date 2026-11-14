@@ -115,7 +115,7 @@ class AdminAuthorizationIntegrationTest {
     entityManager.clear();
     for (String operation : List.of("list", "detail", "approve", "reject")) {
       mvc.perform(request(operation).header("Authorization", bearer(token)))
-          .andExpect(status().isForbidden());
+          .andExpect(status().isUnauthorized());
     }
     String missing = tokens.createAccessToken(User.builder().id(Long.MAX_VALUE).build());
     mvc.perform(get("/api/v1/admin/displays").header("Authorization", bearer(missing)))

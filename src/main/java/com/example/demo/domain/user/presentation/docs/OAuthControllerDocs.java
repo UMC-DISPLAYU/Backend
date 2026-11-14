@@ -62,6 +62,26 @@ public interface OAuthControllerDocs {
           JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   @ApiResponse(responseCode = "302", description = "카카오 OAuth 콜백 처리 후 프론트엔드로 리다이렉트")
+  @ApiResponse(
+      responseCode = "400",
+      description = "code 또는 state 누락",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "필수 파라미터 누락",
+                      value = KAKAO_CALLBACK_MISSING_VALUE_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "state 또는 카카오 인가 코드 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "OAuth 검증 실패",
+                      value = KAKAO_CALLBACK_INVALID_TOKEN_EXAMPLE)))
   ResponseEntity<Void> kakaoCallback(
       String code,
       String state,
@@ -79,6 +99,26 @@ public interface OAuthControllerDocs {
           JWT는 리다이렉트 URL에 포함하지 않습니다.
           """)
   @ApiResponse(responseCode = "302", description = "구글 OAuth 콜백 처리 후 프론트엔드로 리다이렉트")
+  @ApiResponse(
+      responseCode = "400",
+      description = "code 또는 state 누락",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "필수 파라미터 누락",
+                      value = GOOGLE_CALLBACK_MISSING_VALUE_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "state 또는 구글 인가 코드 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "OAuth 검증 실패",
+                      value = GOOGLE_CALLBACK_INVALID_TOKEN_EXAMPLE)))
   ResponseEntity<Void> googleCallback(
       String code,
       String state,
@@ -112,5 +152,22 @@ public interface OAuthControllerDocs {
         "error": null,
         "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/auth/google/login-url" }
       }
+      """;
+
+  String KAKAO_CALLBACK_MISSING_VALUE_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "MISSING_REQUIRED_VALUE", "message": "필수 요청 값이 누락되었습니다.", "details": { "field": "code", "message": "필수 요청 파라미터입니다." } }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/kakao/callback" } }
+      """;
+  String KAKAO_CALLBACK_INVALID_TOKEN_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_SOCIAL_TOKEN", "message": "유효하지 않은 소셜 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/kakao/callback" } }
+      """;
+  String GOOGLE_CALLBACK_MISSING_VALUE_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "MISSING_REQUIRED_VALUE", "message": "필수 요청 값이 누락되었습니다.", "details": { "field": "code", "message": "필수 요청 파라미터입니다." } }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/google/callback" } }
+      """;
+  String GOOGLE_CALLBACK_INVALID_TOKEN_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_SOCIAL_TOKEN", "message": "유효하지 않은 소셜 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/google/callback" } }
       """;
 }
