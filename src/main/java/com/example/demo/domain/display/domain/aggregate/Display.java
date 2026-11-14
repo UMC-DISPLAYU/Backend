@@ -937,6 +937,10 @@ public class Display extends SoftDeleteBaseEntity {
 
     previousLeader.changeRole(TeamMemberRole.MANAGER);
     newLeader.changeRole(TeamMemberRole.TEAM_LEADER);
+
+    // 전시 소유자를 위임받은 대표자로 변경
+    this.ownerUserId = newLeader.getUserId();
+
     return new LeaderTransfer(previousLeader, newLeader);
   }
 

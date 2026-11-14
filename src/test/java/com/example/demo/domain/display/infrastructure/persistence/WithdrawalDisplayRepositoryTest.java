@@ -82,32 +82,55 @@ class WithdrawalDisplayRepositoryTest {
   }
 
   @Test
-  void withdrawalQueryIncludesFormerOwnerLeaderButScreenQueryStillExcludesOwner() {
+  void withdrawalAndScreenQueriesIncludeFormerLeaderAfterOwnershipTransfer() {
     Display active = display("transferred", FORMER_LEADER_ID);
+
     active.addTeamMember(
         new TeamMember(
             null, new UserId(FORMER_LEADER_ID), "이전 대표자", TeamMemberRole.TEAM_LEADER, true));
+
     active.addTeamMember(
         new TeamMember(
             null, new UserId(CURRENT_LEADER_ID), "현재 대표자", TeamMemberRole.MANAGER, true));
-    active = displayRepository.saveAndFlush(active);
-    Long currentLeaderMemberId = memberByUserId(active, CURRENT_LEADER_ID).getId();
-    active.transferLeadership(FORMER_LEADER_ID, currentLeaderMemberId);
 
+    active = displayRepository.saveAndFlush(active);
+
+    Long currentLeaderMemberId = memberByUserId(active, CURRENT_LEADER_ID).getId();
+
+    // 대표자 위임
+    active.transferLeadership(FORMER_LEADER_ID, currentLeaderMemberId);
+    displayRepository.flush();
+
+    // 삭제된 전시는 탈퇴 대상 및 참여 전시 목록에서 제외되어야 함
     Display deleted = displayWithLeader("deleted-target", FORMER_LEADER_ID);
+
     memberByUserId(deleted, FORMER_LEADER_ID).changeRole(TeamMemberRole.MANAGER);
+
     deleted.delete();
     displayRepository.saveAndFlush(deleted);
 
+    // 회원탈퇴 대상 전시 조회
     List<Display> withdrawalTargets =
         displayRepository.findWithdrawalTargetDisplaysByUserId(FORMER_LEADER_ID);
+
+    // 화면용 참여 전시 조회
     List<Display> screenParticipations =
         displayRepository.findParticipatedDisplaysByUserId(FORMER_LEADER_ID);
 
+    // 1. 대표자 위임 후 소유자가 새로운 대표자로 변경되어야 함
+    assertThat(active.getOwnerUserId().value()).isEqualTo(CURRENT_LEADER_ID);
+
+    // 2. 기존 대표자는 탈퇴 대상 전시에 포함되어야 함
     assertThat(withdrawalTargets).extracting(Display::getId).containsExactly(active.getId());
-    assertThat(screenParticipations).isEmpty();
+
+    // 3. 기존 대표자는 이제 참여 전시 목록에 포함되어야 함
+    assertThat(screenParticipations).extracting(Display::getId).containsExactly(active.getId());
+
+    // 4. 기존 대표자의 역할은 MANAGER로 변경되어야 함
     assertThat(memberByUserId(active, FORMER_LEADER_ID).getRole())
         .isEqualTo(TeamMemberRole.MANAGER);
+
+    // 5. 새로운 대표자의 역할은 TEAM_LEADER로 변경되어야 함
     assertThat(memberByUserId(active, CURRENT_LEADER_ID).getRole())
         .isEqualTo(TeamMemberRole.TEAM_LEADER);
   }
