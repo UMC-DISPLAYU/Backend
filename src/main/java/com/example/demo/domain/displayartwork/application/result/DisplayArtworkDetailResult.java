@@ -44,7 +44,7 @@ public record DisplayArtworkDetailResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
         displayArtwork.getContent(),
-        displayArtwork.getType().name(),
+        displayArtwork.getType().canonical().name(),
         displayArtwork.getFieldTypes().stream().map(Enum::name).toList(),
         displayArtwork.getProductionYear(),
         displayArtwork.getSize(),

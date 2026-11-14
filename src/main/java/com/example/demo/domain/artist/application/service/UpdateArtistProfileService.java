@@ -20,7 +20,6 @@ import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
-import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -64,7 +63,11 @@ public class UpdateArtistProfileService {
       university = schoolEmailValidator.validate(univName, user.getSchoolEmail());
       univName = university.getName();
     }
-    validateActivityFields(command.fields());
+    List<ActivityCategory> previousFields =
+        areaOfActivityRepository.findByArtistProfile(profile).stream()
+            .map(AreaOfActivity::getField)
+            .toList();
+    validateActivityFields(command.fields(), previousFields);
 
     changeArtistName(profile, artistName);
     profile.updateProfileImage(profileImageUrl.value());
@@ -106,12 +109,16 @@ public class UpdateArtistProfileService {
     }
   }
 
-  private void validateActivityFields(List<ActivityCategory> fields) {
+  private void validateActivityFields(
+      List<ActivityCategory> fields, List<ActivityCategory> previousFields) {
     if (fields == null
         || fields.isEmpty()
         || fields.size() > 2
-        || fields.stream().anyMatch(field -> field == null)
-        || new HashSet<>(fields).size() != fields.size()) {
+        || fields.stream()
+            .anyMatch(
+                field ->
+                    field == null || (!field.isSelectable() && !previousFields.contains(field)))
+        || fields.stream().map(ActivityCategory::canonical).distinct().count() != fields.size()) {
       throw new ArtistException(ArtistErrorCode.INVALID_ACTIVITY_FIELDS);
     }
   }

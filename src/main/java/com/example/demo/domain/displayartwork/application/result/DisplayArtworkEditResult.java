@@ -63,7 +63,7 @@ public record DisplayArtworkEditResult(
         artwork.getDisplay().getId(),
         artwork.getArtworkName(),
         artwork.getContent(),
-        artwork.getType().name(),
+        artwork.getType().canonical().name(),
         artwork.getFieldTypes().stream().map(Enum::name).toList(),
         artwork.getProductionYear(),
         artwork.getMaterialMedia(),

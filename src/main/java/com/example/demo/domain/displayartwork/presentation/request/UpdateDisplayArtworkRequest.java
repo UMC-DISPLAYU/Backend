@@ -18,7 +18,10 @@ public record UpdateDisplayArtworkRequest(
     @NotBlank String artworkName,
     String content,
     ArtworkType type,
-    @Size(max = 2) List<ArtworkType> types,
+    @Schema(
+            description =
+                "작품 분야 최대 3개. 선택 가능한 분야: PAINTING, SCULPTURE, PHOTOGRAPHY, GRAPHIC, BRANDING, PRODUCT, VIDEO, SPACE, ARCHITECTURE, UX_UI, CRAFTS, OTHERS. UXUI/MEDIA/CRAFT/ETC 입력은 UX_UI/VIDEO/CRAFTS/OTHERS로 응답합니다. 기존 DESIGN/FASHION 등은 조회 및 변경 없이 유지할 때만 지원합니다.")
+        @Size(max = 3) List<ArtworkType> types,
     @NotNull @Min(1000) int productionYear,
     @NotBlank String materialMedia,
     String size,

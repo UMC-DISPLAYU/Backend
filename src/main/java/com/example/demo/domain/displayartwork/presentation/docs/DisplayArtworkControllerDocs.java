@@ -91,10 +91,10 @@ public interface DisplayArtworkControllerDocs {
       @Parameter(
               description =
                   """
-                  하위 분야 필터. **최대 2개**까지 선택할 수 있다.
-                  선택한 분야를 **모두** 가진 작품만 조회된다(AND 조건). 작품은 분야를 최대 2개 가진다.
+                  하위 분야 필터. 여러 분야를 선택할 수 있다.
+                  선택한 분야를 **모두** 가진 작품만 조회된다(AND 조건). 작품은 분야를 최대 3개 가진다.
                   비우면 전체 분야를 조회한다.
-                  예: `field=DESIGN&field=PAINTING` 또는 `field=DESIGN,PAINTING`
+                  예: `field=GRAPHIC&field=PAINTING` 또는 `field=GRAPHIC,PAINTING`
                   """)
           @RequestParam(required = false)
           @Size(max = 2) List<ArtworkType> field,

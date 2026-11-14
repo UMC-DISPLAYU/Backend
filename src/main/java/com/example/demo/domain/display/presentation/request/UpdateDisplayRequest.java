@@ -42,7 +42,7 @@ public record UpdateDisplayRequest(
                       "VIDEO",
                       "SPACE",
                       "ARCHITECTURE",
-                      "UXUI",
+                      "UX_UI",
                       "CRAFTS",
                       "OTHERS"
                     }))
@@ -114,9 +114,8 @@ public record UpdateDisplayRequest(
   }
 
   @Schema(hidden = true)
-  @AssertTrue(message = "fields는 비어 있을 수 없으며 신규 전시 분야만 선택할 수 있습니다.") public boolean isFieldsValid() {
+  @AssertTrue(message = "fields는 비어 있거나 null 항목을 포함할 수 없습니다.") public boolean isFieldsValid() {
     return fields == null
-        || (!fields.isEmpty()
-            && fields.stream().allMatch(field -> field != null && field.isSelectable()));
+        || (!fields.isEmpty() && fields.stream().allMatch(field -> field != null));
   }
 }

@@ -124,11 +124,14 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
 
   private List<String> fetchFields(Long displayId) {
     return queryFactory
-        .select(fieldSelection.field.stringValue())
+        .select(fieldSelection.field)
         .from(fieldSelection)
         .where(fieldSelection.display.id.eq(displayId))
         .orderBy(fieldSelection.sortOrder.asc(), fieldSelection.id.asc())
-        .fetch();
+        .fetch()
+        .stream()
+        .map(field -> field.canonical().name())
+        .toList();
   }
 
   private List<DisplayDetailResult.ContentCategoryResult> fetchContentCategories(

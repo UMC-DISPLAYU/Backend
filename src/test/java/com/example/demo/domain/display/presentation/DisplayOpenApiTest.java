@@ -188,7 +188,7 @@ class DisplayOpenApiTest {
               "VIDEO",
               "SPACE",
               "ARCHITECTURE",
-              "UXUI",
+              "UX_UI",
               "CRAFTS",
               "OTHERS");
     }

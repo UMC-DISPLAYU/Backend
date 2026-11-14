@@ -49,7 +49,7 @@ class JpaDisplayArtworkRepositoryAdapterTest {
   @Test
   void appliesFieldFilterWhenFieldsAreGiven() {
     stubFindPreview();
-    List<ArtworkType> selected = List.of(ArtworkType.PAINTING, ArtworkType.DESIGN);
+    List<ArtworkType> selected = List.of(ArtworkType.PAINTING, ArtworkType.GRAPHIC);
 
     adapter.findPreview(PreviewFilterType.RECOMMEND, selected, null, 0, 20);
 

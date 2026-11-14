@@ -1,5 +1,10 @@
 package com.example.demo.domain.display.domain.type;
 
+import com.example.demo.global.domain.CreativeFieldCodes;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public enum DisplayField {
   PAINTING,
   SCULPTURE,
@@ -10,19 +15,33 @@ public enum DisplayField {
   VIDEO,
   SPACE,
   ARCHITECTURE,
-  UXUI,
+  UX_UI,
   CRAFTS,
   OTHERS,
-  @Deprecated
   DESIGN,
-  @Deprecated
   FASHION,
-  @Deprecated
   INTERDISCIPLINARY,
-  @Deprecated
-  ILLUSTRATION;
+  ILLUSTRATION,
+  UXUI,
+  MEDIA,
+  CRAFT,
+  ETC;
+
+  public DisplayField canonical() {
+    return valueOf(CreativeFieldCodes.canonical(name()));
+  }
 
   public boolean isSelectable() {
-    return this != DESIGN && this != FASHION && this != INTERDISCIPLINARY && this != ILLUSTRATION;
+    return CreativeFieldCodes.isSelectable(name());
+  }
+
+  public static DisplayField fromCode(String code) {
+    return valueOf(CreativeFieldCodes.canonical(code));
+  }
+
+  public Set<DisplayField> storedAliases() {
+    return Arrays.stream(values())
+        .filter(value -> value.canonical() == canonical())
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

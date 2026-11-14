@@ -141,7 +141,7 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   void findPreviewReturnsAllArtworksWhenFieldFilterIsIgnored() {
     Display display = persistedDisplay();
     persistArtwork(display, "회화 작품", List.of(ArtworkType.PAINTING), 0);
-    persistArtwork(display, "디자인 작품", List.of(ArtworkType.DESIGN), 1);
+    persistArtwork(display, "디자인 작품", List.of(ArtworkType.GRAPHIC), 1);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
@@ -157,7 +157,7 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
     Display display = persistedDisplay();
     persistArtwork(display, "회화만", List.of(ArtworkType.PAINTING), 0);
     persistArtwork(display, "회화와 사진", List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY), 1);
-    persistArtwork(display, "디자인만", List.of(ArtworkType.DESIGN), 2);
+    persistArtwork(display, "디자인만", List.of(ArtworkType.GRAPHIC), 2);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
@@ -231,7 +231,7 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
     Display display = persistedDisplay();
     DisplayArtwork saved =
         jpaRepository.saveAndFlush(
-            buildArtwork(display, "작품", List.of(ArtworkType.PAINTING, ArtworkType.DESIGN), 0));
+            buildArtwork(display, "작품", List.of(ArtworkType.PAINTING, ArtworkType.GRAPHIC), 0));
     Long keptRowId =
         saved.getFields().stream()
             .filter(field -> field.getField() == ArtworkType.PAINTING)
@@ -242,13 +242,13 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
 
     DisplayArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
     loaded.changeContent(
-        "수정된 작품", "설명", List.of(ArtworkType.PAINTING, ArtworkType.MEDIA), 2026, "재료", "크기", "포인트");
+        "수정된 작품", "설명", List.of(ArtworkType.PAINTING, ArtworkType.VIDEO), 2026, "재료", "크기", "포인트");
     jpaRepository.saveAndFlush(loaded);
     entityManager.clear();
 
     DisplayArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
     assertThat(reloaded.getFieldTypes())
-        .containsExactlyInAnyOrder(ArtworkType.PAINTING, ArtworkType.MEDIA);
+        .containsExactlyInAnyOrder(ArtworkType.PAINTING, ArtworkType.VIDEO);
     assertThat(
             reloaded.getFields().stream()
                 .filter(field -> field.getField() == ArtworkType.PAINTING)

@@ -733,6 +733,16 @@ public class Display extends SoftDeleteBaseEntity {
 
   public void changeDisplayFields(List<DisplayField> displayFields) {
     List<DisplayFieldSelection> targetSelections = toFieldSelections(displayFields);
+    if (targetSelections.stream()
+        .anyMatch(
+            target ->
+                !target.getField().isSelectable()
+                    && fieldSelections.stream()
+                        .noneMatch(existing -> existing.getField() == target.getField()))) {
+      throw new BusinessException(
+          com.example.demo.global.error.GlobalErrorCode.INVALID_INPUT_VALUE,
+          "새로 선택할 수 없는 전시 분야입니다.");
+    }
     fieldSelections.removeIf(
         selection ->
             targetSelections.stream()

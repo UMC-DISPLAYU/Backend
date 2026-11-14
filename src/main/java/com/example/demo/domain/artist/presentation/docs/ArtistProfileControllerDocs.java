@@ -183,7 +183,7 @@ public interface ArtistProfileControllerDocs {
 
   String CREATE_REQUEST_EXAMPLE =
       """
-      { "artistName": "김디유", "activityFields": ["PAINTING", "ILLUSTRATION"] }
+      { "artistName": "김디유", "activityFields": ["PAINTING", "GRAPHIC"] }
       """;
 
   String CREATE_SUCCESS_EXAMPLE =
@@ -195,7 +195,7 @@ public interface ArtistProfileControllerDocs {
           "artistName": "김디유",
           "schoolEmail": "diyu@dongguk.edu",
           "univName": "동국대학교",
-          "activityFields": ["PAINTING", "ILLUSTRATION"],
+          "activityFields": ["PAINTING", "GRAPHIC"],
           "isVerified": true
         }},
         "error": null,
@@ -215,7 +215,7 @@ public interface ArtistProfileControllerDocs {
           "schoolName": "동국대학교",
           "externalLink": "https://portfolio.example.com/diyu",
           "instagramLink": "https://www.instagram.com/diyu.artist",
-          "fields": ["PAINTING", "ILLUSTRATION"],
+          "fields": ["PAINTING", "GRAPHIC"],
           "isVerified": true
         }},
         "error": null,
@@ -231,7 +231,7 @@ public interface ArtistProfileControllerDocs {
           "profileImageUrl": "https://cdn.displayu.co.kr/artists/21/profile.jpg",
           "artistName": "김디유",
           "introduction": "회화와 디지털 아트를 작업하는 작가입니다.",
-          "fields": ["PAINTING", "ILLUSTRATION"],
+          "fields": ["PAINTING", "GRAPHIC"],
           "externalLink": "https://portfolio.example.com/diyu",
           "instagramLink": "https://www.instagram.com/diyu.artist",
           "univName": "동국대학교"
@@ -252,7 +252,7 @@ public interface ArtistProfileControllerDocs {
           "schoolName": "동국대학교",
           "externalLink": "https://portfolio.example.com/diyu",
           "instagramLink": "https://www.instagram.com/diyu.artist",
-          "fields": ["PAINTING", "ILLUSTRATION"]
+          "fields": ["PAINTING", "GRAPHIC"]
         }},
         "error": null,
         "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/artists/15/artist-profile" }

@@ -71,7 +71,7 @@ class UpdateArtistProfileServiceTest {
     assertThat(result.profileImageUrl())
         .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
     assertThat(result.artistName()).isEqualTo("newName");
-    assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
+    assertThat(result.fields()).containsExactly(ActivityCategory.GRAPHIC, ActivityCategory.VIDEO);
     assertThat(result.externalLink()).isEqualTo("https://portfolio.example.com");
     assertThat(result.instagramLink()).isEqualTo("https://www.instagram.com/example.artist");
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);
@@ -188,7 +188,7 @@ class UpdateArtistProfileServiceTest {
             null,
             "oldName",
             "작가 소개",
-            List.of(ActivityCategory.DESIGN, ActivityCategory.DESIGN),
+            List.of(ActivityCategory.GRAPHIC, ActivityCategory.GRAPHIC),
             null,
             null,
             null);
@@ -225,7 +225,7 @@ class UpdateArtistProfileServiceTest {
         "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg",
         artistName,
         "작가 소개",
-        List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),
+        List.of(ActivityCategory.GRAPHIC, ActivityCategory.VIDEO),
         externalLink,
         instagramLink,
         "한양대학교");

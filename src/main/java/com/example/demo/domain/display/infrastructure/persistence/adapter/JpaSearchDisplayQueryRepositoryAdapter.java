@@ -131,7 +131,9 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
     }
     return JPAExpressions.selectOne()
         .from(fieldSelection)
-        .where(fieldSelection.display.eq(display), fieldSelection.field.eq(query.field()))
+        .where(
+            fieldSelection.display.eq(display),
+            fieldSelection.field.in(query.field().storedAliases()))
         .exists();
   }
 

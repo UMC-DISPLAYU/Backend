@@ -104,7 +104,7 @@ class CreateDisplayArtworkServiceTest {
         1L,
         "작품명",
         "작품 설명입니다.",
-        List.of(ArtworkType.DESIGN),
+        List.of(ArtworkType.GRAPHIC),
         2026,
         "디지털 프린트",
         "100x100cm",

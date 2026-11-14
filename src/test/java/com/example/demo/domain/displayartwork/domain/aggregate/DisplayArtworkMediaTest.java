@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class DisplayArtworkMediaTest {
   @Test
   void legacyImageKeepsItsCardUrl() {
-    ArtworkImage image = artwork(List.of(ArtworkType.MEDIA)).getImages().getFirst();
+    ArtworkImage image = artwork(List.of(ArtworkType.VIDEO)).getImages().getFirst();
     assertThat(image.getMediaType()).isEqualTo(MediaType.IMAGE);
     assertThat(image.cardImageUrl()).isEqualTo(image.getImageUrl());
     assertThat(image.videoUrl()).isNull();
@@ -35,7 +35,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void videoKeepsOriginalAndThumbnailSeparate() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     artwork.replaceImages(List.of(video(ArtworkImageType.ARTWORK)));
     ArtworkImage video = artwork.getImages().getFirst();
     assertThat(video.getImageUrl()).isEqualTo("https://cdn.example/artwork/movie.mp4");
@@ -45,7 +45,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void invalidReplacementKeepsExistingChildrenAndAssociations() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     ArtworkImage original = artwork.getImages().getFirst();
     assertThatThrownBy(
             () ->
@@ -58,7 +58,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void replacingFromOwnImageViewDoesNotClearTheInput() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     ArtworkImage original = artwork.getImages().getFirst();
     artwork.replaceImages(artwork.getImages());
     assertThat(artwork.getImages()).containsExactly(original);
@@ -66,7 +66,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void legacyReplacementCannotReclassifyExistingVideoAsImage() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     ArtworkImage video = video(ArtworkImageType.ARTWORK);
     artwork.replaceImages(List.of(video));
     ArtworkImage legacyImage =
@@ -80,7 +80,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void directAdditionCannotBypassVideoLimit() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     artwork.addImage(video(ArtworkImageType.ARTWORK));
     assertThatThrownBy(() -> artwork.addImage(video(ArtworkImageType.ARTWORK)))
         .isInstanceOf(BusinessException.class);
@@ -89,7 +89,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void processVideoIsRejectedEvenWhenAnArtworkImageExists() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     assertThatThrownBy(() -> artwork.addImage(video(ArtworkImageType.WORK_PROCESS)))
         .isInstanceOf(BusinessException.class);
     assertThat(artwork.getImages()).hasSize(1);
@@ -97,7 +97,7 @@ class DisplayArtworkMediaTest {
 
   @Test
   void allowsTenArtworkItemsButRejectsElevenWithoutChangingTheTen() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     List<ArtworkImage> images =
         IntStream.range(0, 10)
             .mapToObj(

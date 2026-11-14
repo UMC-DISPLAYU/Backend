@@ -81,12 +81,12 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @BatchSize(size = 50)
   private final List<ArtworkImage> images = new ArrayList<>();
 
-  /** 작품 분야. 최대 2개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
+  /** 작품 분야. 최대 3개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @BatchSize(size = 50)
   private final List<ArtworkField> fields = new ArrayList<>();
 
-  private static final int MAX_FIELDS = 2;
+  private static final int MAX_FIELDS = 3;
 
   protected DisplayArtwork() {}
 
@@ -217,7 +217,12 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
    * <p>{@code type} 컬럼은 아직 여러 조회와 응답이 사용하므로, 첫 번째 분야를 그대로 반영해 둘을 어긋나지 않게 유지한다.
    */
   public void replaceFields(List<ArtworkType> newFields) {
-    List<ArtworkType> distinct = requireOneOrTwoFields(newFields);
+    List<ArtworkType> distinct = requireOneToThreeFields(newFields);
+    if (distinct.stream()
+        .anyMatch(
+            field -> !field.isSelectable() && !getFieldTypes().contains(field) && type != field)) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD);
+    }
     // 전체를 지우고 다시 넣으면, 유지되는 분야가 같은 값으로 다시 INSERT되어 유니크 제약에 걸린다.
     // (Hibernate가 고아 삭제보다 INSERT를 먼저 내보내는 경우가 있다) 그래서 차이만 반영한다.
     fields.removeIf(existing -> !distinct.contains(existing.getField()));
@@ -233,15 +238,15 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   }
 
   public List<ArtworkType> getFieldTypes() {
-    return fields.stream().map(ArtworkField::getField).toList();
+    return fields.stream().map(field -> field.getField().canonical()).distinct().toList();
   }
 
-  private static List<ArtworkType> requireOneOrTwoFields(List<ArtworkType> newFields) {
-    if (newFields == null || newFields.isEmpty()) {
+  private static List<ArtworkType> requireOneToThreeFields(List<ArtworkType> newFields) {
+    if (newFields == null || newFields.isEmpty() || newFields.stream().anyMatch(Objects::isNull)) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
     }
     // 같은 분야를 두 번 보내는 것은 1개 지정과 같으므로 중복을 제거한 뒤 개수를 따진다.
-    List<ArtworkType> distinct = newFields.stream().distinct().toList();
+    List<ArtworkType> distinct = newFields.stream().map(ArtworkType::canonical).distinct().toList();
     if (distinct.size() > MAX_FIELDS) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
     }

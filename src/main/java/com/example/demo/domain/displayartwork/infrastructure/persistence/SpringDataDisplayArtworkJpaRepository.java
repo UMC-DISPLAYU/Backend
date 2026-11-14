@@ -106,7 +106,12 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
         AND (:requireGraduation = false OR display.displayType
              = com.example.demo.domain.display.domain.type.DisplayType.GRADUATION)
         AND (:ignoreFields = true
-             OR (SELECT COUNT(artworkField)
+             OR (SELECT COUNT(DISTINCT CASE
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.MEDIA THEN 'VIDEO'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.CRAFT THEN 'CRAFTS'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.ETC THEN 'OTHERS'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.UXUI THEN 'UX_UI'
+                   ELSE CAST(artworkField.field AS string) END)
                  FROM ArtworkField artworkField
                  WHERE artworkField.displayArtwork = artwork
                    AND artworkField.field IN :fields) = :fieldCount)

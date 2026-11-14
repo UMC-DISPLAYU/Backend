@@ -13,7 +13,6 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkL
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
-import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
@@ -30,7 +29,6 @@ import com.example.demo.domain.displayartwork.presentation.response.DisplayArtwo
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.file.domain.MediaType;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -260,7 +258,7 @@ public class DisplayArtworkPresentationMapper {
         request.displayId(),
         request.artworkName(),
         request.content(),
-        toArtworkTypes(request.resolvedTypes()),
+        request.resolvedTypes(),
         request.productionYear(),
         request.materialMedia(),
         request.size(),
@@ -285,26 +283,6 @@ public class DisplayArtworkPresentationMapper {
         image.caption(),
         image.width(),
         image.height());
-  }
-
-  private List<ArtworkType> toArtworkTypes(List<CreateDisplayArtworkRequest.Field> fields) {
-    return fields.stream().map(this::toArtworkType).toList();
-  }
-
-  // API에 노출하는 분야 값(Field)과 도메인 타입(ArtworkType)이 별개라 여기서 명시적으로 변환한다.
-  private ArtworkType toArtworkType(CreateDisplayArtworkRequest.Field field) {
-    return switch (field) {
-      case PAINTING -> ArtworkType.PAINTING;
-      case DESIGN -> ArtworkType.DESIGN;
-      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
-      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
-      case MEDIA -> ArtworkType.MEDIA;
-      case CRAFT -> ArtworkType.CRAFT;
-      case SCULPTURE -> ArtworkType.SCULPTURE;
-      case FASHION -> ArtworkType.FASHION;
-      case COMPLEX -> ArtworkType.COMPLEX;
-      case ETC -> ArtworkType.ETC;
-    };
   }
 
   public ReorderDisplayArtworksCommand toCommand(ReorderDisplayArtworksRequest request) {

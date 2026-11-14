@@ -153,7 +153,7 @@ public record DisplayDetailResult(
   private static class FieldResult {
 
     private static String from(DisplayFieldSelection fieldSelection) {
-      return fieldSelection.getField().name();
+      return fieldSelection.getField().canonical().name();
     }
   }
 
