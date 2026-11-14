@@ -19,7 +19,7 @@ class DisplayBookmarkEnrichmentServiceTest {
     SearchDisplayResult result =
         new SearchDisplayResult(
             List.of(exhibition(1L), exhibition(2L), exhibition(3L)),
-            new SearchDisplayResult.PaginationResult(null, 3, false));
+            new SearchDisplayResult.PaginationResult(null, 3, false, null));
 
     SearchDisplayResult enriched = service.enrich(result, 10L);
 

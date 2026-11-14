@@ -118,8 +118,9 @@ public final class DisplayApiDocs {
 
   public static final String SEARCH_SUMMARY = "전시 검색";
   public static final String SEARCH_DESCRIPTION =
-      "발행된 전시를 displayId 내림차순 커서 방식으로 검색합니다. "
-          + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다. "
+      "발행된 전시를 검색합니다. sort=LATEST(기본)는 등록순 ID 내림차순, LIKES는 현재 좋아요 수와 ID 내림차순입니다. "
+          + "좋아요순 다음 페이지는 nextCursor와 nextCursorLikeCount를 cursor와 cursorLikeCount로 함께 전달합니다. 좋아요 변경 중 페이지 스냅샷은 보장하지 않습니다. "
+          + "searchWord는 전시명·학교명·세부 소속 부분 일치이며, region=ALL이면 지역 조건을 적용하지 않습니다. "
           + "status=CLOSING_SOON은 한국 날짜 기준 이미 시작했고 오늘부터 3일 후까지 종료하는 전시를 조회합니다. 오늘과 3일 후를 모두 포함합니다.";
   public static final String SEARCH_SUCCESS_DESCRIPTION = "전시 검색 성공";
   public static final String SEARCH_SUCCESS_EXAMPLE_NAME = "Display search success";

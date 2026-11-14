@@ -148,7 +148,8 @@ public class DisplayPresentationMapper {
         new SearchDisplayResponse.CursorPaginationResponse(
             result.pagination().nextCursor(),
             result.pagination().size(),
-            result.pagination().hasNext()));
+            result.pagination().hasNext(),
+            result.pagination().nextCursorLikeCount()));
   }
 
   public DisplayMapResponse toResponse(DisplayMapResult result) {

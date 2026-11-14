@@ -3,15 +3,18 @@ package com.example.demo.domain.display.presentation.request;
 import com.example.demo.domain.display.application.query.SearchDisplayQuery;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record SearchDisplayRequest(
-    @Schema(description = "전시명 검색어. title 부분 일치로 검색합니다.", example = "졸업") String searchWord,
+    @Schema(description = "전시명·학교명·세부 소속 부분 일치 검색어.", example = "졸업") String searchWord,
     @Schema(
             description =
                 "전시 진행 상태. UPCOMING: 예정, ONGOING: 진행 중, ENDED: 종료, "
@@ -64,10 +67,30 @@ public record SearchDisplayRequest(
             example = "GRADUATION")
         DisplayType type,
     @Schema(description = "마지막으로 조회한 전시 ID. 첫 조회는 0을 전달합니다.", example = "0") @NotNull @Min(0) Long cursor,
-    @Schema(description = "조회 개수. 1 이상 100 이하입니다.", example = "20") @NotNull @Min(1) @Max(100) Integer size) {
+    @Schema(description = "조회 개수. 1 이상 100 이하입니다.", example = "20") @NotNull @Min(1) @Max(100) Integer size,
+    @Schema(description = "LATEST: 등록순(ID 내림차순), LIKES: 현재 좋아요 수 내림차순. 생략하면 LATEST.")
+        DisplaySearchSort sort,
+    @Schema(description = "LIKES의 다음 페이지에서 nextCursor와 함께 전달할 nextCursorLikeCount") @Min(0) Long cursorLikeCount) {
 
   public SearchDisplayQuery toQuery() {
-    return new SearchDisplayQuery(normalizeSearchWord(), status, region, field, type, cursor, size);
+    DisplaySearchSort requestedSort = sort == null ? DisplaySearchSort.LATEST : sort;
+    if (requestedSort == DisplaySearchSort.LIKES
+        && cursor != null
+        && cursor > 0
+        && cursorLikeCount == null) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "좋아요순 다음 페이지에는 cursorLikeCount가 필요합니다.");
+    }
+    return new SearchDisplayQuery(
+        normalizeSearchWord(),
+        status,
+        region,
+        field,
+        type,
+        cursor,
+        size,
+        requestedSort,
+        cursorLikeCount);
   }
 
   private String normalizeSearchWord() {
