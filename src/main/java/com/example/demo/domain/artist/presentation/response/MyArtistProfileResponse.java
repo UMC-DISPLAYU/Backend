@@ -10,6 +10,7 @@ public record MyArtistProfileResponse(
     String introduction,
     String status,
     String schoolName,
-    String externalLink,
+    @Schema(description = "Portfolio 링크(기존 externalLink 필드)") String externalLink,
+    @Schema(description = "Instagram 링크") String instagramLink,
     List<ActivityCategory> fields,
     @Schema(description = "작가 인증 여부", example = "true") boolean isVerified) {}

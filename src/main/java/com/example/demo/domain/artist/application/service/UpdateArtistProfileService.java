@@ -55,6 +55,7 @@ public class UpdateArtistProfileService {
     ProfileImageUrl profileImageUrl = ProfileImageUrl.ofNullable(command.profileImageUrl());
     String introduction = normalize(command.introduction());
     String externalLink = normalize(command.externalLink());
+    String instagramLink = normalize(command.instagramLink());
     String univName = normalize(command.univName());
     University university = null;
     if (univName == null) {
@@ -70,7 +71,7 @@ public class UpdateArtistProfileService {
     if (university != null) {
       user.changeUniversity(university);
     }
-    profile.updateProfile(introduction, externalLink, univName);
+    profile.updateProfile(introduction, externalLink, instagramLink, univName);
     areaOfActivityRepository.deleteAllByArtistProfile(profile);
     command
         .fields()
@@ -82,6 +83,7 @@ public class UpdateArtistProfileService {
         introduction,
         List.copyOf(command.fields()),
         externalLink,
+        instagramLink,
         univName);
   }
 

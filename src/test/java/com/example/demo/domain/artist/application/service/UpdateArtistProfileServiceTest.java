@@ -66,12 +66,74 @@ class UpdateArtistProfileServiceTest {
     assertThat(user.getUnivName()).isEqualTo("한양대학교");
     assertThat(profile.getIntroduction()).isEqualTo("작가 소개");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
+    assertThat(profile.getInstagramUrl()).isEqualTo("https://www.instagram.com/example.artist");
     assertThat(profile.getUnivName()).isEqualTo("한양대학교");
     assertThat(result.profileImageUrl())
         .isEqualTo("https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg");
     assertThat(result.artistName()).isEqualTo("newName");
     assertThat(result.fields()).containsExactly(ActivityCategory.DESIGN, ActivityCategory.VIDEO);
+    assertThat(result.externalLink()).isEqualTo("https://portfolio.example.com");
+    assertThat(result.instagramLink()).isEqualTo("https://www.instagram.com/example.artist");
     verify(areaOfActivityRepository).deleteAllByArtistProfile(profile);
+  }
+
+  @Test
+  void updatesOnlyInstagramLink() {
+    User user = verifiedUser("artist");
+    ArtistProfile profile =
+        ArtistProfile.create(
+            user, "artist", "artist@du.ac.kr", "기존대학교", "https://portfolio.example.com");
+    profile.updateProfile(
+        null, "https://portfolio.example.com", "https://www.instagram.com/old.artist", "기존대학교");
+    prepare(user, profile);
+
+    service.execute(
+        command("artist", "https://portfolio.example.com", "https://www.instagram.com/new.artist"));
+
+    assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
+    assertThat(profile.getInstagramUrl()).isEqualTo("https://www.instagram.com/new.artist");
+  }
+
+  @Test
+  void updatesOnlyPortfolioLink() {
+    User user = verifiedUser("artist");
+    ArtistProfile profile =
+        ArtistProfile.create(
+            user, "artist", "artist@du.ac.kr", "기존대학교", "https://old-portfolio.example.com");
+    profile.updateProfile(
+        null,
+        "https://old-portfolio.example.com",
+        "https://www.instagram.com/example.artist",
+        "기존대학교");
+    prepare(user, profile);
+
+    service.execute(
+        command(
+            "artist",
+            "https://new-portfolio.example.com",
+            "https://www.instagram.com/example.artist"));
+
+    assertThat(profile.getPortfolioUrl()).isEqualTo("https://new-portfolio.example.com");
+    assertThat(profile.getInstagramUrl()).isEqualTo("https://www.instagram.com/example.artist");
+  }
+
+  @Test
+  void updatesInstagramAndPortfolioLinksTogether() {
+    User user = verifiedUser("artist");
+    ArtistProfile profile = ArtistProfile.create(user, "artist", "artist@du.ac.kr", "기존대학교", null);
+    prepare(user, profile);
+
+    UpdateArtistProfileResult result =
+        service.execute(
+            command(
+                "artist",
+                "https://portfolio.example.com",
+                "https://www.instagram.com/example.artist"));
+
+    assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
+    assertThat(profile.getInstagramUrl()).isEqualTo("https://www.instagram.com/example.artist");
+    assertThat(result.externalLink()).isEqualTo("https://portfolio.example.com");
+    assertThat(result.instagramLink()).isEqualTo("https://www.instagram.com/example.artist");
   }
 
   @Test
@@ -128,6 +190,7 @@ class UpdateArtistProfileServiceTest {
             "작가 소개",
             List.of(ActivityCategory.DESIGN, ActivityCategory.DESIGN),
             null,
+            null,
             null);
 
     assertThatExceptionOfType(ArtistException.class)
@@ -151,13 +214,20 @@ class UpdateArtistProfileServiceTest {
   }
 
   private UpdateArtistProfileCommand command(String artistName) {
+    return command(
+        artistName, "https://portfolio.example.com", "https://www.instagram.com/example.artist");
+  }
+
+  private UpdateArtistProfileCommand command(
+      String artistName, String externalLink, String instagramLink) {
     return new UpdateArtistProfileCommand(
         USER_ID,
         "https://d1tdgnysscm2va.cloudfront.net/images/user/profile.jpg",
         artistName,
         "작가 소개",
         List.of(ActivityCategory.DESIGN, ActivityCategory.VIDEO),
-        "https://portfolio.example.com",
+        externalLink,
+        instagramLink,
         "한양대학교");
   }
 }

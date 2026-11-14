@@ -40,6 +40,7 @@ public class GetArtistProfileService {
         profile.getIntroduction(),
         profile.getUnivName(),
         profile.getPortfolioUrl(),
+        profile.getInstagramUrl(),
         areaOfActivityRepository.findByArtistProfile(profile).stream()
             .map(area -> area.getField())
             .toList(),

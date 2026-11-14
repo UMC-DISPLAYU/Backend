@@ -42,6 +42,7 @@ public class ArtistProfileMapper {
         "VERIFIED",
         result.schoolName(),
         result.externalLink(),
+        result.instagramLink(),
         result.fields(),
         result.isVerified());
   }
@@ -53,6 +54,7 @@ public class ArtistProfileMapper {
         result.introduction(),
         result.schoolName(),
         result.externalLink(),
+        result.instagramLink(),
         result.fields());
   }
 
@@ -64,6 +66,7 @@ public class ArtistProfileMapper {
         request.introduction(),
         request.fields(),
         request.externalLink(),
+        request.instagramLink(),
         request.univName());
   }
 
@@ -74,6 +77,7 @@ public class ArtistProfileMapper {
         result.introduction(),
         result.fields(),
         result.externalLink(),
+        result.instagramLink(),
         result.univName());
   }
 }
