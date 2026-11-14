@@ -12,5 +12,7 @@ public record DisplayMemberListResult(
       boolean loggedIn,
       boolean artistVerified,
       boolean accepted,
-      String role) {}
+      String role,
+      String nickname,
+      Long invitationId) {}
 }

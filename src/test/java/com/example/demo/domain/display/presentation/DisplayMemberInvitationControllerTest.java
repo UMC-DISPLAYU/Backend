@@ -80,6 +80,8 @@ class DisplayMemberInvitationControllerTest {
 
   @Autowired private EntityManager entityManager;
 
+  @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
   @Test
   void inviteCreatesPendingDisplayMemberInvitation() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
@@ -745,6 +747,217 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void leaderCanCancelPendingInvitationAndRetryAndReinvite() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-leader"));
+    User invitee = userJpaRepository.save(user("cancel-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.status").value("CANCELLED"));
+    }
+    entityManager.flush();
+    entityManager.clear();
+    DisplayInvitation cancelled = invitationJpaRepository.findById(invitationId).orElseThrow();
+    assertThat(cancelled.getStatus()).isEqualTo(DisplayInvitationStatus.CANCELLED);
+    assertThat(cancelled.getRespondedAt()).isNotNull();
+    mockMvc
+        .perform(get("/api/v1/display/{id}/members", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(0));
+    mockMvc
+        .perform(
+            get("/api/v1/display-invitations/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.invitations.length()").value(0));
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{id}/accept", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("작가")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_ALREADY_CANCELLED"));
+    assertThat(invite(display.getId(), leader.getId(), invitee.getId())).isNotEqualTo(invitationId);
+  }
+
+  @Test
+  void cancellationRequiresLeaderEvenWhenAlreadyCancelled() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-auth-leader"));
+    User invitee = userJpaRepository.save(user("cancel-auth-invitee"));
+    User outsider = userJpaRepository.save(user("cancel-auth-outsider"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    for (Long userId : List.of(invitee.getId(), outsider.getId())) {
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(userId)))
+          .andExpect(status().isForbidden());
+    }
+    invitationJpaRepository
+        .findById(invitationId)
+        .orElseThrow()
+        .cancel(LocalDateTime.of(2026, 7, 22, 9, 0));
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(outsider.getId())))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void acceptedOrRejectedInvitationsCannotBeCancelled() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-terminal-leader"));
+    for (DisplayInvitationStatus state :
+        List.of(DisplayInvitationStatus.ACCEPTED, DisplayInvitationStatus.REJECTED)) {
+      User invitee = userJpaRepository.save(user("cancel-terminal-" + state.name()));
+      Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+      Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+      DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
+      if (state == DisplayInvitationStatus.ACCEPTED) {
+        invitation.accept(LocalDateTime.of(2026, 7, 22, 9, 0));
+      } else {
+        invitation.reject(LocalDateTime.of(2026, 7, 22, 9, 0));
+      }
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+          .andExpect(status().isConflict());
+      assertThat(invitation.getStatus()).isEqualTo(state);
+    }
+  }
+
+  @Test
+  void cancelledDisplayAndUnknownInvitationReturnNotFound() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-deleted-leader"));
+    User invitee = userJpaRepository.save(user("cancel-deleted-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    display.delete();
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", Long.MAX_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void memberListsExposeBasicNicknameAndPendingInvitationId() throws Exception {
+    User leader = userJpaRepository.save(user("basic-nickname"));
+    User invitee = userJpaRepository.save(user("pending-nickname"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    mockMvc
+        .perform(get("/api/v1/display/{id}/members", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.memberAccept[0].nickname").value("basic-nickname"))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].displayNickname").value("전시 리더"))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].invitationId").value(nullValue()))
+        .andExpect(jsonPath("$.success.data.memberPending[0].nickname").value("pending-nickname"))
+        .andExpect(jsonPath("$.success.data.memberPending[0].invitationId").value(invitationId));
+    mockMvc
+        .perform(
+            patch("/api/v1/display/me/nickname")
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateNicknameRequest(display.getId(), "새 전시 작가명")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.nickname").value("basic-nickname"))
+        .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 작가명"));
+  }
+
+  @Test
+  @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+  void concurrentAcceptAndCancelProduceExactlyOneTerminalState() throws Exception {
+    var transactions =
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+    long[] ids =
+        transactions.execute(
+            status -> {
+              User leader = userJpaRepository.saveAndFlush(user("race-leader"));
+              User invitee = userJpaRepository.saveAndFlush(user("race-invitee"));
+              Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+              return new long[] {leader.getId(), invitee.getId(), display.getId()};
+            });
+    try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+      Long invitationId = invite(ids[2], ids[0], ids[1]);
+      var ready = new java.util.concurrent.CountDownLatch(2);
+      var start = new java.util.concurrent.CountDownLatch(1);
+      var accepted =
+          executor.submit(
+              () -> {
+                ready.countDown();
+                if (!start.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                  throw new AssertionError("race start timed out");
+                return mockMvc
+                    .perform(
+                        post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
+                            .header(HttpHeaders.AUTHORIZATION, bearer(ids[1]))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(acceptRequest("경합 작가")))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+              });
+      var cancelled =
+          executor.submit(
+              () -> {
+                ready.countDown();
+                if (!start.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                  throw new AssertionError("race start timed out");
+                return mockMvc
+                    .perform(
+                        delete("/api/v1/display-invitations/{invitationId}", invitationId)
+                            .header(HttpHeaders.AUTHORIZATION, bearer(ids[0])))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+              });
+      assertThat(ready.await(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+      start.countDown();
+      int acceptStatus = accepted.get(10, java.util.concurrent.TimeUnit.SECONDS);
+      int cancelStatus = cancelled.get(10, java.util.concurrent.TimeUnit.SECONDS);
+      assertThat(List.of(acceptStatus, cancelStatus)).containsExactlyInAnyOrder(200, 409);
+      transactions.executeWithoutResult(
+          status -> {
+            DisplayInvitation invitation =
+                invitationJpaRepository.findById(invitationId).orElseThrow();
+            boolean memberExists =
+                teamMemberJpaRepository
+                    .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                        ids[2], ids[1]);
+            assertThat(invitation.getStatus())
+                .isEqualTo(
+                    acceptStatus == 200
+                        ? DisplayInvitationStatus.ACCEPTED
+                        : DisplayInvitationStatus.CANCELLED);
+            assertThat(memberExists).isEqualTo(acceptStatus == 200);
+          });
+    } finally {
+      transactions.executeWithoutResult(
+          status -> {
+            displayJpaRepository.deleteById(ids[2]);
+            displayJpaRepository.flush();
+            userJpaRepository.deleteById(ids[1]);
+            userJpaRepository.deleteById(ids[0]);
+          });
+    }
   }
 
   private Long invite(Long displayId, Long leaderUserId, Long inviteeUserId) throws Exception {
