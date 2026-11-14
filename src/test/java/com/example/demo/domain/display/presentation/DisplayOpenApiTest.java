@@ -237,6 +237,136 @@ class DisplayOpenApiTest {
     }
   }
 
+  @Test
+  void documentsDisplayMemberManagementAndInvitationResponses() throws Exception {
+    JsonNode document = document();
+
+    for (OperationRef ref :
+        List.of(
+            new OperationRef("/api/v1/display/{displayId}/members/{memberId}", "delete", "200"),
+            new OperationRef("/api/v1/display/{displayId}/members/{memberId}/role", "patch", "200"),
+            new OperationRef("/api/v1/display/{displayId}/leader-transfer", "post", "200"),
+            new OperationRef("/api/v1/display-invitations/displays/{displayId}", "post", "201"),
+            new OperationRef("/api/v1/display-invitations/{invitationId}/accept", "post", "200"),
+            new OperationRef("/api/v1/display-invitations/{invitationId}/reject", "post", "200"),
+            new OperationRef("/api/v1/display/{displayId}/members", "get", "200"),
+            new OperationRef("/api/v1/display/me/nickname", "patch", "200"),
+            new OperationRef("/api/v1/display-invitations/me", "get", "200"),
+            new OperationRef("/api/v1/display-invitations", "get", "200"))) {
+      JsonNode example = firstResponseExample(document, ref);
+      assertThat(example.path("resultType").asText()).as(ref.toString()).isEqualTo("SUCCESS");
+      assertThat(example.path("success").has("data")).as(ref.toString()).isTrue();
+      assertThat(example.path("error").isNull()).as(ref.toString()).isTrue();
+      assertThat(example.path("meta").path("timestamp").asText())
+          .as(ref.toString())
+          .isNotBlank()
+          .isNotEqualTo("string");
+      assertThat(example.path("meta").path("path").asText())
+          .as(ref.toString())
+          .startsWith("/api/v1/")
+          .doesNotContain("string", "{");
+      assertNoStringPlaceholder(example, ref.toString());
+    }
+
+    assertErrorCodes(
+        document,
+        "/api/v1/display/{displayId}/members/{memberId}",
+        "delete",
+        "401",
+        "UNAUTHORIZED");
+    assertErrorCodes(
+        document, "/api/v1/display/{displayId}/members/{memberId}", "delete", "403", "FORBIDDEN");
+    assertErrorCodes(
+        document,
+        "/api/v1/display/{displayId}/members/{memberId}",
+        "delete",
+        "404",
+        "DISPLAY_NOT_FOUND",
+        "DISPLAY_MEMBER_NOT_FOUND");
+    assertErrorCodes(
+        document,
+        "/api/v1/display/{displayId}/members/{memberId}",
+        "delete",
+        "409",
+        "DISPLAY_LEADER_REMOVAL_NOT_ALLOWED");
+
+    for (String path :
+        List.of(
+            "/api/v1/display/{displayId}/members/{memberId}/role",
+            "/api/v1/display/{displayId}/leader-transfer")) {
+      String method = path.endsWith("role") ? "patch" : "post";
+      assertResponseStatuses(document, path, method, "200", "400", "401", "403", "404", "409");
+    }
+
+    assertErrorCodes(
+        document,
+        "/api/v1/display-invitations/displays/{displayId}",
+        "post",
+        "409",
+        "ALREADY_WITHDRAWN_USER",
+        "ALREADY_DISPLAY_MEMBER",
+        "PENDING_DISPLAY_INVITATION_EXISTS");
+    assertErrorCodes(
+        document,
+        "/api/v1/display-invitations/{invitationId}/accept",
+        "post",
+        "403",
+        "DISPLAY_INVITATION_INVITEE_MISMATCH",
+        "ARTIST_VERIFICATION_REQUIRED");
+    assertErrorCodes(
+        document,
+        "/api/v1/display-invitations/{invitationId}/accept",
+        "post",
+        "409",
+        "DISPLAY_INVITATION_ALREADY_ACCEPTED",
+        "DISPLAY_INVITATION_ALREADY_REJECTED",
+        "ALREADY_DISPLAY_MEMBER",
+        "DISPLAY_MEMBER_CONCURRENTLY_CREATED");
+    assertErrorCodes(
+        document,
+        "/api/v1/display-invitations/{invitationId}/reject",
+        "post",
+        "409",
+        "DISPLAY_INVITATION_ALREADY_ACCEPTED",
+        "DISPLAY_INVITATION_ALREADY_REJECTED",
+        "INVALID_DISPLAY_INVITATION_STATUS");
+
+    assertResponseStatuses(
+        document,
+        "/api/v1/display-invitations/displays/{displayId}",
+        "post",
+        "201",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409");
+    assertResponseStatuses(
+        document,
+        "/api/v1/display-invitations/{invitationId}/accept",
+        "post",
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409");
+    assertResponseStatuses(
+        document,
+        "/api/v1/display-invitations/{invitationId}/reject",
+        "post",
+        "200",
+        "401",
+        "403",
+        "404",
+        "409");
+    assertResponseStatuses(document, "/api/v1/display/{displayId}/members", "get", "200", "404");
+    assertResponseStatuses(
+        document, "/api/v1/display/me/nickname", "patch", "200", "400", "401", "404");
+    assertResponseStatuses(document, "/api/v1/display-invitations/me", "get", "200", "401");
+    assertResponseStatuses(document, "/api/v1/display-invitations", "get", "200", "401");
+  }
+
   private JsonNode document() throws Exception {
     return JsonMapper.builder()
         .build()
@@ -246,6 +376,60 @@ class DisplayOpenApiTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString());
+  }
+
+  private JsonNode firstResponseExample(JsonNode document, OperationRef ref) throws Exception {
+    JsonNode examples =
+        operation(document, ref.path(), ref.method())
+            .path("responses")
+            .path(ref.status())
+            .path("content")
+            .path("application/json")
+            .path("examples");
+    assertThat(examples.isEmpty()).as(ref.toString()).isFalse();
+    JsonNode value = examples.iterator().next().path("value");
+    return value.isTextual() ? JsonMapper.builder().build().readTree(value.asText()) : value;
+  }
+
+  private void assertResponseStatuses(
+      JsonNode document, String path, String method, String... statuses) {
+    JsonNode responses = operation(document, path, method).path("responses");
+    for (String status : statuses) {
+      assertThat(responses.has(status)).as("%s %s %s", method, path, status).isTrue();
+    }
+  }
+
+  private void assertErrorCodes(
+      JsonNode document, String path, String method, String status, String... expectedCodes)
+      throws Exception {
+    JsonNode examples =
+        operation(document, path, method)
+            .path("responses")
+            .path(status)
+            .path("content")
+            .path("application/json")
+            .path("examples");
+    assertThat(examples.isEmpty()).as("%s %s %s", method, path, status).isFalse();
+    java.util.Set<String> codes = new java.util.HashSet<>();
+    for (JsonNode example : examples) {
+      JsonNode value = example.path("value");
+      JsonNode envelope =
+          value.isTextual() ? JsonMapper.builder().build().readTree(value.asText()) : value;
+      assertThat(envelope.path("resultType").asText()).isEqualTo("FAIL");
+      assertThat(envelope.path("success").isNull()).isTrue();
+      assertThat(envelope.path("meta").path("path").asText()).doesNotContain("string");
+      codes.add(envelope.path("error").path("code").asText());
+    }
+    assertThat(codes).contains(expectedCodes);
+  }
+
+  private void assertNoStringPlaceholder(JsonNode node, String operation) {
+    if (node.isTextual()) {
+      assertThat(node.asText()).as(operation).isNotEqualTo("string");
+    }
+    for (JsonNode child : node) {
+      assertNoStringPlaceholder(child, operation);
+    }
   }
 
   private void assertMediaExamples(JsonNode media) throws Exception {
@@ -341,4 +525,6 @@ class DisplayOpenApiTest {
   private JsonNode resolve(JsonNode document, JsonNode schema) {
     return schema.has("$ref") ? document.at(schema.path("$ref").asText().substring(1)) : schema;
   }
+
+  private record OperationRef(String path, String method, String status) {}
 }

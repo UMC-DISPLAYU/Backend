@@ -34,13 +34,55 @@ public interface DisplayMemberInvitationControllerDocs {
                       name = "Display invitation created",
                       value = INVITATION_SUCCESS_EXAMPLE)))
   @ApiResponse(
+      responseCode = "400",
+      description = "초대 대상 ID 오류 또는 자기 자신 초대",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "입력값 오류", value = INVITE_BAD_REQUEST_EXAMPLE),
+                @ExampleObject(name = "자기 자신 초대", value = INVITE_SELF_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = INVITE_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
       responseCode = "403",
       description = "초대 권한 없음 또는 초대 대상의 작가 인증 미완료",
       content =
           @Content(
               mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
+              examples = {
+                @ExampleObject(name = "초대 권한 없음", value = INVITE_FORBIDDEN_EXAMPLE),
+                @ExampleObject(
+                    name = "작가 인증 필요",
+                    value = INVITE_ARTIST_VERIFICATION_REQUIRED_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "404",
+      description = "전시 또는 초대 대상 사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "전시 없음", value = INVITE_DISPLAY_NOT_FOUND_EXAMPLE),
+                @ExampleObject(name = "사용자 없음", value = INVITE_USER_NOT_FOUND_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "409",
+      description = "탈퇴한 사용자, 기존 멤버 또는 대기 중인 초대",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "탈퇴한 사용자", value = INVITE_WITHDRAWN_USER_EXAMPLE),
+                @ExampleObject(name = "이미 전시 멤버", value = INVITE_ALREADY_MEMBER_EXAMPLE),
+                @ExampleObject(name = "대기 중인 초대", value = INVITE_PENDING_EXISTS_EXAMPLE)
+              }))
   ApiResponseBody<DisplayMemberInvitationResponse> invite(
       Long displayId,
       InviteDisplayMemberRequest request,
@@ -62,13 +104,53 @@ public interface DisplayMemberInvitationControllerDocs {
                       name = "Display invitation accepted",
                       value = INVITATION_ACCEPT_SUCCESS_EXAMPLE)))
   @ApiResponse(
+      responseCode = "400",
+      description = "전시 닉네임 입력값 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "닉네임 입력값 오류", value = ACCEPT_BAD_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = ACCEPT_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
       responseCode = "403",
       description = "초대 대상 불일치 또는 수락 사용자의 작가 인증 미완료",
       content =
           @Content(
               mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "작가 인증 필요", value = ARTIST_VERIFICATION_REQUIRED_EXAMPLE)))
+              examples = {
+                @ExampleObject(name = "초대 대상 불일치", value = ACCEPT_INVITEE_MISMATCH_EXAMPLE),
+                @ExampleObject(
+                    name = "작가 인증 필요",
+                    value = ACCEPT_ARTIST_VERIFICATION_REQUIRED_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "404",
+      description = "초대 또는 사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "초대 없음", value = ACCEPT_NOT_FOUND_EXAMPLE),
+                @ExampleObject(name = "사용자 없음", value = ACCEPT_USER_NOT_FOUND_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 처리된 초대, 기존 멤버 또는 동시 요청 충돌",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "이미 수락된 초대", value = ACCEPT_ALREADY_ACCEPTED_EXAMPLE),
+                @ExampleObject(name = "이미 거절된 초대", value = ACCEPT_ALREADY_REJECTED_EXAMPLE),
+                @ExampleObject(name = "이미 전시 멤버", value = ACCEPT_ALREADY_MEMBER_EXAMPLE),
+                @ExampleObject(name = "동시 멤버 생성", value = ACCEPT_CONCURRENT_MEMBER_EXAMPLE)
+              }))
   ApiResponseBody<DisplayMemberInvitationResponse> accept(
       Long invitationId,
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -97,6 +179,39 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display invitation rejected",
                       value = INVITATION_REJECT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = REJECT_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "초대 대상 불일치",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "초대 대상 불일치", value = REJECT_INVITEE_MISMATCH_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "초대 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "초대 없음", value = REJECT_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 처리되었거나 처리할 수 없는 초대",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "이미 수락된 초대", value = REJECT_ALREADY_ACCEPTED_EXAMPLE),
+                @ExampleObject(name = "이미 거절된 초대", value = REJECT_ALREADY_REJECTED_EXAMPLE),
+                @ExampleObject(name = "처리할 수 없는 상태", value = REJECT_INVALID_STATUS_EXAMPLE)
+              }))
   ApiResponseBody<DisplayMemberInvitationResponse> reject(
       Long invitationId, AuthUser user, HttpServletRequest httpRequest);
 
@@ -115,6 +230,13 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display members success",
                       value = DISPLAY_MEMBERS_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "전시 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "전시 없음", value = MEMBERS_DISPLAY_NOT_FOUND_EXAMPLE)))
   ApiResponseBody<DisplayMemberListResponse> getMembers(
       @Parameter(description = "전시 ID", example = "1") Long displayId,
       HttpServletRequest httpRequest);
@@ -131,6 +253,28 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "Display nickname updated",
                       value = DISPLAY_NICKNAME_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "전시 ID 또는 닉네임 입력값 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "입력값 오류", value = NICKNAME_BAD_REQUEST_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = NICKNAME_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "수락된 전시 멤버 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "전시 멤버 없음", value = NICKNAME_MEMBER_NOT_FOUND_EXAMPLE)))
   ApiResponseBody<DisplayMemberListResponse.TeamMemberResponse> updateMyDisplayNickname(
       UpdateMyDisplayNicknameRequest request, AuthUser user, HttpServletRequest httpRequest);
 
@@ -149,6 +293,14 @@ public interface DisplayMemberInvitationControllerDocs {
                   @ExampleObject(
                       name = "My display invitations success",
                       value = MY_INVITATIONS_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "인증 필요", value = MY_INVITATIONS_UNAUTHORIZED_EXAMPLE)))
   ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       AuthUser user, HttpServletRequest httpRequest);
 
@@ -299,7 +451,7 @@ public interface DisplayMemberInvitationControllerDocs {
       }
       """;
 
-  String ARTIST_VERIFICATION_REQUIRED_EXAMPLE =
+  String ACCEPT_ARTIST_VERIFICATION_REQUIRED_EXAMPLE =
       """
       {
         "resultType": "FAIL",
@@ -410,4 +562,68 @@ public interface DisplayMemberInvitationControllerDocs {
         }
       }
       """;
+
+  String INVITE_BAD_REQUEST_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"INVALID_INPUT_VALUE\",\"message\":\"입력값이 올바르지 않습니다.\",\"details\":[{\"field\":\"inviteeUserId\",\"message\":\"0보다 커야 합니다\"}]},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_SELF_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"SELF_INVITATION_NOT_ALLOWED\",\"message\":\"자기 자신은 초대할 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_UNAUTHORIZED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_FORBIDDEN_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_PERMISSION_DENIED\",\"message\":\"전시 멤버를 초대할 권한이 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_ARTIST_VERIFICATION_REQUIRED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"ARTIST_VERIFICATION_REQUIRED\",\"message\":\"작가 인증이 완료된 사용자만 이용할 수 있습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_DISPLAY_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_NOT_FOUND\",\"message\":\"전시를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/999\"}}";
+  String INVITE_USER_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"USER_NOT_FOUND\",\"message\":\"사용자를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_WITHDRAWN_USER_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"ALREADY_WITHDRAWN_USER\",\"message\":\"이미 탈퇴한 사용자입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_ALREADY_MEMBER_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"ALREADY_DISPLAY_MEMBER\",\"message\":\"이미 전시 멤버인 사용자입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+  String INVITE_PENDING_EXISTS_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"PENDING_DISPLAY_INVITATION_EXISTS\",\"message\":\"처리 대기 중인 전시 멤버 초대가 이미 존재합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/displays/1\"}}";
+
+  String ACCEPT_BAD_REQUEST_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"INVALID_INPUT_VALUE\",\"message\":\"입력값이 올바르지 않습니다.\",\"details\":[{\"field\":\"displayNickname\",\"message\":\"공백일 수 없습니다\"}]},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_UNAUTHORIZED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_INVITEE_MISMATCH_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_INVITEE_MISMATCH\",\"message\":\"해당 초대의 대상 사용자가 아닙니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_MEMBER_INVITATION_NOT_FOUND\",\"message\":\"전시 멤버 초대를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/999/accept\"}}";
+  String ACCEPT_USER_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"USER_NOT_FOUND\",\"message\":\"사용자를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_ALREADY_ACCEPTED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_ALREADY_ACCEPTED\",\"message\":\"이미 수락된 전시 멤버 초대입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_ALREADY_REJECTED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_ALREADY_REJECTED\",\"message\":\"이미 거절된 전시 멤버 초대입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_ALREADY_MEMBER_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"ALREADY_DISPLAY_MEMBER\",\"message\":\"이미 전시 멤버인 사용자입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+  String ACCEPT_CONCURRENT_MEMBER_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_MEMBER_CONCURRENTLY_CREATED\",\"message\":\"동시 요청으로 전시 멤버가 이미 생성되었습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/accept\"}}";
+
+  String REJECT_UNAUTHORIZED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/reject\"}}";
+  String REJECT_INVITEE_MISMATCH_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_INVITEE_MISMATCH\",\"message\":\"해당 초대의 대상 사용자가 아닙니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/reject\"}}";
+  String REJECT_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_MEMBER_INVITATION_NOT_FOUND\",\"message\":\"전시 멤버 초대를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/999/reject\"}}";
+  String REJECT_ALREADY_ACCEPTED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_ALREADY_ACCEPTED\",\"message\":\"이미 수락된 전시 멤버 초대입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/reject\"}}";
+  String REJECT_ALREADY_REJECTED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_INVITATION_ALREADY_REJECTED\",\"message\":\"이미 거절된 전시 멤버 초대입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/reject\"}}";
+  String REJECT_INVALID_STATUS_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"INVALID_DISPLAY_INVITATION_STATUS\",\"message\":\"처리할 수 없는 전시 멤버 초대 상태입니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/1/reject\"}}";
+
+  String MEMBERS_DISPLAY_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_NOT_FOUND\",\"message\":\"전시를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display/999/members\"}}";
+  String NICKNAME_BAD_REQUEST_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"INVALID_INPUT_VALUE\",\"message\":\"입력값이 올바르지 않습니다.\",\"details\":[{\"field\":\"displayNickname\",\"message\":\"공백일 수 없습니다\"}]},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display/me/nickname\"}}";
+  String NICKNAME_UNAUTHORIZED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display/me/nickname\"}}";
+  String NICKNAME_MEMBER_NOT_FOUND_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"DISPLAY_MEMBER_NOT_FOUND\",\"message\":\"전시 멤버를 찾을 수 없습니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display/me/nickname\"}}";
+  String MY_INVITATIONS_UNAUTHORIZED_EXAMPLE =
+      "{\"resultType\":\"FAIL\",\"success\":null,\"error\":{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"details\":null},\"meta\":{\"timestamp\":\"2026-11-14T04:13:15.651\",\"path\":\"/api/v1/display-invitations/me\"}}";
 }
