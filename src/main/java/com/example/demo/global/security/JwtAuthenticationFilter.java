@@ -1,6 +1,7 @@
 package com.example.demo.global.security;
 
-import com.example.demo.domain.admin.application.port.AdminAccessPort;
+import com.example.demo.domain.user.application.usecase.GetUserRoleUseCase;
+import com.example.demo.domain.user.domain.type.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final TokenProvider tokenProvider;
-  private final AdminAccessPort adminAccessPort;
+  private final GetUserRoleUseCase getUserRoleUseCase;
 
   @Override
   protected void doFilterInternal(
@@ -42,13 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       Long userId = tokenProvider.getUserId(token);
 
+      var role = getUserRoleUseCase.findActiveRole(userId);
+      if (role.isEmpty() && getUserRoleUseCase.isWithdrawn(userId)) {
+        throw new IllegalStateException("Withdrawn users cannot authenticate.");
+      }
+
       AuthUser authUser = new AuthUser(userId);
 
       UsernamePasswordAuthenticationToken authentication =
           new UsernamePasswordAuthenticationToken(
               authUser,
               null,
-              adminAccessPort.isAdmin(userId)
+              role.map(result -> result.role() == UserRole.ADMIN).orElse(false)
                   ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
                   : List.of());
 

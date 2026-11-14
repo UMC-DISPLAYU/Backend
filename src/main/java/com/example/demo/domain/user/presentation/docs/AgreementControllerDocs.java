@@ -4,6 +4,7 @@ import com.example.demo.domain.user.presentation.response.AgreementResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,31 @@ public interface AgreementControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "약관 목록 조회 성공",
-      content = @Content(mediaType = "application/json"))
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "약관 목록", value = AGREEMENT_SUCCESS_EXAMPLE)))
   ApiResponseBody<List<AgreementResponse>> getAgreements(HttpServletRequest request);
+
+  String AGREEMENT_SUCCESS_EXAMPLE =
+      """
+      {
+        "resultType": "SUCCESS",
+        "success": { "data": [
+          {
+            "agreementId": 1,
+            "code": "TERMS_OF_SERVICE",
+            "title": "서비스 이용약관",
+            "type": "SERVICE",
+            "content": "DisplayU 서비스 이용약관 내용입니다.",
+            "required": true,
+            "version": "1.0",
+            "effectiveDate": "2026-01-01",
+            "displayOrder": 1
+          }
+        ]},
+        "error": null,
+        "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/agreements" }
+      }
+      """;
 }

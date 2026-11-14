@@ -16,6 +16,8 @@ public interface DisplayRepository {
 
   List<Display> findParticipatedDisplaysByUserId(Long userId);
 
+  List<Display> findWithdrawalTargetDisplaysByUserId(Long userId);
+
   List<Display> findPublishedCreatedDisplaysByUserId(Long userId);
 
   List<Display> findPublishedParticipatedDisplaysByUserId(Long userId);
