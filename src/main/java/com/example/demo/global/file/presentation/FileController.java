@@ -67,7 +67,9 @@ public class FileController {
       description =
           "프론트엔드가 S3에 직접 파일을 업로드할 수 있는 1시간 유효 presigned PUT URL과 CloudFront 조회 URL을 발급합니다. "
               + "지원 contentType: IMAGE(image/jpeg, image/png, image/webp, image/gif), "
-              + "VIDEO(video/mp4, video/quicktime, video/webm).")
+              + "VIDEO(video/mp4, video/quicktime, video/webm). "
+              + "영상 용량은 display 200,000,000 bytes, artwork 500,000,000 bytes 이하입니다. "
+              + "영상 길이 30초/180초 제한은 프론트에서 검증하며 서버는 길이를 분석하지 않습니다.")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       description = "Presigned URL 발급 요청",
       required = true,
