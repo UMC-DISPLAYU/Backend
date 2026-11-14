@@ -46,7 +46,9 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
 
     List<DisplayMapQueryResult> results =
         displayMapQueryRepository.findMarkers(
-            query(bd("37.4900"), bd("126.9000"), bd("37.5700"), bd("127.0000"), null, null), 10);
+            query(bd("37.4900"), bd("126.9000"), bd("37.5700"), bd("127.0000"), null, null),
+            LocalDate.of(2026, 5, 20),
+            10);
 
     assertThat(results)
         .extracting(DisplayMapQueryResult::title)
@@ -68,7 +70,7 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
     DisplayMapQuery firstPageQuery =
         query(bd("37.4900"), bd("126.9000"), bd("37.5700"), bd("127.0000"), "디자인", null);
     List<DisplayMapQueryResult> firstPage =
-        displayMapQueryRepository.findMarkers(firstPageQuery, 1);
+        displayMapQueryRepository.findMarkers(firstPageQuery, LocalDate.of(2026, 5, 20), 1);
 
     DisplayMapQuery secondPageQuery =
         query(
@@ -79,10 +81,36 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
             "디자인",
             firstPage.getFirst().displayId());
     List<DisplayMapQueryResult> secondPage =
-        displayMapQueryRepository.findMarkers(secondPageQuery, 10);
+        displayMapQueryRepository.findMarkers(secondPageQuery, LocalDate.of(2026, 5, 20), 10);
 
     assertThat(firstPage).extracting(DisplayMapQueryResult::title).containsExactly("내면의 풍경");
     assertThat(secondPage).extracting(DisplayMapQueryResult::title).containsExactly("디자인 전시");
+  }
+
+  @Test
+  void returnsUpcomingAndOngoingMarkersAtDateAndViewportBoundaries() {
+    LocalDate today = LocalDate.of(2026, 5, 28);
+    Display endingToday = publishedDisplay("ending", "gallery", "37.4900", "126.9000");
+    Display startingToday = publishedDisplay("starting", "gallery", "37.5700", "127.0000");
+    startingToday.changePeriod(
+        new DisplayPeriod(today, today.plusDays(2), LocalTime.NOON, LocalTime.of(18, 0)));
+    Display upcoming = publishedDisplay("upcoming", "gallery", "37.5500", "126.9500");
+    upcoming.changePeriod(
+        new DisplayPeriod(
+            today.plusDays(1), today.plusDays(3), LocalTime.NOON, LocalTime.of(18, 0)));
+    Display ended = publishedDisplay("ended", "gallery", "37.5500", "126.9500");
+    ended.changePeriod(
+        new DisplayPeriod(
+            today.minusDays(3), today.minusDays(1), LocalTime.NOON, LocalTime.of(18, 0)));
+    jpaRepository.saveAllAndFlush(List.of(endingToday, startingToday, upcoming, ended));
+    for (String keyword : List.of("ORGANIZATION", "department")) {
+      var request =
+          new DisplayMapQuery(
+              bd("37.4900"), bd("126.9000"), bd("37.5700"), bd("127.0000"), keyword, null, 1, true);
+      assertThat(displayMapQueryRepository.findMarkers(request, today, 1))
+          .extracting(DisplayMapQueryResult::title)
+          .containsExactly("upcoming", "starting", "ending");
+    }
   }
 
   private static DisplayMapQuery query(
@@ -93,7 +121,7 @@ class JpaDisplayMapQueryRepositoryAdapterTest {
       String searchWord,
       Long cursor) {
     return new DisplayMapQuery(
-        southLatitude, westLongitude, northLatitude, eastLongitude, searchWord, cursor, 20);
+        southLatitude, westLongitude, northLatitude, eastLongitude, searchWord, cursor, 20, false);
   }
 
   private static Display publishedDisplay(

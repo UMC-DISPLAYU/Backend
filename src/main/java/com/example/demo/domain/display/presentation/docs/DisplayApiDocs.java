@@ -112,7 +112,10 @@ public final class DisplayApiDocs {
       "xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4";
 
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
-  public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
+  public static final String MAP_DESCRIPTION =
+      "현재 지도 범위의 공개된 예정·진행 중 전시를 조회합니다. searchWord는 전시명·장소명·학교명·세부 소속 부분 일치입니다. "
+          + "all=true이면 범위 안의 전체 결과를 반환하며 size를 무시합니다. cursor는 함께 전달할 수 없습니다. "
+          + "전체 조회의 pagination은 nextCursor=null, hasNext=false, size=실제 반환 개수입니다. 생략하면 기존 최대100개 페이징을 유지합니다.";
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
   public static final String MAP_SUCCESS_EXAMPLE_NAME = "Display map success";
 
