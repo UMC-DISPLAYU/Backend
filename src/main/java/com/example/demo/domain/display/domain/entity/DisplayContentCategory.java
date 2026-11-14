@@ -76,6 +76,10 @@ public class DisplayContentCategory extends BaseTimeEntity {
     return Collections.unmodifiableList(contents);
   }
 
+  public void changeSortOrder(int sortOrder) {
+    this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
+  }
+
   public void changeInfo(String name, String description) {
     this.name = requireNonBlank(name, "name");
     this.description = nullToEmpty(description);

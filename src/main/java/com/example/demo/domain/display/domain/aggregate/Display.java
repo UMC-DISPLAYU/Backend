@@ -42,9 +42,14 @@ import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -656,6 +661,44 @@ public class Display extends SoftDeleteBaseEntity {
             null, name, description, nextContentCategorySortOrder(), List.of());
     addContentCategory(category);
     return category;
+  }
+
+  public DisplayContentCategory createContentCategory(
+      String name,
+      String description,
+      List<String> imageUrls,
+      DisplayContentStatus status,
+      UserId userId) {
+    if (imageUrls == null) {
+      return createContentCategory(name, description);
+    }
+    if (imageUrls.isEmpty()) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
+    }
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            null, name, description, nextContentCategorySortOrder(), List.of());
+    imageUrls.forEach(imageUrl -> category.createContent(imageUrl, status, userId));
+    addContentCategory(category);
+    return category;
+  }
+
+  public List<DisplayContentCategory> reorderContentCategories(List<Long> orderedCategoryIds) {
+    if (orderedCategoryIds == null || orderedCategoryIds.size() != contentCategories.size()) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    Map<Long, DisplayContentCategory> categoriesById =
+        contentCategories.stream()
+            .collect(Collectors.toMap(DisplayContentCategory::getId, Function.identity()));
+    Set<Long> orderedIdSet = new HashSet<>(orderedCategoryIds);
+    if (orderedIdSet.size() != orderedCategoryIds.size()
+        || !orderedIdSet.equals(categoriesById.keySet())) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    for (int index = 0; index < orderedCategoryIds.size(); index++) {
+      categoriesById.get(orderedCategoryIds.get(index)).changeSortOrder(index);
+    }
+    return getContentCategories();
   }
 
   public DisplayContentCategory changeContentCategory(
