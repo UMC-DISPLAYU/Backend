@@ -2,7 +2,6 @@ package com.example.demo.domain.display.application.query;
 
 import com.example.demo.domain.display.application.result.DisplayScreeningDetailResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
-import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.domain.display.domain.repository.DisplayScreeningRepository;
 import com.example.demo.global.error.BusinessException;
@@ -29,7 +28,7 @@ public class GetDisplayScreeningDetailService {
             .findById(displayId)
             .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
-    DisplayScreening screening = screeningRepository.findLatestByDisplayId(displayId).orElse(null);
-    return DisplayScreeningDetailResult.from(display, screening);
+    return DisplayScreeningDetailResult.from(
+        display, screeningRepository.findAllByDisplayIdOrderByIdDesc(displayId));
   }
 }

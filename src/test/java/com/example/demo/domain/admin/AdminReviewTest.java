@@ -64,8 +64,37 @@ class AdminReviewTest {
   }
 
   @Test
+  void normalizesSearchAndPreservesExistingFilters() throws Exception {
+    when(reviews.search(new ReviewSearchQuery("전시", "REJECTED", 3L, 10)))
+        .thenReturn(new ReviewPage(List.of(), null, false));
+    mvc.perform(
+            get("/api/v1/admin/displays")
+                .param("q", "  전시  ")
+                .param("status", "REJECTED")
+                .param("cursor", "3")
+                .param("size", "10"))
+        .andExpect(status().isOk());
+    verify(reviews).search(new ReviewSearchQuery("전시", "REJECTED", 3L, 10));
+  }
+
+  @Test
+  void acceptsEmptySearchAndValidatesTrimmedLength() throws Exception {
+    for (String q : new String[] {null, "", "  ", "\t\n", "\u2003"}) {
+      assertThat(new ReviewSearchQuery(q, "PENDING_REVIEW", null, 20).q()).isNull();
+    }
+    String boundary = "가".repeat(100);
+    assertThat(new ReviewSearchQuery(" " + boundary + " ", "PENDING_REVIEW", null, 20).q())
+        .isEqualTo(boundary);
+    mvc.perform(get("/api/v1/admin/displays").param("q", "가".repeat(101)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+    verifyNoInteractions(reviews);
+  }
+
+  @Test
   void checksAuthorityBeforeEveryOperation() {
-    assertThatThrownBy(() -> service.search(8L, new ReviewSearchQuery("PENDING_REVIEW", null, 20)))
+    assertThatThrownBy(
+            () -> service.search(8L, new ReviewSearchQuery(null, "PENDING_REVIEW", null, 20)))
         .isInstanceOf(BusinessException.class);
     assertThatThrownBy(() -> service.getDetail(8L, 1L)).isInstanceOf(BusinessException.class);
     assertThatThrownBy(() -> service.approve(8L, 1L)).isInstanceOf(BusinessException.class);
@@ -76,7 +105,7 @@ class AdminReviewTest {
 
   @Test
   void returnsListWithDefaultsAndPagination() throws Exception {
-    when(reviews.search(new ReviewSearchQuery("PENDING_REVIEW", null, 20)))
+    when(reviews.search(new ReviewSearchQuery(null, "PENDING_REVIEW", null, 20)))
         .thenReturn(
             new ReviewPage(
                 List.of(
@@ -124,7 +153,7 @@ class AdminReviewTest {
             LocalDate.of(2026, 10, 7),
             null,
             null);
-    when(reviews.search(new ReviewSearchQuery("REJECTED", 3L, 10)))
+    when(reviews.search(new ReviewSearchQuery(null, "REJECTED", 3L, 10)))
         .thenReturn(new ReviewPage(List.of(summary), null, false));
     var mapped = Mappers.getMapper(AdminReviewMapper.class).toResponse(summary);
     assertThat(mapped.requesterId()).isNull();
@@ -141,7 +170,7 @@ class AdminReviewTest {
         .andExpect(jsonPath("$.success.data.items[0].posterImageUrl").doesNotExist())
         .andExpect(jsonPath("$.success.data.nextCursor").doesNotExist())
         .andExpect(jsonPath("$.success.data.hasNext").value(false));
-    verify(reviews).search(new ReviewSearchQuery("REJECTED", 3L, 10));
+    verify(reviews).search(new ReviewSearchQuery(null, "REJECTED", 3L, 10));
   }
 
   @Test
@@ -166,7 +195,8 @@ class AdminReviewTest {
                 "전시대학교",
                 "전시 대표자",
                 null,
-                null));
+                null,
+                List.of()));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
@@ -197,7 +227,8 @@ class AdminReviewTest {
             "전시대학교",
             null,
             null,
-            null);
+            null,
+            List.of());
     when(reviews.getDetail(3L)).thenReturn(detail);
     assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();
     mvc.perform(get("/api/v1/admin/displays/3"))

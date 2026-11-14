@@ -51,5 +51,16 @@ public final class ReviewResponses {
       @Schema(
               description = "심사 요청 취소자 ID. 취소되지 않았으면 null입니다.",
               types = {"integer", "null"})
-          Long cancelledBy) {}
+          Long cancelledBy,
+      List<History> history) {}
+
+  public record History(
+      Long screeningId,
+      String status,
+      Long requesterId,
+      Instant requestedAt,
+      Instant processedAt,
+      Long reviewerId,
+      String rejectionReason,
+      Long cancelledBy) {}
 }

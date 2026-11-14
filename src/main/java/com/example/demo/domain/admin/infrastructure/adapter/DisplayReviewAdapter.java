@@ -40,7 +40,7 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
     DisplayScreeningPageResult result =
         searchService.search(
             new DisplayScreeningSearchQuery(
-                DisplayStatus.valueOf(query.status()), query.cursor(), query.size()));
+                query.q(), DisplayStatus.valueOf(query.status()), query.cursor(), query.size()));
     return new ReviewPage(
         result.items().stream().map(this::toSummary).toList(),
         result.nextCursor(),
@@ -68,7 +68,20 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.school(),
         result.leaderName(),
         result.screeningStatus(),
-        result.cancelledBy());
+        result.cancelledBy(),
+        result.history().stream()
+            .map(
+                item ->
+                    new ReviewDetail.History(
+                        item.screeningId(),
+                        item.status(),
+                        item.requesterId(),
+                        item.requestedAt(),
+                        item.processedAt(),
+                        item.reviewerId(),
+                        item.rejectionReason(),
+                        item.cancelledBy()))
+            .toList());
   }
 
   @Override

@@ -38,7 +38,7 @@ class DisplayReviewAdapterTest {
   @Test
   void searchMapsAdminContractToDisplayUseCase() {
     DisplayScreeningSearchQuery displayQuery =
-        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, 10L, 2);
+        new DisplayScreeningSearchQuery("전시", DisplayStatus.PENDING_REVIEW, 10L, 2);
     DisplayScreeningSummaryResult item =
         new DisplayScreeningSummaryResult(
             9L,
@@ -55,7 +55,7 @@ class DisplayReviewAdapterTest {
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 
-    ReviewPage result = adapter.search(new ReviewSearchQuery("PENDING_REVIEW", 10L, 2));
+    ReviewPage result = adapter.search(new ReviewSearchQuery("전시", "PENDING_REVIEW", 10L, 2));
 
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().leaderName()).isEqualTo("대표자");
@@ -88,7 +88,8 @@ class DisplayReviewAdapterTest {
                 "학교",
                 null,
                 null,
-                null));
+                null,
+                List.of()));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);

@@ -22,4 +22,15 @@ public record ReviewDetail(
     String school,
     String leaderName,
     String screeningStatus,
-    Long cancelledBy) {}
+    Long cancelledBy,
+    List<History> history) {
+  public record History(
+      Long screeningId,
+      String status,
+      Long requesterId,
+      Instant requestedAt,
+      Instant processedAt,
+      Long reviewerId,
+      String rejectionReason,
+      Long cancelledBy) {}
+}

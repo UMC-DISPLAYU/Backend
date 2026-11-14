@@ -30,9 +30,11 @@ public record DisplayScreeningDetailResult(
     String school,
     String leaderName,
     String screeningStatus,
-    Long cancelledBy) {
+    Long cancelledBy,
+    List<DisplayScreeningHistoryResult> history) {
 
-  public static DisplayScreeningDetailResult from(Display display, DisplayScreening screening) {
+  public static DisplayScreeningDetailResult from(Display display, List<DisplayScreening> history) {
+    DisplayScreening screening = history.isEmpty() ? null : history.getFirst();
     return new DisplayScreeningDetailResult(
         display.getId(),
         display.getTitle(),
@@ -58,10 +60,11 @@ public record DisplayScreeningDetailResult(
         display.getOrganization(),
         uniqueLeaderName(display),
         screening == null ? null : screening.getStatus().name(),
-        screening == null ? null : screening.getCancelledBy());
+        screening == null ? null : screening.getCancelledBy(),
+        history.stream().map(DisplayScreeningHistoryResult::from).toList());
   }
 
-  private static Instant toInstant(java.time.LocalDateTime value) {
+  static Instant toInstant(java.time.LocalDateTime value) {
     return value == null ? null : value.toInstant(ZoneOffset.UTC);
   }
 
