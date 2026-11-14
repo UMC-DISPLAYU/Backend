@@ -83,7 +83,7 @@ class AdminContentDeletionAuthorizationIntegrationTest {
     entityManager.clear();
     for (String type : List.of("DISPLAY", "ARTWORK")) {
       mvc.perform(request(type).header("Authorization", "Bearer " + token))
-          .andExpect(status().isForbidden());
+          .andExpect(status().is(withdraw ? 401 : 403));
     }
     verifyNoInteractions(deletions);
   }

@@ -83,6 +83,40 @@ public final class UserApiDocs {
       }
       """;
 
+  public static final String DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "DISPLAY_LEADER_REMOVAL_NOT_ALLOWED",
+          "message": "전시 대표자는 내보낼 수 없습니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-11-14T20:00:00",
+          "path": "/api/v1/users/me"
+        }
+      }
+      """;
+
+  public static final String WITHDRAW_UNAUTHORIZED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "UNAUTHORIZED",
+          "message": "인증이 필요합니다.",
+          "details": null
+        },
+        "meta": {
+          "timestamp": "2026-11-14T20:00:00",
+          "path": "/api/v1/users/me"
+        }
+      }
+      """;
+
   public static final String CHANGE_NICKNAME_SUCCESS_EXAMPLE =
       """
       {

@@ -100,7 +100,7 @@ class AdminUserStatusAuthorizationIntegrationTest {
     }
     entityManager.clear();
     mvc.perform(request(target.getId(), "SUSPENDED").header("Authorization", "Bearer " + token))
-        .andExpect(status().isForbidden());
+        .andExpect(status().is(withdraw ? 401 : 403));
     verifyNoInteractions(changes);
   }
 

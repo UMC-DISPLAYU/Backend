@@ -15,6 +15,9 @@ public interface SpringDataTeamMemberJpaRepository extends JpaRepository<TeamMem
   Optional<TeamMember> findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
       Long displayId, Long userId);
 
+  boolean existsByUserIdValueAndRoleAndAcceptedTrueAndDeletedAtIsNull(
+      Long userId, TeamMemberRole role);
+
   List<TeamMember> findByDisplayIdInAndRoleAndAcceptedTrueAndDeletedAtIsNull(
       Collection<Long> displayIds, TeamMemberRole role);
 }

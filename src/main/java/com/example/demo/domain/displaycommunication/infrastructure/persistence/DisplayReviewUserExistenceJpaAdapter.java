@@ -32,7 +32,7 @@ public class DisplayReviewUserExistenceJpaAdapter implements UserExistenceReposi
     if (userIds.isEmpty()) {
       return Map.of();
     }
-    return repository.findByUserIdInAndDeletedAtIsNull(userIds).stream()
+    return repository.findIncludingWithdrawnByUserIdIn(userIds).stream()
         .collect(
             Collectors.toMap(DisplayReviewUserReferenceJpaEntity::getUserId, mapper::toUserInfo));
   }

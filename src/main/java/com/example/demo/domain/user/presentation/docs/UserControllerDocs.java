@@ -2,9 +2,8 @@ package com.example.demo.domain.user.presentation.docs;
 
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.ALREADY_WITHDRAWN_USER_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHANGE_NICKNAME_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DUPLICATE_NICKNAME_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.EXPIRED_ACCESS_TOKEN_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
@@ -14,6 +13,7 @@ import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAM
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NICKNAME_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_SEARCH_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_UNAUTHORIZED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
@@ -26,7 +26,6 @@ import com.example.demo.domain.user.presentation.response.UpdateMyProfileRespons
 import com.example.demo.domain.user.presentation.response.UserSearchResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -84,13 +83,15 @@ public interface UserControllerDocs {
   ApiResponseBody<UpdateMyProfileResponse> updateMe(
       AuthUser user, UpdateMyProfileRequest request, HttpServletRequest httpRequest);
 
-  @Hidden
   @Operation(
       summary = "회원 탈퇴",
       description =
           """
           로그인한 사용자를 즉시 탈퇴 처리합니다.
 
+          - 대표(`TEAM_LEADER`)로 참여 중인 전시가 있으면 대표자 위임 또는 전시 삭제 후 탈퇴해야 합니다.
+          - 일반 참여 전시에서는 전시 나가기와 동일한 규칙으로 참여 관계와 작가 연결 작품을 정리합니다.
+          - 댓글·후기·방명록은 유지하고 작성자 정보를 `탈퇴한 회원`으로 익명화합니다.
           - 이미 탈퇴한 사용자는 `ALREADY_WITHDRAWN_USER`를 반환합니다.
           - 존재하지 않는 사용자는 `USER_NOT_FOUND`를 반환합니다.
           """)
@@ -103,12 +104,14 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "탈퇴 성공", value = WITHDRAW_USER_SUCCESS_EXAMPLE)))
   @ApiResponse(
       responseCode = "409",
-      description = "이미 탈퇴한 사용자",
+      description = "이미 탈퇴한 사용자 또는 대표 전시 보유",
       content =
           @Content(
               mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "이미 탈퇴한 사용자", value = ALREADY_WITHDRAWN_USER_EXAMPLE)))
+              examples = {
+                @ExampleObject(name = "이미 탈퇴한 사용자", value = ALREADY_WITHDRAWN_USER_EXAMPLE),
+                @ExampleObject(name = "대표 전시 보유", value = DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE)
+              }))
   @ApiResponse(
       responseCode = "404",
       description = "사용자 없음",
@@ -118,14 +121,11 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
   @ApiResponse(
       responseCode = "401",
-      description = "Access Token 검증 실패",
+      description = "인증 정보 없음, 유효하지 않거나 만료된 Access Token, 탈퇴 완료된 계정",
       content =
           @Content(
               mediaType = "application/json",
-              examples = {
-                @ExampleObject(name = "유효하지 않은 토큰", value = INVALID_ACCESS_TOKEN_EXAMPLE),
-                @ExampleObject(name = "만료된 토큰", value = EXPIRED_ACCESS_TOKEN_EXAMPLE)
-              }))
+              examples = @ExampleObject(name = "인증 필요", value = WITHDRAW_UNAUTHORIZED_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<Void> withdraw(AuthUser user, HttpServletRequest httpRequest);
 
