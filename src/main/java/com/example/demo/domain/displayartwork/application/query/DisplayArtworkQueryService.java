@@ -211,7 +211,7 @@ public class DisplayArtworkQueryService {
         displayArtwork.getArtworkName(),
         leaderName(leadersByArtworkId, displayArtwork),
         leaderUserId(leadersByArtworkId, displayArtwork),
-        thumbnail != null ? thumbnail.getImageUrl() : null,
+        thumbnail != null ? thumbnail.cardImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
         new ExhibitionInfoResult(
@@ -275,7 +275,7 @@ public class DisplayArtworkQueryService {
         displayArtwork.getArtworkName(),
         leaderName(leadersByArtworkId, displayArtwork),
         leaderUserId(leadersByArtworkId, displayArtwork),
-        thumbnail != null ? thumbnail.getImageUrl() : null,
+        thumbnail != null ? thumbnail.cardImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
         displayArtwork.getCreatedAt(),
@@ -312,9 +312,10 @@ public class DisplayArtworkQueryService {
         displayArtwork.getArtworkName(),
         leaderName(leadersByArtworkId, displayArtwork),
         leaderUserId(leadersByArtworkId, displayArtwork),
-        thumbnail != null ? thumbnail.getImageUrl() : null,
+        thumbnail != null ? thumbnail.cardImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
-        thumbnail != null ? thumbnail.getHeight() : 0);
+        thumbnail != null ? thumbnail.getHeight() : 0,
+        thumbnail != null ? thumbnail.videoUrl() : null);
   }
 
   private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {

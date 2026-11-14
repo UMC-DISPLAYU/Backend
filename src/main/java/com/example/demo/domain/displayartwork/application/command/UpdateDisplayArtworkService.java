@@ -8,8 +8,12 @@ import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +23,20 @@ public class UpdateDisplayArtworkService {
   private final DisplayArtworkRepository displayArtworkRepository;
   private final DisplayArtworkPermissionChecker permissionChecker;
   private final AuthorSetupService authorSetupService;
+  private final MediaStorageVerifier mediaStorageVerifier;
+  private final ApplicationEventPublisher eventPublisher;
 
   public UpdateDisplayArtworkService(
       DisplayArtworkRepository displayArtworkRepository,
       DisplayArtworkPermissionChecker permissionChecker,
-      AuthorSetupService authorSetupService) {
+      AuthorSetupService authorSetupService,
+      MediaStorageVerifier mediaStorageVerifier,
+      ApplicationEventPublisher eventPublisher) {
     this.displayArtworkRepository = displayArtworkRepository;
     this.permissionChecker = permissionChecker;
     this.authorSetupService = authorSetupService;
+    this.mediaStorageVerifier = mediaStorageVerifier;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -43,6 +53,12 @@ public class UpdateDisplayArtworkService {
     permissionChecker.requireArtworkEditor(
         requesterUserId, artwork.getDisplay(), command.artworkId());
 
+    command
+        .images()
+        .forEach(image -> mediaStorageVerifier.verifyVideo(image.media(), MediaUsage.ARTWORK));
+    List<String> previousFileUrls = artwork.getMediaFileUrls();
+    artwork.replaceImages(toImages(command.images()));
+
     artwork.changeContent(
         command.artworkName(),
         command.content(),
@@ -51,8 +67,6 @@ public class UpdateDisplayArtworkService {
         command.materialMedia(),
         command.size(),
         command.point());
-    // 화면에서 최종적으로 남은 이미지 목록을 그대로 저장한다.
-    artwork.replaceImages(toImages(command.images()));
 
     AuthorSetupResult authorSetupResult =
         authorSetupService.setupForUpdate(
@@ -65,6 +79,11 @@ public class UpdateDisplayArtworkService {
                 command.coAuthorRawNames(),
                 command.qaHandlerUserIds()));
 
+    MediaFilesRemovedEvent removed =
+        MediaFilesRemovedEvent.between(previousFileUrls, artwork.getMediaFileUrls());
+    if (!removed.fileUrls().isEmpty()) {
+      eventPublisher.publishEvent(removed);
+    }
     return DisplayArtworkResult.of(artwork, authorSetupResult);
   }
 
@@ -75,7 +94,7 @@ public class UpdateDisplayArtworkService {
             image ->
                 new ArtworkImage(
                     null,
-                    image.imageUrl(),
+                    image.media(),
                     image.isThumbnail(),
                     image.imageType(),
                     image.sortOrder(),

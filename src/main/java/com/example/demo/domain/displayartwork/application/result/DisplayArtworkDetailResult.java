@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.result;
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.global.file.domain.MediaType;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -68,7 +69,9 @@ public record DisplayArtworkDetailResult(
       int sortOrder,
       String caption,
       int width,
-      int height) {
+      int height,
+      MediaType mediaType,
+      String thumbnailUrl) {
 
     private static ImageResult from(ArtworkImage image) {
       return new ImageResult(
@@ -79,7 +82,9 @@ public record DisplayArtworkDetailResult(
           image.getSortOrder(),
           image.getCaption(),
           image.getWidth(),
-          image.getHeight());
+          image.getHeight(),
+          image.getMediaType(),
+          image.getThumbnailUrl());
     }
   }
 
@@ -105,7 +110,7 @@ public record DisplayArtworkDetailResult(
           display.getId(),
           display.getTitle(),
           display.getSubtitle(),
-          display.getPosterImageUrl(),
+          display.getPosterCardImageUrl(),
           display.getOrganization(),
           formattedPeriod,
           display.getLocation().placeName());

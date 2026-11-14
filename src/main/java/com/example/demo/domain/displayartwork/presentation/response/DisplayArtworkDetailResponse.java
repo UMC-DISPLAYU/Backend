@@ -1,5 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation.response;
 
+import com.example.demo.global.file.domain.MediaType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record DisplayArtworkDetailResponse(
@@ -27,6 +29,7 @@ public record DisplayArtworkDetailResponse(
   /** 계정 없이 이름만 입력한 공동 작업자는 userId가 null이다. 프로필 이동 가능 여부 판단에 사용한다. */
   public record CoAuthorResponse(Long userId, String name) {}
 
+  @Schema(name = "DisplayArtworkDetailImageResponse")
   public record ImageResponse(
       Long imageId,
       String imageUrl,
@@ -35,7 +38,9 @@ public record DisplayArtworkDetailResponse(
       int sortOrder,
       String caption,
       int width,
-      int height) {}
+      int height,
+      MediaType mediaType,
+      String thumbnailUrl) {}
 
   public record ExhibitionInfoResponse(
       Long displayId,

@@ -9,6 +9,7 @@ import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -166,6 +167,10 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     this.status = Objects.requireNonNull(status, "status must not be null.");
   }
 
+  public List<String> getMediaFileUrls() {
+    return images.stream().flatMap(image -> image.media().fileUrls().stream()).distinct().toList();
+  }
+
   public List<ArtworkImage> getImages() {
     return Collections.unmodifiableList(images);
   }
@@ -199,6 +204,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
 
   public void addImage(ArtworkImage image) {
     ArtworkImage artworkImage = Objects.requireNonNull(image, "image must not be null.");
+    List<ArtworkImage> candidates = new ArrayList<>(images);
+    candidates.add(artworkImage);
+    validateMediaLimits(candidates);
     artworkImage.assignDisplayArtwork(this);
     images.add(artworkImage);
   }
@@ -242,8 +250,23 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
 
   public void replaceImages(List<ArtworkImage> newImages) {
     requireAtLeastOneArtworkImage(newImages);
+    List<ArtworkImage> replacement = List.copyOf(newImages);
+    validateMediaLimits(replacement);
+    boolean reclassifiedVideo =
+        replacement.stream()
+            .filter(image -> image.getMediaType() == MediaType.IMAGE)
+            .anyMatch(
+                image ->
+                    images.stream()
+                        .anyMatch(
+                            previous ->
+                                previous.getMediaType() == MediaType.VIDEO
+                                    && previous.getImageUrl().equals(image.getImageUrl())));
+    if (reclassifiedVideo) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
+    }
     images.clear();
-    newImages.forEach(this::addImage);
+    replacement.forEach(this::addImage);
   }
 
   private static void requireAtLeastOneArtworkImage(List<ArtworkImage> images) {
@@ -252,6 +275,22 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
             && images.stream().anyMatch(image -> image.getImageType() == ArtworkImageType.ARTWORK);
     if (!hasArtworkImage) {
       throw new BusinessException(DisplayArtworkErrorCode.AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED);
+    }
+  }
+
+  private static void validateMediaLimits(List<ArtworkImage> images) {
+    long artworkCount =
+        images.stream().filter(image -> image.getImageType() == ArtworkImageType.ARTWORK).count();
+    long videoCount =
+        images.stream().filter(image -> image.getMediaType() == MediaType.VIDEO).count();
+    boolean processVideo =
+        images.stream()
+            .anyMatch(
+                image ->
+                    image.getImageType() == ArtworkImageType.WORK_PROCESS
+                        && image.getMediaType() == MediaType.VIDEO);
+    if (artworkCount > 10 || videoCount > 1 || processVideo) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
     }
   }
 

@@ -9,6 +9,7 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
+import com.example.demo.global.file.domain.MediaType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -156,11 +157,22 @@ public record DisplayDetailResult(
     }
   }
 
-  public record ImageResult(Long imageId, String imageUrl, String imageType, int sortOrder) {
+  public record ImageResult(
+      Long imageId,
+      String imageUrl,
+      String imageType,
+      int sortOrder,
+      MediaType mediaType,
+      String thumbnailUrl) {
 
     private static ImageResult from(DisplayImage image) {
       return new ImageResult(
-          image.getId(), image.getImageUrl(), image.getImageType().name(), image.getSortOrder());
+          image.getId(),
+          image.getImageUrl(),
+          image.getImageType().name(),
+          image.getSortOrder(),
+          image.getMediaType(),
+          image.getThumbnailUrl());
     }
   }
 

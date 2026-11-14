@@ -17,6 +17,7 @@ import com.example.demo.domain.display.application.result.DisplayScreeningDetail
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.global.file.domain.MediaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -88,7 +89,10 @@ class DisplayReviewAdapterTest {
                 "학교",
                 null,
                 null,
-                null));
+                null,
+                List.of(
+                    new DisplayScreeningDetailResult.MediaResult(
+                        "video.mp4", MediaType.VIDEO, "poster"))));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);
@@ -98,6 +102,9 @@ class DisplayReviewAdapterTest {
     assertThat(detail.processedAt()).isEqualTo(processedAt);
     assertThat(detail.rejectionReason()).isEqualTo("일정 수정");
     assertThat(detail.leaderName()).isNull();
+    assertThat(detail.imageUrls()).containsExactly("poster");
+    assertThat(detail.media())
+        .containsExactly(new ReviewDetail.MediaResult("video.mp4", MediaType.VIDEO, "poster"));
     verify(approveService).approve(4L, 7L);
     verify(rejectService).reject(5L, 7L, "보완 필요");
   }

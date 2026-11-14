@@ -15,6 +15,7 @@ import com.example.demo.domain.admin.infrastructure.config.AdminReviewConfigurat
 import com.example.demo.domain.admin.presentation.AdminReviewController;
 import com.example.demo.domain.admin.presentation.mapper.AdminReviewMapper;
 import com.example.demo.global.error.*;
+import com.example.demo.global.file.domain.MediaType;
 import com.example.demo.global.security.AuthUser;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -166,14 +167,18 @@ class AdminReviewTest {
                 "전시대학교",
                 "전시 대표자",
                 null,
-                null));
+                null,
+                List.of(new ReviewDetail.MediaResult("video.mp4", MediaType.VIDEO, "poster"))));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
         .andExpect(jsonPath("$.success.data.school").value("전시대학교"))
         .andExpect(jsonPath("$.success.data.leaderName").value("전시 대표자"))
         .andExpect(jsonPath("$.success.data.requesterId").value(2))
-        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"));
+        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"))
+        .andExpect(jsonPath("$.success.data.media[0].imageUrl").value("video.mp4"))
+        .andExpect(jsonPath("$.success.data.media[0].mediaType").value("VIDEO"))
+        .andExpect(jsonPath("$.success.data.media[0].thumbnailUrl").value("poster"));
   }
 
   @Test
@@ -197,7 +202,8 @@ class AdminReviewTest {
             "전시대학교",
             null,
             null,
-            null);
+            null,
+            List.of());
     when(reviews.getDetail(3L)).thenReturn(detail);
     assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();
     mvc.perform(get("/api/v1/admin/displays/3"))

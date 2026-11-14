@@ -5,6 +5,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
+import com.example.demo.global.file.domain.MediaContent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,8 +14,8 @@ import java.util.List;
 public record CreateDisplayCommand(
     Long ownerUserId,
     String title,
-    String posterImageUrl,
-    List<String> displayImageUrls,
+    MediaContent posterMedia,
+    List<MediaContent> displayMedia,
     String subtitle,
     String content,
     String placeName,

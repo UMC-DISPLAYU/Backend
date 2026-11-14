@@ -28,6 +28,8 @@ import com.example.demo.domain.displayartwork.presentation.response.DisplayArtwo
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkPreviewResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -124,7 +126,8 @@ public class DisplayArtworkPresentationMapper {
         result.artistUserId(),
         result.artworkImageUrl(),
         result.imageWidth(),
-        result.imageHeight());
+        result.imageHeight(),
+        result.artworkVideoUrl());
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {
@@ -163,7 +166,9 @@ public class DisplayArtworkPresentationMapper {
         result.sortOrder(),
         result.caption(),
         result.width(),
-        result.height());
+        result.height(),
+        result.mediaType(),
+        result.thumbnailUrl());
   }
 
   private DisplayArtworkDetailResponse.ExhibitionInfoResponse toResponse(
@@ -207,7 +212,9 @@ public class DisplayArtworkPresentationMapper {
         result.sortOrder(),
         result.caption(),
         result.width(),
-        result.height());
+        result.height(),
+        result.mediaType(),
+        result.thumbnailUrl());
   }
 
   public DisplayArtworkEditResponse toResponse(DisplayArtworkEditResult result) {
@@ -233,7 +240,9 @@ public class DisplayArtworkPresentationMapper {
                         image.sortOrder(),
                         image.caption(),
                         image.width(),
-                        image.height()))
+                        image.height(),
+                        image.mediaType(),
+                        image.thumbnailUrl()))
             .toList(),
         result.artistName(),
         result.artistUserId(),
@@ -266,7 +275,10 @@ public class DisplayArtworkPresentationMapper {
 
   private ArtworkImageCommand toCommand(CreateDisplayArtworkRequest.ImageRequest image) {
     return new ArtworkImageCommand(
-        image.imageUrl(),
+        new MediaContent(
+            image.imageUrl(),
+            image.mediaType() == null ? MediaType.IMAGE : image.mediaType(),
+            image.thumbnailUrl()),
         image.isThumbnail(),
         image.imageType(),
         image.sortOrder(),
@@ -320,7 +332,10 @@ public class DisplayArtworkPresentationMapper {
 
   private ArtworkImageCommand toCommand(UpdateDisplayArtworkRequest.ImageRequest image) {
     return new ArtworkImageCommand(
-        image.imageUrl(),
+        new MediaContent(
+            image.imageUrl(),
+            image.mediaType() == null ? MediaType.IMAGE : image.mediaType(),
+            image.thumbnailUrl()),
         image.isThumbnail(),
         image.imageType(),
         image.sortOrder(),

@@ -21,6 +21,7 @@ import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
+import com.example.demo.domain.display.presentation.request.DisplayMediaRequest;
 import com.example.demo.domain.display.presentation.request.PosterCropRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayRequest;
 import com.example.demo.domain.display.presentation.response.ArtistDisplayListResponse;
@@ -39,6 +40,9 @@ import com.example.demo.domain.display.presentation.response.MyDisplayListRespon
 import com.example.demo.domain.display.presentation.response.PopularDisplayResponse;
 import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import com.example.demo.domain.display.presentation.response.SearchDisplayResponse;
+import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
+import com.example.demo.global.file.domain.MediaContent;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -53,8 +57,8 @@ public class DisplayPresentationMapper {
     return new CreateDisplayCommand(
         ownerUserId,
         request.title(),
-        request.posterImageUrl(),
-        request.displayImageUrls() == null ? List.of() : request.displayImageUrls(),
+        resolvePoster(request.posterImageUrl(), request.posterMedia(), true),
+        resolveDetails(request.displayImageUrls(), request.displayMedia()),
         request.subtitle(),
         request.description(),
         request.locationName(),
@@ -86,7 +90,7 @@ public class DisplayPresentationMapper {
         userId,
         request.displayId(),
         request.title(),
-        request.posterImageUrl(),
+        resolvePoster(request.posterImageUrl(), request.posterMedia(), false),
         request.type(),
         request.fields(),
         request.schoolOrOrganization(),
@@ -107,7 +111,7 @@ public class DisplayPresentationMapper {
         request.latitude(),
         request.longitude(),
         request.region(),
-        request.displayImageUrls(),
+        resolveDetails(request.displayImageUrls(), request.displayMedia()),
         toPosterCrop(request.posterCrop()));
   }
 
@@ -248,7 +252,8 @@ public class DisplayPresentationMapper {
         result.dayLeft(),
         result.isArchived(),
         result.placeName(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterVideoUrl());
   }
 
   private GraduationDisplayResponse.ExhibitionResponse toResponse(
@@ -263,7 +268,8 @@ public class DisplayPresentationMapper {
         result.dayLeft(),
         result.isArchived(),
         result.placeName(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterVideoUrl());
   }
 
   private PopularDisplayResponse.ExhibitionResponse toResponse(
@@ -278,7 +284,8 @@ public class DisplayPresentationMapper {
         result.dayLeft(),
         result.isArchived(),
         result.placeName(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterVideoUrl());
   }
 
   private SearchDisplayResponse.ExhibitionResponse toResponse(
@@ -293,7 +300,8 @@ public class DisplayPresentationMapper {
         result.dayLeft(),
         result.isArchived(),
         result.placeName(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterVideoUrl());
   }
 
   private DisplayMapResponse.MarkerResponse toResponse(DisplayMapResult.MarkerResult result) {
@@ -326,7 +334,8 @@ public class DisplayPresentationMapper {
         result.postImageUrl(),
         result.isLeader(),
         result.role(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterVideoUrl());
   }
 
   private ArtistDisplayListResponse.ArtistDisplayResponse toArtistResponse(
@@ -359,7 +368,12 @@ public class DisplayPresentationMapper {
 
   private DisplayDetailResponse.ImageResponse toResponse(DisplayDetailResult.ImageResult result) {
     return new DisplayDetailResponse.ImageResponse(
-        result.imageId(), result.imageUrl(), result.imageType(), result.sortOrder());
+        result.imageId(),
+        result.imageUrl(),
+        result.imageType(),
+        result.sortOrder(),
+        result.mediaType(),
+        result.thumbnailUrl());
   }
 
   private DisplayDetailResponse.ContentCategoryResponse toResponse(
@@ -429,6 +443,28 @@ public class DisplayPresentationMapper {
       case GYEONGGI_INCHEON -> DisplayRegion.GYEONGGI_INCHEON;
       case OTHERS -> DisplayRegion.OTHERS;
     };
+  }
+
+  private MediaContent resolvePoster(String legacy, DisplayMediaRequest media, boolean required) {
+    if (legacy != null && media != null || required && legacy == null && media == null) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "대표 미디어는 기존 URL 또는 미디어 객체 중 하나로 전달해야 합니다.");
+    }
+    return media != null ? toMedia(media) : legacy == null ? null : MediaContent.image(legacy);
+  }
+
+  private List<MediaContent> resolveDetails(List<String> legacy, List<DisplayMediaRequest> media) {
+    if (legacy != null && media != null) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "추가 미디어는 한 가지 형식으로 전달해야 합니다.");
+    }
+    return media != null
+        ? media.stream().map(this::toMedia).toList()
+        : legacy == null ? null : legacy.stream().map(MediaContent::image).toList();
+  }
+
+  private MediaContent toMedia(DisplayMediaRequest media) {
+    return new MediaContent(media.imageUrl(), media.mediaType(), media.thumbnailUrl());
   }
 
   private PosterCrop toPosterCrop(PosterCropRequest crop) {

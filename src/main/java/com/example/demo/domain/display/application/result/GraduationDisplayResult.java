@@ -20,7 +20,8 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
       long dayLeft,
       boolean isArchived,
       String placeName,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -35,7 +36,8 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
           queryResult.placeName(),
-          queryResult.posterCrop());
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public static ExhibitionResult from(
@@ -51,7 +53,8 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
           queryResult.placeName(),
-          queryResult.posterCrop());
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -66,7 +69,8 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           dayLeft,
           isArchived,
           placeName,
-          posterCrop);
+          posterCrop,
+          posterVideoUrl);
     }
   }
 }

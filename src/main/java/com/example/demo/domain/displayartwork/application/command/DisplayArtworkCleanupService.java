@@ -1,9 +1,8 @@
 package com.example.demo.domain.displayartwork.application.command;
 
-import com.example.demo.domain.displayartwork.application.event.ArtworkImagesDeletedEvent;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
-import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -31,10 +30,10 @@ public class DisplayArtworkCleanupService {
   }
 
   public void delete(DisplayArtwork artwork) {
-    List<String> imageUrls = artwork.getImages().stream().map(ArtworkImage::getImageUrl).toList();
+    List<String> fileUrls = artwork.getMediaFileUrls();
     artwork.delete();
-    if (!imageUrls.isEmpty()) {
-      eventPublisher.publishEvent(new ArtworkImagesDeletedEvent(imageUrls));
+    if (!fileUrls.isEmpty()) {
+      eventPublisher.publishEvent(new MediaFilesRemovedEvent(fileUrls));
     }
   }
 }

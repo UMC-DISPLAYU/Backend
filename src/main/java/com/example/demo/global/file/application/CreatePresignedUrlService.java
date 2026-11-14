@@ -8,17 +8,10 @@ import com.example.demo.global.file.infrastructure.FileStorageProperties;
 import com.example.demo.global.file.infrastructure.S3FileKeyGenerator;
 import com.example.demo.global.file.infrastructure.S3PresignedUrlGenerator;
 import java.time.Duration;
-import java.util.Map;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CreatePresignedUrlService {
-
-  private static final Map<FileType, Set<String>> SUPPORTED_CONTENT_TYPES =
-      Map.of(
-          FileType.IMAGE, Set.of("image/jpeg", "image/png", "image/webp", "image/gif"),
-          FileType.VIDEO, Set.of("video/mp4", "video/quicktime", "video/webm"));
 
   private final FileStorageProperties properties;
   private final S3FileKeyGenerator fileKeyGenerator;
@@ -36,10 +29,18 @@ public class CreatePresignedUrlService {
   public PresignedUrlResult createPresignedUrl(CreatePresignedUrlCommand command) {
     validateStorageConfigured();
     validateContentType(command.fileType(), command.contentType());
+    if (command.fileSize() <= 0) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE, "파일 크기는 양수여야 합니다.");
+    }
+    String domain = command.domain();
+    if (command.fileType() == FileType.VIDEO) {
+      MediaUsage usage = MediaUsage.fromDomain(domain);
+      usage.validateVideoSize(command.fileSize());
+      domain = usage.domain();
+    }
 
     long expiresIn = properties.effectivePresignedUrlExpirationSeconds();
-    String fileKey =
-        fileKeyGenerator.generate(command.fileType(), command.domain(), command.fileName());
+    String fileKey = fileKeyGenerator.generate(command.fileType(), domain, command.fileName());
     String uploadUrl =
         presignedUrlGenerator.generatePutUrl(
             fileKey, command.contentType(), Duration.ofSeconds(expiresIn));
@@ -55,7 +56,7 @@ public class CreatePresignedUrlService {
   }
 
   private void validateContentType(FileType fileType, String contentType) {
-    if (!SUPPORTED_CONTENT_TYPES.getOrDefault(fileType, Set.of()).contains(contentType)) {
+    if (fileType == null || !fileType.supportsContentType(contentType)) {
       throw new BusinessException(
           GlobalErrorCode.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 파일 Content-Type입니다.");
     }

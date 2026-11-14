@@ -1,0 +1,3 @@
+ALTER TABLE ArtworkImage
+    ADD COLUMN mediaType VARCHAR(10) NOT NULL DEFAULT 'IMAGE',
+    ADD COLUMN thumbnailUrl TEXT NULL;

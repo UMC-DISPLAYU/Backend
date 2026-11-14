@@ -35,7 +35,7 @@ public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepos
                 display.period.startDate,
                 display.period.endDate,
                 display.location.placeName,
-                image.imageUrl,
+                QDisplayImageConditions.cardImageUrl(image),
                 display.organization,
                 display.department,
                 display.location.latitude,

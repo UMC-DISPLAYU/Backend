@@ -54,7 +54,8 @@ class CreateDisplayArtworkServiceTest {
           displayArtworkRepository,
           permissionChecker,
           authorSetupService,
-          clock);
+          clock,
+          mock(com.example.demo.global.file.application.port.MediaStorageVerifier.class));
 
   @Test
   void createDisplayArtworkCreatesDraftWhenDisplayIsDraftEvenIfImmediateOpen() {
