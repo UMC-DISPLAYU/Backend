@@ -9,4 +9,5 @@ public record UpdateArtistProfileResult(
     String introduction,
     List<ActivityCategory> fields,
     String externalLink,
+    String instagramLink,
     String univName) {}

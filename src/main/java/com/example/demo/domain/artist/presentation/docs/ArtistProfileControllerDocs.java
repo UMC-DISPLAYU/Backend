@@ -69,6 +69,7 @@ public interface ArtistProfileControllerDocs {
             "isVerified": true,
             "schoolName": "중앙대학교 서울캠퍼스",
             "externalLink": "https://portfolio.maya.com",
+            "instagramLink": "https://www.instagram.com/maya",
             "fields": ["PAINTING", "ILLUSTRATION"]
           }
         },
@@ -91,6 +92,7 @@ public interface ArtistProfileControllerDocs {
             "profileImageUrl": "https://cdn.example.com/images/user/profile.jpg",
             "introduction": "시각과 공간의 관계를 탐구하는 작가입니다.",
             "externalLink": "https://portfolio.maya.com",
+            "instagramLink": "https://www.instagram.com/maya",
             "fields": ["PAINTING", "ILLUSTRATION"]
           }
         },
