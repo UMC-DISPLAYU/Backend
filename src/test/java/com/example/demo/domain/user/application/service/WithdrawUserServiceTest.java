@@ -57,7 +57,7 @@ class WithdrawUserServiceTest {
   void withdrawsUserImmediately() {
     User user = User.builder().id(USER_ID).build();
     when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
-    when(displayRepository.findParticipatedDisplaysByUserId(USER_ID)).thenReturn(List.of());
+    when(displayRepository.findWithdrawalTargetDisplaysByUserId(USER_ID)).thenReturn(List.of());
     when(refreshTokenRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
     service.execute(command());
@@ -76,7 +76,7 @@ class WithdrawUserServiceTest {
     when(first.getId()).thenReturn(10L);
     when(second.getId()).thenReturn(20L);
     when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
-    when(displayRepository.findParticipatedDisplaysByUserId(USER_ID))
+    when(displayRepository.findWithdrawalTargetDisplaysByUserId(USER_ID))
         .thenReturn(List.of(first, second));
     when(refreshTokenRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -84,6 +84,8 @@ class WithdrawUserServiceTest {
 
     verify(exitDisplayService).exit(10L, USER_ID);
     verify(exitDisplayService).exit(20L, USER_ID);
+    verify(displayRepository).findWithdrawalTargetDisplaysByUserId(USER_ID);
+    verify(displayRepository, never()).findParticipatedDisplaysByUserId(USER_ID);
   }
 
   @Test

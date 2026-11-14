@@ -48,7 +48,7 @@ public class WithdrawUserService {
     }
 
     displayRepository
-        .findParticipatedDisplaysByUserId(command.userId())
+        .findWithdrawalTargetDisplaysByUserId(command.userId())
         .forEach(display -> exitDisplayService.exit(display.getId(), command.userId()));
     withdrawalCleanupPort.cleanup(command.userId());
     user.withdraw(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));

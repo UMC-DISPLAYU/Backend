@@ -37,7 +37,7 @@ public class JpaTeamMemberRepositoryAdapter implements TeamMemberRepository {
 
   @Override
   public boolean existsActiveAcceptedByUserIdAndRole(Long userId, TeamMemberRole role) {
-    return jpaRepository.existsByUserIdValueAndRoleAndAcceptedTrueAndDeletedAtIsNull(userId, role);
+    return jpaRepository.existsActiveAcceptedByUserIdAndRole(userId, role);
   }
 
   @Override
