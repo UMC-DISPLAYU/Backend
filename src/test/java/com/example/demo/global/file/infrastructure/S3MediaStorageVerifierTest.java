@@ -52,6 +52,23 @@ class S3MediaStorageVerifierTest {
   }
 
   @Test
+  void acceptsHeicThumbnailMetadata() {
+    when(s3.headObject(any(HeadObjectRequest.class)))
+        .thenReturn(object(10L, "video/mp4"), object(20L, "image/heic"));
+
+    verifier.verifyVideo(
+        MediaContent.video(VIDEO, "https://cdn.example/images/display/2026/11/cover.heic"),
+        MediaUsage.DISPLAY);
+
+    verify(s3)
+        .headObject(
+            HeadObjectRequest.builder()
+                .bucket("bucket")
+                .key("images/display/2026/11/cover.heic")
+                .build());
+  }
+
+  @Test
   void supportsConfiguredCdnBasePath() {
     var withBasePath =
         new S3MediaStorageVerifier(
