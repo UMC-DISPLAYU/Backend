@@ -2,6 +2,8 @@ package com.example.demo.domain.displayartwork.presentation.request;
 
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.global.file.domain.MediaType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +23,7 @@ public record UpdateDisplayArtworkRequest(
     @NotBlank String materialMedia,
     String size,
     String point,
-    @NotEmpty @Valid List<ImageRequest> images,
+    @NotEmpty @Valid List<@NotNull ImageRequest> images,
     @NotBlank String artistName,
     Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
@@ -35,6 +37,7 @@ public record UpdateDisplayArtworkRequest(
     return type == null ? List.of() : List.of(type);
   }
 
+  @Schema(name = "UpdateArtworkMediaRequest")
   public record ImageRequest(
       @NotBlank String imageUrl,
       boolean isThumbnail,
@@ -42,7 +45,9 @@ public record UpdateDisplayArtworkRequest(
       @PositiveOrZero int sortOrder,
       String caption,
       @Positive int width,
-      @Positive int height) {}
+      @Positive int height,
+      @Schema(description = "생략하면 IMAGE. VIDEO의 width와 height는 썸네일 크기입니다.") MediaType mediaType,
+      @Schema(description = "VIDEO일 때 필수인 썸네일 이미지 URL") String thumbnailUrl) {}
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
 

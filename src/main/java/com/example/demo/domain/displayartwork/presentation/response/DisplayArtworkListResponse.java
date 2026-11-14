@@ -11,5 +11,6 @@ public record DisplayArtworkListResponse(List<ArtworkItemResponse> artworks) {
       Long artistUserId,
       String artworkImageUrl,
       int imageWidth,
-      int imageHeight) {}
+      int imageHeight,
+      String artworkVideoUrl) {}
 }

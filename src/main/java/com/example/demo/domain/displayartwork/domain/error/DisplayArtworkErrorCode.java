@@ -12,6 +12,10 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST,
       "AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED",
       "작품 이미지(ARTWORK 타입)가 최소 1장 필요합니다."),
+  INVALID_ARTWORK_MEDIA(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_ARTWORK_MEDIA",
+      "작품 미디어는 최대 10개, 영상은 최대 1개이며 작업 과정에는 영상을 등록할 수 없습니다."),
   DISPLAY_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_NOT_FOUND", "전시를 찾을 수 없습니다."),
   NOT_DISPLAY_TEAM_MEMBER(
       HttpStatus.FORBIDDEN, "NOT_DISPLAY_TEAM_MEMBER", "해당 전시의 팀원만 작품을 등록할 수 있습니다."),

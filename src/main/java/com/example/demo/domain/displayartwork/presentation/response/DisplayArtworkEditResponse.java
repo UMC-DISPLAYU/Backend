@@ -1,5 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation.response;
 
+import com.example.demo.global.file.domain.MediaType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record DisplayArtworkEditResponse(
@@ -21,6 +23,7 @@ public record DisplayArtworkEditResponse(
 
   public record CoAuthorResponse(Long userId, String name) {}
 
+  @Schema(name = "DisplayArtworkEditImageResponse")
   public record ImageResponse(
       Long imageId,
       String imageUrl,
@@ -29,5 +32,7 @@ public record DisplayArtworkEditResponse(
       int sortOrder,
       String caption,
       int width,
-      int height) {}
+      int height,
+      MediaType mediaType,
+      String thumbnailUrl) {}
 }

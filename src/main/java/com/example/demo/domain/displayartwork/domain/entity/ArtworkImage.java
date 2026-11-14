@@ -3,6 +3,8 @@ package com.example.demo.domain.displayartwork.domain.entity;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.global.entity.BaseTimeEntity;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,6 +36,13 @@ public class ArtworkImage extends BaseTimeEntity {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String imageUrl;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 10)
+  private MediaType mediaType = MediaType.IMAGE;
+
+  @Column(columnDefinition = "TEXT")
+  private String thumbnailUrl;
+
   @Column(nullable = false)
   private boolean isThumbnail;
 
@@ -63,8 +72,30 @@ public class ArtworkImage extends BaseTimeEntity {
       String caption,
       int width,
       int height) {
+    this(
+        id,
+        MediaContent.image(imageUrl),
+        isThumbnail,
+        imageType,
+        sortOrder,
+        caption,
+        width,
+        height);
+  }
+
+  public ArtworkImage(
+      Long id,
+      MediaContent media,
+      boolean isThumbnail,
+      ArtworkImageType imageType,
+      int sortOrder,
+      String caption,
+      int width,
+      int height) {
     this.id = id;
-    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
+    this.imageUrl = media.imageUrl();
+    this.mediaType = media.mediaType();
+    this.thumbnailUrl = media.thumbnailUrl();
     this.isThumbnail = isThumbnail;
     this.imageType = Objects.requireNonNull(imageType, "imageType must not be null.");
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
@@ -78,11 +109,16 @@ public class ArtworkImage extends BaseTimeEntity {
         Objects.requireNonNull(displayArtwork, "displayArtwork must not be null.");
   }
 
-  private static String requireNonBlank(String value, String fieldName) {
-    if (value == null || value.isBlank()) {
-      throw new IllegalArgumentException(fieldName + " must not be blank.");
-    }
-    return value;
+  public MediaContent media() {
+    return new MediaContent(imageUrl, mediaType, thumbnailUrl);
+  }
+
+  public String cardImageUrl() {
+    return media().cardImageUrl();
+  }
+
+  public String videoUrl() {
+    return media().videoUrl();
   }
 
   private static int requirePositive(int value, String fieldName) {
