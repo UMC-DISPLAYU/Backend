@@ -84,6 +84,9 @@ public final class ManagedMediaUrls {
     } catch (URISyntaxException exception) {
       throw new IllegalStateException("Cannot safely normalize a managed media reference");
     }
+    if (Arrays.stream(path.split("/")).anyMatch(segment -> segment.equals(".."))) {
+      throw new IllegalStateException("Cannot safely resolve a media reference above the root");
+    }
     return relativeManagedKey(path);
   }
 

@@ -152,7 +152,10 @@ class JdbcMediaReferenceQueryTest {
         "https://cdn.example/images/display/%2563over.png",
         "https://cdn.example/images/display/%zz.png",
         "https://%63dn.example/images/display/cover.png",
-        "https://%63dn.example/images/display/%zz.png"
+        "https://%63dn.example/images/display/%zz.png",
+        "https://cdn.example/../images/display/cover.png",
+        "https://cdn.example/a/../../images/display/cover.png",
+        "https://cdn.example/%2e%2e/images/display/cover.png"
       })
   void uncertainManagedReferencePreventsEveryS3Delete(String alias) {
     jdbc.update("INSERT INTO `User` (`profileImageUrl`) VALUES (?)", alias);
