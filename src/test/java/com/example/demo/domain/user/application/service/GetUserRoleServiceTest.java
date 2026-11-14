@@ -51,4 +51,16 @@ class GetUserRoleServiceTest {
 
     assertThat(result).isEmpty();
   }
+
+  @Test
+  void distinguishesWithdrawnUserFromMissingUser() {
+    User withdrawn =
+        User.builder().id(USER_ID).deletedAt(LocalDateTime.parse("2026-11-14T12:00:00")).build();
+    when(userRepository.findById(USER_ID))
+        .thenReturn(Optional.of(withdrawn))
+        .thenReturn(Optional.empty());
+
+    assertThat(service.isWithdrawn(USER_ID)).isTrue();
+    assertThat(service.isWithdrawn(USER_ID)).isFalse();
+  }
 }
