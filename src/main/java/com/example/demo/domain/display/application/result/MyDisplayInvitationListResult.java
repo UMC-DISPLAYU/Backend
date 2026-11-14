@@ -66,7 +66,7 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           .filter(image -> image.getImageType() == DisplayImageType.MAIN)
           .filter(image -> !image.isDeleted())
           .findFirst()
-          .map(DisplayImage::getImageUrl)
+          .map(DisplayImage::getCardImageUrl)
           .orElse(null);
     }
   }

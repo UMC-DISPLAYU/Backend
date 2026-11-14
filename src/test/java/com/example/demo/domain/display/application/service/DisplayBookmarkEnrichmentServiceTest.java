@@ -43,6 +43,7 @@ class DisplayBookmarkEnrichmentServiceTest {
         9,
         false,
         null,
+        null,
         null);
   }
 

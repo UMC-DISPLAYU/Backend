@@ -16,6 +16,9 @@ import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateDisplayService {
 
   private final DisplayRepository displayRepository;
+  private final MediaStorageVerifier mediaStorageVerifier;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final UserRepository userRepository;
   private final ArtistPermissionChecker artistPermissionChecker;
@@ -32,11 +36,13 @@ public class CreateDisplayService {
       DisplayRepository displayRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       UserRepository userRepository,
-      ArtistPermissionChecker artistPermissionChecker) {
+      ArtistPermissionChecker artistPermissionChecker,
+      MediaStorageVerifier mediaStorageVerifier) {
     this.displayRepository = displayRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.userRepository = userRepository;
     this.artistPermissionChecker = artistPermissionChecker;
+    this.mediaStorageVerifier = mediaStorageVerifier;
   }
 
   @Transactional
@@ -53,12 +59,19 @@ public class CreateDisplayService {
       throw new BusinessException(DisplayErrorCode.DISPLAY_ALREADY_EXISTS);
     }
 
+    mediaStorageVerifier.verifyVideo(command.posterMedia(), MediaUsage.DISPLAY);
+    if (command.displayMedia() != null) {
+      command
+          .displayMedia()
+          .forEach(media -> mediaStorageVerifier.verifyVideo(media, MediaUsage.DISPLAY));
+    }
+
     Display display =
         Display.create(
             new UserId(command.ownerUserId()),
             command.title(),
-            command.posterImageUrl(),
-            command.displayImageUrls(),
+            command.posterMedia().imageUrl(),
+            List.of(),
             command.subtitle(),
             command.content(),
             new DisplayLocation(
@@ -78,7 +91,7 @@ public class CreateDisplayService {
                 command.startDate(), command.endDate(), command.startTime(), command.endTime()),
             command.artworkContentOpen(),
             command.exhibitionContentOpen());
-    display.changePosterCrop(command.posterCrop());
+    display.changeMedia(command.posterMedia(), command.displayMedia(), command.posterCrop());
     display.changeExternalLinks(command.instagramUrl(), command.websiteUrl());
     display.addTeamMember(
         new TeamMember(

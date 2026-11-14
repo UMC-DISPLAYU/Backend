@@ -53,7 +53,7 @@ public record DisplayScreeningDetailResult(
                 Comparator.comparing(
                         (DisplayImage image) -> image.getImageType() != DisplayImageType.MAIN)
                     .thenComparingInt(DisplayImage::getSortOrder))
-            .map(DisplayImage::getImageUrl)
+            .map(DisplayImage::getCardImageUrl)
             .toList(),
         display.getOrganization(),
         uniqueLeaderName(display),

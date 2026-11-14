@@ -40,13 +40,14 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 SearchDisplayQueryResult.class,
                 display.id,
                 display.title,
-                image.imageUrl,
+                QDisplayImageConditions.cardImageUrl(image),
                 display.organization,
                 display.department,
                 display.period.startDate,
                 display.period.endDate,
                 display.location.placeName,
-                display.posterCrop))
+                display.posterCrop,
+                QDisplayImageConditions.videoUrl(image)))
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))

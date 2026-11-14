@@ -12,4 +12,5 @@ public record ClosingSoonDisplayQueryResult(
     LocalDate startedAt,
     LocalDate endedAt,
     String placeName,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    String posterVideoUrl) {}

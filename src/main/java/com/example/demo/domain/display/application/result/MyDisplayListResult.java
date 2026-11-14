@@ -40,7 +40,8 @@ public record MyDisplayListResult(
       String postImageUrl,
       boolean isLeader,
       TeamMemberRole role,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     private static MyDisplayResult from(Display display, LocalDateTime now, Long requesterUserId) {
       LocalDate startDate = display.getPeriod().startDate();
@@ -62,7 +63,8 @@ public record MyDisplayListResult(
           postImageUrl(display),
           role == TeamMemberRole.TEAM_LEADER,
           role,
-          display.getPosterCrop());
+          display.getPosterCrop(),
+          display.getPosterVideoUrl());
     }
 
     private static String postImageUrl(Display display) {
@@ -70,7 +72,7 @@ public record MyDisplayListResult(
           .filter(image -> image.getImageType() == DisplayImageType.MAIN)
           .filter(image -> !image.isDeleted())
           .findFirst()
-          .map(DisplayImage::getImageUrl)
+          .map(DisplayImage::getCardImageUrl)
           .orElse(null);
     }
   }

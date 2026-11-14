@@ -23,6 +23,8 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -428,6 +430,22 @@ public class Display extends SoftDeleteBaseEntity {
         .orElse(null);
   }
 
+  public String getPosterCardImageUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
+        .map(DisplayImage::getCardImageUrl)
+        .findFirst()
+        .orElse(null);
+  }
+
+  public String getPosterVideoUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
+        .findFirst()
+        .map(DisplayImage::getVideoUrl)
+        .orElse(null);
+  }
+
   // 소개 콘텐츠 카테고리 목록을 읽기 전용으로 반환한다.
   public List<DisplayContentCategory> getContentCategories() {
     return Collections.unmodifiableList(contentCategories);
@@ -732,53 +750,108 @@ public class Display extends SoftDeleteBaseEntity {
       throw new IllegalArgumentException("displayImageUrls must contain at most 4 images.");
     }
     imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
-    List<DisplayImage> replacements = new ArrayList<>();
-    for (int index = 0; index < imageUrls.size(); index++) {
-      int sortOrder = index;
-      DisplayImage existing =
-          images.stream()
-              .filter(
-                  image -> image.getImageType() == DisplayImageType.DETAIL && !image.isDeleted())
-              .filter(image -> image.getSortOrder() == sortOrder)
-              .findFirst()
-              .orElse(null);
-      if (existing == null) {
-        replacements.add(
-            new DisplayImage(null, imageUrls.get(index), DisplayImageType.DETAIL, index, null));
-      } else {
-        existing.changeImageUrl(imageUrls.get(index));
-        replacements.add(existing);
-      }
-    }
-    images.removeIf(
-        image -> image.getImageType() == DisplayImageType.DETAIL && !replacements.contains(image));
-    replacements.stream().filter(image -> !images.contains(image)).forEach(this::addImage);
+    changeMedia(null, imageUrls.stream().map(MediaContent::image).toList(), null);
   }
 
   public void changePosterCrop(PosterCrop posterCrop) {
+    if (posterCrop != null && getPosterVideoUrl() != null) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE, "영상 포스터에는 크롭을 지정할 수 없습니다.");
+    }
     this.posterCrop = posterCrop;
   }
 
   public void changePosterImageUrl(String posterImageUrl) {
     requireNonBlank(posterImageUrl, "posterImageUrl");
-    if (!Objects.equals(getPosterImageUrl(), posterImageUrl)) {
-      this.posterCrop = null;
-    }
-    DisplayImage mainImage =
+    changeMedia(MediaContent.image(posterImageUrl), null, null);
+  }
+
+  public void changeMedia(MediaContent poster, List<MediaContent> details, PosterCrop crop) {
+    DisplayImage currentPoster =
         images.stream()
-            .filter(image -> image.getImageType() == DisplayImageType.MAIN)
-            .filter(image -> !image.isDeleted())
+            .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
             .findFirst()
             .orElse(null);
-
-    if (mainImage == null) {
-      addImage(
-          new DisplayImage(
-              null, posterImageUrl, DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null));
-      return;
+    MediaContent finalPoster =
+        poster != null ? poster : currentPoster == null ? null : currentPoster.media();
+    List<MediaContent> finalDetails =
+        details != null
+            ? details
+            : images.stream()
+                .filter(
+                    image -> image.getImageType() == DisplayImageType.DETAIL && !image.isDeleted())
+                .sorted(java.util.Comparator.comparingInt(DisplayImage::getSortOrder))
+                .map(DisplayImage::media)
+                .toList();
+    if (finalPoster == null
+        || finalDetails.size() > MAX_DETAIL_IMAGE_COUNT
+        || finalDetails.stream().anyMatch(Objects::isNull)) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "대표 미디어와 최대 4개의 추가 미디어가 필요합니다.");
     }
-
-    mainImage.changeImageUrl(posterImageUrl);
+    long videos =
+        finalDetails.stream().filter(media -> media.mediaType() == MediaType.VIDEO).count()
+            + (finalPoster.mediaType() == MediaType.VIDEO ? 1 : 0);
+    if (videos > 1) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "전시에는 영상을 최대 1개 등록할 수 있습니다.");
+    }
+    if (finalPoster.mediaType() == MediaType.VIDEO && crop != null) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE, "영상 포스터에는 크롭을 지정할 수 없습니다.");
+    }
+    List<MediaContent> finalMedia = new ArrayList<>(finalDetails);
+    finalMedia.add(finalPoster);
+    for (MediaContent replacement : finalMedia) {
+      if (replacement.mediaType() == MediaType.IMAGE
+          && images.stream()
+              .filter(image -> !image.isDeleted() && image.getMediaType() == MediaType.VIDEO)
+              .anyMatch(image -> image.getImageUrl().equals(replacement.imageUrl()))) {
+        throw new BusinessException(
+            GlobalErrorCode.INVALID_INPUT_VALUE, "기존 영상은 VIDEO 미디어 정보로 전달해야 합니다.");
+      }
+    }
+    if (currentPoster == null || !currentPoster.media().equals(finalPoster)) {
+      this.posterCrop = null;
+    }
+    if (finalPoster.mediaType() == MediaType.VIDEO) {
+      this.posterCrop = null;
+    } else if (crop != null) {
+      this.posterCrop = crop;
+    }
+    if (poster != null) {
+      if (currentPoster == null) {
+        currentPoster =
+            new DisplayImage(
+                null, poster.imageUrl(), DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null);
+        addImage(currentPoster);
+      }
+      currentPoster.changeMedia(poster);
+    }
+    if (details != null) {
+      List<DisplayImage> replacements = new ArrayList<>();
+      for (int index = 0; index < details.size(); index++) {
+        int order = index;
+        DisplayImage image =
+            images.stream()
+                .filter(
+                    existing ->
+                        existing.getImageType() == DisplayImageType.DETAIL
+                            && !existing.isDeleted()
+                            && existing.getSortOrder() == order)
+                .findFirst()
+                .orElse(null);
+        if (image == null) {
+          image =
+              new DisplayImage(
+                  null, details.get(index).imageUrl(), DisplayImageType.DETAIL, index, null);
+        }
+        image.changeMedia(details.get(index));
+        replacements.add(image);
+      }
+      images.removeIf(
+          image ->
+              image.getImageType() == DisplayImageType.DETAIL && !replacements.contains(image));
+      replacements.stream().filter(image -> !images.contains(image)).forEach(this::addImage);
+    }
   }
 
   // 전시 팀원을 추가한다.

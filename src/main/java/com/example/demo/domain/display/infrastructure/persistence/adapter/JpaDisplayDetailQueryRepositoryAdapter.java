@@ -113,7 +113,9 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                 image.id,
                 image.imageUrl,
                 image.imageType.stringValue(),
-                image.sortOrder))
+                image.sortOrder,
+                image.mediaType,
+                image.thumbnailUrl))
         .from(image)
         .where(image.display.id.eq(displayId), image.deletedAt.isNull())
         .orderBy(image.sortOrder.asc(), image.id.asc())
