@@ -88,7 +88,6 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @BatchSize(size = 50)
   private final List<ArtworkImage> images = new ArrayList<>();
 
-  /** 작품 분야. 최대 3개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @BatchSize(size = 50)
   private final List<ArtworkField> fields = new ArrayList<>();

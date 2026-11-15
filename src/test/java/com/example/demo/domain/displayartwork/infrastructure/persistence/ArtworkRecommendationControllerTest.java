@@ -12,7 +12,6 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
-import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,7 +35,6 @@ class ArtworkRecommendationControllerTest {
   private static final Long DISPLAY_OWNER = 1L;
   @Autowired private EntityManager entityManager;
   @Autowired private org.springframework.test.web.servlet.MockMvc mvc;
-  private long nextCreatorId = 70001L;
 
   @Test
   void roundRobinRanksDisplaysThenWorksByFirstPublicationRatherThanCreation() throws Exception {
@@ -261,18 +259,6 @@ class ArtworkRecommendationControllerTest {
     return display;
   }
 
-  private DisplayArtwork persistArtwork(Display display, String artworkName, int workSortOrder) {
-    return persistArtwork(display, artworkName, List.of(ArtworkType.PAINTING), workSortOrder);
-  }
-
-  private DisplayArtwork persistArtwork(
-      Display display, String artworkName, List<ArtworkType> types, int workSortOrder) {
-    DisplayArtwork artwork = buildArtwork(display, artworkName, types, workSortOrder);
-    entityManager.persist(artwork);
-    entityManager.flush();
-    return artwork;
-  }
-
   private DisplayArtwork buildArtwork(
       Display display, String artworkName, List<ArtworkType> types, int workSortOrder) {
     return DisplayArtwork.create(
@@ -296,24 +282,5 @@ class ArtworkRecommendationControllerTest {
                 "대표 이미지",
                 1200,
                 1600)));
-  }
-
-  private void persistCreator(Long artworkId, String creatorName, CreatorRole role, Long userId) {
-    entityManager
-        .createNativeQuery(
-            """
-            INSERT INTO Creator
-              (creatorId, displayArtworkId, creatorName, isContact, isLeader, role, userId)
-            VALUES (?, ?, ?, FALSE, ?, ?, ?)
-            """)
-        .setParameter(1, nextCreatorId++)
-        .setParameter(2, artworkId)
-        .setParameter(3, creatorName)
-        .setParameter(4, role == CreatorRole.LEAD_ARTIST)
-        .setParameter(5, role.name())
-        .setParameter(6, userId)
-        .executeUpdate();
-    entityManager.flush();
-    entityManager.clear();
   }
 }

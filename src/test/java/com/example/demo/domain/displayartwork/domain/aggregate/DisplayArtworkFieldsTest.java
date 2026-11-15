@@ -22,7 +22,6 @@ import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** 작품 분야는 1개 이상 3개 이하다. type 컬럼은 아직 여러 응답이 쓰므로 첫 번째 분야와 항상 같아야 한다. */
 class DisplayArtworkFieldsTest {
 
   @Test
