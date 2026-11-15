@@ -28,5 +28,6 @@ public record SearchDisplayResponse(
               description = "대표가 영상일 때 재생할 원본 URL")
           String posterVideoUrl) {}
 
-  public record CursorPaginationResponse(Long nextCursor, int size, boolean hasNext) {}
+  public record CursorPaginationResponse(
+      Long nextCursor, int size, boolean hasNext, Long nextCursorLikeCount) {}
 }

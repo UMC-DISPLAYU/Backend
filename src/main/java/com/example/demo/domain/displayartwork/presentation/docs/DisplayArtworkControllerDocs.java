@@ -86,21 +86,26 @@ public interface DisplayArtworkControllerDocs {
                           }
                           """)))
   ApiResponseBody<DisplayArtworkPreviewResponse> getPreview(
-      @Parameter(description = "대분류 필터 (RECOMMEND: 추천 탭, GRADUATION: 2025 졸작 탭)") @RequestParam
+      @Parameter(
+              description =
+                  "RECOMMEND는 필터 적용 후 전시별 최신 최초공개일 순서로 작품을 한 개씩 순환하며 최대10개를 반환합니다. page0/size10/isLast=true, page>0은 빈 마지막 페이지입니다. 과거 공개일은 createdAt 추정치를 사용합니다. GRADUATION은 기존 페이지 조회를 유지합니다.")
+          @RequestParam
           PreviewFilterType type,
       @Parameter(
               description =
                   """
-                  하위 분야 필터. **최대 2개**까지 선택할 수 있다.
-                  선택한 분야를 **모두** 가진 작품만 조회된다(AND 조건). 작품은 분야를 최대 2개 가진다.
+                  하위 분야 필터. 여러 분야를 선택할 수 있다.
+                  선택한 분야를 **모두** 가진 작품만 조회된다(AND 조건). 작품은 분야를 최대 3개 가진다.
                   비우면 전체 분야를 조회한다.
-                  예: `field=DESIGN&field=PAINTING` 또는 `field=DESIGN,PAINTING`
+                  예: `field=GRAPHIC&field=PAINTING` 또는 `field=GRAPHIC,PAINTING`
                   """)
           @RequestParam(required = false)
           @Size(max = 2) List<ArtworkType> field,
       @Parameter(description = "하위 대학교 필터") @RequestParam(required = false) String school,
-      @Parameter(description = "요청할 페이지 번호 (0부터 시작)") @RequestParam @PositiveOrZero int page,
-      @Parameter(description = "한 번에 가져올 작품 개수") @RequestParam @Min(1) @Max(50) int size,
+      @Parameter(description = "요청할 페이지 번호 (0부터 시작)")
+          @RequestParam(defaultValue = "0")
+          @PositiveOrZero int page,
+      @Parameter(description = "한 번에 가져올 작품 개수") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size,
       HttpServletRequest httpRequest);
 
   @Operation(

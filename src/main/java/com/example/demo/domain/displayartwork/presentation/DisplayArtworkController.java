@@ -1,5 +1,7 @@
 package com.example.demo.domain.displayartwork.presentation;
 
+import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DeleteDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.command.DisplayArtworkLikeCommand;
@@ -7,6 +9,7 @@ import com.example.demo.domain.displayartwork.application.command.DisplayArtwork
 import com.example.demo.domain.displayartwork.application.command.ReorderDisplayArtworksService;
 import com.example.demo.domain.displayartwork.application.command.UpdateDisplayArtworkService;
 import com.example.demo.domain.displayartwork.application.query.DisplayArtworkQueryService;
+import com.example.demo.domain.displayartwork.application.query.SearchArtworksQuery;
 import com.example.demo.domain.displayartwork.application.result.DeleteDisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkByArtistResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkDetailResult;
@@ -36,7 +39,10 @@ import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -81,14 +87,32 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
     this.mapper = mapper;
   }
 
+  @GetMapping(value = "/api/v1/artworks/search", produces = "application/json")
+  @Operation(
+      summary = "작품 검색",
+      description =
+          "작품명·대표 및 공동 작가명으로 검색합니다. 전시 유형과 기간 상태는 작품이 속한 전시에 적용하며 공개된 전시의 공개 작품만 조회합니다. ID 내림차순, page는 0부터 시작합니다.")
+  public ApiResponseBody<DisplayArtworkPreviewResponse> search(
+      @RequestParam(required = false) String searchWord,
+      @RequestParam(required = false) DisplayType type,
+      @RequestParam(required = false) SearchDisplayStatus status,
+      @RequestParam(defaultValue = "0") @Min(0) @Max(21474835) int page,
+      @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+      HttpServletRequest httpRequest) {
+    var result =
+        displayArtworkQueryService.search(
+            new SearchArtworksQuery(searchWord, type, status, page, size));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
   @GetMapping(value = "/api/v1/artworks/preview", produces = "application/json")
   @Override
   public ApiResponseBody<DisplayArtworkPreviewResponse> getPreview(
       @RequestParam PreviewFilterType type,
       @RequestParam(required = false) List<ArtworkType> field,
       @RequestParam(required = false) String school,
-      @RequestParam int page,
-      @RequestParam int size,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest httpRequest) {
     DisplayArtworkPreviewResult result =
         displayArtworkQueryService.getPreview(type, field, school, page, size);

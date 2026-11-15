@@ -4,6 +4,7 @@ import com.example.demo.domain.display.application.command.CreateDisplayContentC
 import com.example.demo.domain.display.application.command.CreateDisplayContentCommand;
 import com.example.demo.domain.display.application.command.DeleteDisplayContentCategoryCommand;
 import com.example.demo.domain.display.application.command.DeleteDisplayContentCommand;
+import com.example.demo.domain.display.application.command.ReorderDisplayContentCategoriesCommand;
 import com.example.demo.domain.display.application.command.ReorderDisplayContentsCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayContentCategoryCommand;
 import com.example.demo.domain.display.application.command.UpdateDisplayContentCommand;
@@ -11,9 +12,11 @@ import com.example.demo.domain.display.application.result.DeleteDisplayContentCa
 import com.example.demo.domain.display.application.result.DeleteDisplayContentResult;
 import com.example.demo.domain.display.application.result.DisplayContentCategoryResult;
 import com.example.demo.domain.display.application.result.DisplayContentResult;
+import com.example.demo.domain.display.application.result.ReorderDisplayContentCategoriesResult;
 import com.example.demo.domain.display.application.result.ReorderDisplayContentsResult;
 import com.example.demo.domain.display.presentation.request.CreateDisplayContentCategoryRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayContentRequest;
+import com.example.demo.domain.display.presentation.request.ReorderDisplayContentCategoriesRequest;
 import com.example.demo.domain.display.presentation.request.ReorderDisplayContentsRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayContentCategoryRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayContentRequest;
@@ -21,6 +24,7 @@ import com.example.demo.domain.display.presentation.response.DeleteDisplayConten
 import com.example.demo.domain.display.presentation.response.DeleteDisplayContentResponse;
 import com.example.demo.domain.display.presentation.response.DisplayContentCategoryResponse;
 import com.example.demo.domain.display.presentation.response.DisplayContentResponse;
+import com.example.demo.domain.display.presentation.response.ReorderDisplayContentCategoriesResponse;
 import com.example.demo.domain.display.presentation.response.ReorderDisplayContentsResponse;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +34,7 @@ public class DisplayContentPresentationMapper {
   public CreateDisplayContentCategoryCommand toCommand(
       CreateDisplayContentCategoryRequest request, Long userId, Long displayId) {
     return new CreateDisplayContentCategoryCommand(
-        userId, displayId, request.name(), request.description());
+        userId, displayId, request.name(), request.description(), request.imageUrls());
   }
 
   public UpdateDisplayContentCategoryCommand toCommand(
@@ -68,6 +72,18 @@ public class DisplayContentPresentationMapper {
       ReorderDisplayContentsRequest request, Long userId, Long displayId, Long categoryId) {
     return new ReorderDisplayContentsCommand(
         userId, displayId, categoryId, request.orderedContentIds());
+  }
+
+  public ReorderDisplayContentCategoriesCommand toCommand(
+      ReorderDisplayContentCategoriesRequest request, Long userId, Long displayId) {
+    return new ReorderDisplayContentCategoriesCommand(
+        userId, displayId, request.orderedCategoryIds());
+  }
+
+  public ReorderDisplayContentCategoriesResponse toResponse(
+      ReorderDisplayContentCategoriesResult result) {
+    return new ReorderDisplayContentCategoriesResponse(
+        result.displayId(), result.categories().stream().map(this::toResponse).toList());
   }
 
   public DisplayContentCategoryResponse toResponse(DisplayContentCategoryResult result) {

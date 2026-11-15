@@ -15,6 +15,7 @@ import com.example.demo.global.file.application.command.CreatePresignedUrlComman
 import com.example.demo.global.file.infrastructure.FileStorageProperties;
 import com.example.demo.global.file.infrastructure.S3FileKeyGenerator;
 import com.example.demo.global.file.infrastructure.S3PresignedUrlGenerator;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -74,6 +75,41 @@ class CreatePresignedUrlServiceTest {
         new CreatePresignedUrlCommand(
             FileType.IMAGE, "profile", "image.png", "image/png", 600_000_000L));
     verify(keyGenerator).generate(FileType.IMAGE, "profile", "image.png");
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "image/jpeg,image.jpg",
+    "image/png,image.png",
+    "image/webp,image.webp",
+    "image/gif,image.gif",
+    "image/heic,image.heic"
+  })
+  void issuesImageUrlWithRequestedContentType(String contentType, String fileName) {
+    var result =
+        service.createPresignedUrl(
+            new CreatePresignedUrlCommand(FileType.IMAGE, "display", fileName, contentType, 1024));
+
+    assertThat(result.uploadUrl()).isEqualTo("https://upload.example");
+    assertThat(result.fileUrl()).isEqualTo("https://cdn.example/generated-key");
+    verify(keyGenerator).generate(FileType.IMAGE, "display", fileName);
+    verify(urlGenerator).generatePutUrl("generated-key", contentType, Duration.ofSeconds(3600));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"image/heif", "application/octet-stream", "video/mp4"})
+  void rejectsUnsupportedImageContentTypeBeforeSigning(String contentType) {
+    assertThatThrownBy(
+            () ->
+                service.createPresignedUrl(
+                    new CreatePresignedUrlCommand(
+                        FileType.IMAGE, "display", "image.heic", contentType, 1024)))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(GlobalErrorCode.UNSUPPORTED_MEDIA_TYPE));
+    verifyNoInteractions(keyGenerator, urlGenerator);
   }
 
   @Test

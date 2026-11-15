@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,6 +48,8 @@ class DisplayContentControllerTest {
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
 
   @Autowired private JwtFactory jwtFactory;
+
+  @Autowired private jakarta.persistence.EntityManager entityManager;
 
   @Test
   void createCategorySucceedsWhenRequesterIsTeamLeader() throws Exception {
@@ -473,6 +476,177 @@ class DisplayContentControllerTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("DISPLAY_CONTENT_PERMISSION_DENIED"));
+  }
+
+  @Test
+  void createCategoryWithPhotosPersistsUploaderOrderAndPublicationState() throws Exception {
+    for (boolean published : List.of(false, true)) {
+      Display display = displayWithMember();
+      if (published) display.publish();
+      displayJpaRepository.saveAndFlush(display);
+      mockMvc
+          .perform(
+              post("/api/v1/display/{displayId}/content-categories", display.getId())
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      "{\"name\":\"사진 섹션\",\"imageUrls\":[\"https://cdn.displayu.com/1.jpg\",\"https://cdn.displayu.com/2.jpg\"]}"))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.success.data.contents.length()").value(2))
+          .andExpect(jsonPath("$.success.data.contents[0].userId").value(2))
+          .andExpect(jsonPath("$.success.data.contents[1].sortOrder").value(1));
+      entityManager.flush();
+      entityManager.clear();
+      DisplayContentCategory category =
+          displayJpaRepository
+              .findById(display.getId())
+              .orElseThrow()
+              .getContentCategories()
+              .getFirst();
+      assertThat(category.getDescription()).isEmpty();
+      assertThat(category.getContents())
+          .hasSize(2)
+          .allSatisfy(
+              content -> {
+                assertThat(content.getUserId().value()).isEqualTo(2L);
+                assertThat(content.getStatus())
+                    .isEqualTo(
+                        published ? DisplayContentStatus.PUBLISHED : DisplayContentStatus.DRAFT);
+              });
+    }
+  }
+
+  @Test
+  void createCategoryRejectsEmptyOversizedAndInvalidPhotosWithoutPersistingCategory()
+      throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(displayWithMember());
+    String oversized =
+        java.util.stream.IntStream.range(0, 21)
+            .mapToObj(i -> "\"https://cdn.displayu.com/" + i + ".jpg\"")
+            .collect(java.util.stream.Collectors.joining(",", "[", "]"));
+    for (String images : List.of("[]", oversized, "[\"https://cdn.displayu.com/1.jpg\",\" \"]")) {
+      mockMvc
+          .perform(
+              post("/api/v1/display/{displayId}/content-categories", display.getId())
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"name\":\"사진 섹션\",\"imageUrls\":" + images + "}"))
+          .andExpect(status().isBadRequest());
+      entityManager.clear();
+      assertThat(
+              displayJpaRepository.findById(display.getId()).orElseThrow().getContentCategories())
+          .isEmpty();
+    }
+  }
+
+  @Test
+  void createCategoryAllowsExplicitNullPhotosForLegacyClient() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(displayWithMember());
+    mockMvc
+        .perform(
+            post("/api/v1/display/{displayId}/content-categories", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"빈 섹션\",\"imageUrls\":null}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.contents").isEmpty());
+  }
+
+  @Test
+  void reorderCategoriesPersistsFullPermutation() throws Exception {
+    Display display = displayWithCategory();
+    display.createContentCategory("둘째", null);
+    display.createContentCategory("셋째", null);
+    displayJpaRepository.saveAndFlush(display);
+    List<Long> ids =
+        display.getContentCategories().stream().map(DisplayContentCategory::getId).toList();
+    List<Long> desired = List.of(ids.get(2), ids.get(0), ids.get(1));
+    display.publish();
+    displayJpaRepository.flush();
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/content-categories/reorder", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderedCategoryIds\":" + desired + "}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.categories[0].categoryId").value(ids.get(2)))
+        .andExpect(jsonPath("$.success.data.categories[2].sortOrder").value(2));
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(
+            displayJpaRepository
+                .findById(display.getId())
+                .orElseThrow()
+                .getContentCategories()
+                .stream()
+                .sorted(java.util.Comparator.comparingInt(DisplayContentCategory::getSortOrder))
+                .map(DisplayContentCategory::getId)
+                .toList())
+        .isEqualTo(desired);
+    mockMvc
+        .perform(get("/api/v1/display/{displayId}", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.contentCategories[0].categoryId").value(ids.get(2)))
+        .andExpect(jsonPath("$.success.data.contentCategories[2].categoryId").value(ids.get(1)));
+  }
+
+  @Test
+  void reorderCategoriesRejectsDuplicateMissingForeignAndNullIdsWithoutChangingOrder()
+      throws Exception {
+    Display display = displayWithCategory();
+    display.createContentCategory("둘째", null);
+    displayJpaRepository.saveAndFlush(display);
+    Display other = displayJpaRepository.saveAndFlush(displayWithCategory());
+    Long first = display.getContentCategories().getFirst().getId();
+    Long second = display.getContentCategories().get(1).getId();
+    Long foreign = other.getContentCategories().getFirst().getId();
+    for (String ids :
+        List.of(
+            "[" + first + "," + first + "]",
+            "[" + first + "]",
+            "[" + first + "," + foreign + "]",
+            "[" + first + ",null]",
+            "null")) {
+      mockMvc
+          .perform(
+              patch("/api/v1/display/{displayId}/content-categories/reorder", display.getId())
+                  .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"orderedCategoryIds\":" + ids + "}"))
+          .andExpect(status().isBadRequest());
+      entityManager.clear();
+      assertThat(
+              displayJpaRepository
+                  .findById(display.getId())
+                  .orElseThrow()
+                  .getContentCategories()
+                  .stream()
+                  .sorted(java.util.Comparator.comparingInt(DisplayContentCategory::getSortOrder))
+                  .map(DisplayContentCategory::getId)
+                  .toList())
+          .containsExactly(first, second);
+    }
+  }
+
+  @Test
+  void reorderEmptyCategoriesAcceptsEmptyArrayAndRequiresPermission() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(displayWithMember());
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/content-categories/reorder", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(2L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderedCategoryIds\":[]}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.categories").isEmpty());
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/content-categories/reorder", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(99L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orderedCategoryIds\":[]}"))
+        .andExpect(status().isForbidden());
   }
 
   private String bearer(Long userId) {

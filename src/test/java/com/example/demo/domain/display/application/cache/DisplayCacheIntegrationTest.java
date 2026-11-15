@@ -330,7 +330,8 @@ class DisplayCacheIntegrationTest {
         "THE ESSENCE IN MOTION",
         "색과 형태, 우리가 마주한 순간들",
         "https://cdn.displayu.com/home/du_pick_1.png",
-        LocalDateTime.of(2026, 6, 30, 11, 0));
+        LocalDateTime.of(2026, 6, 30, 11, 0),
+        null);
   }
 
   private static CreateDisplayCommand createDisplayCommand() {

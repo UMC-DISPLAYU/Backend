@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.result;
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import com.example.demo.global.file.domain.MediaType;
 import java.util.List;
 
@@ -21,7 +22,8 @@ public record DisplayArtworkEditResult(
     String artistName,
     Long artistUserId,
     List<CoAuthorResult> coAuthors,
-    List<Long> qaHandlerUserIds) {
+    List<Long> qaHandlerUserIds,
+    ArtworkCrop artworkCrop) {
 
   public record CoAuthorResult(Long userId, String name) {}
 
@@ -63,7 +65,7 @@ public record DisplayArtworkEditResult(
         artwork.getDisplay().getId(),
         artwork.getArtworkName(),
         artwork.getContent(),
-        artwork.getType().name(),
+        artwork.getType().canonical().name(),
         artwork.getFieldTypes().stream().map(Enum::name).toList(),
         artwork.getProductionYear(),
         artwork.getMaterialMedia(),
@@ -73,6 +75,7 @@ public record DisplayArtworkEditResult(
         artistName,
         artistUserId,
         coAuthors,
-        qaHandlerUserIds);
+        qaHandlerUserIds,
+        artwork.getArtworkCrop());
   }
 }

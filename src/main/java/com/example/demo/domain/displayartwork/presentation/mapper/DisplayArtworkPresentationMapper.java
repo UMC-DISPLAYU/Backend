@@ -13,10 +13,12 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkL
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
-import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.presentation.request.ArtworkCropRequest;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
+import com.example.demo.domain.displayartwork.presentation.response.ArtworkCropResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
@@ -30,7 +32,6 @@ import com.example.demo.domain.displayartwork.presentation.response.DisplayArtwo
 import com.example.demo.domain.displayartwork.presentation.response.ReorderDisplayArtworksResponse;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.file.domain.MediaType;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -72,7 +73,8 @@ public class DisplayArtworkPresentationMapper {
                 artist ->
                     new DisplayArtworkPreviewResponse.ArtistResponse(
                         artist.userId(), artist.name()))
-            .toList());
+            .toList(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkPreviewResponse.ExhibitionInfoResponse toResponse(
@@ -127,7 +129,9 @@ public class DisplayArtworkPresentationMapper {
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
-        result.artworkVideoUrl());
+        result.artworkVideoUrl(),
+        result.artistUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {
@@ -153,7 +157,8 @@ public class DisplayArtworkPresentationMapper {
         toResponse(result.exhibitionInfo()),
         result.likeCount(),
         result.isLiked(),
-        result.isArchived());
+        result.isArchived(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkDetailResponse.ImageResponse toResponse(
@@ -200,7 +205,8 @@ public class DisplayArtworkPresentationMapper {
         result.artistName(),
         result.artistUserId(),
         result.coAuthorCount(),
-        result.qaHandlerUserIds());
+        result.qaHandlerUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {
@@ -252,7 +258,8 @@ public class DisplayArtworkPresentationMapper {
                     new DisplayArtworkEditResponse.CoAuthorResponse(
                         coAuthor.userId(), coAuthor.name()))
             .toList(),
-        result.qaHandlerUserIds());
+        result.qaHandlerUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   public CreateDisplayArtworkCommand toCommand(CreateDisplayArtworkRequest request) {
@@ -260,7 +267,7 @@ public class DisplayArtworkPresentationMapper {
         request.displayId(),
         request.artworkName(),
         request.content(),
-        toArtworkTypes(request.resolvedTypes()),
+        request.resolvedTypes(),
         request.productionYear(),
         request.materialMedia(),
         request.size(),
@@ -270,7 +277,12 @@ public class DisplayArtworkPresentationMapper {
         request.artistUserId(),
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
-        request.qaHandlerUserIds());
+        request.qaHandlerUserIds(),
+        toCrop(request.artworkCrop()));
+  }
+
+  private ArtworkCrop toCrop(ArtworkCropRequest crop) {
+    return crop == null ? null : new ArtworkCrop(crop.x(), crop.y(), crop.w(), crop.h());
   }
 
   private ArtworkImageCommand toCommand(CreateDisplayArtworkRequest.ImageRequest image) {
@@ -285,26 +297,6 @@ public class DisplayArtworkPresentationMapper {
         image.caption(),
         image.width(),
         image.height());
-  }
-
-  private List<ArtworkType> toArtworkTypes(List<CreateDisplayArtworkRequest.Field> fields) {
-    return fields.stream().map(this::toArtworkType).toList();
-  }
-
-  // API에 노출하는 분야 값(Field)과 도메인 타입(ArtworkType)이 별개라 여기서 명시적으로 변환한다.
-  private ArtworkType toArtworkType(CreateDisplayArtworkRequest.Field field) {
-    return switch (field) {
-      case PAINTING -> ArtworkType.PAINTING;
-      case DESIGN -> ArtworkType.DESIGN;
-      case PHOTOGRAPHY -> ArtworkType.PHOTOGRAPHY;
-      case ARCHITECTURE -> ArtworkType.ARCHITECTURE;
-      case MEDIA -> ArtworkType.MEDIA;
-      case CRAFT -> ArtworkType.CRAFT;
-      case SCULPTURE -> ArtworkType.SCULPTURE;
-      case FASHION -> ArtworkType.FASHION;
-      case COMPLEX -> ArtworkType.COMPLEX;
-      case ETC -> ArtworkType.ETC;
-    };
   }
 
   public ReorderDisplayArtworksCommand toCommand(ReorderDisplayArtworksRequest request) {
@@ -327,7 +319,8 @@ public class DisplayArtworkPresentationMapper {
         request.artistUserId(),
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
-        request.qaHandlerUserIds());
+        request.qaHandlerUserIds(),
+        toCrop(request.artworkCrop()));
   }
 
   private ArtworkImageCommand toCommand(UpdateDisplayArtworkRequest.ImageRequest image) {

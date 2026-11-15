@@ -41,7 +41,7 @@ public class DisplayFieldSelection {
 
   public DisplayFieldSelection(Long id, DisplayField field, int sortOrder) {
     this.id = id;
-    this.field = Objects.requireNonNull(field, "field must not be null.");
+    this.field = Objects.requireNonNull(field, "field must not be null.").canonical();
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
   }
 

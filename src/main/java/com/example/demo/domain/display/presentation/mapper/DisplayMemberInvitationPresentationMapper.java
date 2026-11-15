@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.command.AcceptDisplayInvitationCommand;
+import com.example.demo.domain.display.application.command.CancelDisplayInvitationCommand;
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
@@ -48,6 +49,10 @@ public class DisplayMemberInvitationPresentationMapper {
     return new RejectDisplayInvitationCommand(requesterUserId, invitationId);
   }
 
+  public CancelDisplayInvitationCommand toCancelCommand(Long requesterUserId, Long invitationId) {
+    return new CancelDisplayInvitationCommand(requesterUserId, invitationId);
+  }
+
   public DisplayMemberInvitationResponse toResponse(DisplayMemberInvitationResult result) {
     return new DisplayMemberInvitationResponse(
         result.invitationId(),
@@ -74,7 +79,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.loggedIn(),
         result.artistVerified(),
         result.accepted(),
-        result.role());
+        result.role(),
+        result.nickname(),
+        result.invitationId());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -97,7 +104,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.loggedIn(),
         result.artistVerified(),
         result.accepted(),
-        result.role());
+        result.role(),
+        result.nickname(),
+        result.invitationId());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(

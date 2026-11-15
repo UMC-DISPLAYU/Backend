@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveDisplayJpaRepository;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayLike;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
@@ -17,6 +18,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.global.security.JwtFactory;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -46,6 +48,8 @@ class DisplayControllerSearchTest {
   @Autowired private JwtFactory jwtFactory;
 
   @Autowired private Clock clock;
+
+  @Autowired private EntityManager entityManager;
 
   @Test
   void searchDisplaysReturnsCommonSuccessResponse() throws Exception {
@@ -117,6 +121,63 @@ class DisplayControllerSearchTest {
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/search"));
+  }
+
+  @Test
+  void likesSortReturnsCursorCountAndSupportsDepartmentSearch() throws Exception {
+    LocalDate today = LocalDate.now(clock);
+    Display first = jpaRepository.saveAndFlush(publishedDisplay("first", today, today.plusDays(1)));
+    jpaRepository.saveAndFlush(publishedDisplay("second", today, today.plusDays(1)));
+    entityManager.persist(DisplayLike.create(first.getId(), new UserId(3L)));
+    entityManager.flush();
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .param("searchWord", " department ")
+                .param("sort", "LIKES")
+                .param("cursor", "0")
+                .param("size", "1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.exhibitions[0].displayId").value(first.getId()))
+        .andExpect(jsonPath("$.success.data.pagination.nextCursorLikeCount").value(1))
+        .andExpect(jsonPath("$.success.data.pagination.nextCursor").value(first.getId()));
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .param("searchWord", "organization")
+                .param("sort", "LIKES")
+                .param("cursor", first.getId().toString())
+                .param("cursorLikeCount", "1")
+                .param("size", "1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.exhibitions[0].title").value("second"))
+        .andExpect(jsonPath("$.success.data.pagination.hasNext").value(false));
+  }
+
+  @Test
+  void rejectsInvalidSortAndIncompleteLikesCursor() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .param("sort", "LIKES")
+                .param("cursor", "9")
+                .param("size", "10"))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .param("sort", "RANDOM")
+                .param("cursor", "0")
+                .param("size", "10"))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            get("/api/v1/display/search")
+                .param("sort", "LIKES")
+                .param("cursor", "9")
+                .param("cursorLikeCount", "-1")
+                .param("size", "10"))
+        .andExpect(status().isBadRequest());
   }
 
   private static Display publishedDisplay(String title, LocalDate startDate, LocalDate endDate) {

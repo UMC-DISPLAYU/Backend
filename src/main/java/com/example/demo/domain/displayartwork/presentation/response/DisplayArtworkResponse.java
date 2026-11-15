@@ -20,7 +20,8 @@ public record DisplayArtworkResponse(
     String artistName,
     Long artistUserId,
     int coAuthorCount,
-    List<Long> qaHandlerUserIds) {
+    List<Long> qaHandlerUserIds,
+    ArtworkCropResponse artworkCrop) {
 
   @Schema(name = "DisplayArtworkImageResponse")
   public record ImageResponse(

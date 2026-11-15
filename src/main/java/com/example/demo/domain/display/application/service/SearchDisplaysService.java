@@ -7,6 +7,7 @@ import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult.ExhibitionResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult.PaginationResult;
 import com.example.demo.domain.display.application.usecase.SearchDisplaysUseCase;
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,7 +38,11 @@ public class SearchDisplaysService implements SearchDisplaysUseCase {
         pageResults.stream().map(queryResult -> ExhibitionResult.from(queryResult, today)).toList();
     Long nextCursor = hasNext && !exhibitions.isEmpty() ? exhibitions.getLast().displayId() : null;
 
+    Long nextCursorLikeCount =
+        nextCursor != null && query.sort() == DisplaySearchSort.LIKES
+            ? pageResults.getLast().likeCount()
+            : null;
     return new SearchDisplayResult(
-        exhibitions, new PaginationResult(nextCursor, query.size(), hasNext));
+        exhibitions, new PaginationResult(nextCursor, query.size(), hasNext, nextCursorLikeCount));
   }
 }

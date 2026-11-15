@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 
 public record DisplayDetailResult(
@@ -80,7 +81,10 @@ public record DisplayDetailResult(
             .filter(image -> !image.isDeleted())
             .map(ImageResult::from)
             .toList(),
-        display.getContentCategories().stream().map(ContentCategoryResult::from).toList(),
+        display.getContentCategories().stream()
+            .map(ContentCategoryResult::from)
+            .sorted(Comparator.comparingInt(ContentCategoryResult::sortOrder))
+            .toList(),
         display.getTeamMembers().stream().map(TeamMemberResult::from).toList(),
         display.getInvitations().stream()
             .filter(invitation -> !invitation.isDeleted())
@@ -153,7 +157,7 @@ public record DisplayDetailResult(
   private static class FieldResult {
 
     private static String from(DisplayFieldSelection fieldSelection) {
-      return fieldSelection.getField().name();
+      return fieldSelection.getField().canonical().name();
     }
   }
 

@@ -19,7 +19,8 @@ public record DisplayArtworkEditResponse(
     String artistName,
     Long artistUserId,
     List<CoAuthorResponse> coAuthors,
-    List<Long> qaHandlerUserIds) {
+    List<Long> qaHandlerUserIds,
+    ArtworkCropResponse artworkCrop) {
 
   public record CoAuthorResponse(Long userId, String name) {}
 

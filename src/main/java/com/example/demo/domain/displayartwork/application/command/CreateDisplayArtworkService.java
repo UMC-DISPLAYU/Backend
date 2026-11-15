@@ -17,6 +17,8 @@ import com.example.demo.global.file.application.MediaUsage;
 import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -86,6 +88,11 @@ public class CreateDisplayArtworkService {
             requesterUserId,
             initialArtworkStatus(display),
             toImages(command.images()));
+
+    if (displayArtwork.getStatus() == DisplayArtworkStatus.PUBLISHED) {
+      displayArtwork.publish(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
+    }
+    displayArtwork.cropRepresentativeImage(command.artworkCrop());
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
 

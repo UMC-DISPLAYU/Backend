@@ -15,5 +15,7 @@ public record DisplayMemberListResponse(
       @Schema(example = "true") boolean loggedIn,
       @Schema(example = "true") boolean artistVerified,
       @Schema(example = "true") boolean accepted,
-      @Schema(example = "MANAGER") String role) {}
+      @Schema(example = "MANAGER") String role,
+      @Schema(description = "사용자의 기본 닉네임", example = "디유") String nickname,
+      @Schema(description = "대기 중인 초대 ID. 수락 완료 팀원은 null", nullable = true) Long invitationId) {}
 }

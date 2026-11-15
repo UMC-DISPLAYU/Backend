@@ -76,7 +76,13 @@ public class GetDisplayMembersService {
         user != null && user.getDeletedAt() == null,
         user != null && user.isVerified(),
         teamMember.isAccepted(),
-        teamMember.getRole().name());
+        teamMember.getRole().name(),
+        nickname(user),
+        null);
+  }
+
+  private String nickname(User user) {
+    return user != null && user.getNickname() != null ? user.getNickname() : "";
   }
 
   private DisplayMemberListResult.TeamMemberResult toPendingResult(
@@ -89,6 +95,8 @@ public class GetDisplayMembersService {
         user != null && user.getDeletedAt() == null,
         user != null && user.isVerified(),
         false,
-        invitation.getRole().name());
+        invitation.getRole().name(),
+        nickname(user),
+        invitation.getId());
   }
 }

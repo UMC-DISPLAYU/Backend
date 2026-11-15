@@ -7,18 +7,24 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayContentJpaRepository;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.infrastructure.persistence.SpringDataDisplayArtworkJpaRepository;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaDisplayContentPublicationAdapter implements DisplayContentPublicationPort {
 
+  private final Clock clock;
   private final SpringDataDisplayContentJpaRepository displayContentJpaRepository;
   private final SpringDataDisplayArtworkJpaRepository displayArtworkJpaRepository;
 
   public JpaDisplayContentPublicationAdapter(
       SpringDataDisplayContentJpaRepository displayContentJpaRepository,
-      SpringDataDisplayArtworkJpaRepository displayArtworkJpaRepository) {
+      SpringDataDisplayArtworkJpaRepository displayArtworkJpaRepository,
+      Clock clock) {
+    this.clock = clock;
     this.displayContentJpaRepository = displayContentJpaRepository;
     this.displayArtworkJpaRepository = displayArtworkJpaRepository;
   }
@@ -40,7 +46,8 @@ public class JpaDisplayContentPublicationAdapter implements DisplayContentPublic
         DisplayStatus.PUBLISHED,
         ContentOpenPolicy.ON_EXHIBITION,
         DisplayArtworkStatus.DRAFT,
-        DisplayArtworkStatus.PUBLISHED);
+        DisplayArtworkStatus.PUBLISHED,
+        LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
   }
 
   @Override
@@ -60,6 +67,7 @@ public class JpaDisplayContentPublicationAdapter implements DisplayContentPublic
         today,
         ContentOpenPolicy.IMMEDIATELY,
         DisplayArtworkStatus.DRAFT,
-        DisplayArtworkStatus.PUBLISHED);
+        DisplayArtworkStatus.PUBLISHED,
+        LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
   }
 }

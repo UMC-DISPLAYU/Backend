@@ -22,7 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
-@org.springframework.boot.test.context.SpringBootTest
+@org.springframework.boot.test.context.SpringBootTest(
+    properties = {
+      "spring.datasource.url=jdbc:h2:mem:preview_artists;MODE=MySQL;DATABASE_TO_UPPER=FALSE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+      "spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl",
+      "spring.jpa.properties.hibernate.globally_quoted_identifiers=true",
+      "spring.jpa.properties.hibernate.globally_quoted_identifiers_skip_column_definitions=true"
+    })
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 @ActiveProfiles("test")
 @org.springframework.transaction.annotation.Transactional
@@ -72,6 +78,38 @@ class DisplayArtworkPreviewArtistsTest {
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
                     "$.success.data.artworks[0].artistUserId")
                 .value(10));
+  }
+
+  @Test
+  void displayListIncludesLeadAndCoauthorIdsOnly() throws Exception {
+    Display display = persistedDisplay();
+    DisplayArtwork artwork = persistArtwork(display, "공동 작품", 0);
+    persistCreator(artwork.getId(), "계정없는 작가", CreatorRole.CO_AUTHOR, null);
+    persistCreator(artwork.getId(), "대표", CreatorRole.LEAD_ARTIST, 10L);
+    persistCreator(artwork.getId(), "공동", CreatorRole.CO_AUTHOR, 20L);
+    persistCreator(artwork.getId(), "담당", CreatorRole.QA_ONLY, 30L);
+    mvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/v1/artworks")
+                .param("displayId", display.getId().toString()))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserId")
+                .value(10))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds[0]")
+                .value(10))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds.length()")
+                .value(2))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds[1]")
+                .value(20));
   }
 
   private Display persistedDisplay() {
@@ -144,8 +182,8 @@ class DisplayArtworkPreviewArtistsTest {
     entityManager
         .createNativeQuery(
             """
-            INSERT INTO creator
-              (creator_id, display_artwork_id, creator_name, is_contact, is_leader, role, user_id)
+            INSERT INTO Creator
+              (creatorId, displayArtworkId, creatorName, isContact, isLeader, role, userId)
             VALUES (?, ?, ?, FALSE, ?, ?, ?)
             """)
         .setParameter(1, nextCreatorId++)

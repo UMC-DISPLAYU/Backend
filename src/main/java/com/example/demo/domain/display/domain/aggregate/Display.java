@@ -42,9 +42,14 @@ import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -658,6 +663,44 @@ public class Display extends SoftDeleteBaseEntity {
     return category;
   }
 
+  public DisplayContentCategory createContentCategory(
+      String name,
+      String description,
+      List<String> imageUrls,
+      DisplayContentStatus status,
+      UserId userId) {
+    if (imageUrls == null) {
+      return createContentCategory(name, description);
+    }
+    if (imageUrls.isEmpty()) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
+    }
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            null, name, description, nextContentCategorySortOrder(), List.of());
+    imageUrls.forEach(imageUrl -> category.createContent(imageUrl, status, userId));
+    addContentCategory(category);
+    return category;
+  }
+
+  public List<DisplayContentCategory> reorderContentCategories(List<Long> orderedCategoryIds) {
+    if (orderedCategoryIds == null || orderedCategoryIds.size() != contentCategories.size()) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    Map<Long, DisplayContentCategory> categoriesById =
+        contentCategories.stream()
+            .collect(Collectors.toMap(DisplayContentCategory::getId, Function.identity()));
+    Set<Long> orderedIdSet = new HashSet<>(orderedCategoryIds);
+    if (orderedIdSet.size() != orderedCategoryIds.size()
+        || !orderedIdSet.equals(categoriesById.keySet())) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    for (int index = 0; index < orderedCategoryIds.size(); index++) {
+      categoriesById.get(orderedCategoryIds.get(index)).changeSortOrder(index);
+    }
+    return getContentCategories();
+  }
+
   public DisplayContentCategory changeContentCategory(
       Long categoryId, String name, String description) {
     DisplayContentCategory category = findContentCategory(categoryId);
@@ -733,6 +776,16 @@ public class Display extends SoftDeleteBaseEntity {
 
   public void changeDisplayFields(List<DisplayField> displayFields) {
     List<DisplayFieldSelection> targetSelections = toFieldSelections(displayFields);
+    if (targetSelections.stream()
+        .anyMatch(
+            target ->
+                !target.getField().isSelectable()
+                    && fieldSelections.stream()
+                        .noneMatch(existing -> existing.getField() == target.getField()))) {
+      throw new BusinessException(
+          com.example.demo.global.error.GlobalErrorCode.INVALID_INPUT_VALUE,
+          "새로 선택할 수 없는 전시 분야입니다.");
+    }
     fieldSelections.removeIf(
         selection ->
             targetSelections.stream()

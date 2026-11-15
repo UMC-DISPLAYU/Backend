@@ -62,10 +62,12 @@ import com.example.demo.domain.display.application.result.DeleteDisplayContentCa
 import com.example.demo.domain.display.application.result.DeleteDisplayContentResult;
 import com.example.demo.domain.display.application.result.DisplayContentCategoryResult;
 import com.example.demo.domain.display.application.result.DisplayContentResult;
+import com.example.demo.domain.display.application.result.ReorderDisplayContentCategoriesResult;
 import com.example.demo.domain.display.application.result.ReorderDisplayContentsResult;
 import com.example.demo.domain.display.presentation.mapper.DisplayContentPresentationMapper;
 import com.example.demo.domain.display.presentation.request.CreateDisplayContentCategoryRequest;
 import com.example.demo.domain.display.presentation.request.CreateDisplayContentRequest;
+import com.example.demo.domain.display.presentation.request.ReorderDisplayContentCategoriesRequest;
 import com.example.demo.domain.display.presentation.request.ReorderDisplayContentsRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayContentCategoryRequest;
 import com.example.demo.domain.display.presentation.request.UpdateDisplayContentRequest;
@@ -73,6 +75,7 @@ import com.example.demo.domain.display.presentation.response.DeleteDisplayConten
 import com.example.demo.domain.display.presentation.response.DeleteDisplayContentResponse;
 import com.example.demo.domain.display.presentation.response.DisplayContentCategoryResponse;
 import com.example.demo.domain.display.presentation.response.DisplayContentResponse;
+import com.example.demo.domain.display.presentation.response.ReorderDisplayContentCategoriesResponse;
 import com.example.demo.domain.display.presentation.response.ReorderDisplayContentsResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -367,6 +370,26 @@ public class DisplayContentController {
     ReorderDisplayContentsResult result =
         displayContentCommandService.reorderContents(
             mapper.toCommand(request, requireUserId(user), displayId, categoryId));
+    return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
+  }
+
+  @PatchMapping("/api/v1/display/{displayId}/content-categories/reorder")
+  @Operation(
+      summary = "전시 섹션 순서 변경",
+      description = "전시의 모든 섹션 ID를 원하는 순서대로 중복 없이 전달합니다. 빈 전시는 빈 배열을 허용합니다.")
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(responseCode = "200", description = "변경된 섹션 순서", useReturnTypeSchema = true)
+  @ApiResponse(responseCode = "400", description = "누락·중복 또는 다른 전시의 섹션 ID")
+  @ApiResponse(responseCode = "403", description = "전시 콘텐츠 수정 권한 없음")
+  @ApiResponse(responseCode = "409", description = "동시에 순서를 변경하여 충돌")
+  public ApiResponseBody<ReorderDisplayContentCategoriesResponse> reorderCategories(
+      @PathVariable @Positive Long displayId,
+      @Valid @RequestBody ReorderDisplayContentCategoriesRequest request,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    ReorderDisplayContentCategoriesResult result =
+        displayContentCommandService.reorderCategories(
+            mapper.toCommand(request, requireUserId(user), displayId));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 

@@ -26,6 +26,8 @@ import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.global.error.BusinessException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DisplayArtworkQueryService {
 
+  private final ArtworkDiscoveryRepository discoveryRepository;
+  private final Clock clock;
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
   private final CreatorRepository creatorRepository;
@@ -53,7 +57,11 @@ public class DisplayArtworkQueryService {
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
       ArchiveWorkRepository archiveWorkRepository,
-      DisplayArtworkPermissionChecker permissionChecker) {
+      DisplayArtworkPermissionChecker permissionChecker,
+      ArtworkDiscoveryRepository discoveryRepository,
+      Clock clock) {
+    this.discoveryRepository = discoveryRepository;
+    this.clock = clock;
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
@@ -163,9 +171,22 @@ public class DisplayArtworkQueryService {
   @Transactional(readOnly = true)
   public DisplayArtworkPreviewResult getPreview(
       PreviewFilterType type, List<ArtworkType> fields, String school, int page, int size) {
+    if (type == PreviewFilterType.RECOMMEND) {
+      return toPage(
+          page == 0 ? discoveryRepository.recommend(fields, school) : List.of(), page, 10);
+    }
     List<DisplayArtwork> fetched =
         displayArtworkRepository.findPreview(type, fields, school, page, size);
+    return toPage(fetched, page, size);
+  }
 
+  @Transactional(readOnly = true)
+  public DisplayArtworkPreviewResult search(SearchArtworksQuery query) {
+    return toPage(
+        discoveryRepository.search(query, LocalDate.now(clock)), query.page(), query.size());
+  }
+
+  private DisplayArtworkPreviewResult toPage(List<DisplayArtwork> fetched, int page, int size) {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
@@ -224,7 +245,8 @@ public class DisplayArtworkQueryService {
                 creator ->
                     new DisplayArtworkPreviewResult.ArtistResult(
                         creator.getUserId(), creator.getCreatorName()))
-            .toList());
+            .toList(),
+        displayArtwork.getArtworkCrop());
   }
 
   @Transactional(readOnly = true)
@@ -240,10 +262,20 @@ public class DisplayArtworkQueryService {
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
-    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(artworks);
-
+    Map<Long, List<Creator>> artistsByArtworkId =
+        creatorRepository
+            .findArtistsByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.groupingBy(Creator::getDisplayArtworkId));
+    Map<Long, Creator> leadersByArtworkId =
+        artistsByArtworkId.values().stream()
+            .flatMap(List::stream)
+            .filter(Creator::isLeader)
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Function.identity()));
     List<ArtworkItemResult> items =
-        artworks.stream().map(artwork -> toItem(artwork, leadersByArtworkId)).toList();
+        artworks.stream()
+            .map(artwork -> toItem(artwork, leadersByArtworkId, artistsByArtworkId))
+            .toList();
     return new DisplayArtworkListResult(items);
   }
 
@@ -305,7 +337,9 @@ public class DisplayArtworkQueryService {
   }
 
   private ArtworkItemResult toItem(
-      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
+      DisplayArtwork displayArtwork,
+      Map<Long, Creator> leadersByArtworkId,
+      Map<Long, List<Creator>> artistsByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     return new ArtworkItemResult(
         displayArtwork.getId(),
@@ -315,7 +349,13 @@ public class DisplayArtworkQueryService {
         thumbnail != null ? thumbnail.cardImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
-        thumbnail != null ? thumbnail.videoUrl() : null);
+        thumbnail != null ? thumbnail.videoUrl() : null,
+        artistsByArtworkId.getOrDefault(displayArtwork.getId(), List.of()).stream()
+            .map(Creator::getUserId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList(),
+        displayArtwork.getArtworkCrop());
   }
 
   private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {
@@ -331,7 +371,10 @@ public class DisplayArtworkQueryService {
 
   private ArtworkImage findThumbnail(DisplayArtwork displayArtwork) {
     return displayArtwork.getImages().stream()
-        .sorted(Comparator.comparing(ArtworkImage::isThumbnail).reversed())
+        .sorted(
+            Comparator.comparing(ArtworkImage::isThumbnail)
+                .reversed()
+                .thenComparingInt(ArtworkImage::getSortOrder))
         .findFirst()
         .orElse(null);
   }

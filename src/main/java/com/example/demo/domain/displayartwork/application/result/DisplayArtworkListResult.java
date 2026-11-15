@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.result;
 
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import java.util.List;
 
 public record DisplayArtworkListResult(List<ArtworkItemResult> artworks) {
@@ -12,5 +13,7 @@ public record DisplayArtworkListResult(List<ArtworkItemResult> artworks) {
       String artworkImageUrl,
       int imageWidth,
       int imageHeight,
-      String artworkVideoUrl) {}
+      String artworkVideoUrl,
+      List<Long> artistUserIds,
+      ArtworkCrop artworkCrop) {}
 }

@@ -55,5 +55,6 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
     }
   }
 
-  public record PaginationResult(Long nextCursor, int size, boolean hasNext) {}
+  public record PaginationResult(
+      Long nextCursor, int size, boolean hasNext, Long nextCursorLikeCount) {}
 }

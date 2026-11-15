@@ -17,13 +17,14 @@ public record CreatePresignedUrlRequest(
     @Schema(description = "원본 파일명", example = "poster.png") @NotBlank String fileName,
     @Schema(
             description =
-                "업로드할 파일 Content-Type. IMAGE: image/jpeg, image/png, image/webp, image/gif / VIDEO: video/mp4, video/quicktime, video/webm",
+                "업로드할 파일 Content-Type. IMAGE: image/jpeg, image/png, image/webp, image/gif, image/heic / VIDEO: video/mp4, video/quicktime, video/webm",
             example = "image/png",
             allowableValues = {
               "image/jpeg",
               "image/png",
               "image/webp",
               "image/gif",
+              "image/heic",
               "video/mp4",
               "video/quicktime",
               "video/webm"

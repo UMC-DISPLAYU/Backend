@@ -146,6 +146,16 @@ public class DisplayInvitation {
     this.deletedAt = this.respondedAt;
   }
 
+  public void cancel(LocalDateTime respondedAt) {
+    if (status == DisplayInvitationStatus.CANCELLED) {
+      return;
+    }
+    ensurePending();
+    this.status = DisplayInvitationStatus.CANCELLED;
+    this.respondedAt = Objects.requireNonNull(respondedAt, "respondedAt must not be null.");
+    this.deletedAt = this.respondedAt;
+  }
+
   public boolean isDeleted() {
     return deletedAt != null;
   }
@@ -161,6 +171,9 @@ public class DisplayInvitation {
   private void ensurePending() {
     if (status == DisplayInvitationStatus.ACCEPTED) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_ALREADY_ACCEPTED);
+    }
+    if (status == DisplayInvitationStatus.CANCELLED) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_ALREADY_CANCELLED);
     }
     if (status == DisplayInvitationStatus.REJECTED || isDeleted()) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_ALREADY_REJECTED);

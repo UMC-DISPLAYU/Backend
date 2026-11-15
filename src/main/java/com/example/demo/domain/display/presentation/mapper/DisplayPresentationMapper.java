@@ -148,7 +148,8 @@ public class DisplayPresentationMapper {
         new SearchDisplayResponse.CursorPaginationResponse(
             result.pagination().nextCursor(),
             result.pagination().size(),
-            result.pagination().hasNext()));
+            result.pagination().hasNext(),
+            result.pagination().nextCursorLikeCount()));
   }
 
   public DisplayMapResponse toResponse(DisplayMapResult result) {
@@ -237,7 +238,8 @@ public class DisplayPresentationMapper {
         result.title(),
         result.subtitle(),
         result.bannerImageUrl(),
-        result.createdAt());
+        result.createdAt(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(

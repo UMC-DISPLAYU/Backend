@@ -7,11 +7,13 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,8 +26,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
@@ -58,8 +62,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private int productionYear;
 
-  @Column(nullable = false)
-  private String materialMedia;
+  @Column private String materialMedia;
+
+  @Embedded private ArtworkCrop artworkCrop;
 
   private String size;
 
@@ -76,17 +81,18 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private DisplayArtworkStatus status;
 
+  private LocalDateTime firstPublishedAt;
+
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
   @BatchSize(size = 50)
   private final List<ArtworkImage> images = new ArrayList<>();
 
-  /** 작품 분야. 최대 2개다. type은 이 목록의 첫 번째 값과 항상 같게 유지한다(하위 호환용). */
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @BatchSize(size = 50)
   private final List<ArtworkField> fields = new ArrayList<>();
 
-  private static final int MAX_FIELDS = 2;
+  private static final int MAX_FIELDS = 3;
 
   protected DisplayArtwork() {}
 
@@ -189,7 +195,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     // type은 replaceFields가 첫 번째 분야로 함께 갱신한다.
     replaceFields(types);
     this.productionYear = productionYear;
-    this.materialMedia = requireNonBlank(materialMedia, "materialMedia");
+    this.materialMedia =
+        materialMedia == null || materialMedia.isBlank() ? null : materialMedia.trim();
     this.size = size;
     this.point = point;
   }
@@ -198,7 +205,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
   }
 
-  public void publish() {
+  public void publish(LocalDateTime publishedAt) {
+    Objects.requireNonNull(publishedAt, "publishedAt must not be null.");
+    if (firstPublishedAt == null) firstPublishedAt = publishedAt;
     this.status = DisplayArtworkStatus.PUBLISHED;
   }
 
@@ -217,7 +226,12 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
    * <p>{@code type} 컬럼은 아직 여러 조회와 응답이 사용하므로, 첫 번째 분야를 그대로 반영해 둘을 어긋나지 않게 유지한다.
    */
   public void replaceFields(List<ArtworkType> newFields) {
-    List<ArtworkType> distinct = requireOneOrTwoFields(newFields);
+    List<ArtworkType> distinct = requireOneToThreeFields(newFields);
+    if (distinct.stream()
+        .anyMatch(
+            field -> !field.isSelectable() && !getFieldTypes().contains(field) && type != field)) {
+      throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD);
+    }
     // 전체를 지우고 다시 넣으면, 유지되는 분야가 같은 값으로 다시 INSERT되어 유니크 제약에 걸린다.
     // (Hibernate가 고아 삭제보다 INSERT를 먼저 내보내는 경우가 있다) 그래서 차이만 반영한다.
     fields.removeIf(existing -> !distinct.contains(existing.getField()));
@@ -233,22 +247,32 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   }
 
   public List<ArtworkType> getFieldTypes() {
-    return fields.stream().map(ArtworkField::getField).toList();
+    return fields.stream().map(field -> field.getField().canonical()).distinct().toList();
   }
 
-  private static List<ArtworkType> requireOneOrTwoFields(List<ArtworkType> newFields) {
-    if (newFields == null || newFields.isEmpty()) {
+  private static List<ArtworkType> requireOneToThreeFields(List<ArtworkType> newFields) {
+    if (newFields == null || newFields.isEmpty() || newFields.stream().anyMatch(Objects::isNull)) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
     }
     // 같은 분야를 두 번 보내는 것은 1개 지정과 같으므로 중복을 제거한 뒤 개수를 따진다.
-    List<ArtworkType> distinct = newFields.stream().distinct().toList();
+    List<ArtworkType> distinct = newFields.stream().map(ArtworkType::canonical).distinct().toList();
     if (distinct.size() > MAX_FIELDS) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_FIELD_COUNT);
     }
     return distinct;
   }
 
+  public void cropRepresentativeImage(ArtworkCrop crop) {
+    if (crop != null) {
+      this.artworkCrop = crop;
+    }
+  }
+
   public void replaceImages(List<ArtworkImage> newImages) {
+    replaceImages(newImages, null);
+  }
+
+  public void replaceImages(List<ArtworkImage> newImages, ArtworkCrop requestedCrop) {
     requireAtLeastOneArtworkImage(newImages);
     List<ArtworkImage> replacement = List.copyOf(newImages);
     validateMediaLimits(replacement);
@@ -265,8 +289,25 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     if (reclassifiedVideo) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
     }
+    String previousCardImageUrl = representativeImageUrl(images);
     images.clear();
     replacement.forEach(this::addImage);
+    if (requestedCrop != null) {
+      artworkCrop = requestedCrop;
+    } else if (!Objects.equals(previousCardImageUrl, representativeImageUrl(images))) {
+      artworkCrop = null;
+    }
+  }
+
+  private static String representativeImageUrl(List<ArtworkImage> images) {
+    return images.stream()
+        .sorted(
+            Comparator.comparing(ArtworkImage::isThumbnail)
+                .reversed()
+                .thenComparingInt(ArtworkImage::getSortOrder))
+        .map(ArtworkImage::cardImageUrl)
+        .findFirst()
+        .orElse(null);
   }
 
   private static void requireAtLeastOneArtworkImage(List<ArtworkImage> images) {

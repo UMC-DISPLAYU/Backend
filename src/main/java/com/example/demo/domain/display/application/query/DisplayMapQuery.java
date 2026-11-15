@@ -9,4 +9,5 @@ public record DisplayMapQuery(
     BigDecimal eastLongitude,
     String searchWord,
     Long cursor,
-    int size) {}
+    int size,
+    boolean all) {}

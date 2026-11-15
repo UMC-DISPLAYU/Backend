@@ -73,6 +73,28 @@ class CreateDisplayArtworkServiceTest {
 
     verify(displayArtworkRepository).save(artworkCaptor.capture());
     assertThat(artworkCaptor.getValue().getStatus()).isEqualTo(DisplayArtworkStatus.DRAFT);
+    assertThat(artworkCaptor.getValue().getFirstPublishedAt()).isNull();
+  }
+
+  @Test
+  void immediatePublicationRecordsClockInstantInUtc() {
+    Display display = display(ContentOpenPolicy.IMMEDIATELY);
+    display.publish();
+    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
+    when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(0);
+    when(artistVerificationRepository.isVerifiedArtist(1L)).thenReturn(true);
+    when(displayArtworkRepository.save(any(DisplayArtwork.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(authorSetupService.setup(any(Long.class), any(AuthorSetupCommand.class)))
+        .thenReturn(new AuthorSetupResult(null, "작가", 1L, 0, List.of(1L)));
+    ArgumentCaptor<DisplayArtwork> artworkCaptor = ArgumentCaptor.forClass(DisplayArtwork.class);
+
+    service.createDisplayArtwork(1L, command());
+
+    verify(displayArtworkRepository).save(artworkCaptor.capture());
+    assertThat(artworkCaptor.getValue().getStatus()).isEqualTo(DisplayArtworkStatus.PUBLISHED);
+    assertThat(artworkCaptor.getValue().getFirstPublishedAt())
+        .isEqualTo(java.time.LocalDateTime.of(2026, 8, 1, 15, 0));
   }
 
   private static Display display(ContentOpenPolicy artworkContentOpen) {
@@ -104,7 +126,7 @@ class CreateDisplayArtworkServiceTest {
         1L,
         "작품명",
         "작품 설명입니다.",
-        List.of(ArtworkType.DESIGN),
+        List.of(ArtworkType.GRAPHIC),
         2026,
         "디지털 프린트",
         "100x100cm",
@@ -122,7 +144,8 @@ class CreateDisplayArtworkServiceTest {
         1L,
         List.of(),
         List.of(),
-        List.of(1L));
+        List.of(1L),
+        null);
   }
 
   private static BigDecimal bd(String value) {

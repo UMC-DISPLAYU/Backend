@@ -17,12 +17,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
 
-/**
- * 작품이 속한 분야. 한 작품은 최대 2개까지 가질 수 있다.
- *
- * <p>작가 프로필의 활동 분야({@code AreaOfActivity})와 같은 방식으로 별도 테이블에 둔다. 미리보기 필터가 "고른 분야를 모두 가진 작품"을 AND로 찾기
- * 때문에, 분야를 행으로 두어야 개수를 세어 판별할 수 있다.
- */
 @Getter
 @Entity
 @Table(

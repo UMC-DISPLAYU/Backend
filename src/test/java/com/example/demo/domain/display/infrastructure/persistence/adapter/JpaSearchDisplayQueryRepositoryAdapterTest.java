@@ -6,9 +6,11 @@ import com.example.demo.domain.display.application.query.SearchDisplayQuery;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
+import com.example.demo.domain.display.domain.entity.DisplayLike;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
@@ -17,6 +19,7 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.global.config.JpaAuditingConfig;
 import com.example.demo.global.config.QuerydslConfig;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -39,6 +42,8 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
   @Autowired private SearchDisplayQueryRepository queryRepository;
 
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;
+
+  @Autowired private EntityManager entityManager;
 
   @Test
   void searchDisplaysFiltersPublishedDisplaysByTitleTypeFieldAndOngoingStatus() {
@@ -129,7 +134,9 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
                 DisplayField.DESIGN,
                 DisplayType.GRADUATION,
                 0L,
-                20),
+                20,
+                null,
+                null),
             today,
             20);
 
@@ -172,11 +179,11 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     List<SearchDisplayQueryResult> firstPage =
         queryRepository.searchDisplays(
-            new SearchDisplayQuery(null, null, null, null, null, 0L, 1), today, 1);
+            new SearchDisplayQuery(null, null, null, null, null, 0L, 1, null, null), today, 1);
     List<SearchDisplayQueryResult> secondPage =
         queryRepository.searchDisplays(
             new SearchDisplayQuery(
-                null, null, null, null, null, firstPage.getFirst().displayId(), 10),
+                null, null, null, null, null, firstPage.getFirst().displayId(), 10, null, null),
             today,
             10);
 
@@ -207,7 +214,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
 
     List<SearchDisplayQueryResult> results =
         queryRepository.searchDisplays(
-            new SearchDisplayQuery(null, null, null, null, null, null, 20), today, 20);
+            new SearchDisplayQuery(null, null, null, null, null, null, 20, null, null), today, 20);
 
     assertThat(results)
         .extracting(SearchDisplayQueryResult::title)
@@ -263,7 +270,7 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
     List<SearchDisplayQueryResult> results =
         queryRepository.searchDisplays(
             new SearchDisplayQuery(
-                null, SearchDisplayStatus.CLOSING_SOON, null, null, null, 0L, 20),
+                null, SearchDisplayStatus.CLOSING_SOON, null, null, null, 0L, 20, null, null),
             today,
             20);
 
@@ -271,6 +278,112 @@ class JpaSearchDisplayQueryRepositoryAdapterTest {
         .extracting(SearchDisplayQueryResult::title)
         .containsExactly("3일 이내 종료 전시", "오늘 종료 전시")
         .doesNotContain("4일 뒤 종료 전시", "아직 시작 전인 3일 이내 종료 전시", "이미 종료 전시");
+  }
+
+  @Test
+  void searchesSchoolAndDepartmentWithoutTitleMatch() {
+    LocalDate today = LocalDate.of(2026, 7, 12);
+    Display display =
+        publishedDisplay(
+            "별빛", DisplayType.GRADUATION, List.of(DisplayField.GRAPHIC), today, today.plusDays(1));
+    jpaRepository.saveAndFlush(display);
+    for (String keyword : List.of("ORGANIZATION", "department")) {
+      assertThat(
+              queryRepository.searchDisplays(
+                  new SearchDisplayQuery(
+                      keyword,
+                      SearchDisplayStatus.ONGOING,
+                      null,
+                      null,
+                      null,
+                      0L,
+                      20,
+                      DisplaySearchSort.LATEST,
+                      null),
+                  today,
+                  20))
+          .extracting(SearchDisplayQueryResult::displayId)
+          .containsExactly(display.getId());
+    }
+  }
+
+  @Test
+  void likesCursorPreservesTiesZeroLikesAndIgnoresCancelledLikes() {
+    LocalDate today = LocalDate.of(2026, 7, 12);
+    Display first =
+        publishedDisplay(
+            "first",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.GRAPHIC, DisplayField.PAINTING),
+            today,
+            today.plusDays(1));
+    Display second =
+        publishedDisplay(
+            "second",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.GRAPHIC),
+            today,
+            today.plusDays(1));
+    Display third =
+        publishedDisplay(
+            "third",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.GRAPHIC),
+            today,
+            today.plusDays(1));
+    Display fourth =
+        publishedDisplay(
+            "fourth",
+            DisplayType.GRADUATION,
+            List.of(DisplayField.GRAPHIC),
+            today,
+            today.plusDays(1));
+    jpaRepository.saveAllAndFlush(List.of(first, second, third, fourth));
+    entityManager.persist(DisplayLike.create(first.getId(), new UserId(1L)));
+    entityManager.persist(DisplayLike.create(first.getId(), new UserId(2L)));
+    entityManager.persist(DisplayLike.create(second.getId(), new UserId(1L)));
+    entityManager.persist(DisplayLike.create(second.getId(), new UserId(2L)));
+    DisplayLike cancelled = DisplayLike.create(fourth.getId(), new UserId(1L));
+    cancelled.cancel();
+    entityManager.persist(cancelled);
+    entityManager.flush();
+    var firstPage =
+        queryRepository.searchDisplays(
+            new SearchDisplayQuery(
+                null, null, null, DisplayField.GRAPHIC, null, 0L, 2, DisplaySearchSort.LIKES, null),
+            today,
+            2);
+    assertThat(firstPage)
+        .extracting(SearchDisplayQueryResult::displayId)
+        .containsExactly(second.getId(), first.getId());
+    assertThat(firstPage).extracting(SearchDisplayQueryResult::likeCount).containsExactly(2L, 2L);
+    var secondPage =
+        queryRepository.searchDisplays(
+            new SearchDisplayQuery(
+                null,
+                null,
+                null,
+                DisplayField.GRAPHIC,
+                null,
+                first.getId(),
+                2,
+                DisplaySearchSort.LIKES,
+                2L),
+            today,
+            2);
+    assertThat(secondPage)
+        .extracting(SearchDisplayQueryResult::displayId)
+        .containsExactly(fourth.getId(), third.getId());
+    assertThat(secondPage).extracting(SearchDisplayQueryResult::likeCount).containsExactly(0L, 0L);
+    var afterTie =
+        queryRepository.searchDisplays(
+            new SearchDisplayQuery(
+                null, null, null, null, null, second.getId(), 10, DisplaySearchSort.LIKES, 2L),
+            today,
+            10);
+    assertThat(afterTie)
+        .extracting(SearchDisplayQueryResult::displayId)
+        .containsExactly(first.getId(), fourth.getId(), third.getId());
   }
 
   private static Display publishedDisplay(

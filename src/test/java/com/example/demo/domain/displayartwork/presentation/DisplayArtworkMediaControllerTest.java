@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -119,6 +120,220 @@ class DisplayArtworkMediaControllerTest {
     entityManager.flush();
     displayId = display.getId();
     entityManager.clear();
+  }
+
+  @ParameterizedTest
+  @MethodSource("emptyMaterials")
+  void optionalMaterialRoundTripsAndClearsOnUpdate(String material) throws Exception {
+    String request = body(legacyImageJson()).replace("\"materialMedia\":\"영상\",", material);
+    mvc.perform(
+            post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    Long id = artworkId();
+    update(id, legacyImageJson())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.materialMedia").value("영상"));
+    mvc.perform(
+            patch("/api/v1/artworks/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(entityManager.find(DisplayArtwork.class, id).getMaterialMedia()).isNull();
+    for (String suffix : List.of("", "/edit")) {
+      mvc.perform(
+              get("/api/v1/artworks/" + id + suffix)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    }
+  }
+
+  private static Stream<String> emptyMaterials() {
+    return Stream.of("", "\"materialMedia\":null,", "\"materialMedia\":\"   \",");
+  }
+
+  private static final String CROP = "{\"x\":0.1,\"y\":0.2,\"w\":0.5,\"h\":0.6}";
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void cropRoundTripsThroughWriteListPreviewDetailAndEdit(boolean video) throws Exception {
+    String media = video ? videoJson() : legacyImageJson();
+    createWithCrop(media, CROP)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(entityManager.find(DisplayArtwork.class, id).getArtworkCrop().getX())
+        .isEqualByComparingTo("0.1");
+    for (String suffix : List.of("", "/edit")) {
+      mvc.perform(
+              get("/api/v1/artworks/" + id + suffix)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.artworkCrop.w").value(0.5));
+    }
+    mvc.perform(get("/api/v1/artworks").param("displayId", displayId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkCrop.y").value(0.2));
+    mvc.perform(
+            get("/api/v1/artworks/preview")
+                .param("type", "RECOMMEND")
+                .param("page", "0")
+                .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkCrop.h").value(0.6));
+    update(id, media)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    updateWithCrop(id, media, "null")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    updateWithCrop(id, media, "{\"x\":0,\"y\":0,\"w\":1,\"h\":1}")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.w").value(1));
+  }
+
+  @Test
+  void videoCropTracksDisplayedThumbnailRatherThanVideoOriginal() throws Exception {
+    createWithCrop(videoJson(), CROP).andExpect(status().isCreated());
+    Long id = artworkId();
+    String newVideo = videoJson().replace(VIDEO, "https://cdn.example/new.mp4");
+    update(id, newVideo)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    update(id, newVideo.replace(THUMBNAIL, "https://cdn.example/new-thumbnail.png"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop").isEmpty());
+    updateWithCrop(id, videoJson(), CROP)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    update(id, legacyImageJson().replace(IMAGE, THUMBNAIL))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    update(id, legacyImageJson())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop").isEmpty());
+  }
+
+  @Test
+  void selectingAnotherRepresentativeResetsCropAndExplicitCropWins() throws Exception {
+    createWithCrop(legacyImageJson(), CROP).andExpect(status().isCreated());
+    Long id = artworkId();
+    String images =
+        legacyImageJson().replace("\"isThumbnail\":true", "\"isThumbnail\":false")
+            + ","
+            + legacyImageJson().replace(IMAGE, "https://cdn.example/second.png");
+    update(id, images)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop").isEmpty());
+    updateWithCrop(id, legacyImageJson(), CROP)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.w").value(0.5));
+  }
+
+  @Test
+  void cropTracksPersistedRepresentativeWhenRequestImagesAreNotInSortOrder() throws Exception {
+    String first = legacyImageJson().replace("\"isThumbnail\":true", "\"isThumbnail\":false");
+    String second =
+        first
+            .replace(IMAGE, "https://cdn.example/second.png")
+            .replace("\"sortOrder\":0", "\"sortOrder\":1");
+    createWithCrop(first + "," + second, CROP).andExpect(status().isCreated());
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+    update(id, second + "," + first)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkCrop.x").value(0.1));
+    entityManager.flush();
+    entityManager.clear();
+    mvc.perform(get("/api/v1/artworks").param("displayId", displayId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkImageUrl").value(IMAGE))
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkCrop.x").value(0.1));
+  }
+
+  @Test
+  void cropPreservesTenDecimalPlacesAtImageBoundary() throws Exception {
+    String precise = "{\"x\":0.9999999999,\"y\":0,\"w\":0.0000000001,\"h\":1}";
+    createWithCrop(legacyImageJson(), precise).andExpect(status().isCreated());
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+    var crop = entityManager.find(DisplayArtwork.class, id).getArtworkCrop();
+    assertThat(crop.getX()).isEqualByComparingTo("0.9999999999");
+    assertThat(crop.getW()).isEqualByComparingTo("0.0000000001");
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidCrops")
+  void invalidCropRejectsCreateAndUpdateWithoutChangingStoredMedia(String crop) throws Exception {
+    createWithCrop(legacyImageJson(), crop).andExpect(status().isBadRequest());
+    createWithCrop(legacyImageJson(), CROP).andExpect(status().isCreated());
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+    updateWithCrop(id, videoJson(), crop).andExpect(status().isBadRequest());
+    entityManager.clear();
+    DisplayArtwork artwork = entityManager.find(DisplayArtwork.class, id);
+    assertThat(artwork.getImages().getFirst().getImageUrl()).isEqualTo(IMAGE);
+    assertThat(artwork.getArtworkCrop().getX()).isEqualByComparingTo("0.1");
+  }
+
+  @Test
+  void cropUpdateRequiresArtworkEditorPermission() throws Exception {
+    createWithCrop(legacyImageJson(), CROP).andExpect(status().isCreated());
+    Long id = artworkId();
+    mvc.perform(
+            patch("/api/v1/artworks/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId + 1000))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWithCrop(legacyImageJson(), "{\"x\":0,\"y\":0,\"w\":1,\"h\":1}")))
+        .andExpect(status().isForbidden());
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(entityManager.find(DisplayArtwork.class, id).getArtworkCrop().getX())
+        .isEqualByComparingTo("0.1");
+  }
+
+  private ResultActions createWithCrop(String images, String crop) throws Exception {
+    return mvc.perform(
+        post("/api/v1/artworks")
+            .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(bodyWithCrop(images, crop)));
+  }
+
+  private ResultActions updateWithCrop(Long id, String images, String crop) throws Exception {
+    return mvc.perform(
+        patch("/api/v1/artworks/{id}", id)
+            .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(bodyWithCrop(images, crop)));
+  }
+
+  private String bodyWithCrop(String images, String crop) {
+    return body(images)
+        .replace("\"artworkName\":", "\"artworkCrop\":" + crop + ",\"artworkName\":");
+  }
+
+  private static Stream<String> invalidCrops() {
+    return Stream.of(
+        "{\"x\":-0.1,\"y\":0,\"w\":0.5,\"h\":1}",
+        "{\"x\":0,\"y\":0,\"w\":0,\"h\":1}",
+        "{\"x\":0.6,\"y\":0,\"w\":0.5,\"h\":1}",
+        "{\"x\":0,\"y\":0.6,\"w\":1,\"h\":0.5}",
+        "{\"x\":0.12345678901,\"y\":0,\"w\":0.5,\"h\":1}",
+        "{\"x\":0,\"y\":0,\"w\":0.5}");
   }
 
   @Test

@@ -107,6 +107,45 @@ class DisplayContentCommandServiceTest {
                     .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_REORDER_CONFLICT));
   }
 
+  @Test
+  void reorderCategoriesTranslatesOptimisticLockConflict() {
+    Display display = displayWithThreeContents();
+    when(displayRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(display));
+    doThrow(new ObjectOptimisticLockingFailureException(Display.class, 1L))
+        .when(displayRepository)
+        .flush();
+    assertThatThrownBy(
+            () ->
+                service.reorderCategories(
+                    new ReorderDisplayContentCategoriesCommand(2L, 1L, List.of(1L))))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e ->
+                assertThat(e.errorCode())
+                    .isEqualTo(DisplayErrorCode.DISPLAY_CONTENT_CATEGORY_REORDER_CONFLICT));
+  }
+
+  @Test
+  void invalidPhotoBatchDoesNotAttachPartialCategory() {
+    Display display = display();
+    List<String> tooMany =
+        java.util.stream.IntStream.range(0, 21)
+            .mapToObj(i -> "https://cdn.displayu.com/" + i + ".jpg")
+            .toList();
+    assertThatThrownBy(
+            () ->
+                display.createContentCategory(
+                    "사진", null, tooMany, DisplayContentStatus.DRAFT, new UserId(1L)))
+        .isInstanceOf(BusinessException.class);
+    assertThat(display.getContentCategories()).isEmpty();
+    assertThatThrownBy(
+            () ->
+                display.createContentCategory(
+                    "사진", null, List.of(), DisplayContentStatus.DRAFT, new UserId(1L)))
+        .isInstanceOf(BusinessException.class);
+    assertThat(display.getContentCategories()).isEmpty();
+  }
+
   private static Display displayWithThreeContents() {
     Display display = display();
     display.addTeamMember(new TeamMember(1L, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));

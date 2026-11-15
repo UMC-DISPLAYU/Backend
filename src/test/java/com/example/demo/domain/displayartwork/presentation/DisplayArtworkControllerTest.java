@@ -130,7 +130,6 @@ class DisplayArtworkControllerTest {
 
   @Test
   void createDisplayArtworkReturnsBadRequestWhenRequiredFieldIsMissing() throws Exception {
-    // 작품명/작품분야/제작 연도/재료·매체는 필수이므로 누락 시 검증에서 막혀야 한다.
     mockMvc
         .perform(
             post("/api/v1/artworks")
