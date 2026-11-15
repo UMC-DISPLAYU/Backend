@@ -13,9 +13,12 @@ import com.example.demo.domain.displayartwork.application.result.DisplayArtworkL
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkPreviewResult;
 import com.example.demo.domain.displayartwork.application.result.DisplayArtworkResult;
 import com.example.demo.domain.displayartwork.application.result.ReorderDisplayArtworksResult;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.presentation.request.ArtworkCropRequest;
 import com.example.demo.domain.displayartwork.presentation.request.CreateDisplayArtworkRequest;
 import com.example.demo.domain.displayartwork.presentation.request.ReorderDisplayArtworksRequest;
 import com.example.demo.domain.displayartwork.presentation.request.UpdateDisplayArtworkRequest;
+import com.example.demo.domain.displayartwork.presentation.response.ArtworkCropResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DeleteDisplayArtworkResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkByArtistResponse;
 import com.example.demo.domain.displayartwork.presentation.response.DisplayArtworkDetailResponse;
@@ -70,7 +73,8 @@ public class DisplayArtworkPresentationMapper {
                 artist ->
                     new DisplayArtworkPreviewResponse.ArtistResponse(
                         artist.userId(), artist.name()))
-            .toList());
+            .toList(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkPreviewResponse.ExhibitionInfoResponse toResponse(
@@ -126,7 +130,8 @@ public class DisplayArtworkPresentationMapper {
         result.imageWidth(),
         result.imageHeight(),
         result.artworkVideoUrl(),
-        result.artistUserIds());
+        result.artistUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {
@@ -152,7 +157,8 @@ public class DisplayArtworkPresentationMapper {
         toResponse(result.exhibitionInfo()),
         result.likeCount(),
         result.isLiked(),
-        result.isArchived());
+        result.isArchived(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkDetailResponse.ImageResponse toResponse(
@@ -199,7 +205,8 @@ public class DisplayArtworkPresentationMapper {
         result.artistName(),
         result.artistUserId(),
         result.coAuthorCount(),
-        result.qaHandlerUserIds());
+        result.qaHandlerUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {
@@ -251,7 +258,8 @@ public class DisplayArtworkPresentationMapper {
                     new DisplayArtworkEditResponse.CoAuthorResponse(
                         coAuthor.userId(), coAuthor.name()))
             .toList(),
-        result.qaHandlerUserIds());
+        result.qaHandlerUserIds(),
+        ArtworkCropResponse.from(result.artworkCrop()));
   }
 
   public CreateDisplayArtworkCommand toCommand(CreateDisplayArtworkRequest request) {
@@ -269,7 +277,12 @@ public class DisplayArtworkPresentationMapper {
         request.artistUserId(),
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
-        request.qaHandlerUserIds());
+        request.qaHandlerUserIds(),
+        toCrop(request.artworkCrop()));
+  }
+
+  private ArtworkCrop toCrop(ArtworkCropRequest crop) {
+    return crop == null ? null : new ArtworkCrop(crop.x(), crop.y(), crop.w(), crop.h());
   }
 
   private ArtworkImageCommand toCommand(CreateDisplayArtworkRequest.ImageRequest image) {
@@ -306,7 +319,8 @@ public class DisplayArtworkPresentationMapper {
         request.artistUserId(),
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
-        request.qaHandlerUserIds());
+        request.qaHandlerUserIds(),
+        toCrop(request.artworkCrop()));
   }
 
   private ArtworkImageCommand toCommand(UpdateDisplayArtworkRequest.ImageRequest image) {

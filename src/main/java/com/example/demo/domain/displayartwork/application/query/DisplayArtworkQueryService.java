@@ -245,7 +245,8 @@ public class DisplayArtworkQueryService {
                 creator ->
                     new DisplayArtworkPreviewResult.ArtistResult(
                         creator.getUserId(), creator.getCreatorName()))
-            .toList());
+            .toList(),
+        displayArtwork.getArtworkCrop());
   }
 
   @Transactional(readOnly = true)
@@ -353,7 +354,8 @@ public class DisplayArtworkQueryService {
             .map(Creator::getUserId)
             .filter(Objects::nonNull)
             .distinct()
-            .toList());
+            .toList(),
+        displayArtwork.getArtworkCrop());
   }
 
   private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {
@@ -369,7 +371,10 @@ public class DisplayArtworkQueryService {
 
   private ArtworkImage findThumbnail(DisplayArtwork displayArtwork) {
     return displayArtwork.getImages().stream()
-        .sorted(Comparator.comparing(ArtworkImage::isThumbnail).reversed())
+        .sorted(
+            Comparator.comparing(ArtworkImage::isThumbnail)
+                .reversed()
+                .thenComparingInt(ArtworkImage::getSortOrder))
         .findFirst()
         .orElse(null);
   }

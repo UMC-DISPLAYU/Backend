@@ -57,7 +57,7 @@ public class UpdateDisplayArtworkService {
         .images()
         .forEach(image -> mediaStorageVerifier.verifyVideo(image.media(), MediaUsage.ARTWORK));
     List<String> previousFileUrls = artwork.getMediaFileUrls();
-    artwork.replaceImages(toImages(command.images()));
+    artwork.replaceImages(toImages(command.images()), command.artworkCrop());
 
     artwork.changeContent(
         command.artworkName(),

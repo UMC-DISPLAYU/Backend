@@ -144,7 +144,8 @@ class CreateDisplayArtworkServiceTest {
         1L,
         List.of(),
         List.of(),
-        List.of(1L));
+        List.of(1L),
+        null);
   }
 
   private static BigDecimal bd(String value) {

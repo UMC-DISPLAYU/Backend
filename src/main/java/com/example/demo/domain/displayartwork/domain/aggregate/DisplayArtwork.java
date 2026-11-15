@@ -7,11 +7,13 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,6 +29,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
@@ -60,6 +63,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   private int productionYear;
 
   @Column private String materialMedia;
+
+  @Embedded private ArtworkCrop artworkCrop;
 
   private String size;
 
@@ -258,7 +263,17 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     return distinct;
   }
 
+  public void cropRepresentativeImage(ArtworkCrop crop) {
+    if (crop != null) {
+      this.artworkCrop = crop;
+    }
+  }
+
   public void replaceImages(List<ArtworkImage> newImages) {
+    replaceImages(newImages, null);
+  }
+
+  public void replaceImages(List<ArtworkImage> newImages, ArtworkCrop requestedCrop) {
     requireAtLeastOneArtworkImage(newImages);
     List<ArtworkImage> replacement = List.copyOf(newImages);
     validateMediaLimits(replacement);
@@ -275,8 +290,25 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     if (reclassifiedVideo) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
     }
+    String previousCardImageUrl = representativeImageUrl(images);
     images.clear();
     replacement.forEach(this::addImage);
+    if (requestedCrop != null) {
+      artworkCrop = requestedCrop;
+    } else if (!Objects.equals(previousCardImageUrl, representativeImageUrl(images))) {
+      artworkCrop = null;
+    }
+  }
+
+  private static String representativeImageUrl(List<ArtworkImage> images) {
+    return images.stream()
+        .sorted(
+            Comparator.comparing(ArtworkImage::isThumbnail)
+                .reversed()
+                .thenComparingInt(ArtworkImage::getSortOrder))
+        .map(ArtworkImage::cardImageUrl)
+        .findFirst()
+        .orElse(null);
   }
 
   private static void requireAtLeastOneArtworkImage(List<ArtworkImage> images) {

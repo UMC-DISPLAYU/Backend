@@ -31,7 +31,11 @@ public record CreateDisplayArtworkRequest(
     @NotBlank String artistName,
     Long artistUserId,
     @Valid @NotNull CoAuthorsRequest coAuthors,
-    @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds) {
+    @NotEmpty List<@NotNull @Positive Long> qaHandlerUserIds,
+    @Schema(
+            description =
+                "대표 사진 또는 영상 썸네일의 비율 크롭. 생략/null이면 같은 표시 이미지에서 유지하고 이미지 변경 시 초기화합니다. 전체 영역은 {x:0,y:0,w:1,h:1}입니다.")
+        @Valid ArtworkCropRequest artworkCrop) {
 
   /**
    * 실제로 사용할 분야 목록.

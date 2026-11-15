@@ -92,6 +92,8 @@ public class CreateDisplayArtworkService {
     if (displayArtwork.getStatus() == DisplayArtworkStatus.PUBLISHED) {
       displayArtwork.publish(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     }
+    displayArtwork.cropRepresentativeImage(command.artworkCrop());
+
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
 
     AuthorSetupResult authorSetupResult =
