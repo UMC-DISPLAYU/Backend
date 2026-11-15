@@ -91,7 +91,7 @@ class AdminReportResolutionAuthorizationIntegrationTest {
     entityManager.clear();
     for (String type : List.of("NO_ACTION", "DELETE_COMMENT")) {
       mvc.perform(request(type).header("Authorization", "Bearer " + token))
-          .andExpect(status().isForbidden());
+          .andExpect(status().is(withdraw ? 401 : 403));
     }
     verifyNoInteractions(deletions);
   }
