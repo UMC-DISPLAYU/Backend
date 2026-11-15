@@ -26,6 +26,8 @@ import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import com.example.demo.global.error.BusinessException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DisplayArtworkQueryService {
 
+  private final ArtworkDiscoveryRepository discoveryRepository;
+  private final Clock clock;
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
   private final CreatorRepository creatorRepository;
@@ -53,7 +57,11 @@ public class DisplayArtworkQueryService {
       CreatorRepository creatorRepository,
       DisplayArtworkLikeRepository displayArtworkLikeRepository,
       ArchiveWorkRepository archiveWorkRepository,
-      DisplayArtworkPermissionChecker permissionChecker) {
+      DisplayArtworkPermissionChecker permissionChecker,
+      ArtworkDiscoveryRepository discoveryRepository,
+      Clock clock) {
+    this.discoveryRepository = discoveryRepository;
+    this.clock = clock;
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
@@ -166,6 +174,16 @@ public class DisplayArtworkQueryService {
     List<DisplayArtwork> fetched =
         displayArtworkRepository.findPreview(type, fields, school, page, size);
 
+    return toPage(fetched, page, size);
+  }
+
+  @Transactional(readOnly = true)
+  public DisplayArtworkPreviewResult search(SearchArtworksQuery query) {
+    return toPage(
+        discoveryRepository.search(query, LocalDate.now(clock)), query.page(), query.size());
+  }
+
+  private DisplayArtworkPreviewResult toPage(List<DisplayArtwork> fetched, int page, int size) {
     boolean isLast = fetched.size() <= size;
     List<DisplayArtwork> pageItems = isLast ? fetched : fetched.subList(0, size);
 
