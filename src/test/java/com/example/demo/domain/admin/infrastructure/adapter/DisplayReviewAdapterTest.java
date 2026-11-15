@@ -14,9 +14,11 @@ import com.example.demo.domain.display.application.query.DisplayScreeningSearchQ
 import com.example.demo.domain.display.application.query.GetDisplayScreeningDetailService;
 import com.example.demo.domain.display.application.query.SearchDisplayScreeningsService;
 import com.example.demo.domain.display.application.result.DisplayScreeningDetailResult;
+import com.example.demo.domain.display.application.result.DisplayScreeningHistoryResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.global.file.domain.MediaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -50,7 +52,8 @@ class DisplayReviewAdapterTest {
             "대표자",
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
-            "poster");
+            "poster",
+            null);
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 
@@ -88,7 +91,12 @@ class DisplayReviewAdapterTest {
                 null,
                 null,
                 null,
-                List.of()));
+                List.of(
+                    new DisplayScreeningDetailResult.MediaResult(
+                        "video.mp4", MediaType.VIDEO, "poster")),
+                List.of(
+                    new DisplayScreeningHistoryResult(
+                        11L, "REJECTED", 1L, requestedAt, processedAt, 7L, "일정 수정", null))));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);
@@ -98,6 +106,13 @@ class DisplayReviewAdapterTest {
     assertThat(detail.processedAt()).isEqualTo(processedAt);
     assertThat(detail.rejectionReason()).isEqualTo("일정 수정");
     assertThat(detail.leaderName()).isNull();
+    assertThat(detail.imageUrls()).containsExactly("poster");
+    assertThat(detail.media())
+        .containsExactly(new ReviewDetail.MediaResult("video.mp4", MediaType.VIDEO, "poster"));
+    assertThat(detail.history())
+        .containsExactly(
+            new ReviewDetail.History(
+                11L, "REJECTED", 1L, requestedAt, processedAt, 7L, "일정 수정", null));
     verify(approveService).approve(4L, 7L);
     verify(rejectService).reject(5L, 7L, "보완 필요");
   }

@@ -27,7 +27,8 @@ class SearchDisplaysServiceTest {
     SearchDisplaysService service = new SearchDisplaysService(queryRepository, clock);
 
     SearchDisplayResult result =
-        service.searchDisplays(new SearchDisplayQuery("디자인", null, null, null, null, 0L, 1));
+        service.searchDisplays(
+            new SearchDisplayQuery("디자인", null, null, null, null, 0L, 1, null, null));
 
     assertThat(queryRepository.requestedToday).isEqualTo(today);
     assertThat(queryRepository.requestedLimit).isEqualTo(2);
@@ -47,7 +48,10 @@ class SearchDisplaysServiceTest {
         "department",
         endedAt.minusDays(7),
         endedAt,
-        null);
+        null,
+        null,
+        null,
+        0L);
   }
 
   private static class FakeSearchDisplayQueryRepository implements SearchDisplayQueryRepository {

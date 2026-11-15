@@ -34,6 +34,29 @@ public interface LogoutControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "로그아웃 성공", value = LOGOUT_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access Token 또는 Refresh Token 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "인증 필요", value = LOGOUT_UNAUTHORIZED_EXAMPLE),
+                @ExampleObject(
+                    name = "Refresh Token 오류",
+                    value = LOGOUT_INVALID_REFRESH_TOKEN_EXAMPLE),
+                @ExampleObject(
+                    name = "저장된 Refresh Token 없음",
+                    value = LOGOUT_REFRESH_TOKEN_NOT_FOUND_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Access Token과 Refresh Token의 사용자가 다름",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(name = "토큰 사용자 불일치", value = LOGOUT_TOKEN_MISMATCH_EXAMPLE)))
   ApiResponseBody<Void> logout(
       @Parameter(hidden = true) String cookieRefreshToken,
       @Parameter(hidden = true) AuthUser user,
@@ -50,5 +73,22 @@ public interface LogoutControllerDocs {
         "error": null,
         "meta": { "timestamp": "2026-08-04T09:00:00", "path": "/api/v1/auth/logout" }
       }
+      """;
+
+  String LOGOUT_UNAUTHORIZED_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "UNAUTHORIZED", "message": "인증이 필요합니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/logout" } }
+      """;
+  String LOGOUT_INVALID_REFRESH_TOKEN_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_REFRESH_TOKEN", "message": "유효하지 않은 리프레시 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/logout" } }
+      """;
+  String LOGOUT_REFRESH_TOKEN_NOT_FOUND_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "REFRESH_TOKEN_NOT_FOUND", "message": "저장된 리프레시 토큰을 찾을 수 없습니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/logout" } }
+      """;
+  String LOGOUT_TOKEN_MISMATCH_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "TOKEN_USER_MISMATCH", "message": "토큰의 사용자 정보가 일치하지 않습니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/logout" } }
       """;
 }

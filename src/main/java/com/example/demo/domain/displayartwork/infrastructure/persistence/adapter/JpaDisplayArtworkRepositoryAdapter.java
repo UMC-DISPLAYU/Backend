@@ -40,6 +40,11 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   }
 
   @Override
+  public List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(Long displayId, Long userId) {
+    return jpaRepository.findAllActiveByDisplayIdAndArtistUserId(displayId, userId);
+  }
+
+  @Override
   public List<DisplayArtwork> findPublishedByDisplayId(Long displayId) {
     return jpaRepository.findPublishedByDisplayId(displayId);
   }
@@ -55,16 +60,30 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
     boolean requireGraduation = type == PreviewFilterType.GRADUATION;
     // 빈 목록이 IN에 들어가면 쿼리가 깨지므로, 필터 미선택은 플래그로 분기하고 목록은 참조하지 않는다.
     // 같은 분야를 두 번 보내면 1개 지정과 같으므로 중복을 제거한 뒤 개수를 센다.
-    List<ArtworkType> distinct = fields == null ? List.of() : fields.stream().distinct().toList();
+    List<ArtworkType> distinct =
+        fields == null
+            ? List.of()
+            : fields.stream().map(ArtworkType::canonical).distinct().toList();
     boolean ignoreFields = distinct.isEmpty();
-    List<ArtworkType> effectiveFields = ignoreFields ? List.of(ArtworkType.PAINTING) : distinct;
+    List<ArtworkType> effectiveFields =
+        ignoreFields
+            ? List.of(ArtworkType.PAINTING)
+            : distinct.stream()
+                .flatMap(field -> field.storedAliases().stream())
+                .distinct()
+                .toList();
     return jpaRepository.findPreview(
         requireGraduation,
         ignoreFields,
         effectiveFields,
-        effectiveFields.size(),
+        distinct.size(),
         school,
-        PageRequest.of(page, size + 1));
+        new PageRequest(page, size + 1, org.springframework.data.domain.Sort.unsorted()) {
+          @Override
+          public long getOffset() {
+            return (long) page * size;
+          }
+        });
   }
 
   @Override

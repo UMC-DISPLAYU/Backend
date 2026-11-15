@@ -14,7 +14,12 @@ import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import java.util.List;
 import java.util.Objects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDisplayService {
 
   private final DisplayRepository displayRepository;
+  private final MediaStorageVerifier mediaStorageVerifier;
+  private final ApplicationEventPublisher eventPublisher;
   private final DisplayScreeningRepository screeningRepository;
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
@@ -32,12 +39,16 @@ public class UpdateDisplayService {
       DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      DisplayPermissionChecker displayPermissionChecker) {
+      DisplayPermissionChecker displayPermissionChecker,
+      MediaStorageVerifier mediaStorageVerifier,
+      ApplicationEventPublisher eventPublisher) {
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
+    this.mediaStorageVerifier = mediaStorageVerifier;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -51,9 +62,16 @@ public class UpdateDisplayService {
             .orElseThrow(() -> new BusinessException(GlobalErrorCode.NOT_FOUND));
     displayPermissionChecker.requireTeamLeader(display, command.userId());
 
-    if (command.posterImageUrl() != null) {
-      display.changePosterImageUrl(command.posterImageUrl());
+    if (command.posterMedia() != null) {
+      mediaStorageVerifier.verifyVideo(command.posterMedia(), MediaUsage.DISPLAY);
     }
+    if (command.displayMedia() != null) {
+      command
+          .displayMedia()
+          .forEach(media -> mediaStorageVerifier.verifyVideo(media, MediaUsage.DISPLAY));
+    }
+    List<String> previousFileUrls = display.getMediaFileUrls();
+    display.changeMedia(command.posterMedia(), command.displayMedia(), command.posterCrop());
     if (command.displayFields() != null) {
       display.changeDisplayFields(command.displayFields());
     }
@@ -79,15 +97,30 @@ public class UpdateDisplayService {
             command.openTime() == null ? display.getPeriod().startTime() : command.openTime(),
             command.closeTime() == null ? display.getPeriod().endTime() : command.closeTime()));
 
-    if (command.placeName() != null) {
+    if (command.placeName() != null
+        || command.latitude() != null
+        || command.longitude() != null
+        || command.roadAddress() != null) {
       display.changeLocation(
           new DisplayLocation(
-              command.placeName(),
-              display.getLocation().latitude(),
-              display.getLocation().longitude(),
-              display.getLocation().roadAddress()));
+              valueOrCurrent(command.placeName(), display.getLocation().placeName()),
+              command.latitude() == null ? display.getLocation().latitude() : command.latitude(),
+              command.longitude() == null ? display.getLocation().longitude() : command.longitude(),
+              valueOrCurrent(command.roadAddress(), display.getLocation().roadAddress())));
     }
 
+    if (command.region() != null) {
+      display.changeRegion(command.region());
+    }
+    display.changeExternalLinks(
+        updatedLink(command.instagramUrl(), display.getInstagramUrl()),
+        updatedLink(command.websiteUrl(), display.getWebsiteUrl()));
+
+    MediaFilesRemovedEvent removed =
+        MediaFilesRemovedEvent.between(previousFileUrls, display.getMediaFileUrls());
+    if (!removed.fileUrls().isEmpty()) {
+      eventPublisher.publishEvent(removed);
+    }
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
         display,
@@ -114,6 +147,10 @@ public class UpdateDisplayService {
       return valueOrCurrent(command.departmentOrClub(), currentDepartment);
     }
     return "";
+  }
+
+  private static String updatedLink(String value, String current) {
+    return value == null ? current : value.isEmpty() ? null : value;
   }
 
   private static String valueOrCurrent(String value, String current) {

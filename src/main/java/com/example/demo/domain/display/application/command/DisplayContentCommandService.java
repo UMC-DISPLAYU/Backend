@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.result.DeleteDisplayContentCa
 import com.example.demo.domain.display.application.result.DeleteDisplayContentResult;
 import com.example.demo.domain.display.application.result.DisplayContentCategoryResult;
 import com.example.demo.domain.display.application.result.DisplayContentResult;
+import com.example.demo.domain.display.application.result.ReorderDisplayContentCategoriesResult;
 import com.example.demo.domain.display.application.result.ReorderDisplayContentsResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayContent;
@@ -46,9 +47,14 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
-        display.createContentCategory(command.name(), command.description());
+        display.createContentCategory(
+            command.name(),
+            command.description(),
+            command.imageUrls(),
+            initialContentStatus(display),
+            new UserId(command.userId()));
     displayRepository.flush();
 
     return DisplayContentCategoryResult.from(category);
@@ -59,7 +65,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContentCategory category =
         display.changeContentCategory(command.categoryId(), command.name(), command.description());
 
@@ -72,7 +78,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    displayPermissionChecker.requireTeamLeader(display, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContentCategory(command.categoryId());
 
     return new DeleteDisplayContentCategoryResult(command.displayId(), command.categoryId());
@@ -100,8 +106,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    DisplayContent targetContent = display.findContent(command.categoryId(), command.contentId());
-    displayPermissionChecker.requireContentOwner(targetContent, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     DisplayContent content =
         display.changeContent(command.categoryId(), command.contentId(), command.imageUrl());
 
@@ -113,8 +118,7 @@ public class DisplayContentCommandService {
     Objects.requireNonNull(command, "command must not be null.");
 
     Display display = findDisplay(command.displayId());
-    DisplayContent content = display.findContent(command.categoryId(), command.contentId());
-    displayPermissionChecker.requireContentOwner(content, command.userId());
+    displayPermissionChecker.requireContentEditor(display, command.userId());
     display.removeContent(command.categoryId(), command.contentId());
 
     return new DeleteDisplayContentResult(
@@ -135,6 +139,22 @@ public class DisplayContentCommandService {
       return ReorderDisplayContentsResult.from(command.displayId(), command.categoryId(), contents);
     } catch (OptimisticLockingFailureException | OptimisticLockException e) {
       throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_REORDER_CONFLICT, e);
+    }
+  }
+
+  @Transactional
+  public ReorderDisplayContentCategoriesResult reorderCategories(
+      ReorderDisplayContentCategoriesCommand command) {
+    Objects.requireNonNull(command, "command must not be null.");
+    try {
+      Display display = findDisplayWithOptimisticLock(command.displayId());
+      displayPermissionChecker.requireContentEditor(display, command.userId());
+      List<DisplayContentCategory> categories =
+          display.reorderContentCategories(command.orderedCategoryIds());
+      displayRepository.flush();
+      return ReorderDisplayContentCategoriesResult.from(command.displayId(), categories);
+    } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_CONTENT_CATEGORY_REORDER_CONFLICT, e);
     }
   }
 

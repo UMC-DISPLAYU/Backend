@@ -20,6 +20,7 @@ import com.example.demo.domain.archive.presentation.response.ArchivePersonalWork
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkCursorResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkResponse;
 import com.example.demo.domain.archive.presentation.response.ArchiveWorkToggleResponse;
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,7 +40,8 @@ public class ArchivePresentationMapper {
         result.archiveDisplayId(),
         result.displayId(),
         result.userId(),
-        result.savedAt());
+        result.savedAt(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   public ArchiveDisplayToggleResponse toResponse(ArchiveDisplayToggleResult result) {

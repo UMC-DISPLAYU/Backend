@@ -103,10 +103,45 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   @Test
+  void findAllActiveByDisplayIdAndArtistUserIdUsesArtistAccountNotRegistrant() {
+    Display display = persistedDisplay();
+    DisplayArtwork artistWork = persistArtwork(display, "작가로 연결된 공동 작품", 0);
+    DisplayArtwork proxyRegistered = persistArtwork(display, "대리 등록만 한 작품", 1);
+    DisplayArtwork nameOnly = persistArtwork(display, "이름만 입력된 작가 작품", 2);
+    persistCreator(artistWork.getId(), "다른 작가", CreatorRole.LEAD_ARTIST, DISPLAY_OWNER);
+    persistCreator(artistWork.getId(), "참여 작가", CreatorRole.CO_AUTHOR, PARTICIPANT);
+    persistCreator(proxyRegistered.getId(), "계정 없는 작가", CreatorRole.LEAD_ARTIST, null);
+    persistCreator(proxyRegistered.getId(), "QnA 담당자", CreatorRole.QA_ONLY, PARTICIPANT);
+    persistCreator(nameOnly.getId(), "이름만 있는 작가", CreatorRole.LEAD_ARTIST, null);
+
+    assertThat(jpaRepository.findAllActiveByDisplayIdAndArtistUserId(display.getId(), PARTICIPANT))
+        .extracting(DisplayArtwork::getId)
+        .containsExactly(artistWork.getId());
+  }
+
+  @Test
+  void findAllActiveByDisplayIdAndArtistUserIdExcludesOtherDisplayAndDeletedArtwork() {
+    Display display = persistedDisplay();
+    Display otherDisplay = persistedDisplay();
+    DisplayArtwork active = persistArtwork(display, "현재 전시 작품", 0);
+    DisplayArtwork deleted = persistArtwork(display, "이미 삭제된 작품", 1);
+    DisplayArtwork other = persistArtwork(otherDisplay, "다른 전시 작품", 0);
+    persistCreator(active.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(deleted.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(other.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    jpaRepository.findById(deleted.getId()).orElseThrow().delete();
+    jpaRepository.flush();
+
+    assertThat(jpaRepository.findAllActiveByDisplayIdAndArtistUserId(display.getId(), PARTICIPANT))
+        .extracting(DisplayArtwork::getId)
+        .containsExactly(active.getId());
+  }
+
+  @Test
   void findPreviewReturnsAllArtworksWhenFieldFilterIsIgnored() {
     Display display = persistedDisplay();
     persistArtwork(display, "회화 작품", List.of(ArtworkType.PAINTING), 0);
-    persistArtwork(display, "디자인 작품", List.of(ArtworkType.DESIGN), 1);
+    persistArtwork(display, "디자인 작품", List.of(ArtworkType.GRAPHIC), 1);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
@@ -122,7 +157,7 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
     Display display = persistedDisplay();
     persistArtwork(display, "회화만", List.of(ArtworkType.PAINTING), 0);
     persistArtwork(display, "회화와 사진", List.of(ArtworkType.PAINTING, ArtworkType.PHOTOGRAPHY), 1);
-    persistArtwork(display, "디자인만", List.of(ArtworkType.DESIGN), 2);
+    persistArtwork(display, "디자인만", List.of(ArtworkType.GRAPHIC), 2);
 
     List<DisplayArtwork> found =
         jpaRepository.findPreview(
@@ -196,7 +231,7 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
     Display display = persistedDisplay();
     DisplayArtwork saved =
         jpaRepository.saveAndFlush(
-            buildArtwork(display, "작품", List.of(ArtworkType.PAINTING, ArtworkType.DESIGN), 0));
+            buildArtwork(display, "작품", List.of(ArtworkType.PAINTING, ArtworkType.GRAPHIC), 0));
     Long keptRowId =
         saved.getFields().stream()
             .filter(field -> field.getField() == ArtworkType.PAINTING)
@@ -207,13 +242,13 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
 
     DisplayArtwork loaded = jpaRepository.findById(saved.getId()).orElseThrow();
     loaded.changeContent(
-        "수정된 작품", "설명", List.of(ArtworkType.PAINTING, ArtworkType.MEDIA), 2026, "재료", "크기", "포인트");
+        "수정된 작품", "설명", List.of(ArtworkType.PAINTING, ArtworkType.VIDEO), 2026, "재료", "크기", "포인트");
     jpaRepository.saveAndFlush(loaded);
     entityManager.clear();
 
     DisplayArtwork reloaded = jpaRepository.findById(saved.getId()).orElseThrow();
     assertThat(reloaded.getFieldTypes())
-        .containsExactlyInAnyOrder(ArtworkType.PAINTING, ArtworkType.MEDIA);
+        .containsExactlyInAnyOrder(ArtworkType.PAINTING, ArtworkType.VIDEO);
     assertThat(
             reloaded.getFields().stream()
                 .filter(field -> field.getField() == ArtworkType.PAINTING)

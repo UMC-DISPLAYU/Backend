@@ -34,12 +34,14 @@ public class JpaDisplayInvitationDisplayQueryRepositoryAdapter
                 DisplayInvitationDisplayQueryResult.class,
                 display.id,
                 display.title,
-                image.imageUrl,
+                QDisplayImageConditions.cardImageUrl(image),
                 display.organization,
                 display.department,
                 display.period.startDate,
                 display.period.endDate,
-                display.location.placeName))
+                display.location.placeName,
+                display.posterCrop,
+                QDisplayImageConditions.videoUrl(image)))
         .from(invitation)
         .join(invitation.display, display)
         .leftJoin(display.images, image)

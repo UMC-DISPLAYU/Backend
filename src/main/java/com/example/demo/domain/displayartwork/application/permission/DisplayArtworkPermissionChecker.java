@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.permission;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.TeamMember;
+import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.displayartwork.domain.entity.Creator;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
@@ -48,7 +49,7 @@ public class DisplayArtworkPermissionChecker {
   }
 
   public void requireArtworkOrderEditor(Long userId, Display display) {
-    if (!display.isOwner(userId)) {
+    if (!isDisplayArtworkManager(display, userId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_ARTWORK_ORDER_EDIT);
     }
   }
@@ -99,16 +100,31 @@ public class DisplayArtworkPermissionChecker {
     if (userId == null) {
       throw new BusinessException(permissionDeniedErrorCode);
     }
-    if (isDisplayLeader(display, userId)) {
+    // 대표자와 관리자는 전시의 모든 작품을 수정·삭제할 수 있다.
+    if (isDisplayArtworkManager(display, userId)) {
       return;
     }
+    // 일반 팀원은 작품 등록자가 아니어도 작가로 연결된 작품에만 접근할 수 있다.
     boolean isCreator =
         creatorRepository.findByDisplayArtworkId(artworkId).stream()
             .map(Creator::getUserId)
             .anyMatch(creatorUserId -> Objects.equals(creatorUserId, userId));
-    if (!isCreator) {
+    if (!isAcceptedRegularTeamMember(display, userId) || !isCreator) {
       throw new BusinessException(permissionDeniedErrorCode);
     }
+  }
+
+  private boolean isAcceptedRegularTeamMember(Display display, Long userId) {
+    return display.getTeamMembers().stream()
+        .filter(member -> member.isAccepted() && !member.isDeleted())
+        .anyMatch(
+            member ->
+                member.getRole() == TeamMemberRole.TEAM_MEM
+                    && Objects.equals(member.getUserId().value(), userId));
+  }
+
+  private boolean isDisplayArtworkManager(Display display, Long userId) {
+    return isDisplayLeader(display, userId) || display.isManager(userId);
   }
 
   private boolean isDisplayParticipant(Display display, Long userId) {

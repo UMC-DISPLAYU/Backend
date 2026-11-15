@@ -15,8 +15,12 @@ public record UpdateArtistProfileRequest(
     @Schema(description = "한글, 영문, 숫자만 사용한 2~15자 작가명", example = "maya")
         @NotNull(message = ArtistName.INVALID_MESSAGE) @Pattern(regexp = ArtistName.PATTERN_VALUE, message = ArtistName.INVALID_MESSAGE) String artistName,
     @Schema(example = "시각과 공간의 관계를 탐구하는 작가입니다.") @Size(max = 100) String introduction,
-    @Schema(example = "[\"DESIGN\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
-    @Schema(example = "https://portfolio.maya.com")
+    @Schema(example = "[\"GRAPHIC\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
+    @Schema(
+            description = "Portfolio 링크(기존 externalLink 필드)",
+            example = "https://portfolio.maya.com")
         @Size(max = 255) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String externalLink,
+    @Schema(description = "Instagram 링크", example = "https://www.instagram.com/maya")
+        @Size(max = 255) @Pattern(regexp = "^https?://[^\\s/$.?#].[^\\s]*$", flags = Pattern.Flag.CASE_INSENSITIVE) String instagramLink,
     @Schema(description = "대학교 목록에 존재하며 인증 이메일 도메인과 일치하는 학교명", example = "덕성여자대학교")
         String univName) {}

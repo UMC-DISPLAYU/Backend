@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.query;
 
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 
 public record DisplaySummaryQueryResult(
@@ -10,4 +11,5 @@ public record DisplaySummaryQueryResult(
     String placeName,
     LocalDate startDate,
     LocalDate endDate,
-    String posterImageUrl) {}
+    String posterImageUrl,
+    PosterCrop posterCrop) {}

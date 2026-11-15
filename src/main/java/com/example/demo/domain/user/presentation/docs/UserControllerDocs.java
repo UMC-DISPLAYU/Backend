@@ -2,16 +2,27 @@ package com.example.demo.domain.user.presentation.docs;
 
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.ALREADY_WITHDRAWN_USER_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHANGE_NICKNAME_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.CHECK_INVALID_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.DUPLICATE_NICKNAME_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.EXPIRED_ACCESS_TOKEN_EXAMPLE;
-import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.INVALID_NICKNAME_FORMAT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MISSING_NICKNAME_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.MY_USER_UNAUTHORIZED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_CHECK_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_EXPIRED_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_INVALID_ACCESS_TOKEN_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.NICKNAME_USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SEARCH_INVALID_INPUT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.SEARCH_UNAUTHORIZED_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_DUPLICATE_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_INVALID_INPUT_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_INVALID_NICKNAME_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.UPDATE_MY_PROFILE_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NICKNAME_NOT_FOUND_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_NOT_FOUND_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.USER_SEARCH_SUCCESS_EXAMPLE;
+import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_UNAUTHORIZED_EXAMPLE;
 import static com.example.demo.domain.user.presentation.docs.UserApiDocs.WITHDRAW_USER_SUCCESS_EXAMPLE;
 
 import com.example.demo.domain.user.presentation.request.ChangeNicknameRequest;
@@ -24,7 +35,6 @@ import com.example.demo.domain.user.presentation.response.UpdateMyProfileRespons
 import com.example.demo.domain.user.presentation.response.UserSearchResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,30 +43,43 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Tag(name = "User", description = "사용자 인증 API")
 public interface UserControllerDocs {
 
   @Operation(
-      summary = "닉네임 기반 사용자 검색",
-      description =
-          """
-          닉네임에 검색어가 포함된 활성 사용자를 조회합니다.
-
-          - 검색어의 앞뒤 공백은 제거합니다.
-          - 영문 검색은 대소문자를 구분하지 않습니다.
-          - 작가 인증 여부와 관계없이 조회합니다.
-          - 탈퇴한 사용자는 제외합니다.
-          - 닉네임 오름차순, 사용자 ID 오름차순으로 정렬합니다.
-          - 검색 결과는 최대 20명까지 반환합니다.
-          """)
-  @ApiResponse(responseCode = "200", description = "사용자 검색 성공")
-  @ApiResponse(responseCode = "400", description = "닉네임 검색어 누락 또는 공백")
-  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
-  @ApiResponse(responseCode = "404", description = "해당 닉네임을 가진 사용자 없음")
+      summary = "닉네임으로 사용자 검색",
+      description = "닉네임이 정확히 일치하는 활성 사용자 한 명을 조회합니다. 작가 인증 여부와 관계없이 조회합니다.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "사용자 검색 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "검색 성공", value = USER_SEARCH_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "닉네임 검색어 누락 또는 공백",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "검색어 오류", value = SEARCH_INVALID_INPUT_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = SEARCH_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "정확히 일치하는 닉네임의 사용자가 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NICKNAME_NOT_FOUND_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
-  ApiResponseBody<List<UserSearchResponse>> searchUsers(
+  ApiResponseBody<UserSearchResponse> searchUsers(
       UserSearchRequest request, AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 사용자 정보 조회", description = "로그인한 사용자의 기본 정보를 조회합니다.")
@@ -67,27 +90,82 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "조회 성공", value = MY_USER_SUCCESS_EXAMPLE)))
-  @ApiResponse(responseCode = "401", description = "Access Token verification failed")
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = MY_USER_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<MyUserResponse> getMe(AuthUser user, HttpServletRequest httpRequest);
 
   @Operation(summary = "내 프로필 수정", description = "프로필 이미지와 닉네임을 한 번에 수정합니다.")
-  @ApiResponse(responseCode = "200", description = "내 프로필 수정 성공")
-  @ApiResponse(responseCode = "400", description = "프로필 이미지 URL 또는 닉네임 형식 오류")
-  @ApiResponse(responseCode = "401", description = "Access Token 검증 실패")
-  @ApiResponse(responseCode = "404", description = "사용자 없음")
-  @ApiResponse(responseCode = "409", description = "닉네임 중복")
+  @ApiResponse(
+      responseCode = "200",
+      description = "내 프로필 수정 성공",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "수정 성공", value = UPDATE_MY_PROFILE_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "프로필 이미지 URL 또는 닉네임 형식 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(
+                    name = "프로필 이미지 URL 오류",
+                    value = UPDATE_MY_PROFILE_INVALID_INPUT_EXAMPLE),
+                @ExampleObject(
+                    name = "닉네임 형식 오류",
+                    value = UPDATE_MY_PROFILE_INVALID_NICKNAME_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "401",
+      description = "인증 정보 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "인증 필요", value = MY_USER_UNAUTHORIZED_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "사용자 없음",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "닉네임 중복",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples =
+                  @ExampleObject(
+                      name = "닉네임 중복",
+                      value = UPDATE_MY_PROFILE_DUPLICATE_NICKNAME_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<UpdateMyProfileResponse> updateMe(
       AuthUser user, UpdateMyProfileRequest request, HttpServletRequest httpRequest);
 
-  @Hidden
   @Operation(
       summary = "회원 탈퇴",
       description =
           """
           로그인한 사용자를 즉시 탈퇴 처리합니다.
 
+          - 대표(`TEAM_LEADER`)로 참여 중인 전시가 있으면 대표자 위임 또는 전시 삭제 후 탈퇴해야 합니다.
+          - 일반 참여 전시에서는 전시 나가기와 동일한 규칙으로 참여 관계와 작가 연결 작품을 정리합니다.
+          - 댓글·후기·방명록은 유지하고 작성자 정보를 `탈퇴한 회원`으로 익명화합니다.
           - 이미 탈퇴한 사용자는 `ALREADY_WITHDRAWN_USER`를 반환합니다.
           - 존재하지 않는 사용자는 `USER_NOT_FOUND`를 반환합니다.
           """)
@@ -100,12 +178,14 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "탈퇴 성공", value = WITHDRAW_USER_SUCCESS_EXAMPLE)))
   @ApiResponse(
       responseCode = "409",
-      description = "이미 탈퇴한 사용자",
+      description = "이미 탈퇴한 사용자 또는 대표 전시 보유",
       content =
           @Content(
               mediaType = "application/json",
-              examples =
-                  @ExampleObject(name = "이미 탈퇴한 사용자", value = ALREADY_WITHDRAWN_USER_EXAMPLE)))
+              examples = {
+                @ExampleObject(name = "이미 탈퇴한 사용자", value = ALREADY_WITHDRAWN_USER_EXAMPLE),
+                @ExampleObject(name = "대표 전시 보유", value = DISPLAY_LEADER_WITHDRAWAL_BLOCKED_EXAMPLE)
+              }))
   @ApiResponse(
       responseCode = "404",
       description = "사용자 없음",
@@ -115,14 +195,11 @@ public interface UserControllerDocs {
               examples = @ExampleObject(name = "사용자 없음", value = USER_NOT_FOUND_EXAMPLE)))
   @ApiResponse(
       responseCode = "401",
-      description = "Access Token 검증 실패",
+      description = "인증 정보 없음, 유효하지 않거나 만료된 Access Token, 탈퇴 완료된 계정",
       content =
           @Content(
               mediaType = "application/json",
-              examples = {
-                @ExampleObject(name = "유효하지 않은 토큰", value = INVALID_ACCESS_TOKEN_EXAMPLE),
-                @ExampleObject(name = "만료된 토큰", value = EXPIRED_ACCESS_TOKEN_EXAMPLE)
-              }))
+              examples = @ExampleObject(name = "인증 필요", value = WITHDRAW_UNAUTHORIZED_EXAMPLE)))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<Void> withdraw(AuthUser user, HttpServletRequest httpRequest);
 
@@ -195,6 +272,16 @@ public interface UserControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "사용 가능", value = NICKNAME_CHECK_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "닉네임 누락 또는 형식 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "닉네임 누락", value = MISSING_NICKNAME_EXAMPLE),
+                @ExampleObject(name = "닉네임 형식 오류", value = CHECK_INVALID_NICKNAME_EXAMPLE)
+              }))
   ApiResponseBody<NicknameCheckResponse> checkNickname(
       String nickname, HttpServletRequest httpRequest);
 }

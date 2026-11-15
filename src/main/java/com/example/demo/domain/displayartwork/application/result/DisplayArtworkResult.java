@@ -2,6 +2,8 @@ package com.example.demo.domain.displayartwork.application.result;
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.global.file.domain.MediaType;
 import java.util.List;
 
 public record DisplayArtworkResult(
@@ -20,7 +22,8 @@ public record DisplayArtworkResult(
     String artistName,
     Long artistUserId,
     int coAuthorCount,
-    List<Long> qaHandlerUserIds) {
+    List<Long> qaHandlerUserIds,
+    ArtworkCrop artworkCrop) {
 
   public static DisplayArtworkResult of(
       DisplayArtwork displayArtwork, AuthorSetupResult authorSetupResult) {
@@ -29,7 +32,7 @@ public record DisplayArtworkResult(
         displayArtwork.getDisplay().getId(),
         displayArtwork.getArtworkName(),
         displayArtwork.getContent(),
-        displayArtwork.getType().name(),
+        displayArtwork.getType().canonical().name(),
         displayArtwork.getFieldTypes().stream().map(Enum::name).toList(),
         displayArtwork.getProductionYear(),
         displayArtwork.getMaterialMedia(),
@@ -40,7 +43,8 @@ public record DisplayArtworkResult(
         authorSetupResult.artistName(),
         authorSetupResult.artistUserId(),
         authorSetupResult.coAuthorCount(),
-        authorSetupResult.qaHandlerUserIds());
+        authorSetupResult.qaHandlerUserIds(),
+        displayArtwork.getArtworkCrop());
   }
 
   public record ImageResult(
@@ -51,7 +55,9 @@ public record DisplayArtworkResult(
       int sortOrder,
       String caption,
       int width,
-      int height) {
+      int height,
+      MediaType mediaType,
+      String thumbnailUrl) {
 
     private static ImageResult from(ArtworkImage image) {
       return new ImageResult(
@@ -62,7 +68,9 @@ public record DisplayArtworkResult(
           image.getSortOrder(),
           image.getCaption(),
           image.getWidth(),
-          image.getHeight());
+          image.getHeight(),
+          image.getMediaType(),
+          image.getThumbnailUrl());
     }
   }
 }

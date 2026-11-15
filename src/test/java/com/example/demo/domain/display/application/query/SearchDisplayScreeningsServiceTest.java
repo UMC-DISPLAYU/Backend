@@ -42,6 +42,7 @@ class SearchDisplayScreeningsServiceTest {
         "대표자",
         LocalDate.of(2026, 10, 1),
         LocalDate.of(2026, 10, 7),
-        "poster");
+        "poster",
+        null);
   }
 }

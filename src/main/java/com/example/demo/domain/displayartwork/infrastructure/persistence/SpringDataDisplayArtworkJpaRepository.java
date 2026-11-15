@@ -6,6 +6,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,23 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
         AND artwork.deletedAt IS NULL
       """)
   List<DisplayArtwork> findAllByDisplayId(@Param("displayId") Long displayId);
+
+  @Query(
+      """
+      SELECT artwork
+      FROM DisplayArtwork artwork
+      WHERE artwork.display.id = :displayId
+        AND artwork.deletedAt IS NULL
+        AND artwork.id IN (
+          SELECT creator.displayArtworkId
+          FROM Creator creator
+          WHERE creator.userId = :userId
+            AND creator.role <> com.example.demo.domain.displayartwork.domain.type.CreatorRole.QA_ONLY
+        )
+      ORDER BY artwork.id ASC
+      """)
+  List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(
+      @Param("displayId") Long displayId, @Param("userId") Long userId);
 
   /**
    * 해당 유저가 <b>작가로</b> 참여한 출품작을 등록순으로 조회한다.
@@ -86,15 +104,21 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       WHERE artwork.deletedAt IS NULL
         AND artwork.status = com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus.PUBLISHED
         AND display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
+        AND display.deletedAt IS NULL
         AND (:requireGraduation = false OR display.displayType
              = com.example.demo.domain.display.domain.type.DisplayType.GRADUATION)
         AND (:ignoreFields = true
-             OR (SELECT COUNT(artworkField)
+             OR (SELECT COUNT(DISTINCT CASE
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.MEDIA THEN 'VIDEO'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.CRAFT THEN 'CRAFTS'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.ETC THEN 'OTHERS'
+                   WHEN artworkField.field = com.example.demo.domain.displayartwork.domain.type.ArtworkType.UXUI THEN 'UX_UI'
+                   ELSE CAST(artworkField.field AS string) END)
                  FROM ArtworkField artworkField
                  WHERE artworkField.displayArtwork = artwork
                    AND artworkField.field IN :fields) = :fieldCount)
         AND (:school IS NULL OR display.organization = :school)
-      ORDER BY artwork.createdAt DESC
+      ORDER BY artwork.createdAt DESC, artwork.id DESC
       """)
   List<DisplayArtwork> findPreview(
       @Param("requireGraduation") boolean requireGraduation,
@@ -108,10 +132,12 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
   @Query(
       """
       UPDATE DisplayArtwork artwork
-      SET artwork.status = :publishedStatus
+      SET artwork.status = :publishedStatus,
+          artwork.firstPublishedAt = COALESCE(artwork.firstPublishedAt, :publishedAt)
       WHERE artwork.status = :draftStatus
         AND artwork.deletedAt IS NULL
         AND artwork.display.status = :displayStatus
+        AND artwork.display.deletedAt IS NULL
         AND artwork.display.artworkContentOpen = :openPolicy
         AND artwork.display.period.startDate <= :today
       """)
@@ -120,16 +146,20 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       @Param("displayStatus") DisplayStatus displayStatus,
       @Param("openPolicy") ContentOpenPolicy openPolicy,
       @Param("draftStatus") DisplayArtworkStatus draftStatus,
-      @Param("publishedStatus") DisplayArtworkStatus publishedStatus);
+      @Param("publishedStatus") DisplayArtworkStatus publishedStatus,
+      @Param("publishedAt") LocalDateTime publishedAt);
 
   @Modifying(flushAutomatically = true)
   @Query(
       """
       UPDATE DisplayArtwork artwork
-      SET artwork.status = :publishedStatus
+      SET artwork.status = :publishedStatus,
+          artwork.firstPublishedAt = COALESCE(artwork.firstPublishedAt, :publishedAt)
       WHERE artwork.status = :draftStatus
         AND artwork.deletedAt IS NULL
         AND artwork.display.id = :displayId
+        AND artwork.display.deletedAt IS NULL
+        AND artwork.display.status = com.example.demo.domain.display.domain.type.DisplayStatus.PUBLISHED
         AND (artwork.display.artworkContentOpen = :immediatePolicy
              OR artwork.display.period.startDate <= :today)
       """)
@@ -138,5 +168,6 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
       @Param("today") LocalDate today,
       @Param("immediatePolicy") ContentOpenPolicy immediatePolicy,
       @Param("draftStatus") DisplayArtworkStatus draftStatus,
-      @Param("publishedStatus") DisplayArtworkStatus publishedStatus);
+      @Param("publishedStatus") DisplayArtworkStatus publishedStatus,
+      @Param("publishedAt") LocalDateTime publishedAt);
 }

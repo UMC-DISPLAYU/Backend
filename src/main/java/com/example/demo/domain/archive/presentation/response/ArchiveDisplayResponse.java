@@ -1,6 +1,7 @@
 package com.example.demo.domain.archive.presentation.response;
 
 import com.example.demo.domain.archive.domain.type.ArchiveDisplayStatus;
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,4 +20,8 @@ public record ArchiveDisplayResponse(
     @Schema(description = "저장 기록 ID", example = "1") Long archiveDisplayId,
     @Schema(description = "전시 ID", example = "1") Long displayId,
     @Schema(description = "저장한 사용자 ID", example = "1") Long userId,
-    @Schema(description = "저장 시각", example = "2026-07-13T01:49:28") LocalDateTime savedAt) {}
+    @Schema(description = "저장 시각", example = "2026-07-13T01:49:28") LocalDateTime savedAt,
+    @Schema(
+            types = {"object", "null"},
+            description = "대표 포스터 표시 범위. null이면 조정 없음.")
+        PosterCropResponse posterCrop) {}

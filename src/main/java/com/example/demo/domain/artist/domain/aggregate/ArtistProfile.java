@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class ArtistProfile extends BaseTimeEntity {
 
   private static final int INTRODUCTION_MAX_LENGTH = 100;
-  private static final int PORTFOLIO_URL_MAX_LENGTH = 255;
+  private static final int EXTERNAL_URL_MAX_LENGTH = 255;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +44,9 @@ public class ArtistProfile extends BaseTimeEntity {
 
   @Column(name = "portfolioUrl")
   private String portfolioUrl;
+
+  @Column(name = "instagramUrl", length = 255)
+  private String instagramUrl;
 
   @Column(name = "introduction", length = 100)
   private String introduction;
@@ -74,11 +77,14 @@ public class ArtistProfile extends BaseTimeEntity {
     this.profileImageUrl = profileImageUrl;
   }
 
-  public void updateProfile(String introduction, String portfolioUrl, String univName) {
+  public void updateProfile(
+      String introduction, String portfolioUrl, String instagramUrl, String univName) {
     validateIntroduction(introduction);
-    validatePortfolioUrl(portfolioUrl);
+    validateExternalUrl(portfolioUrl);
+    validateExternalUrl(instagramUrl);
     this.introduction = introduction;
     this.portfolioUrl = portfolioUrl;
+    this.instagramUrl = instagramUrl;
     this.univName = univName;
   }
 
@@ -88,15 +94,15 @@ public class ArtistProfile extends BaseTimeEntity {
     }
   }
 
-  private void validatePortfolioUrl(String portfolioUrl) {
-    if (portfolioUrl == null) {
+  private void validateExternalUrl(String externalUrl) {
+    if (externalUrl == null) {
       return;
     }
-    if (portfolioUrl.length() > PORTFOLIO_URL_MAX_LENGTH) {
+    if (externalUrl.length() > EXTERNAL_URL_MAX_LENGTH) {
       throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);
     }
     try {
-      URI uri = new URI(portfolioUrl);
+      URI uri = new URI(externalUrl);
       if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
           || uri.getHost() == null) {
         throw new ArtistException(ArtistErrorCode.INVALID_EXTERNAL_LINK);

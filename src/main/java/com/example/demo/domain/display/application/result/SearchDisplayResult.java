@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.SearchDisplayQueryResult;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -17,7 +18,9 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       LocalDate endedAt,
       long dayLeft,
       boolean isArchived,
-      String placeName) {
+      String placeName,
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
@@ -30,7 +33,9 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
-          queryResult.placeName());
+          queryResult.placeName(),
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -44,9 +49,12 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           endedAt,
           dayLeft,
           isArchived,
-          placeName);
+          placeName,
+          posterCrop,
+          posterVideoUrl);
     }
   }
 
-  public record PaginationResult(Long nextCursor, int size, boolean hasNext) {}
+  public record PaginationResult(
+      Long nextCursor, int size, boolean hasNext, Long nextCursorLikeCount) {}
 }

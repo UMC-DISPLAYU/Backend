@@ -6,7 +6,6 @@ import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
-import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.error.BusinessException;
@@ -77,7 +76,13 @@ public class GetDisplayMembersService {
         user != null && user.getDeletedAt() == null,
         user != null && user.isVerified(),
         teamMember.isAccepted(),
-        teamMember.getRole().name());
+        teamMember.getRole().name(),
+        nickname(user),
+        null);
+  }
+
+  private String nickname(User user) {
+    return user != null && user.getNickname() != null ? user.getNickname() : "";
   }
 
   private DisplayMemberListResult.TeamMemberResult toPendingResult(
@@ -90,6 +95,8 @@ public class GetDisplayMembersService {
         user != null && user.getDeletedAt() == null,
         user != null && user.isVerified(),
         false,
-        TeamMemberRole.TEAM_MEM.name());
+        invitation.getRole().name(),
+        nickname(user),
+        invitation.getId());
   }
 }

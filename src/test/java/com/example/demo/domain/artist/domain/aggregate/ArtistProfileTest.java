@@ -16,10 +16,15 @@ class ArtistProfileTest {
   void updatesProfileWhenStateIsValid() {
     ArtistProfile profile = createProfile();
 
-    profile.updateProfile("introduction", "https://portfolio.example.com", "university");
+    profile.updateProfile(
+        "introduction",
+        "https://portfolio.example.com",
+        "https://www.instagram.com/artist",
+        "university");
 
     assertThat(profile.getIntroduction()).isEqualTo("introduction");
     assertThat(profile.getPortfolioUrl()).isEqualTo("https://portfolio.example.com");
+    assertThat(profile.getInstagramUrl()).isEqualTo("https://www.instagram.com/artist");
     assertThat(profile.getUnivName()).isEqualTo("university");
   }
 
@@ -28,7 +33,7 @@ class ArtistProfileTest {
     ArtistProfile profile = createProfile();
 
     assertThatExceptionOfType(ArtistException.class)
-        .isThrownBy(() -> profile.updateProfile("a".repeat(101), null, "university"))
+        .isThrownBy(() -> profile.updateProfile("a".repeat(101), null, null, "university"))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode()).isEqualTo(ArtistErrorCode.INVALID_INTRODUCTION));
@@ -39,7 +44,7 @@ class ArtistProfileTest {
     ArtistProfile profile = createProfile();
 
     assertThatExceptionOfType(ArtistException.class)
-        .isThrownBy(() -> profile.updateProfile(null, "not-a-url", "university"))
+        .isThrownBy(() -> profile.updateProfile(null, "not-a-url", null, "university"))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode()).isEqualTo(ArtistErrorCode.INVALID_EXTERNAL_LINK));

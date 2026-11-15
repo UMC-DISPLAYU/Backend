@@ -6,7 +6,9 @@ import com.example.demo.domain.display.application.query.SearchDisplayQueryResul
 import com.example.demo.domain.display.domain.aggregate.QDisplay;
 import com.example.demo.domain.display.domain.entity.QDisplayFieldSelection;
 import com.example.demo.domain.display.domain.entity.QDisplayImage;
+import com.example.demo.domain.display.domain.entity.QDisplayLike;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 import com.querydsl.core.types.Projections;
@@ -15,6 +17,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -24,6 +27,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
   private static final QDisplayImage image = QDisplayImage.displayImage;
   private static final QDisplayFieldSelection fieldSelection =
       QDisplayFieldSelection.displayFieldSelection;
+
+  private static final QDisplayLike like = QDisplayLike.displayLike;
 
   private final JPAQueryFactory queryFactory;
 
@@ -40,27 +45,60 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 SearchDisplayQueryResult.class,
                 display.id,
                 display.title,
-                image.imageUrl,
+                QDisplayImageConditions.cardImageUrl(image),
                 display.organization,
                 display.department,
                 display.period.startDate,
                 display.period.endDate,
-                display.location.placeName))
+                display.location.placeName,
+                display.posterCrop,
+                QDisplayImageConditions.videoUrl(image),
+                like.id.count()))
         .from(display)
         .leftJoin(display.images, image)
         .on(QDisplayImageConditions.mainImage(image))
+        .leftJoin(like)
+        .on(like.displayId.eq(display.id), like.deletedAt.isNull())
         .where(
             display.status.eq(DisplayStatus.PUBLISHED),
             display.deletedAt.isNull(),
-            cursorBefore(query.cursor()),
+            query.sort() == DisplaySearchSort.LIKES ? null : cursorBefore(query.cursor()),
             searchWordContains(query.searchWord()),
             regionEq(query),
             query.type() == null ? null : display.displayType.eq(query.type()),
             fieldExists(query),
             statusCondition(query.status(), today))
-        .orderBy(display.id.desc())
+        .groupBy(
+            display.id,
+            display.title,
+            display.organization,
+            display.department,
+            display.period.startDate,
+            display.period.endDate,
+            display.location.placeName,
+            display.posterCrop.x,
+            display.posterCrop.y,
+            display.posterCrop.w,
+            display.posterCrop.h,
+            image.imageUrl,
+            image.thumbnailUrl,
+            image.mediaType)
+        .having(likesBefore(query))
+        .orderBy(
+            query.sort() == DisplaySearchSort.LIKES ? like.id.count().desc() : display.id.desc(),
+            display.id.desc())
         .limit(limit)
         .fetch();
+  }
+
+  private BooleanExpression likesBefore(SearchDisplayQuery query) {
+    if (query.sort() != DisplaySearchSort.LIKES || query.cursor() == null || query.cursor() == 0) {
+      return null;
+    }
+    return like.id
+        .count()
+        .lt(query.cursorLikeCount())
+        .or(like.id.count().eq(query.cursorLikeCount()).and(display.id.lt(query.cursor())));
   }
 
   private BooleanExpression cursorBefore(Long cursor) {
@@ -71,7 +109,13 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
     if (!hasText(searchWord)) {
       return null;
     }
-    return display.title.lower().contains(searchWord.toLowerCase());
+    String normalized = searchWord.toLowerCase(Locale.ROOT);
+    return display
+        .title
+        .lower()
+        .contains(normalized)
+        .or(display.organization.lower().contains(normalized))
+        .or(display.department.lower().contains(normalized));
   }
 
   private BooleanExpression regionEq(SearchDisplayQuery query) {
@@ -87,7 +131,9 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
     }
     return JPAExpressions.selectOne()
         .from(fieldSelection)
-        .where(fieldSelection.display.eq(display), fieldSelection.field.eq(query.field()))
+        .where(
+            fieldSelection.display.eq(display),
+            fieldSelection.field.in(query.field().storedAliases()))
         .exists();
   }
 

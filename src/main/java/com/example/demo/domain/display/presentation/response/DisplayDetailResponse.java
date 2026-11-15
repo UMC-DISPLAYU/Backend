@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.example.demo.global.file.domain.MediaType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
@@ -36,19 +37,23 @@ public record DisplayDetailResponse(
     List<TeamMemberResponse> teamMembers,
     List<InvitationResponse> invitations,
     @Schema(
-            description = "등록 시 저장한 Instagram URL",
+            description = "현재 저장된 Instagram URL",
             types = {"string", "null"},
             maxLength = 255)
         String instagramUrl,
     @Schema(
-            description = "등록 시 저장한 웹사이트 URL",
+            description = "현재 저장된 웹사이트 URL",
             types = {"string", "null"},
             maxLength = 255)
         String websiteUrl,
     @Schema(
             description = "현재 심사 중인 요청 ID. 심사 중이 아니면 null이며 취소 API의 screeningId로 사용합니다.",
             types = {"integer", "null"})
-        Long currentScreeningId) {
+        Long currentScreeningId,
+    @Schema(
+            types = {"object", "null"},
+            description = "대표 포스터 표시 범위. null이면 조정 없음.")
+        PosterCropResponse posterCrop) {
 
   public record LocationResponse(
       String placeName, BigDecimal latitude, BigDecimal longitude, String roadAddress) {}
@@ -56,7 +61,14 @@ public record DisplayDetailResponse(
   public record PeriodResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}
 
-  public record ImageResponse(Long imageId, String imageUrl, String imageType, int sortOrder) {}
+  @Schema(name = "DisplayDetailImageResponse")
+  public record ImageResponse(
+      Long imageId,
+      String imageUrl,
+      String imageType,
+      int sortOrder,
+      MediaType mediaType,
+      String thumbnailUrl) {}
 
   public record ContentCategoryResponse(
       Long categoryId,

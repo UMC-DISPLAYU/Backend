@@ -49,6 +49,19 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       """
       SELECT DISTINCT display
       FROM Display display
+      JOIN display.teamMembers teamMember
+      WHERE teamMember.userId.value = :userId
+        AND teamMember.accepted = true
+        AND teamMember.deletedAt IS NULL
+        AND display.deletedAt IS NULL
+      ORDER BY display.period.startDate DESC, display.id DESC
+      """)
+  List<Display> findWithdrawalTargetDisplaysByUserId(@Param("userId") Long userId);
+
+  @Query(
+      """
+      SELECT DISTINCT display
+      FROM Display display
       LEFT JOIN FETCH display.images image
       WHERE display.ownerUserId.value = :userId
         AND display.status = :status

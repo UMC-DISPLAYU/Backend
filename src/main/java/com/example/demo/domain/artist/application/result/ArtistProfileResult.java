@@ -9,5 +9,6 @@ public record ArtistProfileResult(
     String introduction,
     String schoolName,
     String externalLink,
+    String instagramLink,
     List<ActivityCategory> fields,
     boolean isVerified) {}

@@ -196,6 +196,7 @@ Command 변환은 `FilePresentationMapper`에서 처리한다.
 
 ```text
 image/jpeg
+image/heic
 image/png
 image/webp
 image/gif

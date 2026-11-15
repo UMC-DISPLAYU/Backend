@@ -29,7 +29,8 @@ import lombok.NoArgsConstructor;
         @UniqueConstraint(name = "UQ_USER_SCHOOL_EMAIL", columnNames = "schoolEmail"))
 public class User extends BaseTimeEntity {
 
-  private static final String WITHDRAWN_NICKNAME_PREFIX = "deleted_";
+  public static final String WITHDRAWN_DISPLAY_NAME = "탈퇴한 회원";
+  private static final String WITHDRAWN_IDENTIFIER_PREFIX = "withdrawn_";
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,6 +71,10 @@ public class User extends BaseTimeEntity {
   @Column(name = "univName", nullable = true)
   private String univName;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "universityId")
+  private University university;
+
   @Column(name = "deletedAt")
   private LocalDateTime deletedAt;
 
@@ -80,11 +85,16 @@ public class User extends BaseTimeEntity {
   private List<SchoolEmailVerification> schoolEmailVerifications = new ArrayList<>();
 
   public void verifySchoolEmail(String schoolEmail, String univName) {
+    verifySchoolEmail(schoolEmail, univName, null);
+  }
+
+  public void verifySchoolEmail(String schoolEmail, String univName, University university) {
     if (this.schoolEmail != null) {
       throw new UserException(UserErrorCode.ALREADY_VERIFIED_USER);
     }
     this.schoolEmail = schoolEmail.trim().toLowerCase(Locale.ROOT);
     this.univName = univName;
+    this.university = university;
   }
 
   public void completeArtistVerification() {
@@ -95,7 +105,16 @@ public class User extends BaseTimeEntity {
     if (deletedAt != null) {
       throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
     }
-    this.nickname = WITHDRAWN_NICKNAME_PREFIX + UUID.randomUUID(); // 탈퇴한 사용자의 닉네임 사용이 가능하도록 허용
+    String withdrawnIdentifier = WITHDRAWN_IDENTIFIER_PREFIX + UUID.randomUUID();
+    this.providerId = withdrawnIdentifier;
+    this.name = WITHDRAWN_DISPLAY_NAME;
+    this.nickname = WITHDRAWN_DISPLAY_NAME;
+    this.profileImageUrl = null;
+    this.isVerified = false;
+    this.socialEmail = withdrawnIdentifier + "@withdrawn.invalid";
+    this.schoolEmail = null;
+    this.univName = null;
+    this.university = null;
     this.role = UserRole.USER;
     this.deletedAt = withdrawnAt;
   }
@@ -108,7 +127,8 @@ public class User extends BaseTimeEntity {
     this.profileImageUrl = profileImageUrl;
   }
 
-  public void changeUnivName(String univName) {
-    this.univName = univName;
+  public void changeUniversity(University university) {
+    this.university = university;
+    this.univName = university.getName();
   }
 }

@@ -69,6 +69,12 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.leaderName(),
         result.screeningStatus(),
         result.cancelledBy(),
+        result.media().stream()
+            .map(
+                media ->
+                    new ReviewDetail.MediaResult(
+                        media.imageUrl(), media.mediaType(), media.thumbnailUrl()))
+            .toList(),
         result.history().stream()
             .map(
                 item ->
@@ -105,6 +111,7 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.leaderName(),
         result.startDate(),
         result.endDate(),
-        result.posterImageUrl());
+        result.posterImageUrl(),
+        result.posterCrop());
   }
 }

@@ -25,6 +25,9 @@ import com.example.demo.global.config.JpaAuditingConfig;
 import com.example.demo.global.config.QuerydslConfig;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,6 +59,7 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
   @Autowired private SpringDataDisplayJpaRepository displayJpaRepository;
   @Autowired private SpringDataDisplayScreeningJpaRepository screeningJpaRepository;
   @Autowired private GetDisplayScreeningDetailService detailService;
+  @Autowired private EntityManager entityManager;
 
   @Test
   void searchReturnsPendingReviewContractFields() {
@@ -261,6 +265,33 @@ class JpaDisplayScreeningQueryRepositoryAdapterTest {
         .isInstanceOfSatisfying(
             BusinessException.class,
             e -> assertThat(e.errorCode()).isEqualTo(GlobalErrorCode.NOT_FOUND));
+  }
+
+  @Test
+  void detailReturnsVideoOriginalAlongsideOrderedPreviewImages() {
+    Display display = display("영상 심사 전시");
+    display.changeMedia(
+        MediaContent.video(
+            "https://cdn.displayu.com/poster.mp4", "https://cdn.displayu.com/cover.png"),
+        List.of(MediaContent.image("https://cdn.displayu.com/detail.png")),
+        null);
+    displayJpaRepository.saveAndFlush(display);
+    Long displayId = display.getId();
+    entityManager.clear();
+
+    DisplayScreeningDetailResult result = detailService.getDetail(displayId);
+
+    assertThat(result.imageUrls())
+        .containsExactly(
+            "https://cdn.displayu.com/cover.png", "https://cdn.displayu.com/detail.png");
+    assertThat(result.media())
+        .containsExactly(
+            new DisplayScreeningDetailResult.MediaResult(
+                "https://cdn.displayu.com/poster.mp4",
+                MediaType.VIDEO,
+                "https://cdn.displayu.com/cover.png"),
+            new DisplayScreeningDetailResult.MediaResult(
+                "https://cdn.displayu.com/detail.png", MediaType.IMAGE, null));
   }
 
   private static Display display(String title) {

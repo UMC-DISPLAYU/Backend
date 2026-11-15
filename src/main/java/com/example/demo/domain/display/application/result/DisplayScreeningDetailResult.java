@@ -6,6 +6,7 @@ import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
+import com.example.demo.global.file.domain.MediaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -31,10 +32,19 @@ public record DisplayScreeningDetailResult(
     String leaderName,
     String screeningStatus,
     Long cancelledBy,
+    List<MediaResult> media,
     List<DisplayScreeningHistoryResult> history) {
 
   public static DisplayScreeningDetailResult from(Display display, List<DisplayScreening> history) {
     DisplayScreening screening = history.isEmpty() ? null : history.getFirst();
+    List<DisplayImage> images =
+        display.getImages().stream()
+            .filter(image -> !image.isDeleted())
+            .sorted(
+                Comparator.comparing(
+                        (DisplayImage image) -> image.getImageType() != DisplayImageType.MAIN)
+                    .thenComparingInt(DisplayImage::getSortOrder))
+            .toList();
     return new DisplayScreeningDetailResult(
         display.getId(),
         display.getTitle(),
@@ -49,20 +59,21 @@ public record DisplayScreeningDetailResult(
         display.getPeriod().startDate(),
         display.getPeriod().endDate(),
         display.getLocation().placeName(),
-        display.getImages().stream()
-            .filter(image -> !image.isDeleted())
-            .sorted(
-                Comparator.comparing(
-                        (DisplayImage image) -> image.getImageType() != DisplayImageType.MAIN)
-                    .thenComparingInt(DisplayImage::getSortOrder))
-            .map(DisplayImage::getImageUrl)
-            .toList(),
+        images.stream().map(DisplayImage::getCardImageUrl).toList(),
         display.getOrganization(),
         uniqueLeaderName(display),
         screening == null ? null : screening.getStatus().name(),
         screening == null ? null : screening.getCancelledBy(),
+        images.stream()
+            .map(
+                image ->
+                    new MediaResult(
+                        image.getImageUrl(), image.getMediaType(), image.getThumbnailUrl()))
+            .toList(),
         history.stream().map(DisplayScreeningHistoryResult::from).toList());
   }
+
+  public record MediaResult(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
 
   static Instant toInstant(java.time.LocalDateTime value) {
     return value == null ? null : value.toInstant(ZoneOffset.UTC);

@@ -15,6 +15,7 @@ import com.example.demo.domain.admin.infrastructure.config.AdminReviewConfigurat
 import com.example.demo.domain.admin.presentation.AdminReviewController;
 import com.example.demo.domain.admin.presentation.mapper.AdminReviewMapper;
 import com.example.demo.global.error.*;
+import com.example.demo.global.file.domain.MediaType;
 import com.example.demo.global.security.AuthUser;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -119,7 +120,8 @@ class AdminReviewTest {
                         "전시 대표자",
                         LocalDate.of(2026, 10, 1),
                         LocalDate.of(2026, 10, 7),
-                        "https://example.com/poster.png")),
+                        "https://example.com/poster.png",
+                        null)),
                 3L,
                 true));
     mvc.perform(get("/api/v1/admin/displays"))
@@ -150,6 +152,7 @@ class AdminReviewTest {
             null,
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
+            null,
             null);
     when(reviews.search(new ReviewSearchQuery(null, "REJECTED", 3L, 10)))
         .thenReturn(new ReviewPage(List.of(summary), null, false));
@@ -194,14 +197,22 @@ class AdminReviewTest {
                 "전시 대표자",
                 null,
                 null,
-                List.of()));
+                List.of(new ReviewDetail.MediaResult("video.mp4", MediaType.VIDEO, "poster")),
+                List.of(
+                    new ReviewDetail.History(11L, "REJECTED", 2L, null, null, 7L, "일정 수정", null))));
     mvc.perform(get("/api/v1/admin/displays/3"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.rejectionReason").value("일정 수정"))
         .andExpect(jsonPath("$.success.data.school").value("전시대학교"))
         .andExpect(jsonPath("$.success.data.leaderName").value("전시 대표자"))
         .andExpect(jsonPath("$.success.data.requesterId").value(2))
-        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"));
+        .andExpect(jsonPath("$.success.data.imageUrls[0]").value("poster"))
+        .andExpect(jsonPath("$.success.data.media[0].imageUrl").value("video.mp4"))
+        .andExpect(jsonPath("$.success.data.media[0].mediaType").value("VIDEO"))
+        .andExpect(jsonPath("$.success.data.media[0].thumbnailUrl").value("poster"))
+        .andExpect(jsonPath("$.success.data.history[0].screeningId").value(11))
+        .andExpect(jsonPath("$.success.data.history[0].status").value("REJECTED"))
+        .andExpect(jsonPath("$.success.data.history[0].rejectionReason").value("일정 수정"));
   }
 
   @Test
@@ -226,6 +237,7 @@ class AdminReviewTest {
             null,
             null,
             null,
+            List.of(),
             List.of());
     when(reviews.getDetail(3L)).thenReturn(detail);
     assertThat(Mappers.getMapper(AdminReviewMapper.class).toResponse(detail).leaderName()).isNull();

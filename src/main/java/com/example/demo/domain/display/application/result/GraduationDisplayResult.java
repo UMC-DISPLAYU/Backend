@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.query.DisplayInvitationDisplayQueryResult;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -18,7 +19,9 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
       LocalDate endedAt,
       long dayLeft,
       boolean isArchived,
-      String placeName) {
+      String placeName,
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -32,7 +35,9 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
-          queryResult.placeName());
+          queryResult.placeName(),
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public static ExhibitionResult from(
@@ -47,7 +52,9 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           queryResult.endedAt(),
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
-          queryResult.placeName());
+          queryResult.placeName(),
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -61,7 +68,9 @@ public record GraduationDisplayResult(List<ExhibitionResult> exhibitions) {
           endedAt,
           dayLeft,
           isArchived,
-          placeName);
+          placeName,
+          posterCrop,
+          posterVideoUrl);
     }
   }
 }

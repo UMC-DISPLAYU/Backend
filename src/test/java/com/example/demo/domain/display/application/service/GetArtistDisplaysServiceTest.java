@@ -143,6 +143,11 @@ class GetArtistDisplaysServiceTest {
     }
 
     @Override
+    public List<Display> findWithdrawalTargetDisplaysByUserId(Long userId) {
+      return List.of();
+    }
+
+    @Override
     public List<Display> findPublishedCreatedDisplaysByUserId(Long userId) {
       publishedCreatedUserId = userId;
       return publishedCreatedDisplays;

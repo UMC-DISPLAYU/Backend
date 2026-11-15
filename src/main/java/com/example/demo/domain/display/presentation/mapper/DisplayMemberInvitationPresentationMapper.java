@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation.mapper;
 
 import com.example.demo.domain.display.application.command.AcceptDisplayInvitationCommand;
+import com.example.demo.domain.display.application.command.CancelDisplayInvitationCommand;
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.command.RejectDisplayInvitationCommand;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
@@ -16,6 +17,7 @@ import com.example.demo.domain.display.presentation.response.DisplayInvitationDi
 import com.example.demo.domain.display.presentation.response.DisplayMemberInvitationResponse;
 import com.example.demo.domain.display.presentation.response.DisplayMemberListResponse;
 import com.example.demo.domain.display.presentation.response.MyDisplayInvitationListResponse;
+import com.example.demo.domain.display.presentation.response.PosterCropResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,6 +35,7 @@ public class DisplayMemberInvitationPresentationMapper {
     }
     return switch (role) {
       case TEAM_MEM -> TeamMemberRole.TEAM_MEM;
+      case MANAGER -> TeamMemberRole.MANAGER;
     };
   }
 
@@ -44,6 +47,10 @@ public class DisplayMemberInvitationPresentationMapper {
 
   public RejectDisplayInvitationCommand toRejectCommand(Long requesterUserId, Long invitationId) {
     return new RejectDisplayInvitationCommand(requesterUserId, invitationId);
+  }
+
+  public CancelDisplayInvitationCommand toCancelCommand(Long requesterUserId, Long invitationId) {
+    return new CancelDisplayInvitationCommand(requesterUserId, invitationId);
   }
 
   public DisplayMemberInvitationResponse toResponse(DisplayMemberInvitationResult result) {
@@ -72,7 +79,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.loggedIn(),
         result.artistVerified(),
         result.accepted(),
-        result.role());
+        result.role(),
+        result.nickname(),
+        result.invitationId());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -95,7 +104,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.loggedIn(),
         result.artistVerified(),
         result.accepted(),
-        result.role());
+        result.role(),
+        result.nickname(),
+        result.invitationId());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(
@@ -111,7 +122,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.leaderName(),
         result.title(),
         schoolDepartmentName(result.school(), result.department()),
-        result.placeName());
+        result.placeName(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private DisplayInvitationDisplayResponse.ExhibitionResponse toInvitationDisplayResponse(
@@ -124,7 +136,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.startedAt(),
         result.endedAt(),
         result.dayLeft(),
-        result.isArchived());
+        result.isArchived(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private String schoolDepartmentName(String organization, String department) {

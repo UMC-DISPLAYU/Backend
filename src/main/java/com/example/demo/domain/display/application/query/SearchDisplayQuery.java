@@ -2,6 +2,7 @@ package com.example.demo.domain.display.application.query;
 
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 
@@ -12,4 +13,6 @@ public record SearchDisplayQuery(
     DisplayField field,
     DisplayType type,
     Long cursor,
-    int size) {}
+    int size,
+    DisplaySearchSort sort,
+    Long cursorLikeCount) {}

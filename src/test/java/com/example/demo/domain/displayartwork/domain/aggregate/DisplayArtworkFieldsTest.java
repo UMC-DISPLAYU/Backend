@@ -22,7 +22,6 @@ import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** 작품 분야는 1개 이상 2개 이하다. type 컬럼은 아직 여러 응답이 쓰므로 첫 번째 분야와 항상 같아야 한다. */
 class DisplayArtworkFieldsTest {
 
   @Test
@@ -35,26 +34,31 @@ class DisplayArtworkFieldsTest {
 
   @Test
   void keepsTwoFieldsInOrder() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.PHOTOGRAPHY, ArtworkType.MEDIA));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.PHOTOGRAPHY, ArtworkType.VIDEO));
 
-    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.PHOTOGRAPHY, ArtworkType.MEDIA);
+    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.PHOTOGRAPHY, ArtworkType.VIDEO);
     // 하위 호환: type은 첫 번째 분야를 따라간다.
     assertThat(artwork.getType()).isEqualTo(ArtworkType.PHOTOGRAPHY);
   }
 
   @Test
   void treatsDuplicatedFieldAsSingleSelection() {
-    DisplayArtwork artwork = artwork(List.of(ArtworkType.DESIGN, ArtworkType.DESIGN));
+    DisplayArtwork artwork = artwork(List.of(ArtworkType.GRAPHIC, ArtworkType.GRAPHIC));
 
-    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.DESIGN);
+    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.GRAPHIC);
   }
 
   @Test
-  void rejectsMoreThanTwoFields() {
+  void rejectsMoreThanThreeFields() {
     assertThatExceptionOfType(BusinessException.class)
         .isThrownBy(
             () ->
-                artwork(List.of(ArtworkType.PAINTING, ArtworkType.DESIGN, ArtworkType.PHOTOGRAPHY)))
+                artwork(
+                    List.of(
+                        ArtworkType.PAINTING,
+                        ArtworkType.GRAPHIC,
+                        ArtworkType.PHOTOGRAPHY,
+                        ArtworkType.BRANDING)))
         .satisfies(
             exception ->
                 assertThat(exception.errorCode())
@@ -78,14 +82,14 @@ class DisplayArtworkFieldsTest {
     artwork.changeContent(
         "수정된 작품",
         "수정된 설명",
-        List.of(ArtworkType.CRAFT, ArtworkType.SCULPTURE),
+        List.of(ArtworkType.CRAFTS, ArtworkType.SCULPTURE),
         2026,
         "혼합재료",
         "100x100cm",
         "포인트");
 
-    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.CRAFT, ArtworkType.SCULPTURE);
-    assertThat(artwork.getType()).isEqualTo(ArtworkType.CRAFT);
+    assertThat(artwork.getFieldTypes()).containsExactly(ArtworkType.CRAFTS, ArtworkType.SCULPTURE);
+    assertThat(artwork.getType()).isEqualTo(ArtworkType.CRAFTS);
   }
 
   private static DisplayArtwork artwork(List<ArtworkType> types) {

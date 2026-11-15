@@ -24,11 +24,18 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayInvitationJpaRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataTeamMemberJpaRepository;
+import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
+import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
+import com.example.demo.domain.displayartwork.infrastructure.persistence.SpringDataDisplayArtworkJpaRepository;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
 import com.jayway.jsonpath.JsonPath;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -68,6 +75,12 @@ class DisplayMemberInvitationControllerTest {
   @Autowired private SpringDataDisplayInvitationJpaRepository invitationJpaRepository;
 
   @Autowired private SpringDataTeamMemberJpaRepository teamMemberJpaRepository;
+
+  @Autowired private SpringDataDisplayArtworkJpaRepository artworkJpaRepository;
+
+  @Autowired private EntityManager entityManager;
+
+  @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
 
   @Test
   void inviteCreatesPendingDisplayMemberInvitation() throws Exception {
@@ -143,6 +156,22 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void inviteReturnsForbiddenWhenInviteeIsNotArtistVerified() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(unverifiedUser("unverified-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(invitee.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("ARTIST_VERIFICATION_REQUIRED"));
+  }
+
+  @Test
   void inviteReturnsUnauthorizedWithoutAuthentication() throws Exception {
     mockMvc
         .perform(
@@ -152,6 +181,31 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void inviteReturnsForbiddenWhenRequesterIsManager() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User manager = userJpaRepository.save(user("manager"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayWithLeader(leader);
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(manager.getId()),
+            manager.getNickname(),
+            TeamMemberRole.MANAGER,
+            true));
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inviteRequest(invitee.getId())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
   }
 
   @Test
@@ -189,6 +243,41 @@ class DisplayMemberInvitationControllerTest {
   }
 
   @Test
+  void acceptManagerInvitationCreatesManagerTeamMember() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User manager = userJpaRepository.save(user("manager"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+
+    MvcResult inviteResult =
+        mockMvc
+            .perform(
+                post("/api/v1/display-invitations/displays/{displayId}", display.getId())
+                    .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(inviteRequest(manager.getId(), "MANAGER")))
+            .andExpect(status().isCreated())
+            .andReturn();
+    Number invitationId =
+        JsonPath.read(
+            inviteResult.getResponse().getContentAsString(), "$.success.data.invitationId");
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", invitationId.longValue())
+                .header(HttpHeaders.AUTHORIZATION, bearer(manager.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("전시 관리자")))
+        .andExpect(status().isOk());
+
+    TeamMember savedManager =
+        teamMemberJpaRepository
+            .findByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                display.getId(), manager.getId())
+            .orElseThrow();
+    assertThat(savedManager.getRole()).isEqualTo(TeamMemberRole.MANAGER);
+  }
+
+  @Test
   void acceptReturnsForbiddenWhenRequesterIsNotInvitee() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
     User invitee = userJpaRepository.save(user("invitee"));
@@ -216,6 +305,52 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void acceptReturnsBadRequestWhenDisplayNicknameIsBlank() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(user("invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("   ")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+
+    assertThat(invitationJpaRepository.findById(invitationId).orElseThrow().getStatus())
+        .isEqualTo(DisplayInvitationStatus.PENDING);
+  }
+
+  @Test
+  void acceptReturnsForbiddenWhenInviteeIsNotArtistVerified() throws Exception {
+    User leader = userJpaRepository.save(user("leader"));
+    User invitee = userJpaRepository.save(unverifiedUser("unverified-accept-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    DisplayInvitation invitation =
+        new DisplayInvitation(
+            null,
+            new UserId(leader.getId()),
+            new UserId(invitee.getId()),
+            TeamMemberRole.TEAM_MEM,
+            null,
+            null);
+    display.addInvitation(invitation);
+    DisplayInvitation savedInvitation = invitationJpaRepository.saveAndFlush(invitation);
+
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{invitationId}/accept", savedInvitation.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("미인증 사용자")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error.code").value("ARTIST_VERIFICATION_REQUIRED"));
   }
 
   @Test
@@ -258,8 +393,9 @@ class DisplayMemberInvitationControllerTest {
     member.verifySchoolEmail("member@school.ac.kr", "중앙대학교");
     member.completeArtistVerification();
     userJpaRepository.save(member);
+    User manager = userJpaRepository.save(user("manager"));
     User pendingInvitee = userJpaRepository.save(user("pending"));
-    User withdrawn = user("withdrawn");
+    User withdrawn = unverifiedUser("withdrawn");
     withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
     userJpaRepository.save(withdrawn);
     User exited = userJpaRepository.save(user("exited"));
@@ -267,6 +403,13 @@ class DisplayMemberInvitationControllerTest {
     display.addTeamMember(
         new TeamMember(
             null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(
+        new TeamMember(
+            null,
+            new UserId(manager.getId()),
+            manager.getNickname(),
+            TeamMemberRole.MANAGER,
+            true));
     display.addTeamMember(
         new TeamMember(
             null,
@@ -289,7 +432,7 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
-        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(3))
+        .andExpect(jsonPath("$.success.data.memberAccept.length()").value(4))
         .andExpect(jsonPath("$.success.data.memberAccept[0].userId").value(leader.getId()))
         .andExpect(jsonPath("$.success.data.memberAccept[0].role").value("TEAM_LEADER"))
         .andExpect(jsonPath("$.success.data.memberAccept[1].userId").value(member.getId()))
@@ -297,9 +440,11 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.memberAccept[1].artistVerified").value(true))
         .andExpect(jsonPath("$.success.data.memberAccept[1].accepted").value(true))
         .andExpect(jsonPath("$.success.data.memberAccept[1].role").value("TEAM_MEM"))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].userId").value(withdrawn.getId()))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].loggedIn").value(false))
-        .andExpect(jsonPath("$.success.data.memberAccept[2].artistVerified").value(false))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].userId").value(manager.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[2].role").value("MANAGER"))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].userId").value(withdrawn.getId()))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].loggedIn").value(false))
+        .andExpect(jsonPath("$.success.data.memberAccept[3].artistVerified").value(false))
         .andExpect(jsonPath("$.success.data.memberPending.length()").value(1))
         .andExpect(jsonPath("$.success.data.memberPending[0].teamMemberId").value(nullValue()))
         .andExpect(jsonPath("$.success.data.memberPending[0].userId").value(pendingInvitee.getId()))
@@ -351,6 +496,14 @@ class DisplayMemberInvitationControllerTest {
         new TeamMember(
             null, new UserId(member.getId()), member.getNickname(), TeamMemberRole.TEAM_MEM, true));
     displayJpaRepository.saveAndFlush(display);
+    DisplayArtwork memberArtwork = persistArtwork(display, "나가는 작가의 작품", leader.getId(), 0);
+    DisplayArtwork proxyRegistered =
+        persistArtwork(display, "나가는 팀원이 대리 등록한 작품", member.getId(), 1);
+    persistCreator(
+        memberArtwork.getId(), "나가는 작가", CreatorRole.LEAD_ARTIST, member.getId(), 910001L);
+    persistCreator(proxyRegistered.getId(), "이름만 있는 작가", CreatorRole.LEAD_ARTIST, null, 910002L);
+    persistCreator(
+        proxyRegistered.getId(), "QnA 담당자", CreatorRole.QA_ONLY, member.getId(), 910003L);
 
     mockMvc
         .perform(
@@ -359,6 +512,13 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data").doesNotExist());
+
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(artworkJpaRepository.findById(memberArtwork.getId()).orElseThrow().isDeleted())
+        .isTrue();
+    assertThat(artworkJpaRepository.findById(proxyRegistered.getId()).orElseThrow().isDeleted())
+        .isFalse();
 
     TeamMember exitedMember =
         teamMemberJpaRepository.findAll().stream()
@@ -589,6 +749,217 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
   }
 
+  @Test
+  void leaderCanCancelPendingInvitationAndRetryAndReinvite() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-leader"));
+    User invitee = userJpaRepository.save(user("cancel-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.status").value("CANCELLED"));
+    }
+    entityManager.flush();
+    entityManager.clear();
+    DisplayInvitation cancelled = invitationJpaRepository.findById(invitationId).orElseThrow();
+    assertThat(cancelled.getStatus()).isEqualTo(DisplayInvitationStatus.CANCELLED);
+    assertThat(cancelled.getRespondedAt()).isNotNull();
+    mockMvc
+        .perform(get("/api/v1/display/{id}/members", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(0));
+    mockMvc
+        .perform(
+            get("/api/v1/display-invitations/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.invitations.length()").value(0));
+    mockMvc
+        .perform(
+            post("/api/v1/display-invitations/{id}/accept", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(invitee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(acceptRequest("작가")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_ALREADY_CANCELLED"));
+    assertThat(invite(display.getId(), leader.getId(), invitee.getId())).isNotEqualTo(invitationId);
+  }
+
+  @Test
+  void cancellationRequiresLeaderEvenWhenAlreadyCancelled() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-auth-leader"));
+    User invitee = userJpaRepository.save(user("cancel-auth-invitee"));
+    User outsider = userJpaRepository.save(user("cancel-auth-outsider"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    for (Long userId : List.of(invitee.getId(), outsider.getId())) {
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(userId)))
+          .andExpect(status().isForbidden());
+    }
+    invitationJpaRepository
+        .findById(invitationId)
+        .orElseThrow()
+        .cancel(LocalDateTime.of(2026, 7, 22, 9, 0));
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(outsider.getId())))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void acceptedOrRejectedInvitationsCannotBeCancelled() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-terminal-leader"));
+    for (DisplayInvitationStatus state :
+        List.of(DisplayInvitationStatus.ACCEPTED, DisplayInvitationStatus.REJECTED)) {
+      User invitee = userJpaRepository.save(user("cancel-terminal-" + state.name()));
+      Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+      Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+      DisplayInvitation invitation = invitationJpaRepository.findById(invitationId).orElseThrow();
+      if (state == DisplayInvitationStatus.ACCEPTED) {
+        invitation.accept(LocalDateTime.of(2026, 7, 22, 9, 0));
+      } else {
+        invitation.reject(LocalDateTime.of(2026, 7, 22, 9, 0));
+      }
+      mockMvc
+          .perform(
+              delete("/api/v1/display-invitations/{id}", invitationId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+          .andExpect(status().isConflict());
+      assertThat(invitation.getStatus()).isEqualTo(state);
+    }
+  }
+
+  @Test
+  void cancelledDisplayAndUnknownInvitationReturnNotFound() throws Exception {
+    User leader = userJpaRepository.save(user("cancel-deleted-leader"));
+    User invitee = userJpaRepository.save(user("cancel-deleted-invitee"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    display.delete();
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", invitationId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(
+            delete("/api/v1/display-invitations/{id}", Long.MAX_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId())))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void memberListsExposeBasicNicknameAndPendingInvitationId() throws Exception {
+    User leader = userJpaRepository.save(user("basic-nickname"));
+    User invitee = userJpaRepository.save(user("pending-nickname"));
+    Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+    Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
+    mockMvc
+        .perform(get("/api/v1/display/{id}/members", display.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.memberAccept[0].nickname").value("basic-nickname"))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].displayNickname").value("전시 리더"))
+        .andExpect(jsonPath("$.success.data.memberAccept[0].invitationId").value(nullValue()))
+        .andExpect(jsonPath("$.success.data.memberPending[0].nickname").value("pending-nickname"))
+        .andExpect(jsonPath("$.success.data.memberPending[0].invitationId").value(invitationId));
+    mockMvc
+        .perform(
+            patch("/api/v1/display/me/nickname")
+                .header(HttpHeaders.AUTHORIZATION, bearer(leader.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateNicknameRequest(display.getId(), "새 전시 작가명")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.nickname").value("basic-nickname"))
+        .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 작가명"));
+  }
+
+  @Test
+  @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+  void concurrentAcceptAndCancelProduceExactlyOneTerminalState() throws Exception {
+    var transactions =
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+    long[] ids =
+        transactions.execute(
+            status -> {
+              User leader = userJpaRepository.saveAndFlush(user("race-leader"));
+              User invitee = userJpaRepository.saveAndFlush(user("race-invitee"));
+              Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
+              return new long[] {leader.getId(), invitee.getId(), display.getId()};
+            });
+    try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+      Long invitationId = invite(ids[2], ids[0], ids[1]);
+      var ready = new java.util.concurrent.CountDownLatch(2);
+      var start = new java.util.concurrent.CountDownLatch(1);
+      var accepted =
+          executor.submit(
+              () -> {
+                ready.countDown();
+                if (!start.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                  throw new AssertionError("race start timed out");
+                return mockMvc
+                    .perform(
+                        post("/api/v1/display-invitations/{invitationId}/accept", invitationId)
+                            .header(HttpHeaders.AUTHORIZATION, bearer(ids[1]))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(acceptRequest("경합 작가")))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+              });
+      var cancelled =
+          executor.submit(
+              () -> {
+                ready.countDown();
+                if (!start.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                  throw new AssertionError("race start timed out");
+                return mockMvc
+                    .perform(
+                        delete("/api/v1/display-invitations/{invitationId}", invitationId)
+                            .header(HttpHeaders.AUTHORIZATION, bearer(ids[0])))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+              });
+      assertThat(ready.await(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+      start.countDown();
+      int acceptStatus = accepted.get(10, java.util.concurrent.TimeUnit.SECONDS);
+      int cancelStatus = cancelled.get(10, java.util.concurrent.TimeUnit.SECONDS);
+      assertThat(List.of(acceptStatus, cancelStatus)).containsExactlyInAnyOrder(200, 409);
+      transactions.executeWithoutResult(
+          status -> {
+            DisplayInvitation invitation =
+                invitationJpaRepository.findById(invitationId).orElseThrow();
+            boolean memberExists =
+                teamMemberJpaRepository
+                    .existsByDisplayIdAndUserIdValueAndAcceptedTrueAndDeletedAtIsNull(
+                        ids[2], ids[1]);
+            assertThat(invitation.getStatus())
+                .isEqualTo(
+                    acceptStatus == 200
+                        ? DisplayInvitationStatus.ACCEPTED
+                        : DisplayInvitationStatus.CANCELLED);
+            assertThat(memberExists).isEqualTo(acceptStatus == 200);
+          });
+    } finally {
+      transactions.executeWithoutResult(
+          status -> {
+            displayJpaRepository.deleteById(ids[2]);
+            displayJpaRepository.flush();
+            userJpaRepository.deleteById(ids[1]);
+            userJpaRepository.deleteById(ids[0]);
+          });
+    }
+  }
+
   private Long invite(Long displayId, Long leaderUserId, Long inviteeUserId) throws Exception {
     MvcResult result =
         mockMvc
@@ -609,13 +980,17 @@ class DisplayMemberInvitationControllerTest {
   }
 
   private static String inviteRequest(Long inviteeUserId) {
+    return inviteRequest(inviteeUserId, "TEAM_MEM");
+  }
+
+  private static String inviteRequest(Long inviteeUserId, String role) {
     return """
         {
           "inviteeUserId": %d,
-          "role": "TEAM_MEM"
+          "role": "%s"
         }
         """
-        .formatted(inviteeUserId);
+        .formatted(inviteeUserId, role);
   }
 
   private static String inviteRequestWithoutRole(Long inviteeUserId) {
@@ -646,7 +1021,60 @@ class DisplayMemberInvitationControllerTest {
         .formatted(displayId, displayNickname);
   }
 
+  private DisplayArtwork persistArtwork(
+      Display display, String artworkName, Long registeredByUserId, int sortOrder) {
+    DisplayArtwork artwork =
+        DisplayArtwork.create(
+            display,
+            artworkName,
+            "설명",
+            List.of(ArtworkType.PAINTING),
+            2026,
+            "재료",
+            "10 x 10 cm",
+            "감상 포인트",
+            sortOrder,
+            registeredByUserId,
+            List.of(
+                new ArtworkImage(
+                    null,
+                    "https://cdn.displayu.com/artworks/" + artworkName + ".png",
+                    true,
+                    ArtworkImageType.ARTWORK,
+                    0,
+                    null,
+                    100,
+                    100)));
+    return artworkJpaRepository.saveAndFlush(artwork);
+  }
+
+  private void persistCreator(
+      Long artworkId, String name, CreatorRole role, Long userId, Long creatorId) {
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO creator
+              (creator_id, display_artwork_id, creator_name, is_contact, is_leader, role, user_id)
+            VALUES (?, ?, ?, FALSE, ?, ?, ?)
+            """)
+        .setParameter(1, creatorId)
+        .setParameter(2, artworkId)
+        .setParameter(3, name)
+        .setParameter(4, role == CreatorRole.LEAD_ARTIST)
+        .setParameter(5, role.name())
+        .setParameter(6, userId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
+  }
+
   private static User user(String nickname) {
+    User user = unverifiedUser(nickname);
+    user.completeArtistVerification();
+    return user;
+  }
+
+  private static User unverifiedUser(String nickname) {
     return User.builder()
         .provider(Provider.Google)
         .providerId("provider-" + nickname)

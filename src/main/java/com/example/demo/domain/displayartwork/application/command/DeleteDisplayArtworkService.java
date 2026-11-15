@@ -14,12 +14,15 @@ public class DeleteDisplayArtworkService {
 
   private final DisplayArtworkRepository displayArtworkRepository;
   private final DisplayArtworkPermissionChecker permissionChecker;
+  private final DisplayArtworkCleanupService artworkCleanupService;
 
   public DeleteDisplayArtworkService(
       DisplayArtworkRepository displayArtworkRepository,
-      DisplayArtworkPermissionChecker permissionChecker) {
+      DisplayArtworkPermissionChecker permissionChecker,
+      DisplayArtworkCleanupService artworkCleanupService) {
     this.displayArtworkRepository = displayArtworkRepository;
     this.permissionChecker = permissionChecker;
+    this.artworkCleanupService = artworkCleanupService;
   }
 
   @Transactional
@@ -34,7 +37,7 @@ public class DeleteDisplayArtworkService {
     // 전시 대표자, 작품의 작가, 공동 작업자만 삭제할 수 있다.
     permissionChecker.requireArtworkDeleter(requesterUserId, artwork.getDisplay(), artworkId);
 
-    artwork.delete();
+    artworkCleanupService.delete(artwork);
 
     return new DeleteDisplayArtworkResult(artworkId, "작품이 성공적으로 삭제되었습니다.");
   }

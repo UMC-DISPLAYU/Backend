@@ -44,7 +44,8 @@ class GetArchivedDisplaysServiceTest {
             "디유갤러리",
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
-            "https://cdn.displayu.com/posters/main.png");
+            "https://cdn.displayu.com/posters/main.png",
+            null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(archiveDisplay));
     when(memoRepository.findByArchiveDisplayIdInAndDeletedAtIsNull(List.of(10L)))
@@ -113,6 +114,7 @@ class GetArchivedDisplaysServiceTest {
             "디유갤러리",
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
+            null,
             null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(archiveDisplay));
@@ -141,7 +143,8 @@ class GetArchivedDisplaysServiceTest {
             "디유갤러리",
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
-            "https://cdn.displayu.com/posters/100.png");
+            "https://cdn.displayu.com/posters/100.png",
+            null);
     DisplaySummaryResult summaryForSecond =
         new DisplaySummaryResult(
             200L,
@@ -151,7 +154,8 @@ class GetArchivedDisplaysServiceTest {
             "다른갤러리",
             LocalDate.now().minusDays(30),
             LocalDate.now().minusDays(20),
-            "https://cdn.displayu.com/posters/200.png");
+            "https://cdn.displayu.com/posters/200.png",
+            null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(first, second));
     when(memoRepository.findByArchiveDisplayIdInAndDeletedAtIsNull(List.of(10L, 11L)))

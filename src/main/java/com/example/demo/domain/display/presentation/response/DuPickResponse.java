@@ -7,7 +7,12 @@ public record DuPickResponse(
     List<DuPickItemResponse> duPicks, CursorPaginationResponse pagination) {
 
   public record DuPickItemResponse(
-      Long duPickId, String title, String subtitle, String bannerImageUrl, LocalDate createdAt) {}
+      Long duPickId,
+      String title,
+      String subtitle,
+      String bannerImageUrl,
+      LocalDate createdAt,
+      PosterCropResponse posterCrop) {}
 
   public record CursorPaginationResponse(Long nextCursor, int size, boolean hasNext) {}
 }

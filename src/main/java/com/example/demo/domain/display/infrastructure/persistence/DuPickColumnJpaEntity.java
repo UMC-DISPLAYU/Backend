@@ -1,6 +1,8 @@
 package com.example.demo.domain.display.infrastructure.persistence;
 
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -28,6 +30,13 @@ public class DuPickColumnJpaEntity {
 
   @Column(nullable = false)
   private LocalDateTime updatedAt;
+
+  @Embedded private PosterCrop posterCrop;
+
+  public void changePosterCrop(PosterCrop posterCrop, LocalDateTime changedAt) {
+    this.posterCrop = posterCrop;
+    this.updatedAt = changedAt;
+  }
 
   protected DuPickColumnJpaEntity() {}
 

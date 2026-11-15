@@ -1,8 +1,9 @@
 package com.example.demo.domain.display.application.query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface DisplayMapQueryRepository {
 
-  List<DisplayMapQueryResult> findMarkers(DisplayMapQuery query, int limit);
+  List<DisplayMapQueryResult> findMarkers(DisplayMapQuery query, LocalDate today, int limit);
 }

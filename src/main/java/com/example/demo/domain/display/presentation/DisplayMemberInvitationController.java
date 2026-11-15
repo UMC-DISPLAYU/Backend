@@ -5,6 +5,7 @@ import com.example.demo.domain.display.application.result.DisplayMemberListResul
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
 import com.example.demo.domain.display.application.result.MyDisplayInvitationListResult;
 import com.example.demo.domain.display.application.service.AcceptDisplayInvitationService;
+import com.example.demo.domain.display.application.service.CancelDisplayInvitationService;
 import com.example.demo.domain.display.application.service.GetDisplayInvitationDisplaysService;
 import com.example.demo.domain.display.application.service.GetDisplayMembersService;
 import com.example.demo.domain.display.application.service.GetMyDisplayInvitationsService;
@@ -30,6 +31,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +50,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   private final InviteDisplayMemberService inviteDisplayMemberService;
   private final AcceptDisplayInvitationService acceptDisplayInvitationService;
   private final RejectDisplayInvitationService rejectDisplayInvitationService;
+  private final CancelDisplayInvitationService cancelDisplayInvitationService;
   private final GetDisplayMembersService getDisplayMembersService;
   private final GetMyDisplayInvitationsService getMyDisplayInvitationsService;
   private final GetDisplayInvitationDisplaysService getDisplayInvitationDisplaysService;
@@ -94,6 +97,19 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
+  @DeleteMapping("/display-invitations/{invitationId}")
+  public ApiResponseBody<DisplayMemberInvitationResponse> cancel(
+      @PathVariable Long invitationId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest httpRequest) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            cancelDisplayInvitationService.cancel(
+                mapper.toCancelCommand(requireUserId(user), invitationId))),
+        httpRequest);
+  }
+
+  @Override
   @GetMapping("/display/{displayId}/members")
   public ApiResponseBody<DisplayMemberListResponse> getMembers(
       @PathVariable Long displayId, HttpServletRequest httpRequest) {
@@ -114,7 +130,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @GetMapping("/display-invitations/me")
+  @GetMapping(value = "/display-invitations/me", produces = "application/json")
   public ApiResponseBody<MyDisplayInvitationListResponse> getMyInvitations(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     MyDisplayInvitationListResult result =
@@ -123,7 +139,7 @@ public class DisplayMemberInvitationController implements DisplayMemberInvitatio
   }
 
   @Override
-  @GetMapping("/display-invitations")
+  @GetMapping(value = "/display-invitations", produces = "application/json")
   public ApiResponseBody<DisplayInvitationDisplayResponse> getInvitationDisplays(
       @AuthenticationPrincipal AuthUser user, HttpServletRequest httpRequest) {
     GraduationDisplayResult result =

@@ -7,6 +7,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.QDisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.QArtworkImage;
 import com.example.demo.domain.displayartwork.domain.entity.QCreator;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Map;
@@ -64,9 +65,10 @@ public class JpaArtworkSummaryQueryRepositoryAdapter implements ArtworkSummaryQu
   }
 
   private Map<Long, String> findThumbnailImageUrlByArtworkId(List<Long> displayArtworkIds) {
+    StringExpression cardImageUrl = ArtworkImageConditions.cardImageUrl(image);
     List<Tuple> rows =
         queryFactory
-            .select(image.displayArtwork.id, image.imageUrl)
+            .select(image.displayArtwork.id, cardImageUrl)
             .from(image)
             .where(
                 image.displayArtwork.id.in(displayArtworkIds),
@@ -76,7 +78,7 @@ public class JpaArtworkSummaryQueryRepositoryAdapter implements ArtworkSummaryQu
         .collect(
             Collectors.toMap(
                 tuple -> tuple.get(image.displayArtwork.id),
-                tuple -> tuple.get(image.imageUrl),
+                tuple -> tuple.get(cardImageUrl),
                 (existing, duplicate) -> existing));
   }
 

@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.application.result;
 
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -13,4 +14,5 @@ public record ReviewSummary(
     String leaderName,
     LocalDate startDate,
     LocalDate endDate,
-    String posterImageUrl) {}
+    String posterImageUrl,
+    PosterCrop posterCrop) {}

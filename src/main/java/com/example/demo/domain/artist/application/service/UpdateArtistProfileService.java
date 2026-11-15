@@ -13,13 +13,13 @@ import com.example.demo.domain.artist.domain.repository.AreaOfActivityRepository
 import com.example.demo.domain.artist.domain.repository.ArtistProfileRepository;
 import com.example.demo.domain.artist.domain.type.ActivityCategory;
 import com.example.demo.domain.artist.domain.vo.ArtistName;
+import com.example.demo.domain.user.domain.aggregate.University;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.domain.user.domain.service.SchoolEmailValidator;
 import com.example.demo.domain.user.domain.vo.ProfileImageUrl;
-import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,18 +54,27 @@ public class UpdateArtistProfileService {
     ProfileImageUrl profileImageUrl = ProfileImageUrl.ofNullable(command.profileImageUrl());
     String introduction = normalize(command.introduction());
     String externalLink = normalize(command.externalLink());
+    String instagramLink = normalize(command.instagramLink());
     String univName = normalize(command.univName());
+    University university = null;
     if (univName == null) {
       univName = profile.getUnivName();
     } else {
-      schoolEmailValidator.validate(univName, user.getSchoolEmail());
+      university = schoolEmailValidator.validate(univName, user.getSchoolEmail());
+      univName = university.getName();
     }
-    validateActivityFields(command.fields());
+    List<ActivityCategory> previousFields =
+        areaOfActivityRepository.findByArtistProfile(profile).stream()
+            .map(AreaOfActivity::getField)
+            .toList();
+    validateActivityFields(command.fields(), previousFields);
 
     changeArtistName(profile, artistName);
     profile.updateProfileImage(profileImageUrl.value());
-    user.changeUnivName(univName);
-    profile.updateProfile(introduction, externalLink, univName);
+    if (university != null) {
+      user.changeUniversity(university);
+    }
+    profile.updateProfile(introduction, externalLink, instagramLink, univName);
     areaOfActivityRepository.deleteAllByArtistProfile(profile);
     command
         .fields()
@@ -77,6 +86,7 @@ public class UpdateArtistProfileService {
         introduction,
         List.copyOf(command.fields()),
         externalLink,
+        instagramLink,
         univName);
   }
 
@@ -99,12 +109,16 @@ public class UpdateArtistProfileService {
     }
   }
 
-  private void validateActivityFields(List<ActivityCategory> fields) {
+  private void validateActivityFields(
+      List<ActivityCategory> fields, List<ActivityCategory> previousFields) {
     if (fields == null
         || fields.isEmpty()
         || fields.size() > 2
-        || fields.stream().anyMatch(field -> field == null)
-        || new HashSet<>(fields).size() != fields.size()) {
+        || fields.stream()
+            .anyMatch(
+                field ->
+                    field == null || (!field.isSelectable() && !previousFields.contains(field)))
+        || fields.stream().map(ActivityCategory::canonical).distinct().count() != fields.size()) {
       throw new ArtistException(ArtistErrorCode.INVALID_ACTIVITY_FIELDS);
     }
   }

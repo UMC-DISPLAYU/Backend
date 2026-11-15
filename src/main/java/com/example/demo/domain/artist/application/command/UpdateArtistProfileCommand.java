@@ -10,4 +10,5 @@ public record UpdateArtistProfileCommand(
     String introduction,
     List<ActivityCategory> fields,
     String externalLink,
+    String instagramLink,
     String univName) {}

@@ -10,7 +10,9 @@ public record DisplayMemberResult(
     boolean loggedIn,
     boolean artistVerified,
     boolean accepted,
-    String role) {
+    String role,
+    String nickname,
+    Long invitationId) {
 
   public static DisplayMemberResult from(TeamMember teamMember, User user) {
     return new DisplayMemberResult(
@@ -20,6 +22,8 @@ public record DisplayMemberResult(
         user != null && user.getDeletedAt() == null,
         user != null && user.isVerified(),
         teamMember.isAccepted(),
-        teamMember.getRole().name());
+        teamMember.getRole().name(),
+        user != null && user.getNickname() != null ? user.getNickname() : "",
+        null);
   }
 }

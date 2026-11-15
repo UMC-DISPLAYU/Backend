@@ -101,7 +101,7 @@ class AdminUserAuthorizationIntegrationTest {
 
     for (String path : PATHS) {
       mvc.perform(get(path).header("Authorization", "Bearer " + token))
-          .andExpect(status().isForbidden());
+          .andExpect(status().is(withdraw ? 401 : 403));
     }
     verifyNoInteractions(queries);
   }

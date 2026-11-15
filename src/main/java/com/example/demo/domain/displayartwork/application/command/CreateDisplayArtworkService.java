@@ -13,8 +13,12 @@ import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCo
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.file.application.MediaUsage;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class CreateDisplayArtworkService {
   private final DisplayArtworkRepository displayArtworkRepository;
   private final DisplayArtworkPermissionChecker permissionChecker;
   private final AuthorSetupService authorSetupService;
+  private final MediaStorageVerifier mediaStorageVerifier;
   private final Clock clock;
 
   public CreateDisplayArtworkService(
@@ -36,11 +41,13 @@ public class CreateDisplayArtworkService {
       DisplayArtworkRepository displayArtworkRepository,
       DisplayArtworkPermissionChecker permissionChecker,
       AuthorSetupService authorSetupService,
-      Clock clock) {
+      Clock clock,
+      MediaStorageVerifier mediaStorageVerifier) {
     this.displayRepository = displayRepository;
     this.displayArtworkRepository = displayArtworkRepository;
     this.permissionChecker = permissionChecker;
     this.authorSetupService = authorSetupService;
+    this.mediaStorageVerifier = mediaStorageVerifier;
     this.clock = clock;
   }
 
@@ -57,6 +64,9 @@ public class CreateDisplayArtworkService {
 
     permissionChecker.requireArtworkRegistrant(requesterUserId, display);
     validateArtworkLimit(command.displayId());
+    command
+        .images()
+        .forEach(image -> mediaStorageVerifier.verifyVideo(image.media(), MediaUsage.ARTWORK));
 
     int nextWorkSortOrder =
         displayArtworkRepository
@@ -78,6 +88,11 @@ public class CreateDisplayArtworkService {
             requesterUserId,
             initialArtworkStatus(display),
             toImages(command.images()));
+
+    if (displayArtwork.getStatus() == DisplayArtworkStatus.PUBLISHED) {
+      displayArtwork.publish(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
+    }
+    displayArtwork.cropRepresentativeImage(command.artworkCrop());
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
 
@@ -108,7 +123,7 @@ public class CreateDisplayArtworkService {
             image ->
                 new ArtworkImage(
                     null,
-                    image.imageUrl(),
+                    image.media(),
                     image.isThumbnail(),
                     image.imageType(),
                     image.sortOrder(),

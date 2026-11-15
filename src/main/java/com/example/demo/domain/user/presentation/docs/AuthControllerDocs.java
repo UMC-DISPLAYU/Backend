@@ -48,6 +48,33 @@ public interface AuthControllerDocs {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(name = "회원가입 성공", value = SIGNUP_SUCCESS_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "요청값 또는 약관 동의 오류",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "입력값 검증 실패", value = SIGNUP_INVALID_INPUT_EXAMPLE),
+                @ExampleObject(name = "필수 약관 미동의", value = REQUIRED_AGREEMENT_EXAMPLE)
+              }))
+  @ApiResponse(
+      responseCode = "401",
+      description = "회원가입 토큰 누락 또는 검증 실패",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "회원가입 토큰 오류", value = INVALID_SIGNUP_TOKEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "이미 가입한 사용자 또는 닉네임 중복",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = {
+                @ExampleObject(name = "이미 가입한 사용자", value = ALREADY_REGISTERED_EXAMPLE),
+                @ExampleObject(name = "닉네임 중복", value = SIGNUP_DUPLICATE_NICKNAME_EXAMPLE)
+              }))
   @SecurityRequirement(name = "Authorization")
   ApiResponseBody<SignupResponse.Signup> signup(
       SignupRequest request,
@@ -55,4 +82,25 @@ public interface AuthControllerDocs {
       @Parameter(hidden = true) String cookieSignupToken,
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse);
+
+  String SIGNUP_INVALID_INPUT_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_INPUT_VALUE", "message": "입력값이 올바르지 않습니다.", "details": [{ "field": "nickname", "message": "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다." }] }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
+  String REQUIRED_AGREEMENT_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "REQUIRED_AGREEMENT_NOT_ACCEPTED", "message": "필수 약관에 동의해야 회원가입할 수 있습니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
+  String INVALID_SIGNUP_TOKEN_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_SIGNUP_TOKEN", "message": "유효하지 않은 회원가입 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
+  String ALREADY_REGISTERED_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "ALREADY_REGISTERED_USER", "message": "이미 가입된 사용자입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
+  String SIGNUP_DUPLICATE_NICKNAME_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "DUPLICATE_NICKNAME", "message": "이미 사용 중인 닉네임입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
 }

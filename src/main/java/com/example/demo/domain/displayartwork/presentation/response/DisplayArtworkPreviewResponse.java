@@ -16,7 +16,8 @@ public record DisplayArtworkPreviewResponse(
       int imageHeight,
       ExhibitionInfoResponse exhibitionInfo,
       @Schema(description = "대표 작가가 첫 번째이며 공동 작가가 이어집니다. Q&A 전용 담당자는 제외합니다.")
-          List<ArtistResponse> artists) {}
+          List<ArtistResponse> artists,
+      ArtworkCropResponse artworkCrop) {}
 
   public record ArtistResponse(
       @Schema(

@@ -2,6 +2,8 @@ package com.example.demo.domain.displayartwork.application.result;
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.global.file.domain.MediaType;
 import java.util.List;
 
 /** 수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위한 전체 필드. */
@@ -20,7 +22,8 @@ public record DisplayArtworkEditResult(
     String artistName,
     Long artistUserId,
     List<CoAuthorResult> coAuthors,
-    List<Long> qaHandlerUserIds) {
+    List<Long> qaHandlerUserIds,
+    ArtworkCrop artworkCrop) {
 
   public record CoAuthorResult(Long userId, String name) {}
 
@@ -32,7 +35,9 @@ public record DisplayArtworkEditResult(
       int sortOrder,
       String caption,
       int width,
-      int height) {
+      int height,
+      MediaType mediaType,
+      String thumbnailUrl) {
 
     public static ImageResult from(ArtworkImage image) {
       return new ImageResult(
@@ -43,7 +48,9 @@ public record DisplayArtworkEditResult(
           image.getSortOrder(),
           image.getCaption(),
           image.getWidth(),
-          image.getHeight());
+          image.getHeight(),
+          image.getMediaType(),
+          image.getThumbnailUrl());
     }
   }
 
@@ -58,7 +65,7 @@ public record DisplayArtworkEditResult(
         artwork.getDisplay().getId(),
         artwork.getArtworkName(),
         artwork.getContent(),
-        artwork.getType().name(),
+        artwork.getType().canonical().name(),
         artwork.getFieldTypes().stream().map(Enum::name).toList(),
         artwork.getProductionYear(),
         artwork.getMaterialMedia(),
@@ -68,6 +75,7 @@ public record DisplayArtworkEditResult(
         artistName,
         artistUserId,
         coAuthors,
-        qaHandlerUserIds);
+        qaHandlerUserIds,
+        artwork.getArtworkCrop());
   }
 }

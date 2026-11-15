@@ -1,27 +1,47 @@
 package com.example.demo.domain.display.domain.type;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.example.demo.global.domain.CreativeFieldCodes;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public enum DisplayField {
   PAINTING,
-  DESIGN,
-  PHOTOGRAPHY,
-  ARCHITECTURE,
-  VIDEO,
-  CRAFTS,
   SCULPTURE,
+  PHOTOGRAPHY,
+  GRAPHIC,
+  BRANDING,
+  PRODUCT,
+  VIDEO,
+  SPACE,
+  ARCHITECTURE,
+  UX_UI,
+  CRAFTS,
+  OTHERS,
+  DESIGN,
   FASHION,
-  @Deprecated
   INTERDISCIPLINARY,
   ILLUSTRATION,
-  OTHERS;
+  UXUI,
+  MEDIA,
+  CRAFT,
+  ETC;
 
-  @JsonCreator
-  public static DisplayField from(String value) {
-    DisplayField field = valueOf(value);
-    if (field == INTERDISCIPLINARY) {
-      throw new IllegalArgumentException("INTERDISCIPLINARY is no longer supported");
-    }
-    return field;
+  public DisplayField canonical() {
+    return valueOf(CreativeFieldCodes.canonical(name()));
+  }
+
+  public boolean isSelectable() {
+    return CreativeFieldCodes.isSelectable(name());
+  }
+
+  public static DisplayField fromCode(String code) {
+    return valueOf(CreativeFieldCodes.canonical(code));
+  }
+
+  public Set<DisplayField> storedAliases() {
+    return Arrays.stream(values())
+        .filter(value -> value.canonical() == canonical())
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

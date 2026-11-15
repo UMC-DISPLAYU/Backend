@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.application.result;
 
+import com.example.demo.global.file.domain.MediaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +24,11 @@ public record ReviewDetail(
     String leaderName,
     String screeningStatus,
     Long cancelledBy,
+    List<MediaResult> media,
     List<History> history) {
+
+  public record MediaResult(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
+
   public record History(
       Long screeningId,
       String status,

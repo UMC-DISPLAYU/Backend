@@ -728,11 +728,12 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/display/invitation/{token}")
+  @GetMapping(value = "/api/v1/display/invitation/{token}", produces = "application/json")
   @Operation(summary = INVITATION_DETAIL_SUMMARY, description = INVITATION_DETAIL_DESCRIPTION)
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = INVITATION_DETAIL_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -754,10 +755,11 @@ public class DisplayController {
     return ApiResponseBody.success(mapper.toResponse(result), request);
   }
 
-  @GetMapping("/api/v1/display/map")
+  @GetMapping(value = "/api/v1/display/map", produces = "application/json")
   @Operation(summary = MAP_SUMMARY, description = MAP_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = MAP_SUCCESS_DESCRIPTION,
       content =
           @Content(
@@ -893,10 +895,11 @@ public class DisplayController {
         mapper.toResponse(getDuPicksUseCase.getDuPicks(duPickRequest.toQuery())), request);
   }
 
-  @GetMapping("/api/v1/display/me")
+  @GetMapping(value = "/api/v1/display/me", produces = "application/json")
   @Operation(summary = MY_DISPLAY_SUMMARY, description = MY_DISPLAY_DESCRIPTION)
   @ApiResponse(
       responseCode = "200",
+      useReturnTypeSchema = true,
       description = MY_DISPLAY_SUCCESS_DESCRIPTION,
       content =
           @Content(

@@ -18,9 +18,13 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
+import com.example.demo.global.error.GlobalErrorCode;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -38,8 +42,14 @@ import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -92,6 +102,8 @@ public class Display extends SoftDeleteBaseEntity {
 
   @Column(length = 255)
   private String websiteUrl;
+
+  @Embedded private PosterCrop posterCrop;
 
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
@@ -414,12 +426,36 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   // 전시 대표(포스터) 이미지 URL을 반환한다. 등록된 MAIN 이미지가 없으면 null이다.
+  public List<String> getMediaFileUrls() {
+    return images.stream()
+        .filter(image -> !image.isDeleted())
+        .flatMap(image -> image.media().fileUrls().stream())
+        .distinct()
+        .toList();
+  }
+
   public String getPosterImageUrl() {
     return images.stream()
         .filter(image -> image.getImageType() == DisplayImageType.MAIN)
         .filter(image -> !image.isDeleted())
         .map(DisplayImage::getImageUrl)
         .findFirst()
+        .orElse(null);
+  }
+
+  public String getPosterCardImageUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
+        .map(DisplayImage::getCardImageUrl)
+        .findFirst()
+        .orElse(null);
+  }
+
+  public String getPosterVideoUrl() {
+    return images.stream()
+        .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
+        .findFirst()
+        .map(DisplayImage::getVideoUrl)
         .orElse(null);
   }
 
@@ -627,6 +663,44 @@ public class Display extends SoftDeleteBaseEntity {
     return category;
   }
 
+  public DisplayContentCategory createContentCategory(
+      String name,
+      String description,
+      List<String> imageUrls,
+      DisplayContentStatus status,
+      UserId userId) {
+    if (imageUrls == null) {
+      return createContentCategory(name, description);
+    }
+    if (imageUrls.isEmpty()) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
+    }
+    DisplayContentCategory category =
+        new DisplayContentCategory(
+            null, name, description, nextContentCategorySortOrder(), List.of());
+    imageUrls.forEach(imageUrl -> category.createContent(imageUrl, status, userId));
+    addContentCategory(category);
+    return category;
+  }
+
+  public List<DisplayContentCategory> reorderContentCategories(List<Long> orderedCategoryIds) {
+    if (orderedCategoryIds == null || orderedCategoryIds.size() != contentCategories.size()) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    Map<Long, DisplayContentCategory> categoriesById =
+        contentCategories.stream()
+            .collect(Collectors.toMap(DisplayContentCategory::getId, Function.identity()));
+    Set<Long> orderedIdSet = new HashSet<>(orderedCategoryIds);
+    if (orderedIdSet.size() != orderedCategoryIds.size()
+        || !orderedIdSet.equals(categoriesById.keySet())) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_CONTENT_CATEGORY_ORDER);
+    }
+    for (int index = 0; index < orderedCategoryIds.size(); index++) {
+      categoriesById.get(orderedCategoryIds.get(index)).changeSortOrder(index);
+    }
+    return getContentCategories();
+  }
+
   public DisplayContentCategory changeContentCategory(
       Long categoryId, String name, String description) {
     DisplayContentCategory category = findContentCategory(categoryId);
@@ -702,6 +776,16 @@ public class Display extends SoftDeleteBaseEntity {
 
   public void changeDisplayFields(List<DisplayField> displayFields) {
     List<DisplayFieldSelection> targetSelections = toFieldSelections(displayFields);
+    if (targetSelections.stream()
+        .anyMatch(
+            target ->
+                !target.getField().isSelectable()
+                    && fieldSelections.stream()
+                        .noneMatch(existing -> existing.getField() == target.getField()))) {
+      throw new BusinessException(
+          com.example.demo.global.error.GlobalErrorCode.INVALID_INPUT_VALUE,
+          "새로 선택할 수 없는 전시 분야입니다.");
+    }
     fieldSelections.removeIf(
         selection ->
             targetSelections.stream()
@@ -721,22 +805,114 @@ public class Display extends SoftDeleteBaseEntity {
     }
   }
 
+  public void changeDetailImages(List<String> imageUrls) {
+    Objects.requireNonNull(imageUrls, "imageUrls must not be null.");
+    if (imageUrls.size() > MAX_DETAIL_IMAGE_COUNT) {
+      throw new IllegalArgumentException("displayImageUrls must contain at most 4 images.");
+    }
+    imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
+    changeMedia(null, imageUrls.stream().map(MediaContent::image).toList(), null);
+  }
+
+  public void changePosterCrop(PosterCrop posterCrop) {
+    if (posterCrop != null && getPosterVideoUrl() != null) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE, "영상 포스터에는 크롭을 지정할 수 없습니다.");
+    }
+    this.posterCrop = posterCrop;
+  }
+
   public void changePosterImageUrl(String posterImageUrl) {
-    DisplayImage mainImage =
+    requireNonBlank(posterImageUrl, "posterImageUrl");
+    changeMedia(MediaContent.image(posterImageUrl), null, null);
+  }
+
+  public void changeMedia(MediaContent poster, List<MediaContent> details, PosterCrop crop) {
+    DisplayImage currentPoster =
         images.stream()
-            .filter(image -> image.getImageType() == DisplayImageType.MAIN)
-            .filter(image -> !image.isDeleted())
+            .filter(image -> image.getImageType() == DisplayImageType.MAIN && !image.isDeleted())
             .findFirst()
             .orElse(null);
-
-    if (mainImage == null) {
-      addImage(
-          new DisplayImage(
-              null, posterImageUrl, DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null));
-      return;
+    MediaContent finalPoster =
+        poster != null ? poster : currentPoster == null ? null : currentPoster.media();
+    List<MediaContent> finalDetails =
+        details != null
+            ? details
+            : images.stream()
+                .filter(
+                    image -> image.getImageType() == DisplayImageType.DETAIL && !image.isDeleted())
+                .sorted(java.util.Comparator.comparingInt(DisplayImage::getSortOrder))
+                .map(DisplayImage::media)
+                .toList();
+    if (finalPoster == null
+        || finalDetails.size() > MAX_DETAIL_IMAGE_COUNT
+        || finalDetails.stream().anyMatch(Objects::isNull)) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "대표 미디어와 최대 4개의 추가 미디어가 필요합니다.");
     }
-
-    mainImage.changeImageUrl(posterImageUrl);
+    long videos =
+        finalDetails.stream().filter(media -> media.mediaType() == MediaType.VIDEO).count()
+            + (finalPoster.mediaType() == MediaType.VIDEO ? 1 : 0);
+    if (videos > 1) {
+      throw new BusinessException(
+          GlobalErrorCode.INVALID_INPUT_VALUE, "전시에는 영상을 최대 1개 등록할 수 있습니다.");
+    }
+    if (finalPoster.mediaType() == MediaType.VIDEO && crop != null) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE, "영상 포스터에는 크롭을 지정할 수 없습니다.");
+    }
+    List<MediaContent> finalMedia = new ArrayList<>(finalDetails);
+    finalMedia.add(finalPoster);
+    for (MediaContent replacement : finalMedia) {
+      if (replacement.mediaType() == MediaType.IMAGE
+          && images.stream()
+              .filter(image -> !image.isDeleted() && image.getMediaType() == MediaType.VIDEO)
+              .anyMatch(image -> image.getImageUrl().equals(replacement.imageUrl()))) {
+        throw new BusinessException(
+            GlobalErrorCode.INVALID_INPUT_VALUE, "기존 영상은 VIDEO 미디어 정보로 전달해야 합니다.");
+      }
+    }
+    if (currentPoster == null || !currentPoster.media().equals(finalPoster)) {
+      this.posterCrop = null;
+    }
+    if (finalPoster.mediaType() == MediaType.VIDEO) {
+      this.posterCrop = null;
+    } else if (crop != null) {
+      this.posterCrop = crop;
+    }
+    if (poster != null) {
+      if (currentPoster == null) {
+        currentPoster =
+            new DisplayImage(
+                null, poster.imageUrl(), DisplayImageType.MAIN, MAIN_IMAGE_SORT_ORDER, null);
+        addImage(currentPoster);
+      }
+      currentPoster.changeMedia(poster);
+    }
+    if (details != null) {
+      List<DisplayImage> replacements = new ArrayList<>();
+      for (int index = 0; index < details.size(); index++) {
+        int order = index;
+        DisplayImage image =
+            images.stream()
+                .filter(
+                    existing ->
+                        existing.getImageType() == DisplayImageType.DETAIL
+                            && !existing.isDeleted()
+                            && existing.getSortOrder() == order)
+                .findFirst()
+                .orElse(null);
+        if (image == null) {
+          image =
+              new DisplayImage(
+                  null, details.get(index).imageUrl(), DisplayImageType.DETAIL, index, null);
+        }
+        image.changeMedia(details.get(index));
+        replacements.add(image);
+      }
+      images.removeIf(
+          image ->
+              image.getImageType() == DisplayImageType.DETAIL && !replacements.contains(image));
+      replacements.stream().filter(image -> !images.contains(image)).forEach(this::addImage);
+    }
   }
 
   // 전시 팀원을 추가한다.
@@ -770,13 +946,13 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean isTeamLeader(Long userId) {
-    return teamMembers.stream()
-        .anyMatch(
-            teamMember ->
-                teamMember.isAccepted()
-                    && !teamMember.isDeleted()
-                    && teamMember.getUserId().value().equals(userId)
-                    && teamMember.getRole() == TeamMemberRole.TEAM_LEADER);
+    return findAcceptedTeamMemberRole(userId)
+        .filter(role -> role == TeamMemberRole.TEAM_LEADER)
+        .isPresent();
+  }
+
+  public boolean isManager(Long userId) {
+    return hasAcceptedTeamMemberRole(userId, TeamMemberRole.MANAGER);
   }
 
   public boolean hasAcceptedTeamMember(Long userId) {
@@ -786,6 +962,27 @@ public class Display extends SoftDeleteBaseEntity {
                 teamMember.isAccepted()
                     && !teamMember.isDeleted()
                     && teamMember.getUserId().value().equals(userId));
+  }
+
+  public Optional<TeamMemberRole> findAcceptedTeamMemberRole(Long userId) {
+    return teamMembers.stream()
+        .filter(
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId))
+        .map(TeamMember::getRole)
+        .findFirst();
+  }
+
+  private boolean hasAcceptedTeamMemberRole(Long userId, TeamMemberRole role) {
+    return teamMembers.stream()
+        .anyMatch(
+            teamMember ->
+                teamMember.isAccepted()
+                    && !teamMember.isDeleted()
+                    && teamMember.getUserId().value().equals(userId)
+                    && teamMember.getRole() == role);
   }
 
   public boolean hasPendingInvitation(Long inviteeUserId) {
@@ -813,7 +1010,7 @@ public class Display extends SoftDeleteBaseEntity {
             null,
             displayInvitation.getInviteeUserId(),
             displayNickname,
-            TeamMemberRole.TEAM_MEM,
+            displayInvitation.getRole(),
             true);
     addTeamMember(teamMember);
     return teamMember;
@@ -824,8 +1021,72 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   public boolean canInviteMember(Long userId) {
-    return isOwner(userId) || isTeamLeader(userId);
+    return isTeamLeader(userId);
   }
+
+  /** 대표자가 수락 완료된 일반 팀원과 관리자의 역할만 서로 변경한다. */
+  public TeamMember changeMemberRole(Long teamMemberId, TeamMemberRole targetRole) {
+    TeamMember member = findAcceptedActiveTeamMember(teamMemberId);
+    if (member.getRole() == TeamMemberRole.TEAM_LEADER
+        || targetRole == TeamMemberRole.TEAM_LEADER
+        || member.getRole() == targetRole) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_MEMBER_ROLE_CHANGE);
+    }
+    member.changeRole(targetRole);
+    return member;
+  }
+
+  /** 수락 완료된 일반 팀원 또는 관리자를 전시에서 내보낸다. */
+  public TeamMember removeAcceptedMember(Long teamMemberId, LocalDateTime removedAt) {
+    TeamMember member = findAcceptedActiveTeamMember(teamMemberId);
+    if (member.getRole() == TeamMemberRole.TEAM_LEADER) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LEADER_REMOVAL_NOT_ALLOWED);
+    }
+    member.softDelete(removedAt);
+    return member;
+  }
+
+  /** 현재 대표자와 대상 팀원의 역할을 한 Aggregate 안에서 함께 변경해 대표자가 한 명만 남도록 한다. */
+  public LeaderTransfer transferLeadership(Long requesterUserId, Long targetMemberId) {
+    List<TeamMember> activeLeaders =
+        teamMembers.stream()
+            .filter(member -> member.isAccepted() && !member.isDeleted())
+            .filter(member -> member.getRole() == TeamMemberRole.TEAM_LEADER)
+            .toList();
+    if (activeLeaders.size() != 1) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_LEADER_TRANSFER_CONFLICT);
+    }
+    TeamMember previousLeader =
+        activeLeaders.stream()
+            .filter(member -> Objects.equals(member.getUserId().value(), requesterUserId))
+            .findFirst()
+            .orElseThrow(() -> new BusinessException(GlobalErrorCode.FORBIDDEN));
+    TeamMember newLeader = findAcceptedActiveTeamMember(targetMemberId);
+    if (Objects.equals(previousLeader.getId(), newLeader.getId())) {
+      throw new BusinessException(DisplayErrorCode.SELF_LEADER_TRANSFER_NOT_ALLOWED);
+    }
+    if (newLeader.getRole() == TeamMemberRole.TEAM_LEADER) {
+      throw new BusinessException(DisplayErrorCode.INVALID_DISPLAY_MEMBER_ROLE_CHANGE);
+    }
+
+    previousLeader.changeRole(TeamMemberRole.MANAGER);
+    newLeader.changeRole(TeamMemberRole.TEAM_LEADER);
+
+    // 전시 소유자를 위임받은 대표자로 변경
+    this.ownerUserId = newLeader.getUserId();
+
+    return new LeaderTransfer(previousLeader, newLeader);
+  }
+
+  private TeamMember findAcceptedActiveTeamMember(Long teamMemberId) {
+    return teamMembers.stream()
+        .filter(member -> member.isAccepted() && !member.isDeleted())
+        .filter(member -> Objects.equals(member.getId(), teamMemberId))
+        .findFirst()
+        .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_MEMBER_NOT_FOUND));
+  }
+
+  public record LeaderTransfer(TeamMember previousLeader, TeamMember newLeader) {}
 
   public boolean hasTeamMember(Long userId) {
     return teamMembers.stream()

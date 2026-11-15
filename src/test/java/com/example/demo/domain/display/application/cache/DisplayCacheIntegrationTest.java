@@ -43,6 +43,7 @@ import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
+import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheEvictor;
 import com.example.demo.domain.display.infrastructure.cache.DisplayListCacheVersion;
@@ -51,6 +52,8 @@ import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.config.CacheConfig;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import com.example.demo.global.file.domain.MediaContent;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -242,7 +245,8 @@ class DisplayCacheIntegrationTest {
     when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
     when(displayLikeRepository.countByDisplayId(display.getId())).thenReturn(0L);
 
-    updateDisplayService.updateDisplay(updateDisplayCommand());
+    var updated = updateDisplayService.updateDisplay(updateDisplayCommand());
+    assertThat(updated.posterCrop()).isEqualTo(updateDisplayCommand().posterCrop());
 
     assertDisplayListCachesEmpty();
   }
@@ -315,6 +319,8 @@ class DisplayCacheIntegrationTest {
         "department",
         endedAt.minusDays(7),
         endedAt,
+        null,
+        null,
         null);
   }
 
@@ -324,14 +330,15 @@ class DisplayCacheIntegrationTest {
         "THE ESSENCE IN MOTION",
         "색과 형태, 우리가 마주한 순간들",
         "https://cdn.displayu.com/home/du_pick_1.png",
-        LocalDateTime.of(2026, 6, 30, 11, 0));
+        LocalDateTime.of(2026, 6, 30, 11, 0),
+        null);
   }
 
   private static CreateDisplayCommand createDisplayCommand() {
     return new CreateDisplayCommand(
         1L,
         "전시",
-        "https://cdn.displayu.com/posters/main.png",
+        MediaContent.image("https://cdn.displayu.com/posters/main.png"),
         List.of(),
         "부제",
         "설명",
@@ -355,6 +362,7 @@ class DisplayCacheIntegrationTest {
         ContentOpenPolicy.IMMEDIATELY,
         ContentOpenPolicy.ON_EXHIBITION,
         null,
+        null,
         null);
   }
 
@@ -377,7 +385,15 @@ class DisplayCacheIntegrationTest {
         LocalTime.of(11, 0),
         LocalTime.of(19, 0),
         "수정 전시장",
-        "수정 유의사항");
+        "수정 유의사항",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE));
   }
 
   private static Display displayWithTeamLeader() {
@@ -411,6 +427,11 @@ class DisplayCacheIntegrationTest {
   @Configuration
   @EnableTransactionManagement(proxyTargetClass = true)
   static class TestConfig {
+
+    @Bean
+    MediaStorageVerifier mediaStorageVerifier() {
+      return mock(MediaStorageVerifier.class);
+    }
 
     @Bean
     GraduationDisplayQueryRepository graduationDisplayQueryRepository() {

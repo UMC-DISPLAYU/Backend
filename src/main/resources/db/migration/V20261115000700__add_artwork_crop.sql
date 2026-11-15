@@ -1,0 +1,5 @@
+ALTER TABLE DisplayArtwork
+    ADD COLUMN artworkCropX DECIMAL(11,10) NULL,
+    ADD COLUMN artworkCropY DECIMAL(11,10) NULL,
+    ADD COLUMN artworkCropW DECIMAL(11,10) NULL,
+    ADD COLUMN artworkCropH DECIMAL(11,10) NULL;

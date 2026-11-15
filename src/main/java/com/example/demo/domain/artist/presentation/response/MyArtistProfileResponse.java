@@ -5,11 +5,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record MyArtistProfileResponse(
-    String profileImageUrl,
-    String artistName,
-    String introduction,
-    String status,
-    String schoolName,
-    String externalLink,
-    List<ActivityCategory> fields,
+    @Schema(example = "https://cdn.displayu.co.kr/artists/21/profile.jpg", nullable = true)
+        String profileImageUrl,
+    @Schema(example = "김디유") String artistName,
+    @Schema(example = "회화와 디지털 아트를 작업하는 작가입니다.", nullable = true) String introduction,
+    @Schema(example = "VERIFIED") String status,
+    @Schema(example = "동국대학교") String schoolName,
+    @Schema(
+            description = "Portfolio 링크(기존 externalLink 필드)",
+            example = "https://portfolio.example.com/diyu",
+            nullable = true)
+        String externalLink,
+    @Schema(
+            description = "Instagram 링크",
+            example = "https://www.instagram.com/diyu.artist",
+            nullable = true)
+        String instagramLink,
+    @Schema(example = "[\"PAINTING\", \"ILLUSTRATION\"]") List<ActivityCategory> fields,
     @Schema(description = "작가 인증 여부", example = "true") boolean isVerified) {}

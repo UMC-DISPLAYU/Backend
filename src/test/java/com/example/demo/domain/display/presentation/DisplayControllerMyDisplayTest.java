@@ -76,12 +76,31 @@ class DisplayControllerMyDisplayTest {
             jsonPath("$.success.data.createdDisplays[0].postImageUrl")
                 .value("https://cdn.displayu.com/posters/main.png"))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].isLeader").value(true))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].role").value("TEAM_LEADER"))
         .andExpect(
             jsonPath("$.success.data.participatedDisplays[0].displayId")
                 .value(participatedDisplay.getId()))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].title").value("내가 참여한 전시"))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].displayStatus").value("ENDED"))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].publishStatus").value("DRAFT"))
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].isLeader").value(false))
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].role").value("TEAM_MEM"));
+  }
+
+  @Test
+  void getMyDisplaysReturnsLoggedInUsersManagerRoleInsteadOfOtherMembersRole() throws Exception {
+    LocalDate today = LocalDate.now(clock);
+    Display display =
+        participatedDisplay(
+            2L, 1L, "관리자로 참여한 전시", today.minusDays(1), today.plusDays(3), TeamMemberRole.MANAGER);
+    displayJpaRepository.saveAndFlush(display);
+
+    mockMvc
+        .perform(get("/api/v1/display/me").header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays.length()").value(0))
+        .andExpect(jsonPath("$.success.data.participatedDisplays.length()").value(1))
+        .andExpect(jsonPath("$.success.data.participatedDisplays[0].role").value("MANAGER"))
         .andExpect(jsonPath("$.success.data.participatedDisplays[0].isLeader").value(false));
   }
 
@@ -118,10 +137,19 @@ class DisplayControllerMyDisplayTest {
       String title,
       LocalDate startDate,
       LocalDate endDate) {
+    return participatedDisplay(
+        ownerUserId, participantUserId, title, startDate, endDate, TeamMemberRole.TEAM_MEM);
+  }
+
+  private static Display participatedDisplay(
+      Long ownerUserId,
+      Long participantUserId,
+      String title,
+      LocalDate startDate,
+      LocalDate endDate,
+      TeamMemberRole role) {
     Display display = display(ownerUserId, title, startDate, endDate);
-    display.addTeamMember(
-        new TeamMember(
-            null, new UserId(participantUserId), "참여 작가", TeamMemberRole.TEAM_MEM, true));
+    display.addTeamMember(new TeamMember(null, new UserId(participantUserId), "참여 작가", role, true));
     return display;
   }
 
