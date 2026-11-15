@@ -24,7 +24,18 @@ public record ReviewDetail(
     String leaderName,
     String screeningStatus,
     Long cancelledBy,
-    List<MediaResult> media) {
+    List<MediaResult> media,
+    List<History> history) {
 
   public record MediaResult(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
+
+  public record History(
+      Long screeningId,
+      String status,
+      Long requesterId,
+      Instant requestedAt,
+      Instant processedAt,
+      Long reviewerId,
+      String rejectionReason,
+      Long cancelledBy) {}
 }

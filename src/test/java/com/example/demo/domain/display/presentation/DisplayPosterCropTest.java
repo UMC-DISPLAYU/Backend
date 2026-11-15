@@ -162,7 +162,7 @@ class DisplayPosterCropTest {
         .isEqualTo(expected);
     assertThat(
             reviewMapper
-                .toResponse(reviews.search(new ReviewSearchQuery("PUBLISHED", null, 10)))
+                .toResponse(reviews.search(new ReviewSearchQuery(null, "PUBLISHED", null, 10)))
                 .items()
                 .getFirst()
                 .posterCrop())
@@ -253,7 +253,7 @@ class DisplayPosterCropTest {
         .isEqualTo(thumbnail);
     assertThat(
             reviewMapper
-                .toResponse(reviews.search(new ReviewSearchQuery("PUBLISHED", null, 10)))
+                .toResponse(reviews.search(new ReviewSearchQuery(null, "PUBLISHED", null, 10)))
                 .items()
                 .getFirst()
                 .posterImageUrl())

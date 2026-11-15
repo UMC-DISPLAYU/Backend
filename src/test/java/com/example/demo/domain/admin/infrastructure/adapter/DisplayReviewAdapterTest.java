@@ -14,6 +14,7 @@ import com.example.demo.domain.display.application.query.DisplayScreeningSearchQ
 import com.example.demo.domain.display.application.query.GetDisplayScreeningDetailService;
 import com.example.demo.domain.display.application.query.SearchDisplayScreeningsService;
 import com.example.demo.domain.display.application.result.DisplayScreeningDetailResult;
+import com.example.demo.domain.display.application.result.DisplayScreeningHistoryResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
@@ -39,7 +40,7 @@ class DisplayReviewAdapterTest {
   @Test
   void searchMapsAdminContractToDisplayUseCase() {
     DisplayScreeningSearchQuery displayQuery =
-        new DisplayScreeningSearchQuery(DisplayStatus.PENDING_REVIEW, 10L, 2);
+        new DisplayScreeningSearchQuery("전시", DisplayStatus.PENDING_REVIEW, 10L, 2);
     DisplayScreeningSummaryResult item =
         new DisplayScreeningSummaryResult(
             9L,
@@ -56,7 +57,7 @@ class DisplayReviewAdapterTest {
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 
-    ReviewPage result = adapter.search(new ReviewSearchQuery("PENDING_REVIEW", 10L, 2));
+    ReviewPage result = adapter.search(new ReviewSearchQuery("전시", "PENDING_REVIEW", 10L, 2));
 
     assertThat(result.items()).hasSize(1);
     assertThat(result.items().getFirst().leaderName()).isEqualTo("대표자");
@@ -92,7 +93,10 @@ class DisplayReviewAdapterTest {
                 null,
                 List.of(
                     new DisplayScreeningDetailResult.MediaResult(
-                        "video.mp4", MediaType.VIDEO, "poster"))));
+                        "video.mp4", MediaType.VIDEO, "poster")),
+                List.of(
+                    new DisplayScreeningHistoryResult(
+                        11L, "REJECTED", 1L, requestedAt, processedAt, 7L, "일정 수정", null))));
 
     ReviewDetail detail = adapter.getDetail(3L);
     adapter.approve(4L, 7L);
@@ -105,6 +109,10 @@ class DisplayReviewAdapterTest {
     assertThat(detail.imageUrls()).containsExactly("poster");
     assertThat(detail.media())
         .containsExactly(new ReviewDetail.MediaResult("video.mp4", MediaType.VIDEO, "poster"));
+    assertThat(detail.history())
+        .containsExactly(
+            new ReviewDetail.History(
+                11L, "REJECTED", 1L, requestedAt, processedAt, 7L, "일정 수정", null));
     verify(approveService).approve(4L, 7L);
     verify(rejectService).reject(5L, 7L, "보완 필요");
   }

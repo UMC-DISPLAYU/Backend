@@ -116,6 +116,7 @@ class DisplayControllerCancelScreeningTest {
                 .search(
                     new com.example.demo.domain.display.application.query
                         .DisplayScreeningSearchQuery(
+                        null,
                         com.example.demo.domain.display.domain.type.DisplayStatus.PENDING_REVIEW,
                         null,
                         100))
