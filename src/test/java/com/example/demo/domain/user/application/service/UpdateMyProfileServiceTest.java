@@ -27,7 +27,7 @@ class UpdateMyProfileServiceTest {
   @Test
   void updatesNicknameAndProfileImageTogether() {
     User user = User.builder().id(USER_ID).nickname("oldName").build();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
     when(userRepository.existsByNickname("newName")).thenReturn(false);
 
     UpdateMyProfileResult result =
@@ -53,7 +53,7 @@ class UpdateMyProfileServiceTest {
             .nickname("sameName")
             .profileImageUrl("https://cdn.example.com/old.jpg")
             .build();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
 
     UpdateMyProfileResult result =
         service.execute(

@@ -1,5 +1,6 @@
 package com.example.demo.global.security;
 
+import com.example.demo.global.error.BaseErrorCode;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.response.ApiResponseBody;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +18,9 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+  public static final String AUTH_ERROR_ATTRIBUTE =
+      CustomAuthenticationEntryPoint.class.getName() + ".AUTH_ERROR";
+
   private final ObjectMapper objectMapper;
 
   @Override
@@ -26,25 +30,31 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
       AuthenticationException authException)
       throws IOException {
 
+    BaseErrorCode errorCode = resolveErrorCode(request);
+
     log.warn(
         "HTTP error response. status={} code={} method={} uri={}",
-        HttpServletResponse.SC_UNAUTHORIZED,
-        GlobalErrorCode.UNAUTHORIZED.getCode(),
+        errorCode.getStatus().value(),
+        errorCode.getCode(),
         request.getMethod(),
         request.getRequestURI());
 
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setStatus(errorCode.getStatus().value());
 
     response.setContentType("application/json;charset=UTF-8");
 
     ApiResponseBody<Void> body =
         ApiResponseBody.fail(
-            new ApiResponseBody.ErrorBody(
-                GlobalErrorCode.UNAUTHORIZED.getCode(),
-                GlobalErrorCode.UNAUTHORIZED.getMessage(),
-                null),
+            new ApiResponseBody.ErrorBody(errorCode.getCode(), errorCode.getMessage(), null),
             request);
 
     response.getWriter().write(objectMapper.writeValueAsString(body));
+  }
+
+  private BaseErrorCode resolveErrorCode(HttpServletRequest request) {
+    Object errorCode = request.getAttribute(AUTH_ERROR_ATTRIBUTE);
+    return errorCode instanceof BaseErrorCode baseErrorCode
+        ? baseErrorCode
+        : GlobalErrorCode.UNAUTHORIZED;
   }
 }

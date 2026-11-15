@@ -3,6 +3,7 @@ package com.example.demo.domain.user.application.service;
 import com.example.demo.domain.user.application.result.UserRoleResult;
 import com.example.demo.domain.user.application.usecase.GetUserRoleUseCase;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.type.AccountStatus;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,8 @@ public class GetUserRoleService implements GetUserRoleUseCase {
   public Optional<UserRoleResult> findActiveRole(Long userId) {
     return userRepository
         .findById(userId)
-        .filter(user -> user.getDeletedAt() == null)
+        .filter(
+            user -> user.getDeletedAt() == null && user.getAccountStatus() == AccountStatus.ACTIVE)
         .map(user -> new UserRoleResult(user.getId(), user.getRole()));
   }
 
@@ -27,5 +29,16 @@ public class GetUserRoleService implements GetUserRoleUseCase {
   @Transactional(readOnly = true)
   public boolean isWithdrawn(Long userId) {
     return userRepository.findById(userId).map(user -> user.getDeletedAt() != null).orElse(false);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public boolean isSuspended(Long userId) {
+    return userRepository
+        .findById(userId)
+        .map(
+            user ->
+                user.getDeletedAt() == null && user.getAccountStatus() == AccountStatus.SUSPENDED)
+        .orElse(false);
   }
 }

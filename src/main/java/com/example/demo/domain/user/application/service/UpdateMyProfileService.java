@@ -21,7 +21,7 @@ public class UpdateMyProfileService {
   public UpdateMyProfileResult execute(UpdateMyProfileCommand command) {
     User user =
         userRepository
-            .findById(command.userId())
+            .findByIdForUpdate(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
     changeNicknameService.changeNickname(user, command.nickname());

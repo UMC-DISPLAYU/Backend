@@ -8,4 +8,6 @@ public interface GetUserRoleUseCase {
   Optional<UserRoleResult> findActiveRole(Long userId);
 
   boolean isWithdrawn(Long userId);
+
+  boolean isSuspended(Long userId);
 }
