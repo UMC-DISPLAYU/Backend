@@ -74,6 +74,30 @@ class DisplayArtworkPreviewArtistsTest {
                 .value(10));
   }
 
+  @Test
+  void displayListIncludesLeadAndCoauthorIdsOnly() throws Exception {
+    Display display = persistedDisplay();
+    DisplayArtwork artwork = persistArtwork(display, "공동 작품", 0);
+    persistCreator(artwork.getId(), "계정없는 작가", CreatorRole.CO_AUTHOR, null);
+    persistCreator(artwork.getId(), "대표", CreatorRole.LEAD_ARTIST, 10L);
+    persistCreator(artwork.getId(), "공동", CreatorRole.CO_AUTHOR, 20L);
+    persistCreator(artwork.getId(), "담당", CreatorRole.QA_ONLY, 30L);
+    mvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/v1/artworks")
+                .param("displayId", display.getId().toString()))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserId")
+                .value(10))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds[1]")
+                .value(20));
+  }
+
   private Display persistedDisplay() {
     Display display =
         Display.create(

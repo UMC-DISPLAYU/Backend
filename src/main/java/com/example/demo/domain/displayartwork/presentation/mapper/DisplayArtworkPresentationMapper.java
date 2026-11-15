@@ -125,7 +125,8 @@ public class DisplayArtworkPresentationMapper {
         result.artworkImageUrl(),
         result.imageWidth(),
         result.imageHeight(),
-        result.artworkVideoUrl());
+        result.artworkVideoUrl(),
+        result.artistUserIds());
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {

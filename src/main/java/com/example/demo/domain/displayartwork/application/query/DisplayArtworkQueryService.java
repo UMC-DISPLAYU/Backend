@@ -240,10 +240,20 @@ public class DisplayArtworkQueryService {
             .sorted(Comparator.comparing(DisplayArtwork::getWorkSortOrder))
             .toList();
 
-    Map<Long, Creator> leadersByArtworkId = findLeadersByArtworkIds(artworks);
-
+    Map<Long, List<Creator>> artistsByArtworkId =
+        creatorRepository
+            .findArtistsByDisplayArtworkIds(artworks.stream().map(DisplayArtwork::getId).toList())
+            .stream()
+            .collect(Collectors.groupingBy(Creator::getDisplayArtworkId));
+    Map<Long, Creator> leadersByArtworkId =
+        artistsByArtworkId.values().stream()
+            .flatMap(List::stream)
+            .filter(Creator::isLeader)
+            .collect(Collectors.toMap(Creator::getDisplayArtworkId, Function.identity()));
     List<ArtworkItemResult> items =
-        artworks.stream().map(artwork -> toItem(artwork, leadersByArtworkId)).toList();
+        artworks.stream()
+            .map(artwork -> toItem(artwork, leadersByArtworkId, artistsByArtworkId))
+            .toList();
     return new DisplayArtworkListResult(items);
   }
 
@@ -305,7 +315,9 @@ public class DisplayArtworkQueryService {
   }
 
   private ArtworkItemResult toItem(
-      DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
+      DisplayArtwork displayArtwork,
+      Map<Long, Creator> leadersByArtworkId,
+      Map<Long, List<Creator>> artistsByArtworkId) {
     ArtworkImage thumbnail = findThumbnail(displayArtwork);
     return new ArtworkItemResult(
         displayArtwork.getId(),
@@ -315,7 +327,12 @@ public class DisplayArtworkQueryService {
         thumbnail != null ? thumbnail.cardImageUrl() : null,
         thumbnail != null ? thumbnail.getWidth() : 0,
         thumbnail != null ? thumbnail.getHeight() : 0,
-        thumbnail != null ? thumbnail.videoUrl() : null);
+        thumbnail != null ? thumbnail.videoUrl() : null,
+        artistsByArtworkId.getOrDefault(displayArtwork.getId(), List.of()).stream()
+            .map(Creator::getUserId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList());
   }
 
   private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {
