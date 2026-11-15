@@ -1,0 +1,1 @@
+ALTER TABLE DisplayArtwork MODIFY COLUMN materialMedia VARCHAR(255) NULL;

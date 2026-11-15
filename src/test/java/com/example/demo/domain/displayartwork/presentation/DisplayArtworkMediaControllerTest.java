@@ -121,6 +121,44 @@ class DisplayArtworkMediaControllerTest {
     entityManager.clear();
   }
 
+  @ParameterizedTest
+  @MethodSource("emptyMaterials")
+  void optionalMaterialRoundTripsAndClearsOnUpdate(String material) throws Exception {
+    String request = body(legacyImageJson()).replace("\"materialMedia\":\"영상\",", material);
+    mvc.perform(
+            post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    Long id = artworkId();
+    update(id, legacyImageJson())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.materialMedia").value("영상"));
+    mvc.perform(
+            patch("/api/v1/artworks/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(entityManager.find(DisplayArtwork.class, id).getMaterialMedia()).isNull();
+    for (String suffix : List.of("", "/edit")) {
+      mvc.perform(
+              get("/api/v1/artworks/" + id + suffix)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.materialMedia").isEmpty());
+    }
+  }
+
+  private static Stream<String> emptyMaterials() {
+    return Stream.of("", "\"materialMedia\":null,", "\"materialMedia\":\"   \",");
+  }
+
   @Test
   void videoRoundTripsThroughCreateDetailEditAndUpdate() throws Exception {
     create(videoJson())

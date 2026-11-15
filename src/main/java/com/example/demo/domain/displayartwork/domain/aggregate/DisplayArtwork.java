@@ -58,8 +58,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column(nullable = false)
   private int productionYear;
 
-  @Column(nullable = false)
-  private String materialMedia;
+  @Column private String materialMedia;
 
   private String size;
 
@@ -189,7 +188,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     // type은 replaceFields가 첫 번째 분야로 함께 갱신한다.
     replaceFields(types);
     this.productionYear = productionYear;
-    this.materialMedia = requireNonBlank(materialMedia, "materialMedia");
+    this.materialMedia =
+        materialMedia == null || materialMedia.isBlank() ? null : materialMedia.trim();
     this.size = size;
     this.point = point;
   }
