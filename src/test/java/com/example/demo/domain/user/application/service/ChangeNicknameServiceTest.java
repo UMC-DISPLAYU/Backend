@@ -49,7 +49,7 @@ class ChangeNicknameServiceTest {
 
   @Test
   void rejectsDuplicateNickname() {
-    when(userRepository.findById(USER_ID))
+    when(userRepository.findByIdForUpdate(USER_ID))
         .thenReturn(Optional.of(User.builder().id(USER_ID).build()));
     when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(true);
 
@@ -63,7 +63,7 @@ class ChangeNicknameServiceTest {
   @Test
   void skipsNicknamePolicyWhenNicknameIsUnchanged() {
     User user = User.builder().id(USER_ID).nickname(NEW_NICKNAME).build();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
 
     ChangeNicknameResult result = service.execute(command());
 
@@ -74,7 +74,7 @@ class ChangeNicknameServiceTest {
 
   @Test
   void rejectsMissingUser() {
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.empty());
 
     assertThatExceptionOfType(UserException.class)
         .isThrownBy(() -> service.execute(command()))
@@ -92,7 +92,7 @@ class ChangeNicknameServiceTest {
   }
 
   private void prepareUser(User user) {
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findByIdForUpdate(USER_ID)).thenReturn(Optional.of(user));
     when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(false);
   }
 

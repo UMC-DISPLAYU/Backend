@@ -9,6 +9,7 @@ import com.example.demo.domain.user.domain.entity.RefreshToken;
 import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.type.AccountStatus;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
@@ -49,6 +50,7 @@ public class AuthService {
       if (user.getDeletedAt() != null) {
         throw new BusinessException(AuthErrorCode.WITHDRAWAL_USER);
       }
+      requireActiveAccount(user);
 
       String accessToken = tokenProvider.createAccessToken(user);
 
@@ -80,6 +82,7 @@ public class AuthService {
 
       throw new BusinessException(AuthErrorCode.WITHDRAWAL_USER);
     }
+    requireActiveAccount(user);
 
     RefreshToken savedToken =
         refreshTokenRepository
@@ -125,5 +128,11 @@ public class AuthService {
 
     refreshTokenRepository.save(
         RefreshToken.builder().user(user).refreshToken(refreshToken).build());
+  }
+
+  private void requireActiveAccount(User user) {
+    if (user.getAccountStatus() == AccountStatus.SUSPENDED) {
+      throw new BusinessException(AuthErrorCode.ACCOUNT_SUSPENDED);
+    }
   }
 }

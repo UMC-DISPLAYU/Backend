@@ -82,6 +82,13 @@ public interface OAuthControllerDocs {
                   @ExampleObject(
                       name = "OAuth 검증 실패",
                       value = KAKAO_CALLBACK_INVALID_TOKEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "정지된 기존 회원",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "정지 계정", value = KAKAO_ACCOUNT_SUSPENDED_EXAMPLE)))
   ResponseEntity<Void> kakaoCallback(
       String code,
       String state,
@@ -119,6 +126,13 @@ public interface OAuthControllerDocs {
                   @ExampleObject(
                       name = "OAuth 검증 실패",
                       value = GOOGLE_CALLBACK_INVALID_TOKEN_EXAMPLE)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "정지된 기존 회원",
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(name = "정지 계정", value = GOOGLE_ACCOUNT_SUSPENDED_EXAMPLE)))
   ResponseEntity<Void> googleCallback(
       String code,
       String state,
@@ -162,6 +176,10 @@ public interface OAuthControllerDocs {
       """
       { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_SOCIAL_TOKEN", "message": "유효하지 않은 소셜 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/kakao/callback" } }
       """;
+  String KAKAO_ACCOUNT_SUSPENDED_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "ACCOUNT_SUSPENDED", "message": "정지된 계정입니다.", "details": null }, "meta": { "timestamp": "2026-11-15T14:30:00", "path": "/api/v1/auth/kakao/callback" } }
+      """;
   String GOOGLE_CALLBACK_MISSING_VALUE_EXAMPLE =
       """
       { "resultType": "FAIL", "success": null, "error": { "code": "MISSING_REQUIRED_VALUE", "message": "필수 요청 값이 누락되었습니다.", "details": { "field": "code", "message": "필수 요청 파라미터입니다." } }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/google/callback" } }
@@ -169,5 +187,9 @@ public interface OAuthControllerDocs {
   String GOOGLE_CALLBACK_INVALID_TOKEN_EXAMPLE =
       """
       { "resultType": "FAIL", "success": null, "error": { "code": "INVALID_SOCIAL_TOKEN", "message": "유효하지 않은 소셜 토큰입니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/google/callback" } }
+      """;
+  String GOOGLE_ACCOUNT_SUSPENDED_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "ACCOUNT_SUSPENDED", "message": "정지된 계정입니다.", "details": null }, "meta": { "timestamp": "2026-11-15T14:30:00", "path": "/api/v1/auth/google/callback" } }
       """;
 }

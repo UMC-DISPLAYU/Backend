@@ -3,6 +3,7 @@ package com.example.demo.domain.user.domain.aggregate;
 import com.example.demo.domain.user.domain.entity.SchoolEmailVerification;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
+import com.example.demo.domain.user.domain.type.AccountStatus;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.domain.type.UserRole;
 import com.example.demo.domain.user.domain.vo.Nickname;
@@ -17,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 @Builder
 @Getter
@@ -78,6 +80,21 @@ public class User extends BaseTimeEntity {
   @Column(name = "deletedAt")
   private LocalDateTime deletedAt;
 
+  @Builder.Default
+  @Enumerated(EnumType.STRING)
+  @ColumnDefault("'ACTIVE'")
+  @Column(name = "accountStatus", nullable = false)
+  private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+  @Column(name = "suspendedAt")
+  private LocalDateTime suspendedAt;
+
+  @Column(name = "suspensionOperatorId")
+  private Long suspensionOperatorId;
+
+  @Column(name = "suspensionReason", length = 1000)
+  private String suspensionReason;
+
   @Column(name = "nicknameChangeAt")
   private LocalDateTime nicknameChangeAt;
 
@@ -117,6 +134,26 @@ public class User extends BaseTimeEntity {
     this.university = null;
     this.role = UserRole.USER;
     this.deletedAt = withdrawnAt;
+  }
+
+  public void suspend(LocalDateTime processedAt, Long operatorId, String reason) {
+    if (accountStatus == AccountStatus.SUSPENDED) {
+      throw new UserException(UserErrorCode.ALREADY_SUSPENDED_USER);
+    }
+    this.accountStatus = AccountStatus.SUSPENDED;
+    this.suspendedAt = processedAt;
+    this.suspensionOperatorId = operatorId;
+    this.suspensionReason = reason;
+  }
+
+  public void releaseSuspension() {
+    if (accountStatus == AccountStatus.ACTIVE) {
+      throw new UserException(UserErrorCode.ALREADY_ACTIVE_USER);
+    }
+    this.accountStatus = AccountStatus.ACTIVE;
+    this.suspendedAt = null;
+    this.suspensionOperatorId = null;
+    this.suspensionReason = null;
   }
 
   public void changeNickname(Nickname nickname) {

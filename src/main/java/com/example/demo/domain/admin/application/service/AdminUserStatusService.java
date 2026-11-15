@@ -2,6 +2,7 @@ package com.example.demo.domain.admin.application.service;
 
 import com.example.demo.domain.admin.application.port.AdminAccessPort;
 import com.example.demo.domain.admin.application.port.UserStatusPort;
+import com.example.demo.domain.admin.application.result.UserAccountStatusResult;
 import com.example.demo.domain.admin.application.result.UserStatusResult;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -12,13 +13,16 @@ public class AdminUserStatusService {
   private final AdminAccessPort access;
   private final UserStatusPort users;
 
+  public UserAccountStatusResult getStatus(Long operatorId, Long userId) {
+    requireAdmin(operatorId);
+    requireUserId(userId);
+    return users.getStatus(userId);
+  }
+
   public UserStatusResult changeStatus(
       Long operatorId, Long userId, String accountStatus, String reason) {
-    if (operatorId == null) throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
-    if (!access.isAdmin(operatorId)) throw new BusinessException(GlobalErrorCode.FORBIDDEN);
-    if (userId == null || userId <= 0) {
-      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
-    }
+    requireAdmin(operatorId);
+    requireUserId(userId);
     if (!"ACTIVE".equals(accountStatus) && !"SUSPENDED".equals(accountStatus)) {
       throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
     }
@@ -33,5 +37,16 @@ public class AdminUserStatusService {
       throw new BusinessException(GlobalErrorCode.FORBIDDEN);
     }
     return users.changeStatus(userId, operatorId, accountStatus, normalizedReason);
+  }
+
+  private void requireAdmin(Long operatorId) {
+    if (operatorId == null) throw new BusinessException(GlobalErrorCode.UNAUTHORIZED);
+    if (!access.isAdmin(operatorId)) throw new BusinessException(GlobalErrorCode.FORBIDDEN);
+  }
+
+  private void requireUserId(Long userId) {
+    if (userId == null || userId <= 0) {
+      throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
+    }
   }
 }

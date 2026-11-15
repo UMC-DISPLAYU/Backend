@@ -1,6 +1,7 @@
 package com.example.demo.global.security;
 
 import com.example.demo.domain.user.application.usecase.GetUserRoleUseCase;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.domain.type.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,21 +45,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       Long userId = tokenProvider.getUserId(token);
 
       var role = getUserRoleUseCase.findActiveRole(userId);
-      if (role.isEmpty() && getUserRoleUseCase.isWithdrawn(userId)) {
-        throw new IllegalStateException("Withdrawn users cannot authenticate.");
+      if (role.isEmpty() && getUserRoleUseCase.isSuspended(userId)) {
+        request.setAttribute(
+            CustomAuthenticationEntryPoint.AUTH_ERROR_ATTRIBUTE, AuthErrorCode.ACCOUNT_SUSPENDED);
+      } else {
+        if (role.isEmpty() && getUserRoleUseCase.isWithdrawn(userId)) {
+          throw new IllegalStateException("Withdrawn users cannot authenticate.");
+        }
+
+        AuthUser authUser = new AuthUser(userId);
+
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                authUser,
+                null,
+                role.map(result -> result.role() == UserRole.ADMIN).orElse(false)
+                    ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                    : List.of());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       }
-
-      AuthUser authUser = new AuthUser(userId);
-
-      UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(
-              authUser,
-              null,
-              role.map(result -> result.role() == UserRole.ADMIN).orElse(false)
-                  ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                  : List.of());
-
-      SecurityContextHolder.getContext().setAuthentication(authentication);
 
     } catch (RuntimeException e) {
 

@@ -23,7 +23,7 @@ public class ChangeNicknameService {
   public ChangeNicknameResult execute(ChangeNicknameCommand command) {
     User user =
         userRepository
-            .findById(command.userId())
+            .findByIdForUpdate(command.userId())
             .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
     return changeNickname(user, command.nickname());
