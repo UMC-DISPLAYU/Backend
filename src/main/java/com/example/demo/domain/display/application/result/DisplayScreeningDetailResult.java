@@ -32,9 +32,11 @@ public record DisplayScreeningDetailResult(
     String leaderName,
     String screeningStatus,
     Long cancelledBy,
-    List<MediaResult> media) {
+    List<MediaResult> media,
+    List<DisplayScreeningHistoryResult> history) {
 
-  public static DisplayScreeningDetailResult from(Display display, DisplayScreening screening) {
+  public static DisplayScreeningDetailResult from(Display display, List<DisplayScreening> history) {
+    DisplayScreening screening = history.isEmpty() ? null : history.getFirst();
     List<DisplayImage> images =
         display.getImages().stream()
             .filter(image -> !image.isDeleted())
@@ -67,12 +69,13 @@ public record DisplayScreeningDetailResult(
                 image ->
                     new MediaResult(
                         image.getImageUrl(), image.getMediaType(), image.getThumbnailUrl()))
-            .toList());
+            .toList(),
+        history.stream().map(DisplayScreeningHistoryResult::from).toList());
   }
 
   public record MediaResult(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
 
-  private static Instant toInstant(java.time.LocalDateTime value) {
+  static Instant toInstant(java.time.LocalDateTime value) {
     return value == null ? null : value.toInstant(ZoneOffset.UTC);
   }
 

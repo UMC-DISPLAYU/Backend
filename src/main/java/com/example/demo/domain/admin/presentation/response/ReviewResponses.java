@@ -54,8 +54,19 @@ public final class ReviewResponses {
               types = {"integer", "null"})
           Long cancelledBy,
       @Schema(description = "대표, 추가 미디어 순서의 원본과 타입. imageUrls와 같은 순서입니다.")
-          List<MediaResponse> media) {}
+          List<MediaResponse> media,
+      List<History> history) {}
 
   @Schema(name = "AdminReviewMediaResponse")
   public record MediaResponse(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
+
+  public record History(
+      Long screeningId,
+      String status,
+      Long requesterId,
+      Instant requestedAt,
+      Instant processedAt,
+      Long reviewerId,
+      String rejectionReason,
+      Long cancelledBy) {}
 }

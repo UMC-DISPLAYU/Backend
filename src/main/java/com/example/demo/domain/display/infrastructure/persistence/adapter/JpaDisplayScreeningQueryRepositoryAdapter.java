@@ -63,13 +63,30 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
             .where(
                 display.status.eq(query.status()),
                 display.deletedAt.isNull(),
-                cursorBefore(query.cursor()))
+                cursorBefore(query.cursor()),
+                matchesSearch(query.q()))
             .orderBy(display.id.desc())
             .limit(limit)
             .fetch();
 
     Map<Long, String> leaderNames = uniqueLeaderNames(displayIds(rows));
     return rows.stream().map(row -> toResult(row, leaderNames)).toList();
+  }
+
+  private BooleanExpression matchesSearch(String q) {
+    if (q == null || q.isBlank()) return null;
+    String keyword = q.strip();
+    BooleanExpression textMatch =
+        display
+            .title
+            .containsIgnoreCase(keyword)
+            .or(display.organization.containsIgnoreCase(keyword))
+            .or(display.department.containsIgnoreCase(keyword));
+    try {
+      return textMatch.or(display.id.eq(Long.parseLong(keyword)));
+    } catch (NumberFormatException ignored) {
+      return textMatch;
+    }
   }
 
   private BooleanExpression cursorBefore(Long cursor) {
