@@ -124,6 +124,32 @@ class UserArtistOpenApiTest {
     }
   }
 
+  @Test
+  void documentsConcreteAdminAccountStatusExamplesAndErrors() throws Exception {
+    JsonNode document = document();
+    JsonNode path = document.path("paths").path("/api/v1/admin/users/{userId}/account-status");
+
+    JsonNode query = path.path("get");
+    assertOperationStatuses(query, "200", "401", "403", "404");
+    JsonNode queryExamples = examples(query, "200");
+    assertThat(queryExamples.size()).isEqualTo(2);
+    assertThat(queryExamples.toString())
+        .contains("SUSPENDED", "ACTIVE", "2026-11-15T14:30:00Z", "운영 정책 위반")
+        .doesNotContain("\"Long\"", "\"Instant\"");
+
+    JsonNode change = path.path("patch");
+    assertOperationStatuses(change, "200", "400", "401", "403", "404", "409");
+    JsonNode requestExamples =
+        change.path("requestBody").path("content").path("application/json").path("examples");
+    assertThat(requestExamples.size()).isEqualTo(2);
+    assertThat(requestExamples.toString()).contains("SUSPENDED", "ACTIVE", "운영 정책 위반", "관리자 검토 완료");
+    assertThat(examples(change, "200").toString())
+        .contains("2026-11-15T14:30:00Z", "2026-11-15T15:00:00Z");
+    assertThat(examples(change, "409").toString())
+        .contains("ALREADY_SUSPENDED_USER", "ALREADY_ACTIVE_USER");
+    assertThat(change.path("security").toString()).contains("Authorization");
+  }
+
   private JsonNode document() throws Exception {
     return mapper.readTree(
         mvc.perform(get("/v3/api-docs"))
@@ -144,6 +170,22 @@ class UserArtistOpenApiTest {
     assertThat(examples.isEmpty()).as(ref.toString()).isFalse();
     JsonNode value = examples.iterator().next().path("value");
     return value.isTextual() ? mapper.readTree(value.asText()) : value;
+  }
+
+  private JsonNode examples(JsonNode operation, String status) {
+    return operation
+        .path("responses")
+        .path(status)
+        .path("content")
+        .path("application/json")
+        .path("examples");
+  }
+
+  private void assertOperationStatuses(JsonNode operation, String... expectedStatuses) {
+    assertThat(operation.isMissingNode()).isFalse();
+    for (String expectedStatus : expectedStatuses) {
+      assertThat(operation.path("responses").has(expectedStatus)).as(expectedStatus).isTrue();
+    }
   }
 
   private void assertStatuses(

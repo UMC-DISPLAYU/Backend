@@ -51,6 +51,11 @@ public class UserPersistenceAdapter implements UserRepository {
   }
 
   @Override
+  public Optional<User> findByIdForUpdate(Long userId) {
+    return userJpaRepository.findByIdForUpdate(userId);
+  }
+
+  @Override
   public List<User> findAllById(Collection<Long> userIds) {
     return userJpaRepository.findAllById(userIds);
   }

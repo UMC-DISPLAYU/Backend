@@ -45,3 +45,7 @@ app:
 
   oauth:
     cookie-secure: ${OAUTH_COOKIE_SECURE:false}
+
+admin:
+  user-status:
+    enabled: true

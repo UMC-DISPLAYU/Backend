@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,9 +13,12 @@ import com.example.demo.domain.user.application.port.KakaoOAuthVerifierPort;
 import com.example.demo.domain.user.application.result.LoginResult;
 import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.entity.RefreshToken;
+import com.example.demo.domain.user.domain.error.AuthErrorCode;
 import com.example.demo.domain.user.domain.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.domain.repository.UserRepository;
+import com.example.demo.domain.user.domain.type.AccountStatus;
 import com.example.demo.domain.user.domain.type.Provider;
+import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -128,5 +132,50 @@ class AuthServiceTest {
 
     verify(tokenProvider).validateRefreshTokenOrThrow("refresh-token");
     verify(refreshTokenRepository).delete(savedToken);
+  }
+
+  @Test
+  void blocksLoginForSuspendedUser() {
+    SocialUserInfo socialUserInfo =
+        new SocialUserInfo(Provider.Kakao, "kakao-user", "카카오 사용자", "kakao@example.com");
+    User user =
+        User.builder()
+            .id(1L)
+            .provider(Provider.Kakao)
+            .providerId("kakao-user")
+            .accountStatus(AccountStatus.SUSPENDED)
+            .build();
+    when(kakaoOAuthVerifier.verify(SOCIAL_TOKEN)).thenReturn(socialUserInfo);
+    when(userRepository.findByProviderAndProviderId(Provider.Kakao, "kakao-user"))
+        .thenReturn(Optional.of(user));
+
+    assertThatThrownBy(() -> authService.login(Provider.Kakao, SOCIAL_TOKEN))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode()).isEqualTo(AuthErrorCode.ACCOUNT_SUSPENDED));
+    verify(tokenProvider, never()).createAccessToken(user);
+    verify(tokenProvider, never()).createRefreshToken(user);
+  }
+
+  @Test
+  void blocksRefreshForSuspendedUser() {
+    User user =
+        User.builder()
+            .id(1L)
+            .provider(Provider.Kakao)
+            .providerId("kakao-user")
+            .accountStatus(AccountStatus.SUSPENDED)
+            .build();
+    when(tokenProvider.getUserId("refresh-token")).thenReturn(1L);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+    assertThatThrownBy(() -> authService.refresh("refresh-token"))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode()).isEqualTo(AuthErrorCode.ACCOUNT_SUSPENDED));
+    verify(tokenProvider).validateRefreshTokenOrThrow("refresh-token");
+    verify(refreshTokenRepository, never()).findByUserId(1L);
   }
 }

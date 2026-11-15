@@ -16,6 +16,8 @@ public interface UserRepository {
 
   Optional<User> findById(Long userId);
 
+  Optional<User> findByIdForUpdate(Long userId);
+
   List<User> findAllById(Collection<Long> userIds);
 
   boolean existsBySchoolEmail(String schoolEmail);

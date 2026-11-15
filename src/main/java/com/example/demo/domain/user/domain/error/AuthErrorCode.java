@@ -24,6 +24,8 @@ public enum AuthErrorCode implements BaseErrorCode {
 
   WITHDRAWAL_USER(HttpStatus.FORBIDDEN, "WITHDRAWAL_USER", "탈퇴한 사용자입니다."),
 
+  ACCOUNT_SUSPENDED(HttpStatus.FORBIDDEN, "ACCOUNT_SUSPENDED", "정지된 계정입니다."),
+
   TOKEN_USER_MISMATCH(HttpStatus.FORBIDDEN, "TOKEN_USER_MISMATCH", "토큰의 사용자 정보가 일치하지 않습니다.");
 
   private final HttpStatus status;

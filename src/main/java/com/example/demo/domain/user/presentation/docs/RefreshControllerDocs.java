@@ -68,11 +68,14 @@ public interface RefreshControllerDocs {
               }))
   @ApiResponse(
       responseCode = "403",
-      description = "탈퇴한 회원",
+      description = "탈퇴 또는 정지된 회원",
       content =
           @Content(
               mediaType = "application/json",
-              examples = @ExampleObject(name = "탈퇴 회원", value = WITHDRAWAL_USER_EXAMPLE)))
+              examples = {
+                @ExampleObject(name = "탈퇴 회원", value = WITHDRAWAL_USER_EXAMPLE),
+                @ExampleObject(name = "정지 계정", value = ACCOUNT_SUSPENDED_EXAMPLE)
+              }))
   ApiResponseBody<RefreshResponse> refresh(
       @Parameter(hidden = true) String cookieRefreshToken, HttpServletRequest httpRequest);
 
@@ -157,6 +160,20 @@ public interface RefreshControllerDocs {
           "details": null
         },
         "meta": { "timestamp": "2026-08-12T09:00:00", "path": "/api/v1/auth/refresh" }
+      }
+      """;
+
+  String ACCOUNT_SUSPENDED_EXAMPLE =
+      """
+      {
+        "resultType": "FAIL",
+        "success": null,
+        "error": {
+          "code": "ACCOUNT_SUSPENDED",
+          "message": "정지된 계정입니다.",
+          "details": null
+        },
+        "meta": { "timestamp": "2026-11-15T14:30:00", "path": "/api/v1/auth/refresh" }
       }
       """;
 }
