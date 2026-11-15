@@ -142,7 +142,8 @@ public final class DisplayApiDocs {
   public static final String GRADUATION_SUCCESS_EXAMPLE_NAME = "Graduation display success";
 
   public static final String DU_PICKS_SUMMARY = "DU Picks 조회";
-  public static final String DU_PICKS_DESCRIPTION = "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다.";
+  public static final String DU_PICKS_DESCRIPTION =
+      "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다. posterCrop은 칼럼 배너 이미지의 비율 크롭이며, 미설정 시 null입니다.";
   public static final String DU_PICKS_SUCCESS_DESCRIPTION = "DU Picks 조회 성공";
   public static final String DU_PICKS_SUCCESS_EXAMPLE_NAME = "DU Picks success";
 
@@ -885,6 +886,7 @@ public final class DisplayApiDocs {
                 "title": "THE ESSENCE IN MOTION",
                 "subtitle": "색과 형태, 우리가 마주한 순간들",
                 "bannerImageUrl": "https://cdn.displayu.com/home/du_pick_1.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
                 "createdAt": "2026-06-30"
               }
             ],

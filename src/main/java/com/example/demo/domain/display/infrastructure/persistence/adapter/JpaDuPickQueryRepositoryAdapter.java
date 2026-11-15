@@ -31,7 +31,8 @@ public class JpaDuPickQueryRepositoryAdapter implements DuPickQueryRepository {
                 column.name,
                 column.content,
                 column.columnImageUrl,
-                column.createdAt))
+                column.createdAt,
+                column.posterCrop))
         .from(column)
         .where(cursorAfter(query))
         .orderBy(column.id.asc())

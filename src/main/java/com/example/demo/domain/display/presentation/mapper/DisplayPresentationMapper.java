@@ -238,7 +238,8 @@ public class DisplayPresentationMapper {
         result.title(),
         result.subtitle(),
         result.bannerImageUrl(),
-        result.createdAt());
+        result.createdAt(),
+        PosterCropResponse.from(result.posterCrop()));
   }
 
   private ClosingSoonDisplayResponse.ExhibitionResponse toResponse(
