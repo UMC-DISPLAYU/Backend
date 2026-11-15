@@ -22,7 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
-@org.springframework.boot.test.context.SpringBootTest
+@org.springframework.boot.test.context.SpringBootTest(
+    properties = {
+      "spring.datasource.url=jdbc:h2:mem:preview_artists;MODE=MySQL;DATABASE_TO_UPPER=FALSE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+      "spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl",
+      "spring.jpa.properties.hibernate.globally_quoted_identifiers=true",
+      "spring.jpa.properties.hibernate.globally_quoted_identifiers_skip_column_definitions=true"
+    })
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 @ActiveProfiles("test")
 @org.springframework.transaction.annotation.Transactional
@@ -92,6 +98,14 @@ class DisplayArtworkPreviewArtistsTest {
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
                     "$.success.data.artworks[0].artistUserId")
                 .value(10))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds[0]")
+                .value(10))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[0].artistUserIds.length()")
+                .value(2))
         .andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
                     "$.success.data.artworks[0].artistUserIds[1]")
@@ -168,8 +182,8 @@ class DisplayArtworkPreviewArtistsTest {
     entityManager
         .createNativeQuery(
             """
-            INSERT INTO creator
-              (creator_id, display_artwork_id, creator_name, is_contact, is_leader, role, user_id)
+            INSERT INTO Creator
+              (creatorId, displayArtworkId, creatorName, isContact, isLeader, role, userId)
             VALUES (?, ?, ?, FALSE, ?, ?, ?)
             """)
         .setParameter(1, nextCreatorId++)

@@ -24,6 +24,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -74,6 +75,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private DisplayArtworkStatus status;
+
+  private LocalDateTime firstPublishedAt;
 
   @OneToMany(mappedBy = "displayArtwork", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("sortOrder ASC")
@@ -198,7 +201,9 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     this.workSortOrder = requireNonNegative(workSortOrder, "workSortOrder");
   }
 
-  public void publish() {
+  public void publish(LocalDateTime publishedAt) {
+    Objects.requireNonNull(publishedAt, "publishedAt must not be null.");
+    if (firstPublishedAt == null) firstPublishedAt = publishedAt;
     this.status = DisplayArtworkStatus.PUBLISHED;
   }
 

@@ -171,9 +171,12 @@ public class DisplayArtworkQueryService {
   @Transactional(readOnly = true)
   public DisplayArtworkPreviewResult getPreview(
       PreviewFilterType type, List<ArtworkType> fields, String school, int page, int size) {
+    if (type == PreviewFilterType.RECOMMEND) {
+      return toPage(
+          page == 0 ? discoveryRepository.recommend(fields, school) : List.of(), page, 10);
+    }
     List<DisplayArtwork> fetched =
         displayArtworkRepository.findPreview(type, fields, school, page, size);
-
     return toPage(fetched, page, size);
   }
 

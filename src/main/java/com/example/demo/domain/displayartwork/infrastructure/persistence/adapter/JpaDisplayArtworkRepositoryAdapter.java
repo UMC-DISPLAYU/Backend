@@ -78,7 +78,12 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
         effectiveFields,
         distinct.size(),
         school,
-        PageRequest.of(page, size + 1));
+        new PageRequest(page, size + 1, org.springframework.data.domain.Sort.unsorted()) {
+          @Override
+          public long getOffset() {
+            return (long) page * size;
+          }
+        });
   }
 
   @Override

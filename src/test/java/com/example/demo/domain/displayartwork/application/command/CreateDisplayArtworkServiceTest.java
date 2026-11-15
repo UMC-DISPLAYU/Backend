@@ -73,6 +73,28 @@ class CreateDisplayArtworkServiceTest {
 
     verify(displayArtworkRepository).save(artworkCaptor.capture());
     assertThat(artworkCaptor.getValue().getStatus()).isEqualTo(DisplayArtworkStatus.DRAFT);
+    assertThat(artworkCaptor.getValue().getFirstPublishedAt()).isNull();
+  }
+
+  @Test
+  void immediatePublicationRecordsClockInstantInUtc() {
+    Display display = display(ContentOpenPolicy.IMMEDIATELY);
+    display.publish();
+    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
+    when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(0);
+    when(artistVerificationRepository.isVerifiedArtist(1L)).thenReturn(true);
+    when(displayArtworkRepository.save(any(DisplayArtwork.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(authorSetupService.setup(any(Long.class), any(AuthorSetupCommand.class)))
+        .thenReturn(new AuthorSetupResult(null, "작가", 1L, 0, List.of(1L)));
+    ArgumentCaptor<DisplayArtwork> artworkCaptor = ArgumentCaptor.forClass(DisplayArtwork.class);
+
+    service.createDisplayArtwork(1L, command());
+
+    verify(displayArtworkRepository).save(artworkCaptor.capture());
+    assertThat(artworkCaptor.getValue().getStatus()).isEqualTo(DisplayArtworkStatus.PUBLISHED);
+    assertThat(artworkCaptor.getValue().getFirstPublishedAt())
+        .isEqualTo(java.time.LocalDateTime.of(2026, 8, 1, 15, 0));
   }
 
   private static Display display(ContentOpenPolicy artworkContentOpen) {

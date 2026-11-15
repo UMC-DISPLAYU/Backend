@@ -111,8 +111,8 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
       @RequestParam PreviewFilterType type,
       @RequestParam(required = false) List<ArtworkType> field,
       @RequestParam(required = false) String school,
-      @RequestParam int page,
-      @RequestParam int size,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size,
       HttpServletRequest httpRequest) {
     DisplayArtworkPreviewResult result =
         displayArtworkQueryService.getPreview(type, field, school, page, size);

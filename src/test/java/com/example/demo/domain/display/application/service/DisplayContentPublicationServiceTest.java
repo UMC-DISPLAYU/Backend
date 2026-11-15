@@ -372,6 +372,38 @@ class DisplayContentPublicationServiceTest {
     assertThat(detailResult.artworkId()).isEqualTo(artworkId);
   }
 
+  @Test
+  void bothBulkPublicationPathsRecordUtcFirstInstantAndPreserveItOnRetries() {
+    for (ContentOpenPolicy policy :
+        List.of(ContentOpenPolicy.IMMEDIATELY, ContentOpenPolicy.ON_EXHIBITION)) {
+      Display display = display(LocalDate.of(2026, 8, 1), policy, policy);
+      display.publish();
+      var saved = displayJpaRepository.saveAndFlush(display);
+      long id = 12000L + policy.ordinal();
+      insertArtwork(id, saved.getId(), "first", DisplayArtworkStatus.DRAFT);
+      if (policy == ContentOpenPolicy.IMMEDIATELY)
+        publicationService.publishForDisplay(saved.getId());
+      else publicationService.publishOnExhibitionContents();
+      var first =
+          jdbcTemplate.queryForObject(
+              "SELECT first_published_at FROM display_artwork WHERE display_artwork_id=?",
+              java.time.LocalDateTime.class,
+              id);
+      assertThat(first).isEqualTo(java.time.LocalDateTime.of(2026, 8, 1, 15, 0));
+      jdbcTemplate.update(
+          "UPDATE display_artwork SET status='DRAFT' WHERE display_artwork_id=?", id);
+      if (policy == ContentOpenPolicy.IMMEDIATELY)
+        publicationService.publishForDisplay(saved.getId());
+      else publicationService.publishOnExhibitionContents();
+      assertThat(
+              jdbcTemplate.queryForObject(
+                  "SELECT first_published_at FROM display_artwork WHERE display_artwork_id=?",
+                  java.time.LocalDateTime.class,
+                  id))
+          .isEqualTo(first);
+    }
+  }
+
   private static Display display(
       LocalDate startDate,
       ContentOpenPolicy artworkContentOpen,
