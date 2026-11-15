@@ -12,20 +12,26 @@ public record CreatePresignedUrlRequest(
             example = "IMAGE",
             allowableValues = {"IMAGE", "VIDEO"})
         @NotNull FileType fileType,
-    @Schema(description = "파일을 사용하는 기능 영역", example = "display") @NotBlank String domain,
+    @Schema(description = "파일을 사용하는 기능 영역. VIDEO는 display 또는 artwork만 허용합니다.", example = "display")
+        @NotBlank String domain,
     @Schema(description = "원본 파일명", example = "poster.png") @NotBlank String fileName,
     @Schema(
             description =
-                "업로드할 파일 Content-Type. IMAGE: image/jpeg, image/png, image/webp, image/gif / VIDEO: video/mp4, video/quicktime, video/webm",
+                "업로드할 파일 Content-Type. IMAGE: image/jpeg, image/png, image/webp, image/gif, image/heic / VIDEO: video/mp4, video/quicktime, video/webm",
             example = "image/png",
             allowableValues = {
               "image/jpeg",
               "image/png",
               "image/webp",
               "image/gif",
+              "image/heic",
               "video/mp4",
               "video/quicktime",
               "video/webm"
             })
         @NotBlank String contentType,
-    @Schema(description = "파일 크기(byte)", example = "1048576") @Positive long fileSize) {}
+    @Schema(
+            description =
+                "파일 크기(byte). VIDEO는 display 200,000,000 bytes, artwork 500,000,000 bytes 이하. 영상 길이 30초/180초 제한은 프론트에서 검증합니다.",
+            example = "1048576")
+        @Positive long fileSize) {}

@@ -237,10 +237,10 @@ class DisplayControllerUpdateTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"DESIGN", "FASHION", "INTERDISCIPLINARY", "ILLUSTRATION"})
-  void rejectsLegacyFieldSelectionButPreservesExistingFieldsWhenOmitted(String field)
-      throws Exception {
+  void retainsExistingLegacyFieldsButRejectsReselectingAfterRemoval(String field) throws Exception {
     Display display = displayWithTeamMembers();
-    display.changeDisplayFields(List.of(DisplayField.valueOf(field)));
+    org.springframework.test.util.ReflectionTestUtils.setField(
+        display.getFieldSelections().getFirst(), "field", DisplayField.valueOf(field));
     displayJpaRepository.saveAndFlush(display);
     mockMvc
         .perform(
@@ -250,6 +250,16 @@ class DisplayControllerUpdateTest {
                 .content("{\"displayId\": %d, \"title\": \"수정\"}".formatted(display.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.displayFields[0]").value(field));
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"displayId\": %d, \"fields\": [\"%s\"]}".formatted(display.getId(), field)))
+        .andExpect(status().isOk());
+    display.changeDisplayFields(List.of(DisplayField.GRAPHIC));
+    displayJpaRepository.flush();
     mockMvc
         .perform(
             patch("/api/v1/display")

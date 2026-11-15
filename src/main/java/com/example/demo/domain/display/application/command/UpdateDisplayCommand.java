@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
+import com.example.demo.global.file.domain.MediaContent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,7 +14,7 @@ public record UpdateDisplayCommand(
     Long userId,
     Long displayId,
     String title,
-    String posterImageUrl,
+    MediaContent posterMedia,
     DisplayType displayType,
     List<DisplayField> displayFields,
     String schoolOrOrganization,
@@ -34,5 +35,5 @@ public record UpdateDisplayCommand(
     BigDecimal latitude,
     BigDecimal longitude,
     DisplayRegion region,
-    List<String> displayImageUrls,
+    List<MediaContent> displayMedia,
     PosterCrop posterCrop) {}

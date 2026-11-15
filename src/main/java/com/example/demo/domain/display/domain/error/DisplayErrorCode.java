@@ -35,6 +35,14 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.NOT_FOUND, "DISPLAY_CONTENT_NOT_FOUND", "전시 콘텐츠를 찾을 수 없습니다."),
   DISPLAY_CONTENT_LIMIT_EXCEEDED(
       HttpStatus.BAD_REQUEST, "DISPLAY_CONTENT_LIMIT_EXCEEDED", "카테고리당 등록 가능한 이미지 개수를 초과했습니다."),
+  INVALID_DISPLAY_CONTENT_CATEGORY_ORDER(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_DISPLAY_CONTENT_CATEGORY_ORDER",
+      "전시의 모든 섹션 ID를 중복 없이 전달해야 합니다."),
+  DISPLAY_CONTENT_CATEGORY_REORDER_CONFLICT(
+      HttpStatus.CONFLICT,
+      "DISPLAY_CONTENT_CATEGORY_REORDER_CONFLICT",
+      "섹션 순서가 변경되었습니다. 다시 조회한 후 시도해 주세요."),
   INVALID_DISPLAY_CONTENT_ORDER(
       HttpStatus.BAD_REQUEST, "INVALID_DISPLAY_CONTENT_ORDER", "전시 콘텐츠 순서 변경 요청이 올바르지 않습니다."),
   DISPLAY_CONTENT_REORDER_CONFLICT(
@@ -65,6 +73,8 @@ public enum DisplayErrorCode implements BaseErrorCode {
       HttpStatus.CONFLICT, "DISPLAY_INVITATION_ALREADY_ACCEPTED", "이미 수락된 전시 멤버 초대입니다."),
   DISPLAY_INVITATION_ALREADY_REJECTED(
       HttpStatus.CONFLICT, "DISPLAY_INVITATION_ALREADY_REJECTED", "이미 거절된 전시 멤버 초대입니다."),
+  DISPLAY_INVITATION_ALREADY_CANCELLED(
+      HttpStatus.CONFLICT, "DISPLAY_INVITATION_ALREADY_CANCELLED", "이미 취소된 전시 멤버 초대입니다."),
   INVALID_DISPLAY_INVITATION_STATUS(
       HttpStatus.CONFLICT, "INVALID_DISPLAY_INVITATION_STATUS", "처리할 수 없는 전시 멤버 초대 상태입니다."),
   DISPLAY_MEMBER_CONCURRENTLY_CREATED(

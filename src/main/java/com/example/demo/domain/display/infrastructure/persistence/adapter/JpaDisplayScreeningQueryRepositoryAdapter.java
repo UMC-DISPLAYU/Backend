@@ -48,7 +48,7 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
                 display.organization,
                 display.period.startDate,
                 display.period.endDate,
-                image.imageUrl,
+                QDisplayImageConditions.cardImageUrl(image),
                 display.posterCrop)
             .from(display)
             .leftJoin(screening)
@@ -103,7 +103,7 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
         leaderNames.get(displayId),
         row.get(display.period.startDate),
         row.get(display.period.endDate),
-        row.get(image.imageUrl),
+        row.get(QDisplayImageConditions.cardImageUrl(image)),
         row.get(display.posterCrop));
   }
 }

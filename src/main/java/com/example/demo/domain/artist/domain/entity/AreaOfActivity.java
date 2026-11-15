@@ -29,7 +29,7 @@ public class AreaOfActivity extends BaseTimeEntity {
 
   private AreaOfActivity(ArtistProfile artistProfile, ActivityCategory field) {
     this.artistProfile = artistProfile;
-    this.field = field;
+    this.field = field.canonical();
   }
 
   public static AreaOfActivity create(ArtistProfile artistProfile, ActivityCategory field) {
@@ -37,6 +37,6 @@ public class AreaOfActivity extends BaseTimeEntity {
   }
 
   public void updateField(ActivityCategory field) {
-    this.field = field;
+    this.field = field.canonical();
   }
 }

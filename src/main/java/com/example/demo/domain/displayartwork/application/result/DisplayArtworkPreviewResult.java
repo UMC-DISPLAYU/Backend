@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.result;
 
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import java.util.List;
 
 public record DisplayArtworkPreviewResult(
@@ -14,7 +15,8 @@ public record DisplayArtworkPreviewResult(
       int imageWidth,
       int imageHeight,
       ExhibitionInfoResult exhibitionInfo,
-      List<ArtistResult> artists) {}
+      List<ArtistResult> artists,
+      ArtworkCrop artworkCrop) {}
 
   public record ArtistResult(Long userId, String name) {}
 

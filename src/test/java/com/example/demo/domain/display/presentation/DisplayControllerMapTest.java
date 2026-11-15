@@ -14,6 +14,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -35,6 +36,8 @@ class DisplayControllerMapTest {
 
   @Autowired private SpringDataDisplayJpaRepository jpaRepository;
 
+  @Autowired private Clock clock;
+
   @Test
   void getDisplayMapReturnsMarkersWithCommonSuccessResponse() throws Exception {
     jpaRepository.saveAndFlush(publishedDisplay("내면의 풍경", "홍익대학교 현대미술관"));
@@ -52,8 +55,11 @@ class DisplayControllerMapTest {
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.markers[0].displayId", notNullValue()))
         .andExpect(jsonPath("$.success.data.markers[0].title").value("내면의 풍경"))
-        .andExpect(jsonPath("$.success.data.markers[0].startDate").value("2026-05-20"))
-        .andExpect(jsonPath("$.success.data.markers[0].endDate").value("2026-05-28"))
+        .andExpect(
+            jsonPath("$.success.data.markers[0].startDate").value(LocalDate.now(clock).toString()))
+        .andExpect(
+            jsonPath("$.success.data.markers[0].endDate")
+                .value(LocalDate.now(clock).plusDays(8).toString()))
         .andExpect(jsonPath("$.success.data.markers[0].locationName").value("홍익대학교 현대미술관"))
         .andExpect(
             jsonPath("$.success.data.markers[0].posterImageUrl")
@@ -100,7 +106,56 @@ class DisplayControllerMapTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/map"));
   }
 
-  private static Display publishedDisplay(String title, String placeName) {
+  @Test
+  void allModeReturnsMoreThanOneHundredMarkersAndIgnoresSize() throws Exception {
+    for (int index = 0; index < 101; index++) {
+      jpaRepository.save(publishedDisplay("전시 " + index, "gallery"));
+    }
+    jpaRepository.flush();
+    mockMvc
+        .perform(
+            get("/api/v1/display/map")
+                .param("southLatitude", "37.4900")
+                .param("westLongitude", "126.9000")
+                .param("northLatitude", "37.5700")
+                .param("eastLongitude", "127.0000")
+                .param("searchWord", " department ")
+                .param("all", "true")
+                .param("size", "1000"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.markers.length()").value(101))
+        .andExpect(jsonPath("$.success.data.pagination.size").value(101))
+        .andExpect(jsonPath("$.success.data.pagination.hasNext").value(false))
+        .andExpect(jsonPath("$.success.data.pagination.nextCursor").doesNotExist());
+  }
+
+  @Test
+  void allModeRejectsCursorAndReturnsEmptyLastPageWithoutMatches() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/display/map")
+                .param("southLatitude", "37.4900")
+                .param("westLongitude", "126.9000")
+                .param("northLatitude", "37.5700")
+                .param("eastLongitude", "127.0000")
+                .param("all", "true")
+                .param("cursor", "1"))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            get("/api/v1/display/map")
+                .param("southLatitude", "37.4900")
+                .param("westLongitude", "126.9000")
+                .param("northLatitude", "37.5700")
+                .param("eastLongitude", "127.0000")
+                .param("all", "true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.markers.length()").value(0))
+        .andExpect(jsonPath("$.success.data.pagination.size").value(0))
+        .andExpect(jsonPath("$.success.data.pagination.hasNext").value(false));
+  }
+
+  private Display publishedDisplay(String title, String placeName) {
     Display display =
         Display.create(
             new UserId(1L),
@@ -116,8 +171,8 @@ class DisplayControllerMapTest {
             DisplayType.GRADUATION,
             List.of(DisplayField.DESIGN),
             new DisplayPeriod(
-                LocalDate.of(2026, 5, 20),
-                LocalDate.of(2026, 5, 28),
+                LocalDate.now(clock),
+                LocalDate.now(clock).plusDays(8),
                 LocalTime.of(10, 0),
                 LocalTime.of(18, 0)),
             ContentOpenPolicy.IMMEDIATELY,

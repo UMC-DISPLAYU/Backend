@@ -15,7 +15,7 @@ public record UpdateArtistProfileRequest(
     @Schema(description = "한글, 영문, 숫자만 사용한 2~15자 작가명", example = "maya")
         @NotNull(message = ArtistName.INVALID_MESSAGE) @Pattern(regexp = ArtistName.PATTERN_VALUE, message = ArtistName.INVALID_MESSAGE) String artistName,
     @Schema(example = "시각과 공간의 관계를 탐구하는 작가입니다.") @Size(max = 100) String introduction,
-    @Schema(example = "[\"DESIGN\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
+    @Schema(example = "[\"GRAPHIC\", \"VIDEO\"]") @NotEmpty @Size(max = 2) List<@NotNull ActivityCategory> fields,
     @Schema(
             description = "Portfolio 링크(기존 externalLink 필드)",
             example = "https://portfolio.maya.com")

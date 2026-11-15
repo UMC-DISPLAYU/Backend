@@ -3,6 +3,8 @@ package com.example.demo.domain.display.domain.entity;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
 import com.example.demo.global.entity.BaseTimeEntity;
+import com.example.demo.global.file.domain.MediaContent;
+import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,6 +40,13 @@ public class DisplayImage extends BaseTimeEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
+  private MediaType mediaType = MediaType.IMAGE;
+
+  @Column(columnDefinition = "TEXT")
+  private String thumbnailUrl;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private DisplayImageType imageType;
 
   @Column(nullable = false)
@@ -54,7 +63,7 @@ public class DisplayImage extends BaseTimeEntity {
       int sortOrder,
       LocalDateTime deletedAt) {
     this.id = id;
-    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
+    changeMedia(MediaContent.image(imageUrl));
     this.imageType = Objects.requireNonNull(imageType, "imageType must not be null.");
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
     this.deletedAt = deletedAt;
@@ -69,7 +78,25 @@ public class DisplayImage extends BaseTimeEntity {
   }
 
   public void changeImageUrl(String imageUrl) {
-    this.imageUrl = requireNonBlank(imageUrl, "imageUrl");
+    changeMedia(MediaContent.image(imageUrl));
+  }
+
+  public MediaContent media() {
+    return new MediaContent(imageUrl, mediaType, thumbnailUrl);
+  }
+
+  public String getCardImageUrl() {
+    return media().cardImageUrl();
+  }
+
+  public String getVideoUrl() {
+    return media().videoUrl();
+  }
+
+  public void changeMedia(MediaContent media) {
+    this.imageUrl = media.imageUrl();
+    this.mediaType = media.mediaType();
+    this.thumbnailUrl = media.thumbnailUrl();
   }
 
   public void delete() {
@@ -82,13 +109,6 @@ public class DisplayImage extends BaseTimeEntity {
 
   public boolean isDeleted() {
     return deletedAt != null;
-  }
-
-  private static String requireNonBlank(String value, String fieldName) {
-    if (value == null || value.isBlank()) {
-      throw new IllegalArgumentException(fieldName + " must not be blank.");
-    }
-    return value;
   }
 
   private static int requireNonNegative(int value, String fieldName) {

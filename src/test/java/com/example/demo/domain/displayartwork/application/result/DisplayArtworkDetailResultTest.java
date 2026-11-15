@@ -51,7 +51,7 @@ class DisplayArtworkDetailResultTest {
             display,
             "작품명",
             "작품 설명",
-            List.of(ArtworkType.DESIGN),
+            List.of(ArtworkType.GRAPHIC),
             2026,
             "캔버스",
             "100x100",

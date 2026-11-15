@@ -20,6 +20,17 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface DisplayMemberInvitationControllerDocs {
 
   @Operation(
+      summary = "전시 멤버 초대 취소",
+      description = "전시 대표자가 대기 중인 초대를 취소합니다. 이미 취소된 초대의 재요청은 성공하며 수락·거절된 초대는 취소할 수 없습니다.")
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(responseCode = "200", description = "초대 취소 성공", useReturnTypeSchema = true)
+  @ApiResponse(responseCode = "403", description = "전시 대표자 권한 없음")
+  @ApiResponse(responseCode = "404", description = "초대 또는 전시 없음")
+  @ApiResponse(responseCode = "409", description = "수락 또는 거절된 초대")
+  ApiResponseBody<DisplayMemberInvitationResponse> cancel(
+      Long invitationId, AuthUser user, HttpServletRequest request);
+
+  @Operation(
       summary = "전시 멤버 초대 생성",
       description = "기존 초대 권한을 가진 사용자가 작가 인증을 완료한 사용자를 전시 멤버로 초대합니다. 역할을 생략하면 TEAM_MEM으로 처리합니다.")
   @SecurityRequirement(name = "Authorization")

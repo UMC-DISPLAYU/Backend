@@ -6,8 +6,15 @@ public final class DisplayApiDocs {
   public static final String TAG_DESCRIPTION = "전시 API";
 
   public static final String CREATE_SUMMARY = "전시 생성";
+  public static final String DISPLAY_MEDIA_DESCRIPTION =
+      "posterMedia/displayMedia에는 imageUrl, mediaType(IMAGE 또는 VIDEO), thumbnailUrl을 전달할 수 있습니다. "
+          + "기존 posterImageUrl/displayImageUrl도 지원하며 같은 그룹의 신구 필드는 동시에 전달할 수 없습니다. "
+          + "대표 포함 미디어 최대 5개, 영상 최대 1개입니다. 영상은 썸네일 필수이며 서버가 업로드 원본의 200MB 제한을 확인합니다. "
+          + "영상 30초 제한은 프론트에서 검증합니다. 영상 대표에는 posterCrop을 전달할 수 없고 영상 전환 시 기존 크롭을 초기화합니다. "
+          + "영상 대표의 목록 이미지 URL은 썸네일이며 posterVideoUrl은 재생할 원본입니다. 상세 images는 원본 imageUrl과 mediaType, thumbnailUrl을 반환합니다. ";
   public static final String CREATE_DESCRIPTION =
-      "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
+      DISPLAY_MEDIA_DESCRIPTION
+          + "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
           + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다. "
           + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다. "
           + "instagramUrl과 websiteUrl은 생략하거나 null로 전달할 수 있습니다. 입력할 때는 공백 없는 HTTP(S) URL을 최대 255자로 전달하며 빈 문자열은 허용하지 않습니다. "
@@ -20,7 +27,8 @@ public final class DisplayApiDocs {
 
   public static final String UPDATE_SUMMARY = "전시 수정";
   public static final String UPDATE_DESCRIPTION =
-      "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다. "
+      DISPLAY_MEDIA_DESCRIPTION
+          + "전시 팀장 권한을 가진 사용자가 전시 정보를 수정합니다. displayId는 필수이고, 나머지 필드는 전달한 값만 수정합니다. "
           + "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다. URL이 달라지면 이전 posterCrop을 초기화하며, 새 posterCrop을 함께 전달하면 그 값을 저장합니다. 같은 URL은 기존 범위를 유지합니다. 전체 이미지는 x=0, y=0, w=1, h=1로 지정합니다.";
   public static final String UPDATE_REQUEST_DESCRIPTION =
       "생략 또는 null인 필드는 유지합니다. instagramUrl/websiteUrl은 빈 문자열로 삭제할 수 있습니다. "
@@ -104,14 +112,18 @@ public final class DisplayApiDocs {
       "xgpwkMqz7OJfcavJT4IswaxJv6xPYO2knbq4CrNUYW4";
 
   public static final String MAP_SUMMARY = "지도 영역 전시 조회";
-  public static final String MAP_DESCRIPTION = "현재 지도 화면 영역에 포함된 발행 전시 마커 목록을 조회합니다.";
+  public static final String MAP_DESCRIPTION =
+      "현재 지도 범위의 공개된 예정·진행 중 전시를 조회합니다. searchWord는 전시명·장소명·학교명·세부 소속 부분 일치입니다. "
+          + "all=true이면 범위 안의 전체 결과를 반환하며 size를 무시합니다. cursor는 함께 전달할 수 없습니다. "
+          + "전체 조회의 pagination은 nextCursor=null, hasNext=false, size=실제 반환 개수입니다. 생략하면 기존 최대100개 페이징을 유지합니다.";
   public static final String MAP_SUCCESS_DESCRIPTION = "지도 영역 전시 조회 성공";
   public static final String MAP_SUCCESS_EXAMPLE_NAME = "Display map success";
 
   public static final String SEARCH_SUMMARY = "전시 검색";
   public static final String SEARCH_DESCRIPTION =
-      "발행된 전시를 displayId 내림차순 커서 방식으로 검색합니다. "
-          + "searchWord는 title 부분 일치 필터로만 사용하고, region=ALL이면 지역 조건을 적용하지 않습니다. "
+      "발행된 전시를 검색합니다. sort=LATEST(기본)는 등록순 ID 내림차순, LIKES는 현재 좋아요 수와 ID 내림차순입니다. "
+          + "좋아요순 다음 페이지는 nextCursor와 nextCursorLikeCount를 cursor와 cursorLikeCount로 함께 전달합니다. 좋아요 변경 중 페이지 스냅샷은 보장하지 않습니다. "
+          + "searchWord는 전시명·학교명·세부 소속 부분 일치이며, region=ALL이면 지역 조건을 적용하지 않습니다. "
           + "status=CLOSING_SOON은 한국 날짜 기준 이미 시작했고 오늘부터 3일 후까지 종료하는 전시를 조회합니다. 오늘과 3일 후를 모두 포함합니다.";
   public static final String SEARCH_SUCCESS_DESCRIPTION = "전시 검색 성공";
   public static final String SEARCH_SUCCESS_EXAMPLE_NAME = "Display search success";
@@ -130,7 +142,8 @@ public final class DisplayApiDocs {
   public static final String GRADUATION_SUCCESS_EXAMPLE_NAME = "Graduation display success";
 
   public static final String DU_PICKS_SUMMARY = "DU Picks 조회";
-  public static final String DU_PICKS_DESCRIPTION = "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다.";
+  public static final String DU_PICKS_DESCRIPTION =
+      "DU Picks 칼럼 목록을 columnId 오름차순 커서 방식으로 조회합니다. posterCrop은 칼럼 배너 이미지의 비율 크롭이며, 미설정 시 null입니다.";
   public static final String DU_PICKS_SUCCESS_DESCRIPTION = "DU Picks 조회 성공";
   public static final String DU_PICKS_SUCCESS_EXAMPLE_NAME = "DU Picks success";
 
@@ -466,7 +479,7 @@ public final class DisplayApiDocs {
             "organization": "중앙대학교",
             "department": "디자인학부",
             "displayType": "GRADUATION",
-            "displayFields": ["DESIGN", "VIDEO"],
+            "displayFields": ["GRAPHIC", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
             "isArchived": false,
@@ -520,7 +533,7 @@ public final class DisplayApiDocs {
             "organization": "중앙대학교",
             "department": "디자인학부",
             "displayType": "GRADUATION",
-            "displayFields": ["DESIGN", "VIDEO"],
+            "displayFields": ["GRAPHIC", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
             "isArchived": false,
@@ -597,7 +610,7 @@ public final class DisplayApiDocs {
             "organization": "중앙대학교",
             "department": "디자인학부",
             "displayType": "GRADUATION",
-            "displayFields": ["DESIGN", "VIDEO"],
+            "displayFields": ["GRAPHIC", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 0,
             "isArchived": false,
@@ -873,6 +886,7 @@ public final class DisplayApiDocs {
                 "title": "THE ESSENCE IN MOTION",
                 "subtitle": "색과 형태, 우리가 마주한 순간들",
                 "bannerImageUrl": "https://cdn.displayu.com/home/du_pick_1.png",
+                "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
                 "createdAt": "2026-06-30"
               }
             ],
@@ -1069,7 +1083,7 @@ public final class DisplayApiDocs {
             "organization": "디스플레이유",
             "department": "디자인학과",
             "displayType": "GRADUATION",
-            "displayFields": ["DESIGN", "VIDEO"],
+            "displayFields": ["GRAPHIC", "VIDEO"],
             "region": "SEOUL",
             "likeCount": 143,
             "isArchived": true,

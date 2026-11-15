@@ -113,7 +113,9 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
                 image.id,
                 image.imageUrl,
                 image.imageType.stringValue(),
-                image.sortOrder))
+                image.sortOrder,
+                image.mediaType,
+                image.thumbnailUrl))
         .from(image)
         .where(image.display.id.eq(displayId), image.deletedAt.isNull())
         .orderBy(image.sortOrder.asc(), image.id.asc())
@@ -122,11 +124,14 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
 
   private List<String> fetchFields(Long displayId) {
     return queryFactory
-        .select(fieldSelection.field.stringValue())
+        .select(fieldSelection.field)
         .from(fieldSelection)
         .where(fieldSelection.display.id.eq(displayId))
         .orderBy(fieldSelection.sortOrder.asc(), fieldSelection.id.asc())
-        .fetch();
+        .fetch()
+        .stream()
+        .map(field -> field.canonical().name())
+        .toList();
   }
 
   private List<DisplayDetailResult.ContentCategoryResult> fetchContentCategories(

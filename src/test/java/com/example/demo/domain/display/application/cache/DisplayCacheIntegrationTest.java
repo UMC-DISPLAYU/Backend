@@ -52,6 +52,8 @@ import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
 import com.example.demo.global.config.CacheConfig;
+import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import com.example.demo.global.file.domain.MediaContent;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -318,6 +320,7 @@ class DisplayCacheIntegrationTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
         null);
   }
 
@@ -327,14 +330,15 @@ class DisplayCacheIntegrationTest {
         "THE ESSENCE IN MOTION",
         "색과 형태, 우리가 마주한 순간들",
         "https://cdn.displayu.com/home/du_pick_1.png",
-        LocalDateTime.of(2026, 6, 30, 11, 0));
+        LocalDateTime.of(2026, 6, 30, 11, 0),
+        null);
   }
 
   private static CreateDisplayCommand createDisplayCommand() {
     return new CreateDisplayCommand(
         1L,
         "전시",
-        "https://cdn.displayu.com/posters/main.png",
+        MediaContent.image("https://cdn.displayu.com/posters/main.png"),
         List.of(),
         "부제",
         "설명",
@@ -423,6 +427,11 @@ class DisplayCacheIntegrationTest {
   @Configuration
   @EnableTransactionManagement(proxyTargetClass = true)
   static class TestConfig {
+
+    @Bean
+    MediaStorageVerifier mediaStorageVerifier() {
+      return mock(MediaStorageVerifier.class);
+    }
 
     @Bean
     GraduationDisplayQueryRepository graduationDisplayQueryRepository() {

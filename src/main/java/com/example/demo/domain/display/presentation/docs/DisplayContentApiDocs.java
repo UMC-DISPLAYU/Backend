@@ -14,7 +14,7 @@ public final class DisplayContentApiDocs {
 
   public static final String CREATE_CATEGORY_SUMMARY = "전시 콘텐츠 카테고리 생성";
   public static final String CREATE_CATEGORY_DESCRIPTION =
-      "전시 팀 리더가 전시 콘텐츠 이미지들을 담을 카테고리를 생성합니다. sortOrder는 서버가 자동 부여합니다.";
+      "전시 콘텐츠 수정 권한이 있는 팀원이 카테고리를 생성합니다. imageUrls를 제공하면 사진 1~20장을 함께 저장하고, 생략 또는 null이면 기존 빈 섹션 생성을 지원합니다. description은 선택 항목이고 sortOrder는 서버가 자동 부여합니다.";
   public static final String CREATE_CATEGORY_REQUEST_DESCRIPTION = "전시 콘텐츠 카테고리 생성 요청";
   public static final String CREATE_CATEGORY_REQUEST_EXAMPLE_NAME =
       "Display content category create request";

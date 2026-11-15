@@ -22,6 +22,89 @@ class DisplayOpenApiTest {
   @Autowired private MockMvc mvc;
 
   @Test
+  void generatedSchemasDescribeStructuredMediaAndDoNotMixPersonalQuestionImages() throws Exception {
+    JsonNode document = document();
+    for (String method : List.of("post", "patch")) {
+      JsonNode request =
+          resolve(
+              document,
+              operation(document, "/api/v1/display", method)
+                  .path("requestBody")
+                  .path("content")
+                  .path("application/json")
+                  .path("schema"));
+      JsonNode media = resolve(document, property(document, request, "posterMedia"));
+      assertThat(property(document, media, "imageUrl").isMissingNode()).isFalse();
+      assertThat(property(document, media, "mediaType").path("enum").toString())
+          .contains("IMAGE", "VIDEO");
+      assertThat(property(document, media, "thumbnailUrl").isMissingNode()).isFalse();
+      assertThat(media.path("required").toString()).contains("imageUrl", "mediaType");
+      assertThat(property(document, request, "displayMedia").path("maxItems").asInt()).isEqualTo(4);
+      assertThat(request.path("required").toString()).doesNotContain("posterImageUrl");
+    }
+    JsonNode data = responseData(document, "/api/v1/display/{displayId}", "get");
+    JsonNode image = resolve(document, property(document, data, "images").path("items"));
+    for (String field :
+        List.of("imageId", "imageUrl", "imageType", "sortOrder", "mediaType", "thumbnailUrl")) {
+      assertThat(property(document, image, field).isMissingNode()).as(field).isFalse();
+    }
+    assertThat(property(document, image, "personalQuestionImageId").isMissingNode()).isTrue();
+    for (List<String> route :
+        List.of(
+            List.of("/api/v1/display/popular", "exhibitions"),
+            List.of("/api/v1/display/graduation", "exhibitions"),
+            List.of("/api/v1/display/closing-soon", "exhibitions"),
+            List.of("/api/v1/display/search", "exhibitions"),
+            List.of("/api/v1/display/me", "createdDisplays"),
+            List.of("/api/v1/display/me", "participatedDisplays"))) {
+      JsonNode card =
+          resolve(
+              document,
+              property(document, responseData(document, route.getFirst(), "get"), route.get(1))
+                  .path("items"));
+      assertNullable(property(document, card, "posterVideoUrl"));
+    }
+  }
+
+  @Test
+  void artworkSchemasKeepOriginalTypeAndThumbnailTogether() throws Exception {
+    JsonNode document = document();
+    for (OperationRef ref :
+        List.of(
+            new OperationRef("/api/v1/artworks", "post", "201"),
+            new OperationRef("/api/v1/artworks/{artworkId}", "patch", "200"),
+            new OperationRef("/api/v1/artworks/{artworkId}", "get", "200"),
+            new OperationRef("/api/v1/artworks/{artworkId}/edit", "get", "200"))) {
+      String path = ref.path();
+      JsonNode data = responseData(document, path, ref.method(), ref.status());
+      assertThat(data.isMissingNode())
+          .as("%s responses: %s", ref, operation(document, path, ref.method()).path("responses"))
+          .isFalse();
+      JsonNode images = property(document, data, "images");
+      assertThat(images.path("items").path("$ref").asText())
+          .as("%s images schema: %s", path, images)
+          .startsWith("#/components/schemas/DisplayArtwork");
+      JsonNode image = resolve(document, images.path("items"));
+      for (String field :
+          List.of(
+              "imageUrl",
+              "imageType",
+              "isThumbnail",
+              "mediaType",
+              "thumbnailUrl",
+              "width",
+              "height")) {
+        assertThat(property(document, image, field).isMissingNode())
+            .as(path + " " + field)
+            .isFalse();
+      }
+      assertThat(property(document, image, "mediaType").path("enum").toString())
+          .contains("IMAGE", "VIDEO");
+      assertThat(property(document, image, "personalQuestionImageId").isMissingNode()).isTrue();
+    }
+  }
+
+  @Test
   void documentsFrontendListArtworkAndCancellationContracts() throws Exception {
     JsonNode document =
         JsonMapper.builder()
@@ -105,7 +188,7 @@ class DisplayOpenApiTest {
               "VIDEO",
               "SPACE",
               "ARCHITECTURE",
-              "UXUI",
+              "UX_UI",
               "CRAFTS",
               "OTHERS");
     }

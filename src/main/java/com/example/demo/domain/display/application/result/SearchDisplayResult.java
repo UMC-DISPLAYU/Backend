@@ -19,7 +19,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
       long dayLeft,
       boolean isArchived,
       String placeName,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     public static ExhibitionResult from(SearchDisplayQueryResult queryResult, LocalDate today) {
       return new ExhibitionResult(
@@ -33,7 +34,8 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
           queryResult.placeName(),
-          queryResult.posterCrop());
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -48,9 +50,11 @@ public record SearchDisplayResult(List<ExhibitionResult> exhibitions, Pagination
           dayLeft,
           isArchived,
           placeName,
-          posterCrop);
+          posterCrop,
+          posterVideoUrl);
     }
   }
 
-  public record PaginationResult(Long nextCursor, int size, boolean hasNext) {}
+  public record PaginationResult(
+      Long nextCursor, int size, boolean hasNext, Long nextCursorLikeCount) {}
 }

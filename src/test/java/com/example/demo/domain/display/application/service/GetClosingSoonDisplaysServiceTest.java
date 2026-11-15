@@ -51,6 +51,7 @@ class GetClosingSoonDisplaysServiceTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
         null);
   }
 

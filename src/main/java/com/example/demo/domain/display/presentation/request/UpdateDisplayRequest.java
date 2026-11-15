@@ -23,7 +23,10 @@ import java.util.List;
 public record UpdateDisplayRequest(
     @NotNull @Positive Long displayId,
     String title,
-    String posterImageUrl,
+    @Schema(
+            description =
+                "기존 이미지 전용 대표 URL. posterMedia와 동시에 전달할 수 없습니다. 생략 또는 null은 기존 미디어를 유지합니다.")
+        String posterImageUrl,
     DisplayType type,
     @ArraySchema(
             minItems = 1,
@@ -39,7 +42,7 @@ public record UpdateDisplayRequest(
                       "VIDEO",
                       "SPACE",
                       "ARCHITECTURE",
-                      "UXUI",
+                      "UX_UI",
                       "CRAFTS",
                       "OTHERS"
                     }))
@@ -96,7 +99,14 @@ public record UpdateDisplayRequest(
             types = {"object", "null"},
             description =
                 "원본 이미지 기준 표시 범위. 생략 또는 null이면 기존 범위 유지. 대표 URL을 다른 값으로 바꾸면 초기화. 전체 이미지는 x=0, y=0, w=1, h=1.")
-        PosterCropRequest posterCrop) {
+        PosterCropRequest posterCrop,
+    @Valid @Schema(
+            description =
+                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생략 또는 null은 유지하며 대표 미디어 변경 시 기존 크롭을 초기화합니다.")
+        DisplayMediaRequest posterMedia,
+    @Valid @Schema(
+            description = "추가 미디어 최대 4개. displayImageUrl과 동시 입력 불가. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
+        @Size(max = 4) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
 
   @Schema(hidden = true)
   @AssertTrue(message = "region은 ALL이 될 수 없습니다.") public boolean isRegionValid() {
@@ -104,9 +114,8 @@ public record UpdateDisplayRequest(
   }
 
   @Schema(hidden = true)
-  @AssertTrue(message = "fields는 비어 있을 수 없으며 신규 전시 분야만 선택할 수 있습니다.") public boolean isFieldsValid() {
+  @AssertTrue(message = "fields는 비어 있거나 null 항목을 포함할 수 없습니다.") public boolean isFieldsValid() {
     return fields == null
-        || (!fields.isEmpty()
-            && fields.stream().allMatch(field -> field != null && field.isSelectable()));
+        || (!fields.isEmpty() && fields.stream().allMatch(field -> field != null));
   }
 }

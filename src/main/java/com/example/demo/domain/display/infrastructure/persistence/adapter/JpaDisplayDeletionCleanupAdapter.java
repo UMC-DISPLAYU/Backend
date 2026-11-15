@@ -1,9 +1,14 @@
 package com.example.demo.domain.display.infrastructure.persistence.adapter;
 
 import com.example.demo.domain.display.application.port.DisplayDeletionCleanupPort;
+import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,28 +17,57 @@ import org.springframework.transaction.annotation.Transactional;
 public class JpaDisplayDeletionCleanupAdapter implements DisplayDeletionCleanupPort {
 
   private final EntityManager entityManager;
+  private final ApplicationEventPublisher eventPublisher;
 
-  public JpaDisplayDeletionCleanupAdapter(EntityManager entityManager) {
+  public JpaDisplayDeletionCleanupAdapter(
+      EntityManager entityManager, ApplicationEventPublisher eventPublisher) {
     this.entityManager = entityManager;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void cleanupDisplayChildren(Long displayId, LocalDateTime deletedAt) {
     List<Long> displayArtworkIds = findDisplayArtworkIds(displayId);
+    List<String> fileUrls = findMediaFileUrls(displayId);
 
     cleanupDisplayArchives(displayId, deletedAt);
     cleanupDisplayLikes(displayId);
     cleanupDisplayReviews(displayId, deletedAt);
 
-    if (displayArtworkIds.isEmpty()) {
-      return;
+    if (!displayArtworkIds.isEmpty()) {
+      cleanupArtworkArchives(displayArtworkIds, deletedAt);
+      cleanupArtworkLikes(displayArtworkIds);
+      cleanupArtworkCommunications(displayArtworkIds, deletedAt);
+      softDeleteDisplayArtworks(displayArtworkIds, deletedAt);
     }
+    if (!fileUrls.isEmpty()) {
+      eventPublisher.publishEvent(new MediaFilesRemovedEvent(fileUrls));
+    }
+  }
 
-    cleanupArtworkArchives(displayArtworkIds, deletedAt);
-    cleanupArtworkLikes(displayArtworkIds);
-    cleanupArtworkCommunications(displayArtworkIds, deletedAt);
-    softDeleteDisplayArtworks(displayArtworkIds, deletedAt);
+  private List<String> findMediaFileUrls(Long displayId) {
+    List<Object[]> media =
+        new ArrayList<>(
+            entityManager
+                .createQuery(
+                    "SELECT image.imageUrl, image.thumbnailUrl FROM DisplayImage image WHERE image.display.id = :displayId AND image.deletedAt IS NULL",
+                    Object[].class)
+                .setParameter("displayId", displayId)
+                .getResultList());
+    media.addAll(
+        entityManager
+            .createQuery(
+                "SELECT image.imageUrl, image.thumbnailUrl FROM ArtworkImage image WHERE image.displayArtwork.display.id = :displayId AND image.displayArtwork.deletedAt IS NULL",
+                Object[].class)
+            .setParameter("displayId", displayId)
+            .getResultList());
+    return media.stream()
+        .flatMap(row -> Stream.of(row[0], row[1]))
+        .filter(Objects::nonNull)
+        .map(String.class::cast)
+        .distinct()
+        .toList();
   }
 
   private List<Long> findDisplayArtworkIds(Long displayId) {

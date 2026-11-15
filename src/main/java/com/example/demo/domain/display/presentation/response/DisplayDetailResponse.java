@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.example.demo.global.file.domain.MediaType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
@@ -60,7 +61,14 @@ public record DisplayDetailResponse(
   public record PeriodResponse(
       LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {}
 
-  public record ImageResponse(Long imageId, String imageUrl, String imageType, int sortOrder) {}
+  @Schema(name = "DisplayDetailImageResponse")
+  public record ImageResponse(
+      Long imageId,
+      String imageUrl,
+      String imageType,
+      int sortOrder,
+      MediaType mediaType,
+      String thumbnailUrl) {}
 
   public record ContentCategoryResponse(
       Long categoryId,

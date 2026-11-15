@@ -9,7 +9,9 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,51 +27,58 @@ public class JpaDisplayMapQueryRepositoryAdapter implements DisplayMapQueryRepos
   }
 
   @Override
-  public List<DisplayMapQueryResult> findMarkers(DisplayMapQuery query, int limit) {
-    return queryFactory
-        .select(
-            Projections.constructor(
-                DisplayMapQueryResult.class,
-                display.id,
-                display.title,
-                display.period.startDate,
-                display.period.endDate,
-                display.location.placeName,
-                image.imageUrl,
-                display.organization,
-                display.department,
-                display.location.latitude,
-                display.location.longitude,
-                display.posterCrop))
-        .from(display)
-        .leftJoin(display.images, image)
-        .on(QDisplayImageConditions.mainImage(image))
-        .where(
-            display.status.eq(DisplayStatus.PUBLISHED),
-            display.deletedAt.isNull(),
-            display.location.latitude.between(query.southLatitude(), query.northLatitude()),
-            display.location.longitude.between(query.westLongitude(), query.eastLongitude()),
-            cursorBefore(query),
-            searchWordContains(query.searchWord()))
-        .orderBy(display.id.desc())
-        .limit(limit)
-        .fetch();
+  public List<DisplayMapQueryResult> findMarkers(
+      DisplayMapQuery query, LocalDate today, int limit) {
+    var markers =
+        queryFactory
+            .select(
+                Projections.constructor(
+                    DisplayMapQueryResult.class,
+                    display.id,
+                    display.title,
+                    display.period.startDate,
+                    display.period.endDate,
+                    display.location.placeName,
+                    QDisplayImageConditions.cardImageUrl(image),
+                    display.organization,
+                    display.department,
+                    display.location.latitude,
+                    display.location.longitude,
+                    display.posterCrop))
+            .from(display)
+            .leftJoin(display.images, image)
+            .on(QDisplayImageConditions.mainImage(image))
+            .where(
+                display.status.eq(DisplayStatus.PUBLISHED),
+                display.deletedAt.isNull(),
+                display.period.endDate.goe(today),
+                display.location.latitude.between(query.southLatitude(), query.northLatitude()),
+                display.location.longitude.between(query.westLongitude(), query.eastLongitude()),
+                cursorBefore(query),
+                searchWordContains(query.searchWord()))
+            .orderBy(display.id.desc());
+    if (!query.all()) {
+      markers.limit(limit);
+    }
+    return markers.fetch();
   }
 
   private BooleanExpression cursorBefore(DisplayMapQuery query) {
-    return query.cursor() == null ? null : display.id.lt(query.cursor());
+    return query.all() || query.cursor() == null ? null : display.id.lt(query.cursor());
   }
 
   private BooleanExpression searchWordContains(String searchWord) {
     if (!hasText(searchWord)) {
       return null;
     }
-    String normalizedSearchWord = searchWord.toLowerCase();
+    String normalizedSearchWord = searchWord.toLowerCase(Locale.ROOT);
     return display
         .title
         .lower()
         .contains(normalizedSearchWord)
-        .or(display.location.placeName.lower().contains(normalizedSearchWord));
+        .or(display.location.placeName.lower().contains(normalizedSearchWord))
+        .or(display.organization.lower().contains(normalizedSearchWord))
+        .or(display.department.lower().contains(normalizedSearchWord));
   }
 
   private boolean hasText(String value) {

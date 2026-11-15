@@ -42,6 +42,7 @@ class GetRandomGraduationDisplaysServiceTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
         null);
   }
 

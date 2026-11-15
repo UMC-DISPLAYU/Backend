@@ -21,7 +21,8 @@ import java.util.List;
 
 public record CreateDisplayRequest(
     @NotBlank String title,
-    @NotBlank String posterImageUrl,
+    @Schema(description = "기존 이미지 전용 대표 URL. posterMedia와 동시에 전달할 수 없습니다. 생성 시 둘 중 하나는 필수입니다.")
+        String posterImageUrl,
     @JsonProperty("displayImageUrl") @Size(max = 4) List<@NotBlank String> displayImageUrls,
     @NotNull DisplayType type,
     @NotEmpty @ArraySchema(
@@ -37,7 +38,7 @@ public record CreateDisplayRequest(
                       "VIDEO",
                       "SPACE",
                       "ARCHITECTURE",
-                      "UXUI",
+                      "UX_UI",
                       "CRAFTS",
                       "OTHERS"
                     }))
@@ -75,7 +76,13 @@ public record CreateDisplayRequest(
     @Valid @Schema(
             types = {"object", "null"},
             description = "원본 이미지 기준 표시 범위. 생략 또는 null이면 생성 시 조정 없음, 수정 시 기존 값 유지.")
-        PosterCropRequest posterCrop) {
+        PosterCropRequest posterCrop,
+    @Valid @Schema(
+            description =
+                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생성 시 대표 미디어 또는 기존 대표 이미지 URL은 필수입니다.")
+        DisplayMediaRequest posterMedia,
+    @Valid @Schema(description = "추가 미디어 최대 4개. displayImageUrl과 동시 입력 불가. 빈 배열 또는 생략은 추가 미디어 없음.")
+        @Size(max = 4) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
 
   @Schema(hidden = true)
   @AssertTrue(message = "GRADUATION, ASSIGNMENTS 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {

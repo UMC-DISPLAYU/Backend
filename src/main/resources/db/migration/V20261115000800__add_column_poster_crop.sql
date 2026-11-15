@@ -1,0 +1,5 @@
+ALTER TABLE `Column`
+    ADD COLUMN posterCropX DECIMAL(11, 10) NULL,
+    ADD COLUMN posterCropY DECIMAL(11, 10) NULL,
+    ADD COLUMN posterCropW DECIMAL(11, 10) NULL,
+    ADD COLUMN posterCropH DECIMAL(11, 10) NULL;

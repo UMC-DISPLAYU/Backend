@@ -12,4 +12,6 @@ public record SearchDisplayQueryResult(
     LocalDate startedAt,
     LocalDate endedAt,
     String placeName,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    String posterVideoUrl,
+    long likeCount) {}

@@ -20,7 +20,8 @@ public record ClosingSoonDisplayResult(
       long dayLeft,
       boolean isArchived,
       String placeName,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      String posterVideoUrl) {
 
     public static ExhibitionResult from(
         ClosingSoonDisplayQueryResult queryResult, LocalDate today) {
@@ -35,7 +36,8 @@ public record ClosingSoonDisplayResult(
           ChronoUnit.DAYS.between(today, queryResult.endedAt()),
           false,
           queryResult.placeName(),
-          queryResult.posterCrop());
+          queryResult.posterCrop(),
+          queryResult.posterVideoUrl());
     }
 
     public ExhibitionResult withArchived(boolean isArchived) {
@@ -50,7 +52,8 @@ public record ClosingSoonDisplayResult(
           dayLeft,
           isArchived,
           placeName,
-          posterCrop);
+          posterCrop,
+          posterVideoUrl);
     }
   }
 

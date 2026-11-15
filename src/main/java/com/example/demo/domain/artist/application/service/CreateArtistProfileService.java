@@ -15,7 +15,6 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.error.UserErrorCode;
 import com.example.demo.domain.user.domain.error.UserException;
 import com.example.demo.domain.user.domain.repository.UserRepository;
-import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -79,8 +78,10 @@ public class CreateArtistProfileService {
   private void validateActivityFields(List<ActivityCategory> activityCategories) {
     if (activityCategories == null
         || activityCategories.isEmpty()
+        || activityCategories.stream().anyMatch(field -> field == null || !field.isSelectable())
         || activityCategories.size() > 2
-        || new HashSet<>(activityCategories).size() != activityCategories.size()) {
+        || activityCategories.stream().map(ActivityCategory::canonical).distinct().count()
+            != activityCategories.size()) {
       throw new ArtistException(ArtistErrorCode.INVALID_ACTIVITY_FIELDS);
     }
   }

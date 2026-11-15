@@ -1,6 +1,7 @@
 package com.example.demo.domain.admin.presentation.response;
 
 import com.example.demo.domain.display.presentation.response.PosterCropResponse;
+import com.example.demo.global.file.domain.MediaType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,5 +52,10 @@ public final class ReviewResponses {
       @Schema(
               description = "심사 요청 취소자 ID. 취소되지 않았으면 null입니다.",
               types = {"integer", "null"})
-          Long cancelledBy) {}
+          Long cancelledBy,
+      @Schema(description = "대표, 추가 미디어 순서의 원본과 타입. imageUrls와 같은 순서입니다.")
+          List<MediaResponse> media) {}
+
+  @Schema(name = "AdminReviewMediaResponse")
+  public record MediaResponse(String imageUrl, MediaType mediaType, String thumbnailUrl) {}
 }

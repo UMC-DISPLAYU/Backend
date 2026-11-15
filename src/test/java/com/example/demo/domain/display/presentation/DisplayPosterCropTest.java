@@ -31,6 +31,7 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
 import com.example.demo.domain.display.presentation.mapper.DisplayMemberInvitationPresentationMapper;
 import com.example.demo.domain.display.presentation.response.PosterCropResponse;
+import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.security.JwtFactory;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -166,6 +167,97 @@ class DisplayPosterCropTest {
                 .getFirst()
                 .posterCrop())
         .isEqualTo(expected);
+  }
+
+  @Test
+  void videoPosterUsesThumbnailInEveryCardAndKeepsPlaybackUrlThroughCaches() throws Exception {
+    String original = "https://example.com/poster.mp4";
+    String thumbnail = "https://example.com/thumbnail.jpg";
+    Display display = display();
+    display.changeMedia(MediaContent.video(original, thumbnail), null, null);
+    display.addInvitation(
+        new DisplayInvitation(
+            null, new UserId(1L), new UserId(2L), LocalDateTime.now(clock), null));
+    repository.saveAndFlush(display);
+    Long id = display.getId();
+    entityManager.clear();
+
+    for (String path :
+        List.of(
+            "/api/v1/display/popular",
+            "/api/v1/display/closing-soon",
+            "/api/v1/display/graduation",
+            "/api/v1/display/search")) {
+      for (int request = 0; request < 2; request++) {
+        var builder = get(path).param("size", "10");
+        if (path.endsWith("/search")) {
+          builder.param("cursor", "0");
+        }
+        mvc.perform(builder)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success.data.exhibitions[0].posterImageUrl").value(thumbnail))
+            .andExpect(jsonPath("$.success.data.exhibitions[0].posterVideoUrl").value(original))
+            .andExpect(jsonPath("$.success.data.exhibitions[0].posterCrop").isEmpty());
+      }
+    }
+    mvc.perform(
+            get("/api/v1/display/map")
+                .param("southLatitude", "37")
+                .param("northLatitude", "38")
+                .param("westLongitude", "126")
+                .param("eastLongitude", "128"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.markers[0].posterImageUrl").value(thumbnail));
+    mvc.perform(
+            get("/api/v1/display/me")
+                .header("Authorization", "Bearer " + jwtFactory.create("1", 3600000L, "ACCESS")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].postImageUrl").value(thumbnail))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].posterVideoUrl").value(original));
+    mvc.perform(get("/api/v1/display/artists/{userId}", 1L))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].postImageUrl").value(thumbnail));
+    mvc.perform(get("/api/v1/display/{displayId}", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.images[0].imageUrl").value(original))
+        .andExpect(jsonPath("$.success.data.images[0].mediaType").value("VIDEO"))
+        .andExpect(jsonPath("$.success.data.images[0].thumbnailUrl").value(thumbnail));
+
+    var summary = DisplaySummaryResult.from(summaries.findByDisplayIdIn(List.of(id)).getFirst());
+    assertThat(
+            archiveMapper
+                .toResponse(
+                    ArchiveDisplayResult.from(
+                        ArchiveDisplay.create(id, 1L), null, summary, LocalDate.now(clock)))
+                .posterImageUrl())
+        .isEqualTo(thumbnail);
+    var invited =
+        GraduationDisplayResult.ExhibitionResult.from(
+            invitationDisplays.findPendingInvitationDisplays(2L).getFirst(), LocalDate.now(clock));
+    assertThat(invited.withArchived(true).posterVideoUrl()).isEqualTo(original);
+    assertThat(
+            invitationMapper
+                .toInvitationDisplayResponse(new GraduationDisplayResult(List.of(invited)))
+                .exhibitions()
+                .getFirst()
+                .posterImageUrl())
+        .isEqualTo(thumbnail);
+    var loaded = repository.findById(id).orElseThrow();
+    assertThat(
+            invitationMapper
+                .toResponse(
+                    MyDisplayInvitationListResult.from(loaded.getInvitations(), Map.of(), Map.of()))
+                .invitations()
+                .getFirst()
+                .thumbnailUrl())
+        .isEqualTo(thumbnail);
+    assertThat(
+            reviewMapper
+                .toResponse(reviews.search(new ReviewSearchQuery("PUBLISHED", null, 10)))
+                .items()
+                .getFirst()
+                .posterImageUrl())
+        .isEqualTo(thumbnail);
   }
 
   @Test

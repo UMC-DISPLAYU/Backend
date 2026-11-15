@@ -68,7 +68,13 @@ public class DisplayReviewAdapter implements DisplayReviewPort {
         result.school(),
         result.leaderName(),
         result.screeningStatus(),
-        result.cancelledBy());
+        result.cancelledBy(),
+        result.media().stream()
+            .map(
+                media ->
+                    new ReviewDetail.MediaResult(
+                        media.imageUrl(), media.mediaType(), media.thumbnailUrl()))
+            .toList());
   }
 
   @Override

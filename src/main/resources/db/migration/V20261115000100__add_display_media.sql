@@ -1,0 +1,3 @@
+ALTER TABLE DisplayImage
+    ADD COLUMN mediaType VARCHAR(20) NOT NULL DEFAULT 'IMAGE',
+    ADD COLUMN thumbnailUrl TEXT NULL;

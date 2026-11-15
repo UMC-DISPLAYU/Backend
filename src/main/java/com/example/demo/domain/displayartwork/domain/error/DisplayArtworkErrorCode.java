@@ -12,6 +12,10 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       HttpStatus.BAD_REQUEST,
       "AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED",
       "작품 이미지(ARTWORK 타입)가 최소 1장 필요합니다."),
+  INVALID_ARTWORK_MEDIA(
+      HttpStatus.BAD_REQUEST,
+      "INVALID_ARTWORK_MEDIA",
+      "작품 미디어는 최대 10개, 영상은 최대 1개이며 작업 과정에는 영상을 등록할 수 없습니다."),
   DISPLAY_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_NOT_FOUND", "전시를 찾을 수 없습니다."),
   NOT_DISPLAY_TEAM_MEMBER(
       HttpStatus.FORBIDDEN, "NOT_DISPLAY_TEAM_MEMBER", "해당 전시의 팀원만 작품을 등록할 수 있습니다."),
@@ -27,8 +31,9 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
       "해당 작품을 수정할 권한이 없습니다. (전시 대표자, 작품의 작가, 공동 작업자만 수정 가능)"),
   FORBIDDEN_ARTWORK_ORDER_EDIT(
       HttpStatus.FORBIDDEN, "FORBIDDEN_ARTWORK_ORDER_EDIT", "전시 대표자만 작품 순서를 편집할 수 있습니다."),
+  INVALID_ARTWORK_FIELD(HttpStatus.BAD_REQUEST, "INVALID_ARTWORK_FIELD", "새로 선택할 수 없는 작품 분야입니다."),
   INVALID_ARTWORK_FIELD_COUNT(
-      HttpStatus.BAD_REQUEST, "INVALID_ARTWORK_FIELD_COUNT", "작품 분야는 1개 이상 2개 이하로 지정해야 합니다."),
+      HttpStatus.BAD_REQUEST, "INVALID_ARTWORK_FIELD_COUNT", "작품 분야는 1개 이상 3개 이하로 지정해야 합니다."),
   INVALID_ARTWORK_ORDER_LIST(
       HttpStatus.BAD_REQUEST,
       "INVALID_ARTWORK_ORDER_LIST",
