@@ -57,9 +57,7 @@ class UserServiceSignupTest {
       new SocialUserInfo(
           Provider.Google, "google-provider-id", "Google User", "google@example.com");
   private final Agreement terms = agreement(11L, AgreementCode.TERMS_OF_SERVICE, true, 1);
-  private final Agreement privacy = agreement(12L, AgreementCode.PRIVACY_COLLECTION_USE, true, 2);
-  private final Agreement location = agreement(7L, AgreementCode.LOCATION_BASED_SERVICE, false, 3);
-  private final List<Agreement> signupAgreements = List.of(terms, privacy, location);
+  private final List<Agreement> signupAgreements = List.of(terms);
   private final User savedUser =
       User.builder()
           .id(10L)
@@ -82,26 +80,15 @@ class UserServiceSignupTest {
   }
 
   @Test
-  void signsUpWithRequiredAgreementsAndSavesOptionalLocationWhenRequested() {
-    userService.signup(
-        command(
-            List.of(
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.PRIVACY_COLLECTION_USE),
-                agreement(AgreementCode.LOCATION_BASED_SERVICE))),
-        socialUserInfo);
+  void signsUpWithTermsOfServiceOnly() {
+    userService.signup(command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo);
 
-    assertSavedAgreementIds(11L, 12L, 7L);
+    assertSavedAgreementIds(11L);
   }
 
   @Test
   void signsUpWithUserRole() {
-    userService.signup(
-        command(
-            List.of(
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
-        socialUserInfo);
+    userService.signup(command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo);
 
     ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
     verify(userRepository).save(userCaptor.capture());
@@ -109,23 +96,23 @@ class UserServiceSignupTest {
   }
 
   @Test
-  void signsUpWithoutOptionalLocationAgreement() {
-    userService.signup(
-        command(
-            List.of(
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
-        socialUserInfo);
-
-    assertSavedAgreementIds(11L, 12L);
+  void rejectsReadOnlyPrivacyDocumentAsSignupAgreement() {
+    assertUserError(
+        () ->
+            userService.signup(
+                command(
+                    List.of(
+                        agreement(AgreementCode.TERMS_OF_SERVICE),
+                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
+                socialUserInfo),
+        UserErrorCode.AGREEMENT_NOT_FOUND);
+    assertNothingSaved();
   }
 
   @Test
   void rejectsSignupWhenRequiredAgreementIsMissing() {
     assertUserError(
-        () ->
-            userService.signup(
-                command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo),
+        () -> userService.signup(command(List.of()), socialUserInfo),
         UserErrorCode.REQUIRED_AGREEMENT_NOT_ACCEPTED);
     assertNothingSaved();
   }
@@ -134,11 +121,7 @@ class UserServiceSignupTest {
   void rejectsSignupWhenUserIsNotOver14() {
     SignupCommand command =
         new SignupCommand(
-            Nickname.of("maya01"),
-            List.of(
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.PRIVACY_COLLECTION_USE)),
-            false);
+            Nickname.of("maya01"), List.of(agreement(AgreementCode.TERMS_OF_SERVICE)), false);
 
     assertUserError(
         () -> userService.signup(command, socialUserInfo),
@@ -149,10 +132,7 @@ class UserServiceSignupTest {
   @Test
   void rejectsUnknownOrInactiveAgreementVersion() {
     SignupCommand command =
-        command(
-            List.of(
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                new AgreementCommand(AgreementCode.PRIVACY_COLLECTION_USE, "2.0")));
+        command(List.of(new AgreementCommand(AgreementCode.TERMS_OF_SERVICE, "1.0")));
 
     assertUserError(
         () -> userService.signup(command, socialUserInfo), UserErrorCode.AGREEMENT_NOT_FOUND);
@@ -165,8 +145,7 @@ class UserServiceSignupTest {
         command(
             List.of(
                 agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.TERMS_OF_SERVICE),
-                agreement(AgreementCode.PRIVACY_COLLECTION_USE)));
+                agreement(AgreementCode.TERMS_OF_SERVICE)));
 
     assertUserError(
         () -> userService.signup(command, socialUserInfo), UserErrorCode.DUPLICATE_AGREEMENT);
@@ -175,16 +154,12 @@ class UserServiceSignupTest {
 
   @Test
   void rejectsInvalidSignupAgreementConfiguration() {
-    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of(terms, privacy));
+    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of());
 
     assertUserError(
         () ->
             userService.signup(
-                command(
-                    List.of(
-                        agreement(AgreementCode.TERMS_OF_SERVICE),
-                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
-                socialUserInfo),
+                command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo),
         UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
     assertNothingSaved();
   }
@@ -195,22 +170,17 @@ class UserServiceSignupTest {
         Agreement.builder()
             .id(99L)
             .code("UNSUPPORTED_AGREEMENT")
-            .version("1.0")
+            .version("2.0")
             .isActive(true)
             .isRequired(false)
-            .displayOrder(3)
+            .displayOrder(1)
             .build();
-    when(agreementRepository.findAllSignupAgreements())
-        .thenReturn(List.of(terms, privacy, unsupported));
+    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of(unsupported));
 
     assertUserError(
         () ->
             userService.signup(
-                command(
-                    List.of(
-                        agreement(AgreementCode.TERMS_OF_SERVICE),
-                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
-                socialUserInfo),
+                command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo),
         UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
     assertNothingSaved();
   }
@@ -221,22 +191,17 @@ class UserServiceSignupTest {
         Agreement.builder()
             .id(98L)
             .code(AgreementCode.TERMS_OF_SERVICE.name())
-            .version("1.0")
+            .version("2.0")
             .isActive(true)
             .isRequired(true)
-            .displayOrder(4)
+            .displayOrder(1)
             .build();
-    when(agreementRepository.findAllSignupAgreements())
-        .thenReturn(List.of(terms, privacy, location, duplicatedTerms));
+    when(agreementRepository.findAllSignupAgreements()).thenReturn(List.of(terms, duplicatedTerms));
 
     assertUserError(
         () ->
             userService.signup(
-                command(
-                    List.of(
-                        agreement(AgreementCode.TERMS_OF_SERVICE),
-                        agreement(AgreementCode.PRIVACY_COLLECTION_USE))),
-                socialUserInfo),
+                command(List.of(agreement(AgreementCode.TERMS_OF_SERVICE))), socialUserInfo),
         UserErrorCode.REQUIRED_AGREEMENT_NOT_FOUND);
     assertNothingSaved();
   }
@@ -246,7 +211,7 @@ class UserServiceSignupTest {
   }
 
   private static AgreementCommand agreement(AgreementCode code) {
-    return new AgreementCommand(code, "1.0");
+    return new AgreementCommand(code, "2.0");
   }
 
   private static Agreement agreement(
@@ -254,7 +219,7 @@ class UserServiceSignupTest {
     return Agreement.builder()
         .id(id)
         .code(code.name())
-        .version("1.0")
+        .version("2.0")
         .isActive(true)
         .isRequired(required)
         .displayOrder(displayOrder)
