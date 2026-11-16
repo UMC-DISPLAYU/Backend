@@ -15,7 +15,9 @@ public record SignupRequest(
             regexp = "^[가-힣a-zA-Z0-9]{2,15}$",
             message = "닉네임은 한글, 영문, 숫자로 2~15자여야 하며 공백과 특수문자는 사용할 수 없습니다.")
         String nickname,
-    @Schema(description = "동의한 약관 목록. GET /api/v1/agreements에서 받은 code와 version을 사용합니다.")
+    @Schema(
+            description =
+                "동의한 회원가입 약관 목록. GET /api/v1/agreements의 TERMS_OF_SERVICE code와 version을 사용합니다.")
         List<@Valid AgreementRequest> agreements,
     @Schema(description = "만 14세 이상 확인", example = "true")
         @NotNull(message = "만 14세 이상 확인은 필수입니다.") @AssertTrue(message = "만 14세 이상이어야 회원가입할 수 있습니다.") Boolean isOver14) {

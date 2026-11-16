@@ -11,12 +11,9 @@ import org.springframework.stereotype.Component;
 public class AgreementPolicy {
 
   private static final Set<AgreementCode> SIGNUP_AGREEMENT_CODES =
-      Set.of(
-          AgreementCode.TERMS_OF_SERVICE,
-          AgreementCode.PRIVACY_COLLECTION_USE,
-          AgreementCode.LOCATION_BASED_SERVICE);
+      Set.of(AgreementCode.TERMS_OF_SERVICE);
   private static final Set<AgreementCode> REQUIRED_AGREEMENT_CODES =
-      Set.of(AgreementCode.TERMS_OF_SERVICE, AgreementCode.PRIVACY_COLLECTION_USE);
+      Set.of(AgreementCode.TERMS_OF_SERVICE);
 
   public void validateSignupConfiguration(List<Agreement> signupAgreements) {
     Set<AgreementCode> configuredCodes =

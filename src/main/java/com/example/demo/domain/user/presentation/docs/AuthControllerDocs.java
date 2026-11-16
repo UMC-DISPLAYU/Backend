@@ -28,9 +28,10 @@ public interface AuthControllerDocs {
                     - HttpOnly Cookie의 signupToken을 통해 인증된 사용자임을 확인합니다.
                     - 기존 Authorization Bearer 방식도 계속 지원합니다.
                     - Swagger Authorize에는 Bearer 접두사 없이 signupToken 값만 입력합니다.
-                    - GET /api/v1/agreements에서 받은 약관 code와 version을 사용해야 합니다.
-                    - 서비스 이용약관과 개인정보 수집·이용 동의는 필수입니다.
-                    - 위치기반서비스 이용약관은 선택입니다.
+                    - GET /api/v1/agreements에서 받은 서비스 이용약관의 code와 version을 사용해야 합니다.
+                    - 회원가입 필수 동의는 서비스 이용약관(TERMS_OF_SERVICE) 하나입니다.
+                    - 개인정보 수집·이용 안내와 개인정보 처리방침은 조회 전용이며 회원가입 요청에 포함하지 않습니다.
+                    - 위치기반서비스 이용약관은 신규 회원가입 동의 대상이 아닙니다.
                     - 만 14세 이상 확인(isOver14)은 반드시 true여야 합니다.
                     - 회원가입 완료 후 사용자 정보를 반환합니다.
                     """)
@@ -56,7 +57,9 @@ public interface AuthControllerDocs {
               mediaType = "application/json",
               examples = {
                 @ExampleObject(name = "입력값 검증 실패", value = SIGNUP_INVALID_INPUT_EXAMPLE),
-                @ExampleObject(name = "필수 약관 미동의", value = REQUIRED_AGREEMENT_EXAMPLE)
+                @ExampleObject(name = "필수 약관 미동의", value = REQUIRED_AGREEMENT_EXAMPLE),
+                @ExampleObject(name = "잘못된 약관 버전", value = AGREEMENT_NOT_FOUND_EXAMPLE),
+                @ExampleObject(name = "중복 약관", value = DUPLICATE_AGREEMENT_EXAMPLE)
               }))
   @ApiResponse(
       responseCode = "401",
@@ -90,6 +93,14 @@ public interface AuthControllerDocs {
   String REQUIRED_AGREEMENT_EXAMPLE =
       """
       { "resultType": "FAIL", "success": null, "error": { "code": "REQUIRED_AGREEMENT_NOT_ACCEPTED", "message": "필수 약관에 동의해야 회원가입할 수 있습니다.", "details": null }, "meta": { "timestamp": "2026-11-14T04:13:15.651", "path": "/api/v1/auth/signup" } }
+      """;
+  String AGREEMENT_NOT_FOUND_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "AGREEMENT_NOT_FOUND", "message": "존재하지 않는 약관입니다.", "details": null }, "meta": { "timestamp": "2026-11-21T00:00:00", "path": "/api/v1/auth/signup" } }
+      """;
+  String DUPLICATE_AGREEMENT_EXAMPLE =
+      """
+      { "resultType": "FAIL", "success": null, "error": { "code": "DUPLICATE_AGREEMENT", "message": "동일한 약관이 중복으로 전달되었습니다.", "details": null }, "meta": { "timestamp": "2026-11-21T00:00:00", "path": "/api/v1/auth/signup" } }
       """;
   String INVALID_SIGNUP_TOKEN_EXAMPLE =
       """

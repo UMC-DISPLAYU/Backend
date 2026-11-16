@@ -105,9 +105,7 @@ class AuthControllerTest {
                     {
                       "nickname": "maya01",
                       "agreements": [
-                        {"code": "TERMS_OF_SERVICE", "version": "1.0"},
-                        {"code": "PRIVACY_COLLECTION_USE", "version": "1.0"},
-                        {"code": "LOCATION_BASED_SERVICE", "version": "1.0"}
+                        {"code": "TERMS_OF_SERVICE", "version": "2.0"}
                       ],
                       "isOver14": true
                     }
@@ -130,7 +128,7 @@ class AuthControllerTest {
     ArgumentCaptor<SignupCommand> commandCaptor = ArgumentCaptor.forClass(SignupCommand.class);
     verify(userService).signup(commandCaptor.capture(), eq(socialUserInfo));
     assertThat(commandCaptor.getValue().nickname().value()).isEqualTo("maya01");
-    assertThat(commandCaptor.getValue().agreements()).hasSize(3);
+    assertThat(commandCaptor.getValue().agreements()).hasSize(1);
     assertThat(commandCaptor.getValue().isOver14()).isTrue();
   }
 
@@ -168,8 +166,7 @@ class AuthControllerTest {
                     {
                       "nickname": "maya01",
                       "agreements": [
-                        {"code": "TERMS_OF_SERVICE", "version": "1.0"},
-                        {"code": "PRIVACY_COLLECTION_USE", "version": "1.0"}
+                        {"code": "TERMS_OF_SERVICE", "version": "2.0"}
                       ],
                       "isOver14": true
                     }

@@ -30,13 +30,13 @@ class AgreementControllerTest {
   }
 
   @Test
-  void returnsActiveSignupAgreementsWithLifecycleFields() throws Exception {
+  void returnsThreePublicDocumentsWithFullContentAndLifecycleFields() throws Exception {
     when(agreementQueryService.getAgreements())
         .thenReturn(
             List.of(
                 result(11L, "TERMS_OF_SERVICE", "서비스 이용약관", Type.SERVICE, true, 1),
-                result(12L, "PRIVACY_COLLECTION_USE", "개인정보 수집·이용 동의", Type.PRIVACY, true, 2),
-                result(7L, "LOCATION_BASED_SERVICE", "위치기반서비스 이용약관", Type.SERVICE, false, 3)));
+                result(12L, "PRIVACY_COLLECTION_USE", "개인정보 수집·이용 안내", Type.PRIVACY, false, 2),
+                result(13L, "PRIVACY_POLICY", "개인정보 처리방침", Type.PRIVACY, false, 3)));
 
     mockMvc
         .perform(get("/api/v1/agreements"))
@@ -45,18 +45,34 @@ class AgreementControllerTest {
         .andExpect(jsonPath("$.success.data.length()").value(3))
         .andExpect(jsonPath("$.success.data[0].agreementId").value(11))
         .andExpect(jsonPath("$.success.data[0].code").value("TERMS_OF_SERVICE"))
-        .andExpect(jsonPath("$.success.data[0].version").value("1.0"))
-        .andExpect(jsonPath("$.success.data[0].effectiveDate").value("2026-08-01"))
+        .andExpect(jsonPath("$.success.data[0].version").value("2.0"))
+        .andExpect(jsonPath("$.success.data[0].effectiveDate").value("2026-11-21"))
         .andExpect(jsonPath("$.success.data[0].displayOrder").value(1))
+        .andExpect(jsonPath("$.success.data[0].required").value(true))
         .andExpect(jsonPath("$.success.data[1].code").value("PRIVACY_COLLECTION_USE"))
-        .andExpect(jsonPath("$.success.data[2].code").value("LOCATION_BASED_SERVICE"))
+        .andExpect(jsonPath("$.success.data[1].required").value(false))
+        .andExpect(
+            jsonPath("$.success.data[1].content")
+                .value(org.hamcrest.Matchers.containsString("아래 4번처럼 남음")))
+        .andExpect(jsonPath("$.success.data[2].code").value("PRIVACY_POLICY"))
         .andExpect(jsonPath("$.success.data[2].required").value(false))
+        .andExpect(jsonPath("$.success.data[2].displayOrder").value(3))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/agreements"));
   }
 
   private static AgreementResult result(
       Long id, String code, String title, Type type, boolean required, int displayOrder) {
     return new AgreementResult(
-        id, code, title, type, "content", required, "1.0", LocalDate.of(2026, 8, 1), displayOrder);
+        id,
+        code,
+        title,
+        type,
+        code.equals("PRIVACY_COLLECTION_USE")
+            ? "보유 기간: 탈퇴할 때까지 (후기·방명록·댓글은 아래 4번처럼 남음)"
+            : "content",
+        required,
+        code.equals("PRIVACY_POLICY") ? "1.0" : "2.0",
+        LocalDate.of(2026, 11, 21),
+        displayOrder);
   }
 }

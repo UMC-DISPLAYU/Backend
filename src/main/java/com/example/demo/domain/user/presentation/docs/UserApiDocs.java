@@ -9,11 +9,7 @@ public final class UserApiDocs {
         "agreements": [
           {
             "code": "TERMS_OF_SERVICE",
-            "version": "1.0"
-          },
-          {
-            "code": "PRIVACY_COLLECTION_USE",
-            "version": "1.0"
+            "version": "2.0"
           }
         ],
         "isOver14": true
