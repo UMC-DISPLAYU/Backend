@@ -128,7 +128,9 @@ public interface ArchiveWorkControllerDocs {
       AuthUser user,
       HttpServletRequest request);
 
-  @Operation(summary = "저장된 작품 목록 조회", description = "내가 저장한 작품 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다.")
+  @Operation(
+      summary = "저장된 작품 목록 조회",
+      description = "내가 저장한 전시 작품 목록을 최근 저장한 순으로 커서 기반 페이지네이션 조회합니다. 개인 작품 저장 기록은 포함하지 않습니다.")
   @SecurityRequirement(name = "Authorization")
   @ApiResponse(
       responseCode = "200",
@@ -200,17 +202,6 @@ public interface ArchiveWorkControllerDocs {
         "success": {
           "data": {
             "works": [
-              {
-                "artworkImageUrl": "https://cdn.displayu.com/personal-artworks/garden.png",
-                "artworkName": "작은 정원",
-                "artistName": null,
-                "memo": null,
-                "archiveWorkId": 2,
-                "artworkId": null,
-                "personalArtworkId": 1,
-                "userId": 1,
-                "savedAt": "2026-08-11T09:10:00"
-              },
               {
                 "artworkImageUrl": "https://cdn.displayu.co.kr/artworks/1/thumb.jpg",
                 "artworkName": "FORM 2026",
