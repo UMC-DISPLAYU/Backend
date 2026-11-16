@@ -72,7 +72,8 @@ class AdminParentTest {
     var parent =
         new ParentDetail.Parent(
             "DISPLAY_REVIEW", 31L, 12L, "후기 작성자", "후기 원문", List.of(attachment), CREATED_AT, null);
-    when(parents.getDetail("DISPLAY_REVIEW", 31L)).thenReturn(new ParentDetail(parent, 21L, null));
+    when(parents.getParentDetail("DISPLAY_REVIEW", 31L))
+        .thenReturn(new ParentDetail(parent, 21L, null));
 
     mvc.perform(get("/api/v1/admin/parents/DISPLAY_REVIEW/31"))
         .andExpect(status().isOk())
@@ -98,7 +99,8 @@ class AdminParentTest {
     var parent =
         new ParentDetail.Parent(
             "ARTWORK_FEELING", 31L, null, null, null, List.of(), CREATED_AT, CREATED_AT);
-    when(parents.getDetail("ARTWORK_FEELING", 31L)).thenReturn(new ParentDetail(parent, 21L, 22L));
+    when(parents.getParentDetail("ARTWORK_FEELING", 31L))
+        .thenReturn(new ParentDetail(parent, 21L, 22L));
 
     mvc.perform(get("/api/v1/admin/parents/ARTWORK_FEELING/31"))
         .andExpect(status().isOk())
@@ -139,7 +141,7 @@ class AdminParentTest {
 
   @Test
   void propagatesMissingParentAsCommonNotFoundError() throws Exception {
-    when(parents.getDetail("PARENT_KIND", 31L))
+    when(parents.getParentDetail("PARENT_KIND", 31L))
         .thenThrow(new BusinessException(GlobalErrorCode.NOT_FOUND));
 
     mvc.perform(get("/api/v1/admin/parents/PARENT_KIND/31"))

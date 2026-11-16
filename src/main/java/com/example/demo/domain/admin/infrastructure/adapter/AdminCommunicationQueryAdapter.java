@@ -50,7 +50,7 @@ public class AdminCommunicationQueryAdapter implements CommentQueryPort, ParentQ
   private final UserJpaRepository users;
 
   @Override
-  public CommentDetail getDetail(String type, Long id) {
+  public CommentDetail getCommentDetail(String type, Long id) {
     validateId(id);
     return switch (type) {
       case DISPLAY_REVIEW_REPLY -> displayReply(id);
@@ -61,7 +61,7 @@ public class AdminCommunicationQueryAdapter implements CommentQueryPort, ParentQ
   }
 
   @Override
-  public ParentDetail getDetail(String type, Long id) {
+  public ParentDetail getParentDetail(String type, Long id) {
     validateId(id);
     return switch (type) {
       case DISPLAY_REVIEW -> {

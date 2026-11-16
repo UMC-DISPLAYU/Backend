@@ -23,7 +23,7 @@ public class AdminParentService {
         || parentId <= 0) {
       throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
     }
-    return parents.getDetail(parentType, parentId);
+    return parents.getParentDetail(parentType, parentId);
   }
 
   private void requireAdmin(Long adminId) {

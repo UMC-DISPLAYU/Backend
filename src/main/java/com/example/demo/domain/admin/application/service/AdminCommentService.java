@@ -23,7 +23,7 @@ public class AdminCommentService {
         || commentId <= 0) {
       throw new BusinessException(GlobalErrorCode.INVALID_INPUT_VALUE);
     }
-    return comments.getDetail(commentType, commentId);
+    return comments.getCommentDetail(commentType, commentId);
   }
 
   private void requireAdmin(Long adminId) {

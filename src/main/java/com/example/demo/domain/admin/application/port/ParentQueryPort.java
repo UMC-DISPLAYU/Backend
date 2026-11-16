@@ -17,5 +17,5 @@ public interface ParentQueryPort {
    *   <li>attachments는 값이 없으면 빈 배열로 반환한다.
    * </ul>
    */
-  ParentDetail getDetail(String parentType, Long parentId);
+  ParentDetail getParentDetail(String parentType, Long parentId);
 }

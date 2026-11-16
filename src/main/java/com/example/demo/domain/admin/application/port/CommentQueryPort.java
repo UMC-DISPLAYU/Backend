@@ -17,5 +17,5 @@ public interface CommentQueryPort {
    *   <li>attachments는 값이 없으면 빈 배열로 반환한다.
    * </ul>
    */
-  CommentDetail getDetail(String commentType, Long commentId);
+  CommentDetail getCommentDetail(String commentType, Long commentId);
 }

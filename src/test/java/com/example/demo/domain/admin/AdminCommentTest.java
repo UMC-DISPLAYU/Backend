@@ -82,7 +82,7 @@ class AdminCommentTest {
     var parent =
         new CommentDetail.Parent(
             "DISPLAY_REVIEW", 31L, 12L, "후기 작성자", "후기 원문", List.of(), CREATED_AT, null);
-    when(comments.getDetail("DISPLAY_REVIEW_REPLY", 41L))
+    when(comments.getCommentDetail("DISPLAY_REVIEW_REPLY", 41L))
         .thenReturn(new CommentDetail(comment, parent, 21L, null));
 
     mvc.perform(get("/api/v1/admin/comments/DISPLAY_REVIEW_REPLY/41"))
@@ -112,7 +112,7 @@ class AdminCommentTest {
     var comment =
         new CommentDetail.Comment(
             "LOUNGE_COMMENT", 41L, null, null, null, List.of(), CREATED_AT, CREATED_AT);
-    when(comments.getDetail("LOUNGE_COMMENT", 41L))
+    when(comments.getCommentDetail("LOUNGE_COMMENT", 41L))
         .thenReturn(new CommentDetail(comment, null, null, null));
 
     mvc.perform(get("/api/v1/admin/comments/LOUNGE_COMMENT/41"))
@@ -153,7 +153,7 @@ class AdminCommentTest {
 
   @Test
   void propagatesMissingCommentAsCommonNotFoundError() throws Exception {
-    when(comments.getDetail("COMMENT_KIND", 41L))
+    when(comments.getCommentDetail("COMMENT_KIND", 41L))
         .thenThrow(new BusinessException(GlobalErrorCode.NOT_FOUND));
 
     mvc.perform(get("/api/v1/admin/comments/COMMENT_KIND/41"))

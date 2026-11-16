@@ -77,7 +77,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
                 null,
                 List.of(),
                 null));
-    when(comments.getDetail("COMMENT_KIND", 41L))
+    when(comments.getCommentDetail("COMMENT_KIND", 41L))
         .thenReturn(
             new CommentDetail(
                 new CommentDetail.Comment(
@@ -85,7 +85,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
                 null,
                 null,
                 null));
-    when(parents.getDetail("PARENT_KIND", 31L))
+    when(parents.getParentDetail("PARENT_KIND", 31L))
         .thenReturn(
             new ParentDetail(
                 new ParentDetail.Parent(
@@ -107,8 +107,8 @@ class AdminReportCaseAuthorizationIntegrationTest {
         .andExpect(jsonPath("$.success.data.parent.parentId").value(31));
     verify(queries).search(any());
     verify(queries).getDetail(10L);
-    verify(comments).getDetail("COMMENT_KIND", 41L);
-    verify(parents).getDetail("PARENT_KIND", 31L);
+    verify(comments).getCommentDetail("COMMENT_KIND", 41L);
+    verify(parents).getParentDetail("PARENT_KIND", 31L);
   }
 
   @Test
