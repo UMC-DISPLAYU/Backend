@@ -2,7 +2,6 @@ package com.example.demo.domain.user.application.query;
 
 import com.example.demo.domain.user.application.result.AgreementResult;
 import com.example.demo.domain.user.domain.entity.Agreement;
-import com.example.demo.domain.user.domain.entity.AgreementPolicy;
 import com.example.demo.domain.user.domain.repository.AgreementRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AgreementQueryService {
 
   private final AgreementRepository agreementRepository;
-  private final AgreementPolicy agreementPolicy;
 
   @Transactional(readOnly = true)
   public List<AgreementResult> getAgreements() {
-    List<Agreement> signupAgreements = agreementRepository.findAllSignupAgreements();
-    agreementPolicy.validateSignupConfiguration(signupAgreements);
+    List<Agreement> publicAgreements = agreementRepository.findAllPublicAgreements();
 
-    return signupAgreements.stream()
+    return publicAgreements.stream()
         .map(
             agreement ->
                 new AgreementResult(

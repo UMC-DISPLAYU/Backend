@@ -5,7 +5,11 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.example.demo.domain.admin.application.port.CommentQueryPort;
+import com.example.demo.domain.admin.application.port.ParentQueryPort;
 import com.example.demo.domain.admin.application.port.ReportCaseQueryPort;
+import com.example.demo.domain.admin.application.result.CommentDetail;
+import com.example.demo.domain.admin.application.result.ParentDetail;
 import com.example.demo.domain.admin.application.result.ReportCaseDetail;
 import com.example.demo.domain.admin.application.result.ReportCasePage;
 import com.example.demo.domain.user.domain.aggregate.User;
@@ -30,18 +34,29 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest(properties = "admin.report-cases.enabled=true")
+@SpringBootTest(
+    properties = {
+      "admin.report-cases.enabled=true",
+      "admin.comments.enabled=true",
+      "admin.parents.enabled=true"
+    })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
 class AdminReportCaseAuthorizationIntegrationTest {
   private static final List<String> PATHS =
-      List.of("/api/v1/admin/report-cases", "/api/v1/admin/report-cases/10");
+      List.of(
+          "/api/v1/admin/report-cases",
+          "/api/v1/admin/report-cases/10",
+          "/api/v1/admin/comments/COMMENT_KIND/41",
+          "/api/v1/admin/parents/PARENT_KIND/31");
   @Autowired private MockMvc mvc;
   @Autowired private TokenProvider tokens;
   @Autowired private UserJpaRepository users;
   @Autowired private EntityManager entityManager;
   @MockitoBean private ReportCaseQueryPort queries;
+  @MockitoBean private CommentQueryPort comments;
+  @MockitoBean private ParentQueryPort parents;
 
   @Test
   void administratorCanReadBothEndpointsUsingRealAuthorization() throws Exception {
@@ -62,6 +77,21 @@ class AdminReportCaseAuthorizationIntegrationTest {
                 null,
                 List.of(),
                 null));
+    when(comments.getCommentDetail("COMMENT_KIND", 41L))
+        .thenReturn(
+            new CommentDetail(
+                new CommentDetail.Comment(
+                    "COMMENT_KIND", 41L, null, null, null, List.of(), null, null),
+                null,
+                null,
+                null));
+    when(parents.getParentDetail("PARENT_KIND", 31L))
+        .thenReturn(
+            new ParentDetail(
+                new ParentDetail.Parent(
+                    "PARENT_KIND", 31L, null, null, null, List.of(), null, null),
+                null,
+                null));
 
     mvc.perform(get(PATHS.get(0)).header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
@@ -69,8 +99,16 @@ class AdminReportCaseAuthorizationIntegrationTest {
     mvc.perform(get(PATHS.get(1)).header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.reportCaseId").value(10));
+    mvc.perform(get(PATHS.get(2)).header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.comment.commentId").value(41));
+    mvc.perform(get(PATHS.get(3)).header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parent.parentId").value(31));
     verify(queries).search(any());
     verify(queries).getDetail(10L);
+    verify(comments).getCommentDetail("COMMENT_KIND", 41L);
+    verify(parents).getParentDetail("PARENT_KIND", 31L);
   }
 
   @Test
@@ -81,7 +119,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
       mvc.perform(get(path).header("Authorization", "Bearer " + token))
           .andExpect(status().isForbidden());
     }
-    verifyNoInteractions(queries);
+    verifyNoInteractions(queries, comments, parents);
   }
 
   @ParameterizedTest
@@ -106,7 +144,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
       mvc.perform(get(path).header("Authorization", "Bearer " + token))
           .andExpect(status().is(withdraw ? 401 : 403));
     }
-    verifyNoInteractions(queries);
+    verifyNoInteractions(queries, comments, parents);
   }
 
   @Test
@@ -118,7 +156,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
             .andExpect(status().isUnauthorized());
       }
     }
-    verifyNoInteractions(queries);
+    verifyNoInteractions(queries, comments, parents);
   }
 
   private User user(UserRole role) {
