@@ -28,6 +28,8 @@ class AgreementJpaRepositoryTest {
             agreement("기존 서비스 약관", AgreementCode.TERMS_OF_SERVICE, "1.0", true, 20260801, 1),
             agreement("신규 서비스 약관", AgreementCode.TERMS_OF_SERVICE, "2.0", true, 20261121, 1),
             agreement(
+                "기존 개인정보 수집·이용 안내", AgreementCode.PRIVACY_COLLECTION_USE, "1.0", true, 20260801, 2),
+            agreement(
                 "개인정보 수집·이용 안내", AgreementCode.PRIVACY_COLLECTION_USE, "2.0", true, 20261121, 2),
             agreement("개인정보 처리방침", AgreementCode.PRIVACY_POLICY, "1.0", true, 20261121, 3),
             agreement(
@@ -37,9 +39,13 @@ class AgreementJpaRepositoryTest {
     List<String> publicCodes =
         List.of("TERMS_OF_SERVICE", "PRIVACY_COLLECTION_USE", "PRIVACY_POLICY");
 
-    assertThat(agreementJpaRepository.findCurrentByCodes(publicCodes, LocalDate.of(2026, 11, 20)))
+    List<Agreement> beforeEffectiveDate =
+        agreementJpaRepository.findCurrentByCodes(publicCodes, LocalDate.of(2026, 11, 20));
+
+    assertThat(beforeEffectiveDate)
         .extracting(Agreement::getTitle)
-        .containsExactly("기존 서비스 약관");
+        .containsExactly("기존 서비스 약관", "기존 개인정보 수집·이용 안내");
+    assertThat(beforeEffectiveDate).extracting(Agreement::isRequired).containsExactly(true, false);
 
     List<Agreement> effectiveDocuments =
         agreementJpaRepository.findCurrentByCodes(publicCodes, LocalDate.of(2026, 11, 21));
@@ -51,6 +57,9 @@ class AgreementJpaRepositoryTest {
         .extracting(Agreement::getCode)
         .doesNotContain(AgreementCode.LOCATION_BASED_SERVICE.name());
     assertThat(effectiveDocuments).extracting(Agreement::getDisplayOrder).containsExactly(1, 2, 3);
+    assertThat(effectiveDocuments)
+        .extracting(Agreement::isRequired)
+        .containsExactly(true, false, false);
   }
 
   private static Agreement agreement(

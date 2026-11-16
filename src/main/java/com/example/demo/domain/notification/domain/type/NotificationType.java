@@ -1,0 +1,17 @@
+package com.example.demo.domain.notification.domain.type;
+
+/** 알림함에 쌓이는 알림 종류. 값은 FE와 공유하는 API 응답 값이라 이름을 바꾸지 않는다. */
+public enum NotificationType {
+  REQUEST_APPROVED,
+  REQUEST_REJECTED,
+  EXHIBITION_INVITED,
+  WORK_COAUTHOR_ADDED,
+  WORK_PROXY_ASSIGNED,
+  WORK_DELETED,
+  WORK_DELETED_BY_ARTIST_LEAVE,
+  EXHIBITION_MEMBER_REMOVED,
+  EXHIBITION_DELETED,
+  ARTIST_NEW_EXHIBITION,
+  EXHIBITION_STARTED,
+  OPERATOR_NOTICE
+}
