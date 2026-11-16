@@ -39,7 +39,10 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/v1/agreements")
                     .permitAll()
                     .requestMatchers(
-                        "/api/v1/users/me/**", "/api/v1/artists/me/**", "/api/v1/archives/**")
+                        "/api/v1/users/me/**",
+                        "/api/v1/artists/me/**",
+                        "/api/v1/archives/**",
+                        "/api/v1/notifications/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/v1/users/search")
                     .authenticated()
