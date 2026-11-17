@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.infrastructure.persistence.adapter;
 
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 import com.example.demo.domain.displayartwork.application.query.ArtworkDiscoveryRepository;
 import com.example.demo.domain.displayartwork.application.query.SearchArtworksQuery;
@@ -50,9 +51,18 @@ public class JpaArtworkDiscoveryRepository implements ArtworkDiscoveryRepository
             case CLOSING_SOON ->
                 " AND d.period.startDate<=:today AND d.period.endDate BETWEEN :today AND :soon";
           });
-    var query =
-        entityManager.createQuery(
-            hql.append(" ORDER BY a.id DESC").toString(), DisplayArtwork.class);
+    // 분야는 기존 별칭 값(MEDIA → VIDEO 등)으로 저장된 작품까지 함께 찾는다.
+    if (request.field() != null)
+      hql.append(
+          " AND EXISTS (SELECT f.id FROM ArtworkField f WHERE f.displayArtwork=a AND f.field IN :fields)");
+    hql.append(
+        request.sort() == DisplaySearchSort.LIKES
+            ? """
+         ORDER BY (SELECT COUNT(l.id) FROM DisplayArtworkLike l
+           WHERE l.displayArtworkId=a.id AND l.deletedAt IS NULL) DESC, a.id DESC
+        """
+            : " ORDER BY a.id DESC");
+    var query = entityManager.createQuery(hql.toString(), DisplayArtwork.class);
     if (keyword)
       query.setParameter(
           "keyword",
@@ -69,6 +79,7 @@ public class JpaArtworkDiscoveryRepository implements ArtworkDiscoveryRepository
     if (request.status() != null) query.setParameter("today", today);
     if (request.status() == SearchDisplayStatus.CLOSING_SOON)
       query.setParameter("soon", today.plusDays(3));
+    if (request.field() != null) query.setParameter("fields", request.field().storedAliases());
     return query
         .setFirstResult(Math.toIntExact((long) request.page() * request.size()))
         .setMaxResults(request.size() + 1)

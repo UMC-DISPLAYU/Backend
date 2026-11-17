@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.presentation;
 
+import com.example.demo.domain.display.domain.type.DisplaySearchSort;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.SearchDisplayStatus;
 import com.example.demo.domain.displayartwork.application.command.CreateDisplayArtworkService;
@@ -91,17 +92,21 @@ public class DisplayArtworkController implements DisplayArtworkControllerDocs {
   @Operation(
       summary = "작품 검색",
       description =
-          "작품명·대표 및 공동 작가명으로 검색합니다. 전시 유형과 기간 상태는 작품이 속한 전시에 적용하며 공개된 전시의 공개 작품만 조회합니다. ID 내림차순, page는 0부터 시작합니다.")
+          "작품명·대표 및 공동 작가명으로 검색합니다. 전시 유형과 기간 상태는 작품이 속한 전시에 적용하며 공개된 전시의 공개 작품만 조회합니다. "
+              + "field는 작품 분야 하나로 거르며 기존 별칭 값으로 저장된 작품도 포함합니다. "
+              + "sort는 LATEST(기본, ID 내림차순) 또는 LIKES(좋아요 수 내림차순, 같으면 ID 내림차순)입니다. page는 0부터 시작합니다.")
   public ApiResponseBody<DisplayArtworkPreviewResponse> search(
       @RequestParam(required = false) String searchWord,
       @RequestParam(required = false) DisplayType type,
       @RequestParam(required = false) SearchDisplayStatus status,
+      @RequestParam(required = false) ArtworkType field,
+      @RequestParam(defaultValue = "LATEST") DisplaySearchSort sort,
       @RequestParam(defaultValue = "0") @Min(0) @Max(21474835) int page,
       @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
       HttpServletRequest httpRequest) {
     var result =
         displayArtworkQueryService.search(
-            new SearchArtworksQuery(searchWord, type, status, page, size));
+            new SearchArtworksQuery(searchWord, type, status, field, sort, page, size));
     return ApiResponseBody.success(mapper.toResponse(result), httpRequest);
   }
 
