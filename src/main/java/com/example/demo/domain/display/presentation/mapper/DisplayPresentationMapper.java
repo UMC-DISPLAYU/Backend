@@ -229,7 +229,9 @@ public class DisplayPresentationMapper {
         result.instagramUrl(),
         result.websiteUrl(),
         result.currentScreeningId(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.artworkContentVisible(),
+        result.exhibitionContentVisible());
   }
 
   private DuPickResponse.DuPickItemResponse toResponse(DuPickResult.DuPickItemResult result) {

@@ -19,7 +19,10 @@ public class SearchUserService {
     // 닉네임은 고유하므로 부분 검색 목록이 아닌 정확히 일치하는 사용자 한 명만 조회한다.
     return userSearchQueryRepository
         .findByNickname(nickname.trim())
-        .map(result -> new UserSearchResult(result.userId(), result.name(), result.nickname()))
+        .map(
+            result ->
+                new UserSearchResult(
+                    result.userId(), result.name(), result.nickname(), result.profileImageUrl()))
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NICKNAME_NOT_FOUND));
   }
 }
