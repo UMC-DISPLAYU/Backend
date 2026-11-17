@@ -4,6 +4,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface DisplayArtworkRepository {
@@ -18,6 +19,9 @@ public interface DisplayArtworkRepository {
 
   /** 해당 전시에서 사용자 계정이 대표 작가 또는 공동 작업자로 연결된 활성 작품을 조회한다. */
   List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(Long displayId, Long userId);
+
+  /** 전시에서 삭제되지 않은 작품을 작가 계정별로 센다. QnA 담당 전용과 계정 없는 작가는 세지 않는다. */
+  Map<Long, Integer> countActiveByArtistUserIdInDisplay(Long displayId);
 
   List<DisplayArtwork> findPublishedByDisplayId(Long displayId);
 

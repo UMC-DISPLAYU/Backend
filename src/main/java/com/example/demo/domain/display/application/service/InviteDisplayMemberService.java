@@ -3,6 +3,7 @@ package com.example.demo.domain.display.application.service;
 import com.example.demo.domain.artist.application.permission.ArtistPermissionChecker;
 import com.example.demo.domain.display.application.command.InviteDisplayMemberCommand;
 import com.example.demo.domain.display.application.mapper.DisplayMemberInvitationMapper;
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.result.DisplayMemberInvitationResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -32,6 +33,7 @@ public class InviteDisplayMemberService {
   private final DisplayMemberInvitationMapper mapper;
   private final DisplayPermissionChecker displayPermissionChecker;
   private final ArtistPermissionChecker artistPermissionChecker;
+  private final DisplayNotifier displayNotifier;
 
   public InviteDisplayMemberService(
       DisplayRepository displayRepository,
@@ -40,7 +42,9 @@ public class InviteDisplayMemberService {
       UserRepository userRepository,
       DisplayMemberInvitationMapper mapper,
       DisplayPermissionChecker displayPermissionChecker,
-      ArtistPermissionChecker artistPermissionChecker) {
+      ArtistPermissionChecker artistPermissionChecker,
+      DisplayNotifier displayNotifier) {
+    this.displayNotifier = displayNotifier;
     this.displayRepository = displayRepository;
     this.invitationRepository = invitationRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -76,11 +80,14 @@ public class InviteDisplayMemberService {
             null);
     display.addInvitation(invitation);
 
+    DisplayMemberInvitationResult result;
     try {
-      return mapper.toResult(invitationRepository.save(invitation));
+      result = mapper.toResult(invitationRepository.save(invitation));
     } catch (DataIntegrityViolationException e) {
       throw new BusinessException(DisplayErrorCode.PENDING_DISPLAY_INVITATION_EXISTS, e);
     }
+    displayNotifier.notifyInvited(display, command.requesterUserId(), command.inviteeUserId());
+    return result;
   }
 
   private void validateRole(TeamMemberRole role) {

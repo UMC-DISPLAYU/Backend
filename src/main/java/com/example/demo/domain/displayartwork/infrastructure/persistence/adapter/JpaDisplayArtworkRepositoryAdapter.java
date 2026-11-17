@@ -4,9 +4,12 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.PreviewFilterType;
+import com.example.demo.domain.displayartwork.infrastructure.persistence.ArtistArtworkCountRow;
 import com.example.demo.domain.displayartwork.infrastructure.persistence.SpringDataDisplayArtworkJpaRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
@@ -42,6 +45,14 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   @Override
   public List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(Long displayId, Long userId) {
     return jpaRepository.findAllActiveByDisplayIdAndArtistUserId(displayId, userId);
+  }
+
+  @Override
+  public Map<Long, Integer> countActiveByArtistUserIdInDisplay(Long displayId) {
+    return jpaRepository.countActiveByArtistUserIdInDisplay(displayId).stream()
+        .collect(
+            Collectors.toMap(
+                ArtistArtworkCountRow::userId, row -> Math.toIntExact(row.artworkCount())));
   }
 
   @Override

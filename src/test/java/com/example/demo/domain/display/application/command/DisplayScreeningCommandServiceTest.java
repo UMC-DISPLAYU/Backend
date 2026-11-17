@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.service.DisplayContentPublicationService;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -29,6 +30,7 @@ class DisplayScreeningCommandServiceTest {
   private final DisplayListCacheEvictionPort cacheEvictionPort =
       mock(DisplayListCacheEvictionPort.class);
   private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
+  private final DisplayNotifier displayNotifier = mock(DisplayNotifier.class);
 
   @Test
   void approvePublishesContentsAndEvictsListCache() {
@@ -38,13 +40,19 @@ class DisplayScreeningCommandServiceTest {
     when(screeningRepository.findLatestByDisplayId(1L)).thenReturn(Optional.of(screening));
 
     new ApproveDisplayScreeningService(
-            displayRepository, screeningRepository, publicationService, cacheEvictionPort, clock)
+            displayRepository,
+            screeningRepository,
+            publicationService,
+            cacheEvictionPort,
+            clock,
+            displayNotifier)
         .approve(1L, 7L);
 
     verify(display).approveReview();
     verify(screening).approve(7L, LocalDateTime.ofInstant(NOW, ZoneOffset.UTC));
     verify(publicationService).publishForDisplay(1L);
     verify(cacheEvictionPort).evictAfterCommit();
+    verify(displayNotifier).notifyReviewApproved(display, 7L);
   }
 
   @Test
@@ -54,11 +62,13 @@ class DisplayScreeningCommandServiceTest {
     when(displayRepository.findByIdWithOptimisticLock(1L)).thenReturn(Optional.of(display));
     when(screeningRepository.findLatestByDisplayId(1L)).thenReturn(Optional.of(screening));
 
-    new RejectDisplayScreeningService(displayRepository, screeningRepository, clock)
+    new RejectDisplayScreeningService(
+            displayRepository, screeningRepository, clock, displayNotifier)
         .reject(1L, 7L, "일정 수정");
 
     verify(display).rejectReview();
     verify(screening).reject(7L, "일정 수정", LocalDateTime.ofInstant(NOW, ZoneOffset.UTC));
     verifyNoInteractions(publicationService, cacheEvictionPort);
+    verify(displayNotifier).notifyReviewRejected(display, 7L, "일정 수정");
   }
 }
