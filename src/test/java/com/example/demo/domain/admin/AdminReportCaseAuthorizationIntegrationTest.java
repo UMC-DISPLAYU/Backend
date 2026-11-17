@@ -3,11 +3,14 @@ package com.example.demo.domain.admin;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.example.demo.domain.admin.application.port.CommentDeletionPort;
 import com.example.demo.domain.admin.application.port.CommentQueryPort;
 import com.example.demo.domain.admin.application.port.ParentQueryPort;
 import com.example.demo.domain.admin.application.port.ReportCaseQueryPort;
+import com.example.demo.domain.admin.application.result.CommentDeletionResult;
 import com.example.demo.domain.admin.application.result.CommentDetail;
 import com.example.demo.domain.admin.application.result.ParentDetail;
 import com.example.demo.domain.admin.application.result.ReportCaseDetail;
@@ -29,9 +32,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(
@@ -56,11 +61,13 @@ class AdminReportCaseAuthorizationIntegrationTest {
   @Autowired private EntityManager entityManager;
   @MockitoBean private ReportCaseQueryPort queries;
   @MockitoBean private CommentQueryPort comments;
+  @MockitoBean private CommentDeletionPort deletions;
   @MockitoBean private ParentQueryPort parents;
 
   @Test
   void administratorCanReadBothEndpointsUsingRealAuthorization() throws Exception {
-    String token = tokens.createAccessToken(user(UserRole.ADMIN));
+    User admin = user(UserRole.ADMIN);
+    String token = tokens.createAccessToken(admin);
     when(queries.search(any())).thenReturn(new ReportCasePage(List.of(), null, false));
     when(queries.getDetail(10L))
         .thenReturn(
@@ -85,6 +92,8 @@ class AdminReportCaseAuthorizationIntegrationTest {
                 null,
                 null,
                 null));
+    when(deletions.delete("DISPLAY_REVIEW_REPLY", 41L, admin.getId(), "운영 검토"))
+        .thenReturn(new CommentDeletionResult(41L, Instant.parse("2026-11-17T01:00:00Z")));
     when(parents.getParentDetail("PARENT_KIND", 31L))
         .thenReturn(
             new ParentDetail(
@@ -105,9 +114,17 @@ class AdminReportCaseAuthorizationIntegrationTest {
     mvc.perform(get(PATHS.get(3)).header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.parent.parentId").value(31));
+    mvc.perform(
+            post("/api/v1/admin/comments/DISPLAY_REVIEW_REPLY/41/delete")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"운영 검토\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.commentId").value(41));
     verify(queries).search(any());
     verify(queries).getDetail(10L);
     verify(comments).getCommentDetail("COMMENT_KIND", 41L);
+    verify(deletions).delete("DISPLAY_REVIEW_REPLY", 41L, admin.getId(), "운영 검토");
     verify(parents).getParentDetail("PARENT_KIND", 31L);
   }
 
@@ -119,7 +136,10 @@ class AdminReportCaseAuthorizationIntegrationTest {
       mvc.perform(get(path).header("Authorization", "Bearer " + token))
           .andExpect(status().isForbidden());
     }
-    verifyNoInteractions(queries, comments, parents);
+    mvc.perform(deletionRequest()).andExpect(status().isUnauthorized());
+    mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
+        .andExpect(status().isForbidden());
+    verifyNoInteractions(queries, comments, deletions, parents);
   }
 
   @ParameterizedTest
@@ -144,7 +164,9 @@ class AdminReportCaseAuthorizationIntegrationTest {
       mvc.perform(get(path).header("Authorization", "Bearer " + token))
           .andExpect(status().is(withdraw ? 401 : 403));
     }
-    verifyNoInteractions(queries, comments, parents);
+    mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
+        .andExpect(status().is(withdraw ? 401 : 403));
+    verifyNoInteractions(queries, comments, deletions, parents);
   }
 
   @Test
@@ -155,8 +177,16 @@ class AdminReportCaseAuthorizationIntegrationTest {
         mvc.perform(get(path).header("Authorization", "Bearer " + token))
             .andExpect(status().isUnauthorized());
       }
+      mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
+          .andExpect(status().isUnauthorized());
     }
-    verifyNoInteractions(queries, comments, parents);
+    verifyNoInteractions(queries, comments, deletions, parents);
+  }
+
+  private MockHttpServletRequestBuilder deletionRequest() {
+    return post("/api/v1/admin/comments/DISPLAY_REVIEW_REPLY/41/delete")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"reason\":\"운영 검토\"}");
   }
 
   private User user(UserRole role) {
