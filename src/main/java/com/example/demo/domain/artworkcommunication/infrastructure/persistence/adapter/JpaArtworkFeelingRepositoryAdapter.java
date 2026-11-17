@@ -26,6 +26,11 @@ public class JpaArtworkFeelingRepositoryAdapter implements ArtworkFeelingReposit
   }
 
   @Override
+  public Optional<ArtworkFeeling> findActiveByIdForUpdate(Long feelingId) {
+    return artworkFeelingJpaRepository.findActiveByIdForUpdate(feelingId);
+  }
+
+  @Override
   public List<ArtworkFeeling> findActiveByDisplayArtworkId(Long displayArtworkId) {
     return artworkFeelingJpaRepository.findByDisplayArtworkIdAndDeletedAtIsNullOrderByCreatedAtAsc(
         displayArtworkId);

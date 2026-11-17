@@ -68,6 +68,13 @@ public class DisplayReviewValidator {
             () -> new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
   }
 
+  public DisplayReview findActiveReviewForUpdateOrThrow(Long displayReviewId) {
+    return displayReviewRepository
+        .findActiveByIdForUpdate(displayReviewId)
+        .orElseThrow(
+            () -> new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND));
+  }
+
   public void validateReviewTarget(DisplayReview displayReview, Long displayId) {
     if (!displayReview.belongsToDisplay(displayId)) {
       throw new BusinessException(DisplayCommunicationErrorCode.DISPLAY_REVIEW_NOT_FOUND);

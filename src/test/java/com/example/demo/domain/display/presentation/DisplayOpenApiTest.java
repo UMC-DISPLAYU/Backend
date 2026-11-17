@@ -22,6 +22,28 @@ class DisplayOpenApiTest {
   @Autowired private MockMvc mvc;
 
   @Test
+  void documentsPublicVisibilityAndNullableProfileImages() throws Exception {
+    JsonNode document = document();
+    JsonNode detail = responseData(document, "/api/v1/display/{displayId}", "get");
+    for (String field : List.of("artworkContentVisible", "exhibitionContentVisible")) {
+      assertThat(property(document, detail, field).path("type").asText()).isEqualTo("boolean");
+    }
+    JsonNode detailMember =
+        resolve(document, property(document, detail, "teamMembers").path("items"));
+    assertThat(property(document, detailMember, "profileImageUrl").isMissingNode()).isTrue();
+
+    JsonNode members = responseData(document, "/api/v1/display/{displayId}/members", "get");
+    for (String list : List.of("memberAccept", "memberPending")) {
+      JsonNode member = resolve(document, property(document, members, list).path("items"));
+      assertNullable(property(document, member, "profileImageUrl"));
+    }
+    JsonNode nickname = responseData(document, "/api/v1/display/me/nickname", "patch");
+    assertNullable(property(document, nickname, "profileImageUrl"));
+    JsonNode user = responseData(document, "/api/v1/users/search", "get");
+    assertNullable(property(document, user, "profileImageUrl"));
+  }
+
+  @Test
   void generatedSchemasDescribeStructuredMediaAndDoNotMixPersonalQuestionImages() throws Exception {
     JsonNode document = document();
     for (String method : List.of("post", "patch")) {
@@ -591,6 +613,9 @@ class DisplayOpenApiTest {
     JsonNode content =
         operation(document, path, method).path("responses").path(code).path("content");
     JsonNode media = content.path("application/json");
+    if (!media.has("schema")) {
+      media = content.path("*/*");
+    }
     JsonNode envelope = resolve(document, media.path("schema"));
     return resolve(document, property(document, property(document, envelope, "success"), "data"));
   }

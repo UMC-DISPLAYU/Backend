@@ -31,4 +31,9 @@ public class JpaNotificationRepositoryAdapter implements NotificationRepository 
     }
     return jpaRepository.existsByRecipientUserIdAndCreatedAtAfter(recipientUserId, createdAfter);
   }
+
+  @Override
+  public List<Notification> saveAll(List<Notification> notifications) {
+    return jpaRepository.saveAll(notifications);
+  }
 }

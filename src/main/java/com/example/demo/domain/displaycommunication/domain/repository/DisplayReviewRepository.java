@@ -9,5 +9,7 @@ public interface DisplayReviewRepository {
 
   Optional<DisplayReview> findById(Long displayReviewId);
 
+  Optional<DisplayReview> findActiveByIdForUpdate(Long displayReviewId);
+
   List<DisplayReview> findByDisplayIdWithCursor(Long displayId, Long cursorId, int limit);
 }

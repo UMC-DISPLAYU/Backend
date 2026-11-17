@@ -171,7 +171,10 @@ public final class DisplayApiDocs {
 
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION =
-      "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다. currentScreeningId는 현재 심사 중인 요청 ID이며, 심사 중이 아니면 null입니다.";
+      "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다. currentScreeningId는 현재 심사 중인 요청 ID이며, 심사 중이 아니면 null입니다. "
+          + "artworkContentVisible과 exhibitionContentVisible은 일반 관람객의 현재 공개 가능 여부입니다. "
+          + "PUBLISHED 전시에서 IMMEDIATELY는 즉시, ON_EXHIBITION은 한국 시간 전시 시작일 00시부터 공개합니다. "
+          + "소유자·팀원의 미리보기 권한과 무관하며 종료 후에도 공개 상태를 유지합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
   public static final String DETAIL_SUCCESS_EXAMPLE_NAME = "Display detail success";
   public static final String DETAIL_DISPLAY_ID_DESCRIPTION = "전시 ID";
@@ -261,6 +264,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -430,6 +435,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -491,6 +498,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "PENDING_REVIEW",
             "currentScreeningId": 42,
             "invitationToken": null,
@@ -545,6 +554,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -622,6 +633,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "ON_EXHIBITION",
             "exhibitionContentOpen": "IMMEDIATELY",
+            "artworkContentVisible": true,
+            "exhibitionContentVisible": true,
             "status": "PUBLISHED",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -1095,6 +1108,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": true,
+            "exhibitionContentVisible": true,
             "status": "PUBLISHED",
             "currentScreeningId": null,
             "invitationToken": "token-value",

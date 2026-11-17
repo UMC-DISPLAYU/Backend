@@ -131,6 +131,12 @@ public class DisplayArtworkPresentationMapper {
         result.imageHeight(),
         result.artworkVideoUrl(),
         result.artistUserIds(),
+        result.artists().stream()
+            .map(
+                artist ->
+                    new DisplayArtworkPreviewResponse.ArtistResponse(
+                        artist.userId(), artist.name()))
+            .toList(),
         ArtworkCropResponse.from(result.artworkCrop()));
   }
 

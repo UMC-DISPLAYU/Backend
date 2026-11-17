@@ -12,4 +12,6 @@ public interface NotificationRepository {
 
   /** createdAfter 이후에 생긴 알림이 있는지 확인한다. createdAfter가 null이면 알림이 하나라도 있는지 확인한다. */
   boolean existsByRecipientCreatedAfter(Long recipientUserId, LocalDateTime createdAfter);
+
+  List<Notification> saveAll(List<Notification> notifications);
 }

@@ -119,6 +119,15 @@ public class PersonalArtworkFeelingValidator {
                     PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
   }
 
+  public PersonalArtworkFeeling findActiveFeelingForUpdateOrThrow(Long personalFeelingId) {
+    return personalArtworkFeelingRepository
+        .findActiveByIdForUpdate(personalFeelingId)
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    PersonalArtworkCommunicationErrorCode.PERSONAL_FEELING_NOT_FOUND));
+  }
+
   public PersonalArtworkFeelingReply findReplyOrThrow(Long personalFeelingReplyId) {
     PersonalArtworkFeelingReply reply =
         personalArtworkFeelingReplyRepository

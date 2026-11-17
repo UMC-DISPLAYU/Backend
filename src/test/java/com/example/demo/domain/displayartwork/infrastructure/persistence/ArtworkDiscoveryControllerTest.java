@@ -153,6 +153,92 @@ class ArtworkDiscoveryControllerTest {
                 .isBadRequest());
   }
 
+  @Test
+  void searchFiltersBySingleFieldIncludingLegacyAliasRows() throws Exception {
+    Display display = persistedDisplay();
+    DisplayArtwork painting = persistArtwork(display, "회화 작품", List.of(ArtworkType.PAINTING), 0);
+    DisplayArtwork video = persistArtwork(display, "영상 작품", List.of(ArtworkType.VIDEO), 1);
+    DisplayArtwork legacyVideo =
+        persistArtwork(display, "예전 영상 작품", List.of(ArtworkType.PHOTOGRAPHY), 2);
+    // 분야 개편 전 별칭 값(MEDIA)으로 저장된 행을 재현한다.
+    entityManager
+        .createQuery(
+            "UPDATE ArtworkField f SET f.field = :legacy WHERE f.displayArtwork.id = :artworkId")
+        .setParameter("legacy", ArtworkType.MEDIA)
+        .setParameter("artworkId", legacyVideo.getId())
+        .executeUpdate();
+    entityManager.clear();
+
+    searchWith("field", "VIDEO")
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[*].artworkId")
+                .value(
+                    org.hamcrest.Matchers.contains(
+                        legacyVideo.getId().intValue(), video.getId().intValue())));
+    searchWith("field", "PAINTING")
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[*].artworkId")
+                .value(org.hamcrest.Matchers.contains(painting.getId().intValue())));
+  }
+
+  @Test
+  void searchSortsByActiveLikeCountThenIdWhenSortIsLikes() throws Exception {
+    Display display = persistedDisplay();
+    DisplayArtwork twoLikes = persistArtwork(display, "좋아요 2", 0);
+    DisplayArtwork oneLike = persistArtwork(display, "좋아요 1", 1);
+    DisplayArtwork onlyCanceledLikes = persistArtwork(display, "취소된 좋아요만", 2);
+    DisplayArtwork oneLikeNewer = persistArtwork(display, "좋아요 1 최신", 3);
+    persistLike(twoLikes.getId(), 101L, false);
+    persistLike(twoLikes.getId(), 102L, false);
+    persistLike(oneLike.getId(), 101L, false);
+    persistLike(onlyCanceledLikes.getId(), 101L, true);
+    persistLike(onlyCanceledLikes.getId(), 102L, true);
+    persistLike(onlyCanceledLikes.getId(), 103L, true);
+    persistLike(oneLikeNewer.getId(), 102L, false);
+
+    searchWith("sort", "LIKES")
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[*].artworkId")
+                .value(
+                    org.hamcrest.Matchers.contains(
+                        twoLikes.getId().intValue(),
+                        oneLikeNewer.getId().intValue(),
+                        oneLike.getId().intValue(),
+                        onlyCanceledLikes.getId().intValue())));
+    searchWith("sort", "LATEST")
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.success.data.artworks[*].artworkId")
+                .value(
+                    org.hamcrest.Matchers.contains(
+                        oneLikeNewer.getId().intValue(),
+                        onlyCanceledLikes.getId().intValue(),
+                        oneLike.getId().intValue(),
+                        twoLikes.getId().intValue())));
+  }
+
+  private org.springframework.test.web.servlet.ResultActions searchWith(String name, String value)
+      throws Exception {
+    return mvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/v1/artworks/search")
+                .param(name, value))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
+  }
+
+  private void persistLike(Long artworkId, Long userId, boolean canceled) {
+    var like =
+        com.example.demo.domain.displayartwork.domain.entity.DisplayArtworkLike.create(
+            artworkId, userId);
+    if (canceled) like.cancel();
+    entityManager.persist(like);
+    entityManager.flush();
+  }
+
   private org.springframework.test.web.servlet.ResultActions search(
       String word, String type, String status, int page, int size) throws Exception {
     var request =

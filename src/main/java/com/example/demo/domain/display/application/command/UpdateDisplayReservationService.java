@@ -11,6 +11,8 @@ import com.example.demo.domain.display.domain.repository.DisplayScreeningReposit
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +25,21 @@ public class UpdateDisplayReservationService {
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayPermissionChecker displayPermissionChecker;
+  private final Clock clock;
 
   public UpdateDisplayReservationService(
       DisplayRepository displayRepository,
       DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      DisplayPermissionChecker displayPermissionChecker) {
+      DisplayPermissionChecker displayPermissionChecker,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
+    this.clock = clock;
   }
 
   @Transactional
@@ -58,6 +63,7 @@ public class UpdateDisplayReservationService {
                 .findLatestByDisplayId(display.getId())
                 .map(DisplayScreening::getId)
                 .orElse(null)
-            : null);
+            : null,
+        LocalDate.now(clock));
   }
 }

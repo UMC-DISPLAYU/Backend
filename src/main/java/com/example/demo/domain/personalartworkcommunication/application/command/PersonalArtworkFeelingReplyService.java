@@ -29,7 +29,8 @@ public class PersonalArtworkFeelingReplyService {
     personalArtworkFeelingValidator.validateReplyImages(command.images());
 
     PersonalArtworkFeeling personalArtworkFeeling =
-        personalArtworkFeelingValidator.findFeelingOrThrow(command.personalFeelingId());
+        personalArtworkFeelingValidator.findActiveFeelingForUpdateOrThrow(
+            command.personalFeelingId());
 
     personalArtworkFeelingValidator.validateReplyTarget(
         personalArtworkFeeling, command.personalArtworkId());

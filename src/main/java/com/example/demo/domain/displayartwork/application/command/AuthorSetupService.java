@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.command;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.TeamMember;
+import com.example.demo.domain.displayartwork.application.notification.DisplayMemberNameResolver;
 import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
@@ -11,6 +12,8 @@ import com.example.demo.domain.displayartwork.domain.repository.CreatorRepositor
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepository;
 import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
+import com.example.demo.domain.notification.application.message.NotificationMessages;
+import com.example.demo.domain.notification.application.usecase.RequestNotificationUseCase;
 import com.example.demo.global.error.BusinessException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,16 +36,22 @@ public class AuthorSetupService {
   // userId → 닉네임 조회 (Creator 이름 채울 때 씀)
   private final UserNicknameRepository userNicknameRepository;
   private final DisplayArtworkPermissionChecker permissionChecker;
+  private final RequestNotificationUseCase requestNotificationUseCase;
+  private final DisplayMemberNameResolver displayMemberNameResolver;
 
   public AuthorSetupService(
       DisplayArtworkRepository displayArtworkRepository,
       CreatorRepository creatorRepository,
       UserNicknameRepository userNicknameRepository,
-      DisplayArtworkPermissionChecker permissionChecker) {
+      DisplayArtworkPermissionChecker permissionChecker,
+      RequestNotificationUseCase requestNotificationUseCase,
+      DisplayMemberNameResolver displayMemberNameResolver) {
     this.displayArtworkRepository = displayArtworkRepository;
     this.creatorRepository = creatorRepository;
     this.userNicknameRepository = userNicknameRepository;
     this.permissionChecker = permissionChecker;
+    this.requestNotificationUseCase = requestNotificationUseCase;
+    this.displayMemberNameResolver = displayMemberNameResolver;
   }
 
   @Transactional
@@ -51,7 +61,7 @@ public class AuthorSetupService {
 
   /**
    * 수정 시 작가 정보를 다시 저장한다. 수정 권한은 {@link DisplayArtworkPermissionChecker}에서 이미 검증하므로, 등록 단계에만 해당하는
-   * 제한(요청자 작가 인증, 대리 등록은 대표자만)은 적용하지 않는다.
+   * 제한(요청자 작가 인증, 대리 등록은 대표자·관리자만)은 적용하지 않는다.
    */
   @Transactional
   public AuthorSetupResult setupForUpdate(Long requesterUserId, AuthorSetupCommand command) {
@@ -82,7 +92,7 @@ public class AuthorSetupService {
           display, artistUserId, DisplayArtworkErrorCode.INVALID_ARTIST_USER_ID);
     }
 
-    // 대리 등록(대표 작가가 본인이 아닌 경우)은 전시 대표자만 할 수 있다.
+    // 대리 등록(대표 작가가 본인이 아닌 경우)은 전시 대표자와 관리자만 할 수 있다.
     if (isRegistration) {
       permissionChecker.requireProxyRegistrationAllowed(requesterUserId, display, artistUserId);
     }
@@ -96,8 +106,8 @@ public class AuthorSetupService {
     Map<Long, String> coAuthorNames = resolveCoAuthorNames(display, coAuthorUserIds);
 
     // 작가(대표 작가/공동 작업자)는 Q&A 담당자가 될 수 있고,
-    // 전시 대표자는 해당 작품의 작가인지와 무관하게 Q&A 담당자가 될 수 있다.
-    // 계정이 없는 작가를 대리 등록하는 경우 후보가 대표자뿐인 상황도 정상이다.
+    // 전시 대표자와 관리자는 해당 작품의 작가인지와 무관하게 Q&A 담당자가 될 수 있다.
+    // 계정이 없는 작가를 대리 등록하는 경우 후보가 대표자·관리자뿐인 상황도 정상이다.
     Set<Long> artistUserIds = new HashSet<>(coAuthorUserIds);
     if (artistUserId != null) {
       artistUserIds.add(artistUserId);
@@ -107,6 +117,8 @@ public class AuthorSetupService {
       permissionChecker.requireQnaHandlerAssignable(display, qaHandlerUserId, artistUserIds);
     }
 
+    // 작가 행을 지우고 다시 만들기 때문에, 새로 추가된 공동 작가를 알려면 지우기 전 작가 목록이 필요하다.
+    Set<Long> previousArtistUserIds = findArtistUserIds(command.artworkId());
     creatorRepository.deleteAllByDisplayArtworkId(command.artworkId());
 
     List<Creator> creators = new ArrayList<>();
@@ -132,7 +144,7 @@ public class AuthorSetupService {
       creators.add(
           new Creator(null, rawName, false, CreatorRole.CO_AUTHOR, null, command.artworkId()));
     }
-    // Q&A 답변 권한과 답변자 표기는 모두 Creator를 근거로 하므로, 작가가 아닌 전시 대표자를
+    // Q&A 답변 권한과 답변자 표기는 모두 Creator를 근거로 하므로, 작가가 아닌 전시 대표자·관리자를
     // 담당자로 지정한 경우에도 Creator를 남겨야 실제로 답변할 수 있다.
     // 다만 이 사람은 작품의 작가가 아니므로 QA_ONLY로 표시해 작가 목록 조회에서 제외한다.
     for (Long qaHandlerUserId : qaHandlerUserIds) {
@@ -149,12 +161,60 @@ public class AuthorSetupService {
     }
     creatorRepository.saveAll(creators);
 
+    requestAuthorNotifications(
+        requesterUserId,
+        artwork,
+        artistUserId,
+        coAuthorUserIds,
+        previousArtistUserIds,
+        isRegistration);
+
     int coAuthorCount = coAuthorUserIds.size() + command.coAuthorRawNames().size();
     return new AuthorSetupResult(
         command.artworkId(), command.artistName(), artistUserId, coAuthorCount, qaHandlerUserIds);
   }
 
-  /** 작가가 아닌 전시 대표자를 Creator로 남길 때 사용할 이름을 찾는다. */
+  /** QnA 담당 전용(QA_ONLY)을 뺀, 계정이 있는 작가(대표 작가·공동 작업자)의 userId. */
+  private Set<Long> findArtistUserIds(Long artworkId) {
+    return creatorRepository.findByDisplayArtworkId(artworkId).stream()
+        .filter(creator -> creator.getRole() != CreatorRole.QA_ONLY)
+        .map(Creator::getUserId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * 대신 등록으로 지정된 작가와 새로 추가된 공동 작가에게 알린다. 대표 작가와 공동 작업자는 같은 사람일 수 없어서 한 사람이 두 알림을 받는 경우는 없다. 요청자 본인과
+   * 이미 이 작품의 작가였던 사람에게는 보내지 않는다.
+   */
+  private void requestAuthorNotifications(
+      Long requesterUserId,
+      DisplayArtwork artwork,
+      Long artistUserId,
+      List<Long> coAuthorUserIds,
+      Set<Long> previousArtistUserIds,
+      boolean isRegistration) {
+    Display display = artwork.getDisplay();
+
+    if (isRegistration && artistUserId != null && !artistUserId.equals(requesterUserId)) {
+      requestNotificationUseCase.request(
+          List.of(artistUserId),
+          requesterUserId,
+          NotificationMessages.proxyAssigned(
+              artwork.getArtworkName(),
+              displayMemberNameResolver.resolve(display, requesterUserId),
+              display.getId()));
+    }
+
+    List<Long> addedCoAuthorUserIds =
+        coAuthorUserIds.stream().filter(userId -> !previousArtistUserIds.contains(userId)).toList();
+    requestNotificationUseCase.request(
+        addedCoAuthorUserIds,
+        requesterUserId,
+        NotificationMessages.coAuthorAdded(artwork.getArtworkName(), display.getId()));
+  }
+
+  /** 작가가 아닌 전시 대표자·관리자를 Creator로 남길 때 사용할 이름을 찾는다. */
   private String resolveDisplayLeaderName(Display display, Long userId) {
     return display.getTeamMembers().stream()
         .filter(TeamMember::isAccepted)

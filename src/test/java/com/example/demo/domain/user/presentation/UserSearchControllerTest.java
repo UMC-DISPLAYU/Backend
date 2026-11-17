@@ -40,6 +40,7 @@ class UserSearchControllerTest {
   @Test
   void returnsSingleUserWhenNicknameMatchesExactly() throws Exception {
     User quietRoom = saveUser("quietroom", "홍길동", false, null);
+    quietRoom.changeProfileImage("https://cdn.displayu.com/users/quietroom.jpg");
     saveUser("quietroom2", "다른 사용자", true, null);
 
     mockMvc
@@ -52,9 +53,27 @@ class UserSearchControllerTest {
         .andExpect(jsonPath("$.success.data.userId").value(quietRoom.getId()))
         .andExpect(jsonPath("$.success.data.name").value("홍길동"))
         .andExpect(jsonPath("$.success.data.nickname").value("quietroom"))
+        .andExpect(
+            jsonPath("$.success.data.profileImageUrl")
+                .value("https://cdn.displayu.com/users/quietroom.jpg"))
         .andExpect(jsonPath("$.success.data.socialEmail").doesNotExist())
         .andExpect(jsonPath("$.success.data.provider").doesNotExist())
         .andExpect(jsonPath("$.meta.path").value("/api/v1/users/search"));
+  }
+
+  @Test
+  void returnsExplicitNullWhenProfileImageIsMissing() throws Exception {
+    saveUser("without-photo", "사진 없는 사용자", false, null);
+
+    mockMvc
+        .perform(
+            get("/api/v1/users/search")
+                .param("nickname", "without-photo")
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.profileImageUrl").hasJsonPath())
+        .andExpect(
+            jsonPath("$.success.data.profileImageUrl").value(org.hamcrest.Matchers.nullValue()));
   }
 
   @Test
