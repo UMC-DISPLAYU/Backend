@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayScreening;
 import com.example.demo.domain.display.domain.error.DisplayErrorCode;
@@ -19,11 +20,14 @@ public class RejectDisplayScreeningService {
   private final DisplayRepository displayRepository;
   private final DisplayScreeningRepository screeningRepository;
   private final Clock clock;
+  private final DisplayNotifier displayNotifier;
 
   public RejectDisplayScreeningService(
       DisplayRepository displayRepository,
       DisplayScreeningRepository screeningRepository,
-      Clock clock) {
+      Clock clock,
+      DisplayNotifier displayNotifier) {
+    this.displayNotifier = displayNotifier;
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.clock = clock;
@@ -37,6 +41,7 @@ public class RejectDisplayScreeningService {
     LocalDateTime processedAt = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
 
     screening.reject(reviewerId, reason, processedAt);
+    displayNotifier.notifyReviewRejected(display, reviewerId, reason);
   }
 
   private Display findDisplay(Long displayId) {
