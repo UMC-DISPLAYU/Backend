@@ -53,7 +53,7 @@ public class ExitDisplayService {
     displayPermissionChecker.requireExitAllowed(teamMember);
 
     // 내보내기와 같은 기준으로, 나가는 사용자가 작가로 연결된 작품을 먼저 함께 정리한다.
-    artworkCleanupService.deleteByArtistAccount(displayId, userId);
+    artworkCleanupService.deleteByArtistAccount(displayId, userId, userId);
     teamMember.softDelete(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
   }
 }
