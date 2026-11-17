@@ -12,7 +12,8 @@ public record DisplayMemberResult(
     boolean accepted,
     String role,
     String nickname,
-    Long invitationId) {
+    Long invitationId,
+    String profileImageUrl) {
 
   public static DisplayMemberResult from(TeamMember teamMember, User user) {
     return new DisplayMemberResult(
@@ -24,6 +25,7 @@ public record DisplayMemberResult(
         teamMember.isAccepted(),
         teamMember.getRole().name(),
         user != null && user.getNickname() != null ? user.getNickname() : "",
-        null);
+        null,
+        user == null ? null : user.getProfileImageUrl());
   }
 }

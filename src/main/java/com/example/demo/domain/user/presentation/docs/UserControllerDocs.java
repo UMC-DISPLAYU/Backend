@@ -53,6 +53,7 @@ public interface UserControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "사용자 검색 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",

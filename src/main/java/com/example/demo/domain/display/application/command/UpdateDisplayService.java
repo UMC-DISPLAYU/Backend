@@ -17,6 +17,8 @@ import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.file.application.MediaUsage;
 import com.example.demo.global.file.application.event.MediaFilesRemovedEvent;
 import com.example.demo.global.file.application.port.MediaStorageVerifier;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,6 +35,7 @@ public class UpdateDisplayService {
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayPermissionChecker displayPermissionChecker;
+  private final Clock clock;
 
   public UpdateDisplayService(
       DisplayRepository displayRepository,
@@ -41,7 +44,8 @@ public class UpdateDisplayService {
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       DisplayPermissionChecker displayPermissionChecker,
       MediaStorageVerifier mediaStorageVerifier,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
@@ -49,6 +53,7 @@ public class UpdateDisplayService {
     this.displayPermissionChecker = displayPermissionChecker;
     this.mediaStorageVerifier = mediaStorageVerifier;
     this.eventPublisher = eventPublisher;
+    this.clock = clock;
   }
 
   @Transactional
@@ -130,7 +135,8 @@ public class UpdateDisplayService {
                 .findLatestByDisplayId(display.getId())
                 .map(DisplayScreening::getId)
                 .orElse(null)
-            : null);
+            : null,
+        LocalDate.now(clock));
   }
 
   private String organization(

@@ -47,13 +47,16 @@ public record DisplayDetailResult(
     String instagramUrl,
     String websiteUrl,
     Long currentScreeningId,
-    PosterCrop posterCrop) {
+    PosterCrop posterCrop,
+    boolean artworkContentVisible,
+    boolean exhibitionContentVisible) {
 
-  public static DisplayDetailResult from(Display display, long likeCount) {
-    return from(display, likeCount, null);
+  public static DisplayDetailResult from(Display display, long likeCount, LocalDate today) {
+    return from(display, likeCount, null, today);
   }
 
-  public static DisplayDetailResult from(Display display, long likeCount, Long currentScreeningId) {
+  public static DisplayDetailResult from(
+      Display display, long likeCount, Long currentScreeningId, LocalDate today) {
     return new DisplayDetailResult(
         display.getId(),
         display.getOwnerUserId().value(),
@@ -93,7 +96,13 @@ public record DisplayDetailResult(
         display.getInstagramUrl(),
         display.getWebsiteUrl(),
         currentScreeningId,
-        display.getPosterCrop());
+        display.getPosterCrop(),
+        display
+            .getArtworkContentOpen()
+            .isVisibleOn(display.getStatus(), display.getPeriod().startDate(), today),
+        display
+            .getExhibitionContentOpen()
+            .isVisibleOn(display.getStatus(), display.getPeriod().startDate(), today));
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -127,7 +136,9 @@ public record DisplayDetailResult(
         instagramUrl,
         websiteUrl,
         currentScreeningId,
-        posterCrop);
+        posterCrop,
+        artworkContentVisible,
+        exhibitionContentVisible);
   }
 
   public record LocationResult(

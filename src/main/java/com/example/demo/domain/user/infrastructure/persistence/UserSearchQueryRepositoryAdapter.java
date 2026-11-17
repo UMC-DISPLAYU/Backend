@@ -23,7 +23,11 @@ public class UserSearchQueryRepositoryAdapter implements UserSearchQueryReposito
         queryFactory
             .select(
                 Projections.constructor(
-                    UserSearchQueryResult.class, user.id, user.name, user.nickname))
+                    UserSearchQueryResult.class,
+                    user.id,
+                    user.name,
+                    user.nickname,
+                    user.profileImageUrl))
             .from(user)
             .where(user.nickname.eq(nickname), user.deletedAt.isNull())
             .fetchOne();

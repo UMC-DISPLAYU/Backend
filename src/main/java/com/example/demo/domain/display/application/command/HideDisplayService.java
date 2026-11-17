@@ -9,6 +9,8 @@ import com.example.demo.domain.display.domain.repository.DisplayLikeRepository;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +22,19 @@ public class HideDisplayService {
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayListCacheEvictionPort displayListCacheEvictionPort;
   private final DisplayPermissionChecker displayPermissionChecker;
+  private final Clock clock;
 
   public HideDisplayService(
       DisplayRepository displayRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
-      DisplayPermissionChecker displayPermissionChecker) {
+      DisplayPermissionChecker displayPermissionChecker,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
+    this.clock = clock;
   }
 
   @Transactional
@@ -50,6 +55,6 @@ public class HideDisplayService {
     display.changeToDraft();
     displayListCacheEvictionPort.evictAfterCommit();
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayId(display.getId()));
+        display, displayLikeRepository.countByDisplayId(display.getId()), LocalDate.now(clock));
   }
 }

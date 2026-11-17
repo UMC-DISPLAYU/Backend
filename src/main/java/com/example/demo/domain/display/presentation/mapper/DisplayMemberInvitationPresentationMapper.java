@@ -81,7 +81,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.accepted(),
         result.role(),
         result.nickname(),
-        result.invitationId());
+        result.invitationId(),
+        result.profileImageUrl());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -106,7 +107,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.accepted(),
         result.role(),
         result.nickname(),
-        result.invitationId());
+        result.invitationId(),
+        result.profileImageUrl());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(

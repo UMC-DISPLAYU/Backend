@@ -389,12 +389,15 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void getMembersReturnsNonDeletedDisplayMembersWithUserState() throws Exception {
     User leader = userJpaRepository.save(user("leader"));
+    leader.changeProfileImage("https://cdn.displayu.com/users/leader.jpg");
     User member = user("member");
     member.verifySchoolEmail("member@school.ac.kr", "중앙대학교");
     member.completeArtistVerification();
     userJpaRepository.save(member);
     User manager = userJpaRepository.save(user("manager"));
     User pendingInvitee = userJpaRepository.save(user("pending"));
+    pendingInvitee.changeProfileImage("https://cdn.displayu.com/users/pending.jpg");
+    User pendingWithoutPhoto = userJpaRepository.save(user("pending-no-photo"));
     User withdrawn = unverifiedUser("withdrawn");
     withdrawn.withdraw(LocalDateTime.of(2026, 7, 23, 12, 0));
     userJpaRepository.save(withdrawn);
@@ -424,6 +427,7 @@ class DisplayMemberInvitationControllerTest {
     display.addTeamMember(exitedMember);
     displayJpaRepository.saveAndFlush(display);
     invite(display.getId(), leader.getId(), pendingInvitee.getId());
+    invite(display.getId(), leader.getId(), pendingWithoutPhoto.getId());
 
     mockMvc
         .perform(
@@ -435,6 +439,11 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.memberAccept.length()").value(4))
         .andExpect(jsonPath("$.success.data.memberAccept[0].userId").value(leader.getId()))
         .andExpect(jsonPath("$.success.data.memberAccept[0].role").value("TEAM_LEADER"))
+        .andExpect(
+            jsonPath("$.success.data.memberAccept[0].profileImageUrl")
+                .value("https://cdn.displayu.com/users/leader.jpg"))
+        .andExpect(jsonPath("$.success.data.memberAccept[1].profileImageUrl").hasJsonPath())
+        .andExpect(jsonPath("$.success.data.memberAccept[1].profileImageUrl").value(nullValue()))
         .andExpect(jsonPath("$.success.data.memberAccept[1].userId").value(member.getId()))
         .andExpect(jsonPath("$.success.data.memberAccept[1].loggedIn").value(true))
         .andExpect(jsonPath("$.success.data.memberAccept[1].artistVerified").value(true))
@@ -445,11 +454,18 @@ class DisplayMemberInvitationControllerTest {
         .andExpect(jsonPath("$.success.data.memberAccept[3].userId").value(withdrawn.getId()))
         .andExpect(jsonPath("$.success.data.memberAccept[3].loggedIn").value(false))
         .andExpect(jsonPath("$.success.data.memberAccept[3].artistVerified").value(false))
-        .andExpect(jsonPath("$.success.data.memberPending.length()").value(1))
+        .andExpect(jsonPath("$.success.data.memberPending.length()").value(2))
         .andExpect(jsonPath("$.success.data.memberPending[0].teamMemberId").value(nullValue()))
         .andExpect(jsonPath("$.success.data.memberPending[0].userId").value(pendingInvitee.getId()))
         .andExpect(jsonPath("$.success.data.memberPending[0].accepted").value(false))
-        .andExpect(jsonPath("$.success.data.memberPending[0].role").value("TEAM_MEM"));
+        .andExpect(jsonPath("$.success.data.memberPending[0].role").value("TEAM_MEM"))
+        .andExpect(
+            jsonPath("$.success.data.memberPending[0].profileImageUrl")
+                .value("https://cdn.displayu.com/users/pending.jpg"))
+        .andExpect(
+            jsonPath("$.success.data.memberPending[1].userId").value(pendingWithoutPhoto.getId()))
+        .andExpect(jsonPath("$.success.data.memberPending[1].profileImageUrl").hasJsonPath())
+        .andExpect(jsonPath("$.success.data.memberPending[1].profileImageUrl").value(nullValue()));
   }
 
   @Test
@@ -860,6 +876,7 @@ class DisplayMemberInvitationControllerTest {
   @Test
   void memberListsExposeBasicNicknameAndPendingInvitationId() throws Exception {
     User leader = userJpaRepository.save(user("basic-nickname"));
+    leader.changeProfileImage("https://cdn.displayu.com/users/leader.jpg");
     User invitee = userJpaRepository.save(user("pending-nickname"));
     Display display = displayJpaRepository.saveAndFlush(displayWithLeader(leader));
     Long invitationId = invite(display.getId(), leader.getId(), invitee.getId());
@@ -879,7 +896,10 @@ class DisplayMemberInvitationControllerTest {
                 .content(updateNicknameRequest(display.getId(), "새 전시 작가명")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.nickname").value("basic-nickname"))
-        .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 작가명"));
+        .andExpect(jsonPath("$.success.data.displayNickname").value("새 전시 작가명"))
+        .andExpect(
+            jsonPath("$.success.data.profileImageUrl")
+                .value("https://cdn.displayu.com/users/leader.jpg"));
   }
 
   @Test

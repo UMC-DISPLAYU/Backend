@@ -78,7 +78,8 @@ public class GetDisplayMembersService {
         teamMember.isAccepted(),
         teamMember.getRole().name(),
         nickname(user),
-        null);
+        null,
+        user == null ? null : user.getProfileImageUrl());
   }
 
   private String nickname(User user) {
@@ -97,6 +98,7 @@ public class GetDisplayMembersService {
         false,
         invitation.getRole().name(),
         nickname(user),
-        invitation.getId());
+        invitation.getId(),
+        user == null ? null : user.getProfileImageUrl());
   }
 }

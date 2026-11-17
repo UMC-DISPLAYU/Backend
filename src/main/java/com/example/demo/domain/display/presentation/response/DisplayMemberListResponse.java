@@ -8,6 +8,7 @@ public record DisplayMemberListResponse(
     List<TeamMemberResponse> memberAccept,
     List<TeamMemberResponse> memberPending) {
 
+  @Schema(name = "DisplayMemberListTeamMemberResponse")
   public record TeamMemberResponse(
       @Schema(example = "11", nullable = true) Long teamMemberId,
       @Schema(example = "102") Long userId,
@@ -17,5 +18,9 @@ public record DisplayMemberListResponse(
       @Schema(example = "true") boolean accepted,
       @Schema(example = "MANAGER") String role,
       @Schema(description = "사용자의 기본 닉네임", example = "디유") String nickname,
-      @Schema(description = "대기 중인 초대 ID. 수락 완료 팀원은 null", nullable = true) Long invitationId) {}
+      @Schema(description = "대기 중인 초대 ID. 수락 완료 팀원은 null", nullable = true) Long invitationId,
+      @Schema(
+              description = "프로필 이미지 주소. 없으면 null",
+              types = {"string", "null"})
+          String profileImageUrl) {}
 }

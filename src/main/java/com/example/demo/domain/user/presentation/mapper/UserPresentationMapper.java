@@ -57,6 +57,7 @@ public class UserPresentationMapper {
   }
 
   public UserSearchResponse toResponse(UserSearchResult result) {
-    return new UserSearchResponse(result.userId(), result.name(), result.nickname());
+    return new UserSearchResponse(
+        result.userId(), result.name(), result.nickname(), result.profileImageUrl());
   }
 }

@@ -234,6 +234,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "전시 멤버 목록 조회 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -257,6 +258,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "내 전시 닉네임 수정 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -353,6 +355,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "teamMemberId": 1,
                 "userId": 10,
                 "displayNickname": "도현",
+                "profileImageUrl": "https://cdn.displayu.co.kr/users/10/profile.jpg",
                 "loggedIn": true,
                 "artistVerified": true,
                 "accepted": true,
@@ -364,6 +367,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "teamMemberId": null,
                 "userId": 11,
                 "displayNickname": "민지",
+                "profileImageUrl": null,
                 "loggedIn": true,
                 "artistVerified": false,
                 "accepted": false,
@@ -511,6 +515,7 @@ public interface DisplayMemberInvitationControllerDocs {
             "teamMemberId": 1,
             "userId": 10,
             "displayNickname": "도현",
+            "profileImageUrl": "https://cdn.displayu.co.kr/users/10/profile.jpg",
             "loggedIn": true,
             "artistVerified": true,
             "accepted": true,

@@ -291,7 +291,8 @@ public final class UserApiDocs {
           "data": {
             "userId": 12,
             "name": "홍길동",
-            "nickname": "displayArtist"
+            "nickname": "displayArtist",
+            "profileImageUrl": "https://cdn.displayu.co.kr/users/12/profile.jpg"
           }
         },
         "error": null,
