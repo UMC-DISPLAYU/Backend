@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,7 @@ public class AdminCommentDeletionController {
       @AuthenticationPrincipal AuthUser operator,
       @Parameter(description = "댓글 소유 도메인의 대문자 타입 코드") @PathVariable String commentType,
       @PathVariable Long commentId,
-      @RequestBody DeleteCommentRequest body,
+      @Valid @RequestBody DeleteCommentRequest body,
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(
