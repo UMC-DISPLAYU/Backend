@@ -27,6 +27,11 @@ public class JpaPersonalArtworkFeelingRepositoryAdapter
   }
 
   @Override
+  public Optional<PersonalArtworkFeeling> findActiveByIdForUpdate(Long personalFeelingId) {
+    return personalArtworkFeelingJpaRepository.findActiveByIdForUpdate(personalFeelingId);
+  }
+
+  @Override
   public List<PersonalArtworkFeeling> findByPersonalArtworkIdWithCursorIncludingDeleted(
       Long personalArtworkId, Long cursorId, int limit) {
     return personalArtworkFeelingJpaRepository.findByPersonalArtworkIdWithCursorIncludingDeleted(

@@ -1,13 +1,26 @@
 package com.example.demo.domain.displaycommunication.infrastructure.persistence;
 
 import com.example.demo.domain.displaycommunication.domain.aggregate.DisplayReview;
+import jakarta.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SpringDataDisplayReviewJpaRepository extends JpaRepository<DisplayReview, Long> {
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT review
+      FROM DisplayReview review
+      WHERE review.displayReviewId = :displayReviewId
+        AND review.deletedAt IS NULL
+      """)
+  Optional<DisplayReview> findActiveByIdForUpdate(@Param("displayReviewId") Long displayReviewId);
+
   @Query(
       """
       SELECT review

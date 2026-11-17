@@ -1,13 +1,26 @@
 package com.example.demo.domain.artworkcommunication.infrastructure.persistence;
 
 import com.example.demo.domain.artworkcommunication.domain.aggregate.ArtworkFeeling;
+import jakarta.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SpringDataArtworkFeelingJpaRepository extends JpaRepository<ArtworkFeeling, Long> {
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT feeling
+      FROM ArtworkFeeling feeling
+      WHERE feeling.feelingId = :feelingId
+        AND feeling.deletedAt IS NULL
+      """)
+  Optional<ArtworkFeeling> findActiveByIdForUpdate(@Param("feelingId") Long feelingId);
 
   List<ArtworkFeeling> findByDisplayArtworkIdAndDeletedAtIsNullOrderByCreatedAtAsc(
       Long displayArtworkId);

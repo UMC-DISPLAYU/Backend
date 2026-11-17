@@ -34,7 +34,7 @@ public class CreateArtworkFeelingReplyService {
 
     ArtworkFeeling artworkFeeling =
         artworkFeelingRepository
-            .findById(command.feelingId())
+            .findActiveByIdForUpdate(command.feelingId())
             .orElseThrow(
                 () -> new BusinessException(ArtworkCommunicationErrorCode.FEELING_NOT_FOUND));
 

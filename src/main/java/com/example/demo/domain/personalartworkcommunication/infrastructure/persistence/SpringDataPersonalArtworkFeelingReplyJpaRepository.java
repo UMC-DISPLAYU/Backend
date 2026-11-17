@@ -24,6 +24,18 @@ public interface SpringDataPersonalArtworkFeelingReplyJpaRepository
   Optional<PersonalArtworkFeelingReply> findActiveByIdForUpdate(
       @Param("personalFeelingReplyId") Long personalFeelingReplyId);
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT reply
+      FROM PersonalArtworkFeelingReply reply
+      WHERE reply.personalFeelingId = :personalFeelingId
+        AND reply.deletedAt IS NULL
+      ORDER BY reply.personalFeelingReplyId ASC
+      """)
+  List<PersonalArtworkFeelingReply> findActiveByPersonalFeelingIdForUpdate(
+      @Param("personalFeelingId") Long personalFeelingId);
+
   @Query(
       """
       SELECT reply
