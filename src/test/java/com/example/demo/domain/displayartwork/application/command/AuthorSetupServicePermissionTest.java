@@ -3,8 +3,11 @@ package com.example.demo.domain.displayartwork.application.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +21,7 @@ import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
+import com.example.demo.domain.displayartwork.application.notification.DisplayMemberNameResolver;
 import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
@@ -30,6 +34,9 @@ import com.example.demo.domain.displayartwork.domain.repository.UserNicknameRepo
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.CreatorRole;
+import com.example.demo.domain.notification.application.message.NotificationMessages;
+import com.example.demo.domain.notification.application.usecase.RequestNotificationUseCase;
+import com.example.demo.domain.notification.domain.type.NotificationType;
 import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -57,9 +64,17 @@ class AuthorSetupServicePermissionTest {
   private final DisplayArtworkPermissionChecker permissionChecker =
       new DisplayArtworkPermissionChecker(creatorRepository, artistVerificationRepository);
 
+  private final RequestNotificationUseCase requestNotificationUseCase =
+      mock(RequestNotificationUseCase.class);
+
   private final AuthorSetupService service =
       new AuthorSetupService(
-          displayArtworkRepository, creatorRepository, userNicknameRepository, permissionChecker);
+          displayArtworkRepository,
+          creatorRepository,
+          userNicknameRepository,
+          permissionChecker,
+          requestNotificationUseCase,
+          new DisplayMemberNameResolver(userNicknameRepository));
 
   @Test
   void 전시_대표자는_계정이_없는_작가의_작품을_대리_등록하고_본인을_QA_담당자로_지정할_수_있다() {
@@ -183,6 +198,63 @@ class AuthorSetupServicePermissionTest {
         .isInstanceOf(BusinessException.class)
         .extracting(exception -> ((BusinessException) exception).errorCode())
         .isEqualTo(DisplayArtworkErrorCode.NOT_VERIFIED_ARTIST);
+  }
+
+  @Test
+  void 대표자가_팀원_작품을_대신_등록하면_그_팀원에게_작가로_지정됨_알림을_요청한다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(anyLong())).thenReturn(true);
+
+    service.setup(LEADER, command(MEMBER, "팀원", List.of(), List.of(), MEMBER));
+
+    verify(requestNotificationUseCase)
+        .request(List.of(MEMBER), LEADER, NotificationMessages.proxyAssigned("작품명", "대표자", null));
+  }
+
+  @Test
+  void 본인_작품을_등록하면_작가로_지정됨_알림을_요청하지_않는다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(anyLong())).thenReturn(true);
+
+    service.setup(MEMBER, command(MEMBER, "팀원", List.of(), List.of(), MEMBER));
+
+    verify(requestNotificationUseCase, never())
+        .request(
+            any(),
+            any(),
+            argThat(message -> message.type() == NotificationType.WORK_PROXY_ASSIGNED));
+  }
+
+  @Test
+  void 수정_시에는_새로_추가된_공동_작가에게만_공동_작가_알림을_요청한다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(anyLong())).thenReturn(true);
+    // 수정 전: 대표 작가 MEMBER, 공동 작가 없음
+    when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
+        .thenReturn(
+            List.of(new Creator(null, "팀원", true, CreatorRole.LEAD_ARTIST, MEMBER, ARTWORK_ID)));
+
+    service.setupForUpdate(LEADER, command(MEMBER, "팀원", List.of(OTHER_MEMBER), List.of(), MEMBER));
+
+    verify(requestNotificationUseCase)
+        .request(List.of(OTHER_MEMBER), LEADER, NotificationMessages.coAuthorAdded("작품명", null));
+  }
+
+  @Test
+  void 수정_전에도_공동_작가였던_사람에게는_공동_작가_알림을_다시_요청하지_않는다() {
+    givenArtwork();
+    when(artistVerificationRepository.isVerifiedArtist(anyLong())).thenReturn(true);
+    when(creatorRepository.findByDisplayArtworkId(ARTWORK_ID))
+        .thenReturn(
+            List.of(
+                new Creator(null, "팀원", true, CreatorRole.LEAD_ARTIST, MEMBER, ARTWORK_ID),
+                new Creator(
+                    null, "다른 팀원", false, CreatorRole.CO_AUTHOR, OTHER_MEMBER, ARTWORK_ID)));
+
+    service.setupForUpdate(LEADER, command(MEMBER, "팀원", List.of(OTHER_MEMBER), List.of(), MEMBER));
+
+    verify(requestNotificationUseCase)
+        .request(List.of(), LEADER, NotificationMessages.coAuthorAdded("작품명", null));
   }
 
   private void givenArtwork() {

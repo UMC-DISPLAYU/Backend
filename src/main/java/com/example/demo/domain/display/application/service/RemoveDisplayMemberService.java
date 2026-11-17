@@ -41,7 +41,8 @@ public class RemoveDisplayMemberService {
     LocalDateTime removedAt = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
     TeamMember removedMember = display.removeAcceptedMember(memberId, removedAt);
     Long removedUserId = removedMember.getUserId().value();
-    int deletedArtworkCount = artworkCleanupService.deleteByArtistAccount(displayId, removedUserId);
+    int deletedArtworkCount =
+        artworkCleanupService.deleteByArtistAccount(displayId, removedUserId, requesterUserId);
 
     return new RemoveDisplayMemberResult(
         displayId, removedMember.getId(), removedUserId, deletedArtworkCount);
