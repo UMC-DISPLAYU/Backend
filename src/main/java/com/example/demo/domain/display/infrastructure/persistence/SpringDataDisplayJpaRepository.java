@@ -12,6 +12,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, Long> {
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select display from Display display where display.id = :displayId")
+  Optional<Display> findByIdForUpdate(@Param("displayId") Long displayId);
+
   @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
   Optional<Display> findWithOptimisticLockById(Long displayId);
 

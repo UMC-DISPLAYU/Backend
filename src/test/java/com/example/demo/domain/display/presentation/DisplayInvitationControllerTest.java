@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,6 +97,164 @@ class DisplayInvitationControllerTest {
   }
 
   @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void getInvitationCreatesLinkOnceAndReusesPersistedToken() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    try {
+      String firstUrl = invitationUrl(copy(display.getId()));
+      Display firstSaved = displayJpaRepository.findById(display.getId()).orElseThrow();
+      String secondUrl = invitationUrl(copy(display.getId()));
+      Display secondSaved = displayJpaRepository.findById(display.getId()).orElseThrow();
+
+      assertThat(secondUrl).isEqualTo(firstUrl);
+      assertThat(firstSaved.getInvitationRawToken()).isEqualTo(rawToken(firstUrl));
+      assertThat(firstSaved.getInvitationToken()).isEqualTo(tokenHasher.hash(rawToken(firstUrl)));
+      assertThat(secondSaved.getInvitationToken()).isEqualTo(firstSaved.getInvitationToken());
+      assertThat(secondSaved.getVersion()).isEqualTo(firstSaved.getVersion());
+      assertThat(secondSaved.getInvitationDisabledAt()).isNull();
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(firstUrl))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+          .andExpect(status().isOk());
+    } finally {
+      displayJpaRepository.deleteById(display.getId());
+    }
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void concurrentFirstCopiesReturnTheSameUsableLink() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    CountDownLatch ready = new CountDownLatch(2);
+    CountDownLatch start = new CountDownLatch(1);
+    try {
+      java.util.concurrent.Callable<String> request =
+          () -> {
+            ready.countDown();
+            assertThat(start.await(5, TimeUnit.SECONDS)).isTrue();
+            return invitationUrl(copy(display.getId()));
+          };
+      Future<String> first = executor.submit(request);
+      Future<String> second = executor.submit(request);
+      assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
+      start.countDown();
+      String url = first.get(10, TimeUnit.SECONDS);
+      assertThat(second.get(10, TimeUnit.SECONDS)).isEqualTo(url);
+      Display saved = displayJpaRepository.findById(display.getId()).orElseThrow();
+      assertThat(saved.getInvitationRawToken()).isEqualTo(rawToken(url));
+      assertThat(saved.getInvitationToken()).isEqualTo(tokenHasher.hash(rawToken(url)));
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(url))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+          .andExpect(status().isOk());
+    } finally {
+      start.countDown();
+      executor.shutdownNow();
+      assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+      displayJpaRepository.deleteById(display.getId());
+    }
+  }
+
+  @Test
+  void getInvitationRequiresAuthentication() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    mockMvc
+        .perform(get("/api/v1/display/{displayId}/invitation", display.getId()))
+        .andExpect(status().isUnauthorized());
+    assertThat(display.getInvitationToken()).isNull();
+    assertThat(display.getInvitationRawToken()).isNull();
+  }
+
+  @Test
+  void getInvitationRejectsManagerAndNonMember() throws Exception {
+    Display display = display();
+    display.addTeamMember(
+        new TeamMember(null, new UserId(2L), "관리자", TeamMemberRole.MANAGER, true));
+    display = displayJpaRepository.saveAndFlush(display);
+    for (Long userId : List.of(2L, 3L)) {
+      mockMvc
+          .perform(
+              get("/api/v1/display/{displayId}/invitation", display.getId())
+                  .header(HttpHeaders.AUTHORIZATION, bearer(userId)))
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_PERMISSION_DENIED"));
+    }
+    assertThat(display.getInvitationToken()).isNull();
+    assertThat(display.getInvitationRawToken()).isNull();
+  }
+
+  @Test
+  void getInvitationRejectsMissingOrDeletedDisplay() throws Exception {
+    Display display = display();
+    display.delete();
+    display = displayJpaRepository.saveAndFlush(display);
+    for (Long displayId : List.of(display.getId(), Long.MAX_VALUE)) {
+      mockMvc
+          .perform(
+              get("/api/v1/display/{displayId}/invitation", displayId)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.error.code").value("DISPLAY_NOT_FOUND"));
+    }
+    assertThat(display.getInvitationRawToken()).isNull();
+  }
+
+  @Test
+  void getInvitationDoesNotReactivateDisabledLink() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    String url = invitationUrl(copy(display.getId()));
+    mockMvc
+        .perform(
+            patch("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
+        .andExpect(status().isOk());
+    var disabledAt = display.getInvitationDisabledAt();
+    mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/invitation", display.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isGone())
+        .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_DISABLED"));
+    assertThat(display.getInvitationRawToken()).isEqualTo(rawToken(url));
+    assertThat(display.getInvitationDisabledAt()).isEqualTo(disabledAt).isNotNull();
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void getLegacyInvitationRequiresExplicitReissueWithoutInvalidatingOldLink() throws Exception {
+    Display display = displayJpaRepository.saveAndFlush(display());
+    try {
+      String oldUrl = invitationUrl(issue(display.getId()));
+      jdbcTemplate.update(
+          "UPDATE display SET invitation_raw_token = NULL WHERE display_id = ?", display.getId());
+      mockMvc
+          .perform(
+              get("/api/v1/display/{displayId}/invitation", display.getId())
+                  .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+          .andExpect(status().isConflict())
+          .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_REISSUE_REQUIRED"));
+      Display saved = displayJpaRepository.findById(display.getId()).orElseThrow();
+      assertThat(saved.getInvitationRawToken()).isNull();
+      assertThat(saved.getInvitationToken()).isEqualTo(tokenHasher.hash(rawToken(oldUrl)));
+      mockMvc
+          .perform(
+              get("/api/v1/display/invitation/{token}", rawToken(oldUrl))
+                  .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+          .andExpect(status().isOk());
+      String newUrl = invitationUrl(issue(display.getId()));
+      assertThat(newUrl).isNotEqualTo(oldUrl);
+      assertThat(invitationUrl(copy(display.getId()))).isEqualTo(newUrl);
+    } finally {
+      displayJpaRepository.deleteById(display.getId());
+    }
+  }
+
+  @Test
   void issueInvitationCreatesFirstInvitationLink() throws Exception {
     Display display = displayJpaRepository.saveAndFlush(display());
 
@@ -118,6 +277,8 @@ class DisplayInvitationControllerTest {
     assertThat(rawToken).doesNotContain("+", "/", "=");
     assertThat(savedDisplay.getInvitationToken()).isEqualTo(tokenHasher.hash(rawToken));
     assertThat(savedDisplay.getInvitationToken()).isNotEqualTo(rawToken);
+    assertThat(savedDisplay.getInvitationRawToken()).isEqualTo(rawToken);
+    assertThat(invitationUrl(copy(display.getId()))).isEqualTo(invitationUrl);
     assertThat(savedDisplay.getInvitationDisabledAt()).isNull();
   }
 
@@ -128,6 +289,7 @@ class DisplayInvitationControllerTest {
     String secondUrl = invitationUrl(issue(display.getId()));
 
     assertThat(firstUrl).isNotEqualTo(secondUrl);
+    assertThat(invitationUrl(copy(display.getId()))).isEqualTo(secondUrl);
 
     mockMvc
         .perform(
@@ -237,6 +399,7 @@ class DisplayInvitationControllerTest {
         JsonPath.read(result.getResponse().getContentAsString(), "$.success.data.invitationUrl");
     assertThat(newInvitationUrl).startsWith(INVITATION_BASE_URL);
     assertThat(newInvitationUrl).isNotEqualTo(oldInvitationUrl);
+    assertThat(invitationUrl(copy(display.getId()))).isEqualTo(newInvitationUrl);
   }
 
   @Test
@@ -408,6 +571,17 @@ class DisplayInvitationControllerTest {
                 .content("{\"enabled\":false}"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("DISPLAY_INVITATION_NOT_ISSUED"));
+  }
+
+  private MvcResult copy(Long displayId) throws Exception {
+    return mockMvc
+        .perform(
+            get("/api/v1/display/{displayId}/invitation", displayId)
+                .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
+        .andExpect(status().isOk())
+        .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+        .andExpect(jsonPath("$.success.data.displayId").value(displayId))
+        .andReturn();
   }
 
   private MvcResult issue(Long displayId) throws Exception {

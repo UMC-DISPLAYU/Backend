@@ -83,6 +83,16 @@ public final class DisplayApiDocs {
   public static final String LIKE_STATUS_SUCCESS_DESCRIPTION = "전시 좋아요 여부 조회 성공";
   public static final String LIKE_STATUS_SUCCESS_EXAMPLE_NAME = "Display like status success";
 
+  public static final String INVITATION_LINK_SUMMARY = "복사용 전시 초대 링크 조회";
+  public static final String INVITATION_LINK_DESCRIPTION =
+      "전시 팀장이 복사할 초대 링크를 조회합니다. 요청 본문은 없습니다. "
+          + "발급 이력이 없으면 최초 한 번 원본 토큰과 해시를 저장하고, 이후에는 같은 링크를 반환합니다. "
+          + "응답은 캐시하지 않습니다. 비활성화된 링크는 410 DISPLAY_INVITATION_DISABLED를 반환합니다. "
+          + "원본 토큰이 없는 기존 링크는 409 DISPLAY_INVITATION_REISSUE_REQUIRED를 반환하며 "
+          + "기존 링크를 변경하지 않습니다. 이 경우 POST로 명시적으로 재발급해야 합니다. "
+          + "미인증은 401, 팀장 권한 없음은 403, 전시 없음 또는 삭제는 404입니다.";
+  public static final String INVITATION_LINK_SUCCESS_DESCRIPTION = "복사용 전시 초대 링크 조회 성공";
+
   public static final String INVITATION_ISSUE_SUMMARY = "전시 초대 링크 생성";
   public static final String INVITATION_ISSUE_DESCRIPTION =
       "전시 팀장이 초대 링크를 생성하거나 재발급합니다. 기존 활성 링크가 있으면 새 토큰으로 교체되어 이전 링크는 즉시 사용할 수 없습니다.";

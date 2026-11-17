@@ -145,6 +145,9 @@ public class Display extends SoftDeleteBaseEntity {
   // 팀원 초대 정보: 초대 토큰과 비활성화 시점을 저장한다.
   private String invitationToken;
 
+  @Column(length = 43)
+  private String invitationRawToken;
+
   private LocalDateTime invitationDisabledAt;
 
   // 내부 엔티티 목록: 이미지, 소개 콘텐츠, 팀원, 초대를 Display Root가 직접 통제한다.
@@ -582,9 +585,19 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   // 초대 토큰 해시를 새로 발급하고 기존 비활성화 상태를 해제한다.
-  public void issueInvitationToken(String invitationToken) {
-    this.invitationToken = requireNonBlank(invitationToken, "invitationToken");
+  public void issueInvitationToken(String rawToken, String tokenHash) {
+    String validatedRawToken = requireNonBlank(rawToken, "rawToken");
+    this.invitationToken = requireNonBlank(tokenHash, "tokenHash");
+    this.invitationRawToken = validatedRawToken;
     this.invitationDisabledAt = null;
+  }
+
+  public String invitationTokenForSharing() {
+    validateInvitationAccessible();
+    if (invitationRawToken == null) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_REISSUE_REQUIRED);
+    }
+    return invitationRawToken;
   }
 
   // 초대 링크가 발급된 경우에만 비활성화하며, 이미 비활성화된 링크는 기존 시각을 유지한다.
