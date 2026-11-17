@@ -8,10 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.demo.domain.admin.application.port.CommentDeletionPort;
 import com.example.demo.domain.admin.application.port.CommentQueryPort;
+import com.example.demo.domain.admin.application.port.ParentDeletionPort;
 import com.example.demo.domain.admin.application.port.ParentQueryPort;
 import com.example.demo.domain.admin.application.port.ReportCaseQueryPort;
 import com.example.demo.domain.admin.application.result.CommentDeletionResult;
 import com.example.demo.domain.admin.application.result.CommentDetail;
+import com.example.demo.domain.admin.application.result.ParentDeletionResult;
 import com.example.demo.domain.admin.application.result.ParentDetail;
 import com.example.demo.domain.admin.application.result.ReportCaseDetail;
 import com.example.demo.domain.admin.application.result.ReportCasePage;
@@ -63,6 +65,7 @@ class AdminReportCaseAuthorizationIntegrationTest {
   @MockitoBean private CommentQueryPort comments;
   @MockitoBean private CommentDeletionPort deletions;
   @MockitoBean private ParentQueryPort parents;
+  @MockitoBean private ParentDeletionPort parentDeletions;
 
   @Test
   void administratorCanReadBothEndpointsUsingRealAuthorization() throws Exception {
@@ -101,6 +104,8 @@ class AdminReportCaseAuthorizationIntegrationTest {
                     "PARENT_KIND", 31L, null, null, null, List.of(), null, null),
                 null,
                 null));
+    when(parentDeletions.delete("DISPLAY_REVIEW", 31L, admin.getId(), "운영 검토"))
+        .thenReturn(new ParentDeletionResult(31L, Instant.parse("2026-11-17T02:00:00Z")));
 
     mvc.perform(get(PATHS.get(0)).header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
@@ -121,11 +126,15 @@ class AdminReportCaseAuthorizationIntegrationTest {
                 .content("{\"reason\":\"운영 검토\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.commentId").value(41));
+    mvc.perform(parentDeletionRequest().header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parentId").value(31));
     verify(queries).search(any());
     verify(queries).getDetail(10L);
     verify(comments).getCommentDetail("COMMENT_KIND", 41L);
     verify(deletions).delete("DISPLAY_REVIEW_REPLY", 41L, admin.getId(), "운영 검토");
     verify(parents).getParentDetail("PARENT_KIND", 31L);
+    verify(parentDeletions).delete("DISPLAY_REVIEW", 31L, admin.getId(), "운영 검토");
   }
 
   @Test
@@ -139,7 +148,10 @@ class AdminReportCaseAuthorizationIntegrationTest {
     mvc.perform(deletionRequest()).andExpect(status().isUnauthorized());
     mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
         .andExpect(status().isForbidden());
-    verifyNoInteractions(queries, comments, deletions, parents);
+    mvc.perform(parentDeletionRequest()).andExpect(status().isUnauthorized());
+    mvc.perform(parentDeletionRequest().header("Authorization", "Bearer " + token))
+        .andExpect(status().isForbidden());
+    verifyNoInteractions(queries, comments, deletions, parents, parentDeletions);
   }
 
   @ParameterizedTest
@@ -166,7 +178,9 @@ class AdminReportCaseAuthorizationIntegrationTest {
     }
     mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
         .andExpect(status().is(withdraw ? 401 : 403));
-    verifyNoInteractions(queries, comments, deletions, parents);
+    mvc.perform(parentDeletionRequest().header("Authorization", "Bearer " + token))
+        .andExpect(status().is(withdraw ? 401 : 403));
+    verifyNoInteractions(queries, comments, deletions, parents, parentDeletions);
   }
 
   @Test
@@ -179,12 +193,20 @@ class AdminReportCaseAuthorizationIntegrationTest {
       }
       mvc.perform(deletionRequest().header("Authorization", "Bearer " + token))
           .andExpect(status().isUnauthorized());
+      mvc.perform(parentDeletionRequest().header("Authorization", "Bearer " + token))
+          .andExpect(status().isUnauthorized());
     }
-    verifyNoInteractions(queries, comments, deletions, parents);
+    verifyNoInteractions(queries, comments, deletions, parents, parentDeletions);
   }
 
   private MockHttpServletRequestBuilder deletionRequest() {
     return post("/api/v1/admin/comments/DISPLAY_REVIEW_REPLY/41/delete")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"reason\":\"운영 검토\"}");
+  }
+
+  private MockHttpServletRequestBuilder parentDeletionRequest() {
+    return post("/api/v1/admin/parents/DISPLAY_REVIEW/31/delete")
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"reason\":\"운영 검토\"}");
   }

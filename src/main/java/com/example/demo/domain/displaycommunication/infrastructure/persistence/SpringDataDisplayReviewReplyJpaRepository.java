@@ -24,6 +24,18 @@ public interface SpringDataDisplayReviewReplyJpaRepository
   Optional<DisplayReviewReply> findActiveByIdForUpdate(
       @Param("displayReviewReplyId") Long displayReviewReplyId);
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT reply
+      FROM DisplayReviewReply reply
+      WHERE reply.displayReviewId = :displayReviewId
+        AND reply.deletedAt IS NULL
+      ORDER BY reply.displayReviewReplyId ASC
+      """)
+  List<DisplayReviewReply> findActiveByDisplayReviewIdForUpdate(
+      @Param("displayReviewId") Long displayReviewId);
+
   @Query(
       """
       SELECT reply
