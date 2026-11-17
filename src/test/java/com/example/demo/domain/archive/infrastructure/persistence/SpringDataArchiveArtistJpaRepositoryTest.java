@@ -41,6 +41,20 @@ class SpringDataArchiveArtistJpaRepositoryTest {
     assertThat(results).extracting(ArchiveArtist::getId).containsExactly(next.getId());
   }
 
+  @Test
+  void findByArtistUserIdInReturnsOnlyActiveSavesOfGivenArtists() {
+    ArchiveArtist savedA = repository.saveAndFlush(ArchiveArtist.create(100L, 200L, 7L));
+    ArchiveArtist savedB = repository.saveAndFlush(ArchiveArtist.create(101L, 201L, 8L));
+    ArchiveArtist cancelled = repository.saveAndFlush(ArchiveArtist.create(100L, 200L, 9L));
+    repository.saveAndFlush(ArchiveArtist.create(102L, 202L, 7L));
+    cancelled.delete();
+    repository.saveAndFlush(cancelled);
+
+    assertThat(repository.findByArtistUserIdInAndDeletedAtIsNull(List.of(200L, 201L)))
+        .extracting(ArchiveArtist::getId)
+        .containsExactlyInAnyOrder(savedA.getId(), savedB.getId());
+  }
+
   private void updateSavedAt(Long id, LocalDateTime savedAt) {
     entityManager
         .createQuery("UPDATE ArchiveArtist a SET a.savedAt = :savedAt WHERE a.id = :id")
