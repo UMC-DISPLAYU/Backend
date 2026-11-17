@@ -41,13 +41,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,11 +71,10 @@ class WithdrawUserIntegrationTest {
   @Autowired private TokenProvider tokenProvider;
   @Autowired private MockMvc mockMvc;
   @Autowired private EntityManager entityManager;
-  @Autowired private JdbcTemplate jdbcTemplate;
 
   @Test
-  void withdrawsImmediatelyAndReleasesSocialAndSchoolIdentities() throws Exception {
-    createMigrationOnlyLikeTables();
+  void withdrawsWithoutDroppedQuestionLikeTablesAndReleasesIdentities() throws Exception {
+    assertDroppedQuestionLikeTablesDoNotExist();
     String providerId = UUID.randomUUID().toString();
     String schoolEmail = providerId + "@university.ac.kr";
     User user = saveUser(providerId, schoolEmail);
@@ -115,9 +112,27 @@ class WithdrawUserIntegrationTest {
         .andExpect(status().isUnauthorized());
   }
 
+  private void assertDroppedQuestionLikeTablesDoNotExist() {
+    Number tableCount =
+        (Number)
+            entityManager
+                .createNativeQuery(
+                    """
+                    SELECT COUNT(*)
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE LOWER(TABLE_NAME) IN (
+                      'artworkquestionlike',
+                      'artworkquestionreplylike',
+                      'personalartworkquestionlike',
+                      'personalartworkquestionreplylike')
+                    """)
+                .getSingleResult();
+
+    assertThat(tableCount.longValue()).isZero();
+  }
+
   @Test
   void leaderOfDeletedDisplayCanWithdraw() {
-    createMigrationOnlyLikeTables();
     User user = saveUser(UUID.randomUUID().toString(), null);
     Display deletedDisplay = displayWithLeader(user.getId(), "deleted-display");
     deletedDisplay.delete();
@@ -150,7 +165,6 @@ class WithdrawUserIntegrationTest {
 
   @Test
   void formerLeaderWithdrawalExitsOwnedDisplayAndCleansOnlyArtistLinkedArtworks() {
-    createMigrationOnlyLikeTables();
     User formerLeader = saveUser(UUID.randomUUID().toString(), null);
     User currentLeader = saveUser(UUID.randomUUID().toString(), null);
     Display display = displayWithLeader(formerLeader.getId(), "transferred-display");
@@ -187,18 +201,6 @@ class WithdrawUserIntegrationTest {
         .isFalse();
     assertThat(artworkRepository.findById(currentLeaderArtwork.getId()).orElseThrow().isDeleted())
         .isFalse();
-  }
-
-  private void createMigrationOnlyLikeTables() {
-    for (String tableName :
-        Set.of(
-            "ArtworkQuestionLike",
-            "ArtworkQuestionReplyLike",
-            "PersonalArtworkQuestionLike",
-            "PersonalArtworkQuestionReplyLike")) {
-      jdbcTemplate.execute(
-          "CREATE TABLE IF NOT EXISTS " + tableName + " (id BIGINT AUTO_INCREMENT, userId BIGINT)");
-    }
   }
 
   private User saveUser(String providerId, String schoolEmail) {
