@@ -355,6 +355,12 @@ public class DisplayArtworkQueryService {
             .filter(Objects::nonNull)
             .distinct()
             .toList(),
+        artistsByArtworkId.getOrDefault(displayArtwork.getId(), List.of()).stream()
+            .map(
+                creator ->
+                    new DisplayArtworkPreviewResult.ArtistResult(
+                        creator.getUserId(), creator.getCreatorName()))
+            .toList(),
         displayArtwork.getArtworkCrop());
   }
 

@@ -15,5 +15,6 @@ public record DisplayArtworkListResult(List<ArtworkItemResult> artworks) {
       int imageHeight,
       String artworkVideoUrl,
       List<Long> artistUserIds,
+      List<DisplayArtworkPreviewResult.ArtistResult> artists,
       ArtworkCrop artworkCrop) {}
 }
