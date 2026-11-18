@@ -29,10 +29,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "Notification",
-    indexes =
-        @Index(
-            name = "IDX_NOTIFICATION_RECIPIENT_ID",
-            columnList = "recipientUserId, notificationId"))
+    indexes = {
+      @Index(
+          name = "IDX_NOTIFICATION_RECIPIENT_ID",
+          columnList = "recipientUserId, notificationId"),
+      @Index(name = "IDX_NOTIFICATION_TARGET_TYPE", columnList = "targetId, type")
+    })
 public class Notification {
 
   @Id
