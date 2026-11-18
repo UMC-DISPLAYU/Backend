@@ -6,6 +6,7 @@ import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -94,5 +95,11 @@ class DisplayBookmarkEnrichmentServiceTest {
 
     @Override
     public void delete(ArchiveDisplay archiveDisplay) {}
+
+    @Override
+    public List<Long> findSaverUserIdsByDisplayIdSavedBefore(
+        Long displayId, LocalDateTime savedBefore) {
+      return List.of();
+    }
   }
 }

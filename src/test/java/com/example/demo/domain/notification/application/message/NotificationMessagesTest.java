@@ -7,6 +7,7 @@ import com.example.demo.domain.notification.domain.type.NotificationTargetType;
 import com.example.demo.domain.notification.domain.type.NotificationType;
 import com.example.demo.domain.notification.domain.vo.NotificationBodySegment;
 import com.example.demo.domain.notification.domain.vo.NotificationTarget;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,20 @@ class NotificationMessagesTest {
   void artworksDeletedByArtistLeaveRejectsEmptyArtworks() {
     assertThatThrownBy(() -> NotificationMessages.artworksDeletedByArtistLeave(List.of(), "전시"))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void exhibitionStartedShowsPeriodAndPlaceAndMovesToDisplayDetail() {
+    NotificationMessage message =
+        NotificationMessages.exhibitionStarted(
+            "빛이 지나간 자리", LocalDate.of(2026, 12, 4), LocalDate.of(2026, 12, 6), "스튜디오 여백 B1", 5L);
+
+    assertThat(message.type()).isEqualTo(NotificationType.EXHIBITION_STARTED);
+    assertThat(message.title()).isEqualTo("저장한 전시 시작");
+    assertThat(text(message)).isEqualTo("저장한 “빛이 지나간 자리” 전시가 시작됐어요. 12.04 - 12.06 · 스튜디오 여백 B1");
+    assertThat(boldTexts(message)).containsExactly("빛이 지나간 자리");
+    assertThat(message.target())
+        .isEqualTo(new NotificationTarget(NotificationTargetType.DISPLAY_DETAIL, 5L));
   }
 
   private static String text(NotificationMessage message) {

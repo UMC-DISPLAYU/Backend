@@ -70,3 +70,8 @@ jwt:
   access-expiration: 1800000
   refresh-expiration: 7200000
   signup-expiration: 600000
+
+notification:
+  exhibition-started:
+    # 테스트 컨텍스트가 뜰 때마다 시작 알림 보완 실행이 돌지 않게 끈다.
+    catch-up-on-startup: false
