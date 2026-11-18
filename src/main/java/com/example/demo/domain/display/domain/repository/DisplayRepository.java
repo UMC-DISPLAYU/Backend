@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.domain.repository;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,9 @@ public interface DisplayRepository {
   List<Display> findPublishedParticipatedDisplaysByUserId(Long userId);
 
   List<Display> findAll();
+
+  /** 그날 시작하는 공개 전시(삭제·비공개 제외)를 찾는다. */
+  List<Display> findPublishedStartingOn(LocalDate startDate);
 
   boolean existsByOwnerUserIdAndTitle(Long ownerUserId, String title);
 
