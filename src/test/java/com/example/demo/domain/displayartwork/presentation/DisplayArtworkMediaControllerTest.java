@@ -23,6 +23,7 @@ import com.example.demo.domain.display.domain.vo.DisplayPeriod;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.displayartwork.application.query.ArtworkSummaryQueryRepository;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import com.example.demo.global.file.application.MediaUsage;
@@ -303,6 +304,89 @@ class DisplayArtworkMediaControllerTest {
     entityManager.clear();
     assertThat(entityManager.find(DisplayArtwork.class, id).getArtworkCrop().getX())
         .isEqualByComparingTo("0.1");
+  }
+
+  @Test
+  void artworkFitDefaultsToFillAndIsKeptWhenOmittedOnUpdate() throws Exception {
+    create(legacyImageJson()).andExpect(jsonPath("$.success.data.artworkFit").value("FILL"));
+    Long id = artworkId();
+
+    updateWithFit(id, "\"FIT\"")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkFit").value("FIT"));
+    update(id, legacyImageJson())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkFit").value("FIT"));
+    updateWithFit(id, "null")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkFit").value("FIT"));
+    updateWithFit(id, "\"FILL\"")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworkFit").value("FILL"));
+    entityManager.flush();
+    entityManager.clear();
+    assertThat(entityManager.find(DisplayArtwork.class, id).getArtworkFit())
+        .isEqualTo(ArtworkFit.FILL);
+  }
+
+  @Test
+  void artworkFitIsReturnedByDetailEditAndAllCardQueries() throws Exception {
+    mvc.perform(
+            post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWithFit(legacyImageJson(), "\"FIT\"")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.artworkFit").value("FIT"));
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+
+    for (String suffix : List.of("", "/edit")) {
+      mvc.perform(
+              get("/api/v1/artworks/" + id + suffix)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.artworkFit").value("FIT"));
+    }
+    mvc.perform(get("/api/v1/artworks").param("displayId", displayId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkFit").value("FIT"));
+    mvc.perform(get("/api/v1/artworks").param("userId", ownerId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkFit").value("FIT"));
+    mvc.perform(
+            get("/api/v1/artworks/preview")
+                .param("type", "RECOMMEND")
+                .param("page", "0")
+                .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkFit").value("FIT"));
+    mvc.perform(get("/api/v1/artworks/search"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkFit").value("FIT"));
+  }
+
+  @Test
+  void unknownArtworkFitIsRejected() throws Exception {
+    mvc.perform(
+            post("/api/v1/artworks")
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWithFit(legacyImageJson(), "\"STRETCH\"")))
+        .andExpect(status().isBadRequest());
+  }
+
+  private ResultActions updateWithFit(Long id, String fit) throws Exception {
+    return mvc.perform(
+        patch("/api/v1/artworks/{id}", id)
+            .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(bodyWithFit(legacyImageJson(), fit)));
+  }
+
+  private String bodyWithFit(String images, String fit) {
+    return body(images).replace("\"artworkName\":", "\"artworkFit\":" + fit + ",\"artworkName\":");
   }
 
   private ResultActions createWithCrop(String images, String crop) throws Exception {

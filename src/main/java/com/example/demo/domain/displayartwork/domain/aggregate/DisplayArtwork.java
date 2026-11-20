@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkField;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -65,6 +67,12 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @Column private String materialMedia;
 
   @Embedded private ArtworkCrop artworkCrop;
+
+  // 운영 마이그레이션의 DEFAULT 'FILL'과 같게 맞춰, 테스트 DB(엔티티로 생성)에서도 값 없이 넣은 행이 FILL이 되게 한다.
+  @Enumerated(EnumType.STRING)
+  @ColumnDefault("'FILL'")
+  @Column(nullable = false, length = 10)
+  private ArtworkFit artworkFit = ArtworkFit.FILL;
 
   private String size;
 
@@ -265,6 +273,13 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   public void cropRepresentativeImage(ArtworkCrop crop) {
     if (crop != null) {
       this.artworkCrop = crop;
+    }
+  }
+
+  /** 대표 사진 표시 방식을 바꾼다. 값을 보내지 않은 요청(null)이면 기존 값을 유지한다. */
+  public void fitRepresentativeImage(ArtworkFit fit) {
+    if (fit != null) {
+      this.artworkFit = fit;
     }
   }
 
