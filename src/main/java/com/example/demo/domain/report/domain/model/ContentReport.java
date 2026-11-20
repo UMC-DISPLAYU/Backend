@@ -14,6 +14,7 @@ public record ContentReport(
     Long reporterUserId,
     Long reportedUserId,
     ReportReason reason,
+    String description,
     LocalDateTime createdAt) {
   public ContentReport {
     Objects.requireNonNull(targetType);
@@ -31,6 +32,9 @@ public record ContentReport(
     if (reporterUserId.equals(reportedUserId)) {
       throw new BusinessException(ReportErrorCode.SELF_REPORT_NOT_ALLOWED);
     }
+    if (description != null && description.length() > 1000) {
+      throw new IllegalArgumentException("신고 상세 설명은 최대 1,000자여야 합니다.");
+    }
   }
 
   public static ContentReport create(
@@ -40,7 +44,18 @@ public record ContentReport(
       Long reportedUserId,
       ReportReason reason,
       LocalDateTime createdAt) {
+    return create(targetType, targetId, reporterUserId, reportedUserId, reason, null, createdAt);
+  }
+
+  public static ContentReport create(
+      ReportTargetType targetType,
+      Long targetId,
+      Long reporterUserId,
+      Long reportedUserId,
+      ReportReason reason,
+      String description,
+      LocalDateTime createdAt) {
     return new ContentReport(
-        null, targetType, targetId, reporterUserId, reportedUserId, reason, createdAt);
+        null, targetType, targetId, reporterUserId, reportedUserId, reason, description, createdAt);
   }
 }

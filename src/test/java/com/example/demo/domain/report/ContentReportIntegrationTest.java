@@ -271,10 +271,9 @@ class ContentReportIntegrationTest {
                     LocalDateTime.now(ZoneOffset.UTC)));
         });
     assertThat(reports.findAll())
-        .hasSize(2)
+        .hasSize(ReportTargetType.values().length)
         .extracting(ContentReportJpaEntity::getTargetType)
-        .containsExactlyInAnyOrder(
-            ReportTargetType.DISPLAY_REVIEW, ReportTargetType.ARTWORK_FEELING);
+        .containsExactlyInAnyOrder(ReportTargetType.values());
   }
 
   @Test
@@ -331,7 +330,7 @@ class ContentReportIntegrationTest {
   }
 
   @Test
-  void openApiDocumentsExactlyTwoCreationRoutesAndRequiredReasons() throws Exception {
+  void openApiDocumentsCreationRoutesAndRequiredReasons() throws Exception {
     JsonNode doc =
         JsonMapper.builder()
             .build()
@@ -351,15 +350,18 @@ class ContentReportIntegrationTest {
     assertThat(paths)
         .containsExactlyInAnyOrder(
             "/api/v1/display/{displayId}/reviews/{displayReviewId}/reports",
-            "/api/v1/artworks/{artworkId}/feelings/{feelingId}/reports");
+            "/api/v1/artworks/{artworkId}/feelings/{feelingId}/reports",
+            "/api/v1/comments/{commentType}/{commentId}/reports");
     for (String path : paths) {
       JsonNode op = doc.path("paths").path(path).path("post");
       JsonNode request =
           resolve(
               doc, op.path("requestBody").path("content").path("application/json").path("schema"));
-      assertThat(request.path("required").toString()).contains("reason");
-      assertThat(request.path("properties").size()).isEqualTo(1);
-      JsonNode reason = resolve(doc, request.path("properties").path("reason"));
+      boolean commentRoute = path.contains("/comments/");
+      String reasonField = commentRoute ? "reasonCode" : "reason";
+      assertThat(request.path("required").toString()).contains(reasonField);
+      assertThat(request.path("properties").size()).isEqualTo(commentRoute ? 2 : 1);
+      JsonNode reason = resolve(doc, request.path("properties").path(reasonField));
       assertThat(reason.path("enum").valueStream().map(JsonNode::asText).toList())
           .containsExactlyInAnyOrder(
               "SPAM_ADVERTISEMENT",
@@ -376,7 +378,7 @@ class ContentReportIntegrationTest {
       JsonNode success = resolve(doc, resolve(doc, response).path("properties").path("success"));
       JsonNode data = resolve(doc, success.path("properties").path("data"));
       assertThat(data.path("properties").has("reportId")).isTrue();
-      assertThat(data.path("properties").has("createdAt")).isTrue();
+      assertThat(data.path("properties").has(commentRoute ? "reportedAt" : "createdAt")).isTrue();
     }
   }
 
