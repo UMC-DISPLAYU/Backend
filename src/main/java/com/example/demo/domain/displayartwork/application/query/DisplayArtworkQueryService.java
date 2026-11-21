@@ -246,7 +246,8 @@ public class DisplayArtworkQueryService {
                     new DisplayArtworkPreviewResult.ArtistResult(
                         creator.getUserId(), creator.getCreatorName()))
             .toList(),
-        displayArtwork.getArtworkCrop());
+        displayArtwork.getArtworkCrop(),
+        displayArtwork.getArtworkFit());
   }
 
   @Transactional(readOnly = true)
@@ -315,7 +316,8 @@ public class DisplayArtworkQueryService {
             display.getId(),
             display.getTitle(),
             formattedPeriod,
-            display.getLocation().placeName()));
+            display.getLocation().placeName()),
+        displayArtwork.getArtworkFit());
   }
 
   private List<DisplayArtwork> findVisibleArtworks(Display display, Long requesterUserId) {
@@ -361,7 +363,8 @@ public class DisplayArtworkQueryService {
                     new DisplayArtworkPreviewResult.ArtistResult(
                         creator.getUserId(), creator.getCreatorName()))
             .toList(),
-        displayArtwork.getArtworkCrop());
+        displayArtwork.getArtworkCrop(),
+        displayArtwork.getArtworkFit());
   }
 
   private static String leaderName(Map<Long, Creator> leaders, DisplayArtwork artwork) {

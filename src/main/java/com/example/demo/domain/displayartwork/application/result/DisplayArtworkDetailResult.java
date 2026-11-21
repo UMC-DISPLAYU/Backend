@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.application.result;
 
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
 import com.example.demo.global.file.domain.MediaType;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +27,8 @@ public record DisplayArtworkDetailResult(
     long likeCount,
     boolean isLiked,
     boolean isArchived,
-    ArtworkCrop artworkCrop) {
+    ArtworkCrop artworkCrop,
+    ArtworkFit artworkFit) {
 
   public record QaHandlerResult(Long userId, String name) {}
 
@@ -61,7 +63,8 @@ public record DisplayArtworkDetailResult(
         likeCount,
         isLiked,
         isArchived,
-        displayArtwork.getArtworkCrop());
+        displayArtwork.getArtworkCrop(),
+        displayArtwork.getArtworkFit());
   }
 
   public record ImageResult(

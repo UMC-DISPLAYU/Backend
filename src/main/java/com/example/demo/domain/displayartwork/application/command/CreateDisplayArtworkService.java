@@ -93,6 +93,7 @@ public class CreateDisplayArtworkService {
       displayArtwork.publish(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
     }
     displayArtwork.cropRepresentativeImage(command.artworkCrop());
+    displayArtwork.fitRepresentativeImage(command.artworkFit());
 
     DisplayArtwork savedDisplayArtwork = displayArtworkRepository.save(displayArtwork);
 
