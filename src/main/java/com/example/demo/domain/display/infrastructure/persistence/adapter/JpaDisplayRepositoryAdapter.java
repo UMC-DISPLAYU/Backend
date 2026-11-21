@@ -2,7 +2,9 @@ package com.example.demo.domain.display.infrastructure.persistence.adapter;
 
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.repository.DisplayRepository;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.infrastructure.persistence.SpringDataDisplayJpaRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -49,6 +51,11 @@ public class JpaDisplayRepositoryAdapter implements DisplayRepository {
   @Override
   public List<Display> findWithdrawalTargetDisplaysByUserId(Long userId) {
     return jpaRepository.findWithdrawalTargetDisplaysByUserId(userId);
+  }
+
+  @Override
+  public List<Display> findPublishedStartingOn(LocalDate startDate) {
+    return jpaRepository.findByStartDateAndStatus(startDate, DisplayStatus.PUBLISHED);
   }
 
   @Override

@@ -7,6 +7,8 @@ import com.example.demo.domain.notification.domain.type.NotificationTargetType;
 import com.example.demo.domain.notification.domain.type.NotificationType;
 import com.example.demo.domain.notification.domain.vo.NotificationBodySegment;
 import com.example.demo.domain.notification.domain.vo.NotificationTarget;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,4 +85,27 @@ public final class NotificationMessages {
     return new NotificationMessage(
         NotificationType.WORK_DELETED_BY_ARTIST_LEAVE, "작품 삭제", body, null);
   }
+
+  /** 장소가 없으면 기간만 붙인다. */
+  public static NotificationMessage exhibitionStarted(
+      String displayTitle,
+      LocalDate startDate,
+      LocalDate endDate,
+      String placeName,
+      Long displayId) {
+    String period =
+        STARTED_PERIOD_FORMAT.format(startDate) + " - " + STARTED_PERIOD_FORMAT.format(endDate);
+    String place = placeName == null || placeName.isBlank() ? "" : " · " + placeName;
+    return new NotificationMessage(
+        NotificationType.EXHIBITION_STARTED,
+        "저장한 전시 시작",
+        List.of(
+            plain("저장한 " + OPEN_QUOTE),
+            bold(displayTitle),
+            plain(CLOSE_QUOTE + " 전시가 시작됐어요. " + period + place)),
+        new NotificationTarget(NotificationTargetType.DISPLAY_DETAIL, displayId));
+  }
+
+  private static final DateTimeFormatter STARTED_PERIOD_FORMAT =
+      DateTimeFormatter.ofPattern("MM.dd");
 }

@@ -1,6 +1,7 @@
 package com.example.demo.domain.archive.infrastructure.persistence;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -49,4 +50,15 @@ public interface SpringDataArchiveDisplayJpaRepository extends JpaRepository<Arc
       """)
   List<ArchiveDisplay> findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(
       @Param("userId") Long userId, @Param("cursorId") Long cursorId, Pageable pageable);
+
+  @Query(
+      """
+      SELECT a.userId
+      FROM ArchiveDisplay a
+      WHERE a.displayId = :displayId
+        AND a.deletedAt IS NULL
+        AND a.savedAt < :savedBefore
+      """)
+  List<Long> findSaverUserIdsByDisplayIdSavedBefore(
+      @Param("displayId") Long displayId, @Param("savedBefore") LocalDateTime savedBefore);
 }

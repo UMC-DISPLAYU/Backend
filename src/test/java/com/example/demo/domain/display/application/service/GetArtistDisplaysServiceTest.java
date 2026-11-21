@@ -170,6 +170,11 @@ class GetArtistDisplaysServiceTest {
     }
 
     @Override
+    public List<Display> findPublishedStartingOn(LocalDate startDate) {
+      return List.of();
+    }
+
+    @Override
     public boolean existsByOwnerUserIdAndTitle(Long ownerUserId, String title) {
       return false;
     }
