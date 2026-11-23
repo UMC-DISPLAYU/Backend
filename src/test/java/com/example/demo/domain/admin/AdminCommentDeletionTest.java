@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.demo.domain.admin.application.port.AdminAccessPort;
 import com.example.demo.domain.admin.application.port.CommentDeletionPort;
+import com.example.demo.domain.admin.application.port.OperationLogPort;
 import com.example.demo.domain.admin.application.result.CommentDeletionResult;
+import com.example.demo.domain.admin.application.result.OperationLog;
 import com.example.demo.domain.admin.application.service.AdminCommentDeletionService;
 import com.example.demo.domain.admin.presentation.AdminCommentDeletionController;
 import com.example.demo.domain.admin.presentation.mapper.AdminCommentDeletionMapper;
@@ -37,8 +39,9 @@ class AdminCommentDeletionTest {
   private static final Instant PROCESSED_AT = Instant.parse("2026-11-17T01:00:00Z");
   private final AdminAccessPort access = mock(AdminAccessPort.class);
   private final CommentDeletionPort comments = mock(CommentDeletionPort.class);
+  private final OperationLogPort logs = mock(OperationLogPort.class);
   private final AdminCommentDeletionService service =
-      new AdminCommentDeletionService(access, comments);
+      new AdminCommentDeletionService(access, comments, logs);
   private AuthUser operator = new AuthUser(7L);
   private MockMvc mvc;
 
@@ -85,6 +88,7 @@ class AdminCommentDeletionTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/admin/comments/" + type + "/41/delete"));
 
     verify(comments).delete(type, 41L, 7L, "운영 검토");
+    verify(logs).record(OperationLog.of(type, 41L, "DELETE", 7L, "운영 검토", PROCESSED_AT));
   }
 
   @ParameterizedTest
@@ -195,6 +199,7 @@ class AdminCommentDeletionTest {
                 .content(body("사유")))
         .andExpect(status().is(GlobalErrorCode.valueOf(code).getStatus().value()))
         .andExpect(jsonPath("$.error.code").value(code));
+    verifyNoInteractions(logs);
   }
 
   private String body(String reason) {

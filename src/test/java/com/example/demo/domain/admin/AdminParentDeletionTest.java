@@ -7,7 +7,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.demo.domain.admin.application.port.AdminAccessPort;
+import com.example.demo.domain.admin.application.port.OperationLogPort;
 import com.example.demo.domain.admin.application.port.ParentDeletionPort;
+import com.example.demo.domain.admin.application.result.OperationLog;
 import com.example.demo.domain.admin.application.result.ParentDeletionResult;
 import com.example.demo.domain.admin.application.service.AdminParentDeletionService;
 import com.example.demo.domain.admin.presentation.AdminParentDeletionController;
@@ -37,8 +39,9 @@ class AdminParentDeletionTest {
   private static final Instant PROCESSED_AT = Instant.parse("2026-11-17T02:00:00Z");
   private final AdminAccessPort access = mock(AdminAccessPort.class);
   private final ParentDeletionPort parents = mock(ParentDeletionPort.class);
+  private final OperationLogPort logs = mock(OperationLogPort.class);
   private final AdminParentDeletionService service =
-      new AdminParentDeletionService(access, parents);
+      new AdminParentDeletionService(access, parents, logs);
   private AuthUser operator = new AuthUser(7L);
   private MockMvc mvc;
 
@@ -84,6 +87,7 @@ class AdminParentDeletionTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/admin/parents/" + type + "/31/delete"));
 
     verify(parents).delete(type, 31L, 7L, "운영 검토");
+    verify(logs).record(OperationLog.of(type, 31L, "DELETE", 7L, "운영 검토", PROCESSED_AT));
   }
 
   @ParameterizedTest
@@ -192,6 +196,7 @@ class AdminParentDeletionTest {
                 .content(body("사유")))
         .andExpect(status().is(GlobalErrorCode.valueOf(code).getStatus().value()))
         .andExpect(jsonPath("$.error.code").value(code));
+    verifyNoInteractions(logs);
   }
 
   private String body(String reason) {
