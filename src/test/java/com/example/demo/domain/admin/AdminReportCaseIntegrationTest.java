@@ -33,12 +33,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-/** 삭제·종결의 트랜잭션 경계를 실제로 확인하려고 테스트 전체 트랜잭션을 쓰지 않고, 만든 자료는 끝나고 지운다. */
+/**
+ * 삭제·종결의 트랜잭션 경계를 실제로 확인하려고 테스트 전체 트랜잭션을 쓰지 않고, 만든 자료는 끝나고 지운다. 이 테스트 전용 컨텍스트는 끝나면 닫아 테스트 컨텍스트 캐시를
+ * 늘리지 않는다.
+ */
 @SpringBootTest(
     properties = {
       "admin.report-cases.enabled=true",
@@ -47,6 +51,7 @@ import org.springframework.test.web.servlet.ResultActions;
     })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DirtiesContext
 class AdminReportCaseIntegrationTest {
   private static final String CASES = "/api/v1/admin/report-cases";
   private static final LocalDateTime BASE = LocalDateTime.of(2026, 11, 20, 3, 0);
