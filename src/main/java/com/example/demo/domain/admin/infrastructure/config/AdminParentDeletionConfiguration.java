@@ -1,6 +1,7 @@
 package com.example.demo.domain.admin.infrastructure.config;
 
 import com.example.demo.domain.admin.application.port.AdminAccessPort;
+import com.example.demo.domain.admin.application.port.OperationLogPort;
 import com.example.demo.domain.admin.application.port.ParentDeletionPort;
 import com.example.demo.domain.admin.application.service.AdminParentDeletionService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class AdminParentDeletionConfiguration {
   @Bean
   AdminParentDeletionService adminParentDeletionService(
-      AdminAccessPort access, ParentDeletionPort parents) {
-    return new AdminParentDeletionService(access, parents);
+      AdminAccessPort access, ParentDeletionPort parents, OperationLogPort logs) {
+    return new AdminParentDeletionService(access, parents, logs);
   }
 }
