@@ -43,6 +43,8 @@ public class JpaClosingSoonDisplayQueryRepositoryAdapter
                 display.period.endDate,
                 display.location.placeName,
                 display.posterCrop,
+                display.posterFit,
+                display.posterEdgeColor,
                 QDisplayImageConditions.videoUrl(image)))
         .from(display)
         .leftJoin(display.images, image)

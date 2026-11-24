@@ -14,6 +14,7 @@ import com.example.demo.domain.archive.domain.error.ArchiveErrorCode;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
 import com.example.demo.domain.display.application.result.DisplaySummaryResult;
 import com.example.demo.domain.display.application.usecase.GetDisplaySummariesUseCase;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.global.error.BusinessException;
 import java.time.LocalDate;
 import java.util.List;
@@ -128,6 +129,8 @@ class SaveArchiveDisplayServiceTest {
         LocalDate.now().minusDays(1),
         LocalDate.now().plusDays(10),
         "https://cdn.displayu.com/posters/main.png",
+        null,
+        PosterFit.FILL,
         null);
   }
 }

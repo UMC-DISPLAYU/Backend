@@ -49,7 +49,9 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
                 display.period.startDate,
                 display.period.endDate,
                 QDisplayImageConditions.cardImageUrl(image),
-                display.posterCrop)
+                display.posterCrop,
+                display.posterFit,
+                display.posterEdgeColor)
             .from(display)
             .leftJoin(screening)
             .on(
@@ -121,6 +123,8 @@ public class JpaDisplayScreeningQueryRepositoryAdapter implements DisplayScreeni
         row.get(display.period.startDate),
         row.get(display.period.endDate),
         row.get(QDisplayImageConditions.cardImageUrl(image)),
-        row.get(display.posterCrop));
+        row.get(display.posterCrop),
+        row.get(display.posterFit),
+        row.get(display.posterEdgeColor));
   }
 }

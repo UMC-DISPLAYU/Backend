@@ -6,6 +6,7 @@ import com.example.demo.domain.display.application.query.ClosingSoonDisplayQuery
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.result.ClosingSoonDisplayResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,6 +52,8 @@ class GetClosingSoonDisplaysServiceTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
+        PosterFit.FILL,
         null,
         null);
   }

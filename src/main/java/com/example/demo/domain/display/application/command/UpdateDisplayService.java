@@ -77,6 +77,7 @@ public class UpdateDisplayService {
     }
     List<String> previousFileUrls = display.getMediaFileUrls();
     display.changeMedia(command.posterMedia(), command.displayMedia(), command.posterCrop());
+    display.changePosterPresentation(command.posterFit(), command.posterEdgeColor());
     if (command.displayFields() != null) {
       display.changeDisplayFields(command.displayFields());
     }

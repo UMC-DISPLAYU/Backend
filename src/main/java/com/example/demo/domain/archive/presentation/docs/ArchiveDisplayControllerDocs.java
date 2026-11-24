@@ -162,6 +162,8 @@ public interface ArchiveDisplayControllerDocs {
                                 "displays": [
                                   {
                                     "posterImageUrl": "https://cdn.displayu.co.kr/posters/5.png",
+                                    "posterFit": "FIT",
+                                    "posterEdgeColor": "#28405a",
                                     "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                                     "status": "ENDED",
                                     "title": "syzygy",
@@ -178,6 +180,8 @@ public interface ArchiveDisplayControllerDocs {
                                   },
                                   {
                                     "posterImageUrl": "https://cdn.displayu.co.kr/posters/3.png",
+                                    "posterFit": "FIT",
+                                    "posterEdgeColor": "#28405a",
                                     "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                                     "status": "ENDED",
                                     "title": "형태의 침묵",

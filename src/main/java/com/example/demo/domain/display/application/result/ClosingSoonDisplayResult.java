@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -21,6 +22,8 @@ public record ClosingSoonDisplayResult(
       boolean isArchived,
       String placeName,
       PosterCrop posterCrop,
+      PosterFit posterFit,
+      String posterEdgeColor,
       String posterVideoUrl) {
 
     public static ExhibitionResult from(
@@ -37,6 +40,8 @@ public record ClosingSoonDisplayResult(
           false,
           queryResult.placeName(),
           queryResult.posterCrop(),
+          queryResult.posterFit(),
+          queryResult.posterEdgeColor(),
           queryResult.posterVideoUrl());
     }
 
@@ -53,6 +58,8 @@ public record ClosingSoonDisplayResult(
           isArchived,
           placeName,
           posterCrop,
+          posterFit,
+          posterEdgeColor,
           posterVideoUrl);
     }
   }

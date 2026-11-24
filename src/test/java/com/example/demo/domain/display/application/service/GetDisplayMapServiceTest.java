@@ -6,6 +6,7 @@ import com.example.demo.domain.display.application.query.DisplayMapQuery;
 import com.example.demo.domain.display.application.query.DisplayMapQueryRepository;
 import com.example.demo.domain.display.application.query.DisplayMapQueryResult;
 import com.example.demo.domain.display.application.result.DisplayMapResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -85,6 +86,8 @@ class GetDisplayMapServiceTest {
         "department",
         bd("37.5513"),
         bd("126.9248"),
+        null,
+        PosterFit.FILL,
         null);
   }
 

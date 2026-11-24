@@ -41,7 +41,9 @@ public class ArchivePresentationMapper {
         result.displayId(),
         result.userId(),
         result.savedAt(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 
   public ArchiveDisplayToggleResponse toResponse(ArchiveDisplayToggleResult result) {
