@@ -77,6 +77,86 @@ class NotificationMessagesTest {
   }
 
   @Test
+  void requestApprovedMovesToMyDisplays() {
+    NotificationMessage message = NotificationMessages.requestApproved("빛의 결 | 조용한 흐름");
+
+    assertThat(text(message))
+        .isEqualTo("“빛의 결 | 조용한 흐름” 전시의 등록 요청이 승인됐어요. 승인된 시점에 저장돼 있던 내용이 공개돼요.");
+    assertThat(boldTexts(message)).containsExactly("빛의 결 | 조용한 흐름");
+    assertThat(message.target())
+        .isEqualTo(new NotificationTarget(NotificationTargetType.MY_DISPLAYS, null));
+  }
+
+  @Test
+  void requestRejectedIncludesReasonAsWritten() {
+    NotificationMessage message =
+        NotificationMessages.requestRejected("빛의 결", "이미지 출처를 확인할 수 없어요.");
+
+    assertThat(message.type()).isEqualTo(NotificationType.REQUEST_REJECTED);
+    assertThat(text(message))
+        .isEqualTo("“빛의 결” 전시의 등록 요청이 반려됐어요. 이미지 출처를 확인할 수 없어요. 수정한 뒤 다시 요청해 주세요.");
+    assertThat(boldTexts(message)).containsExactly("빛의 결");
+  }
+
+  @Test
+  void exhibitionInvitedShowsInviterAsDisplayNicknameWithServiceNickname() {
+    NotificationMessage message =
+        NotificationMessages.exhibitionInvited("펼쳐지는 장면", "김도윤", "doyoon");
+
+    assertThat(text(message)).isEqualTo("“펼쳐지는 장면” 전시에 팀원으로 초대받았어요. 초대한 사람: 김도윤(doyoon)");
+    assertThat(boldTexts(message)).containsExactly("펼쳐지는 장면", "김도윤(doyoon)");
+    assertThat(message.target())
+        .isEqualTo(new NotificationTarget(NotificationTargetType.MY_INVITATIONS, null));
+  }
+
+  @Test
+  void exhibitionMemberRemovedOmitsArtworkSentenceWhenNothingDeleted() {
+    assertThat(text(NotificationMessages.exhibitionMemberRemoved("손끝의 지도", 2)))
+        .isEqualTo("“손끝의 지도” 전시에서 내보내졌어요. 작가로 등록돼 있던 작품 2점이 함께 삭제됐어요.");
+    assertThat(text(NotificationMessages.exhibitionMemberRemoved("손끝의 지도", 0)))
+        .isEqualTo("“손끝의 지도” 전시에서 내보내졌어요.");
+  }
+
+  @Test
+  void exhibitionDeletedOmitsArtworkSentenceWhenNoArtwork() {
+    NotificationMessage message = NotificationMessages.exhibitionDeleted("움직임의 기록", 5);
+
+    assertThat(text(message)).isEqualTo("“움직임의 기록” 전시가 삭제됐어요. 작가로 등록돼 있던 작품 5점이 함께 삭제됐어요.");
+    assertThat(boldTexts(message)).containsExactly("움직임의 기록", "5점");
+    assertThat(message.target()).isNull();
+    assertThat(text(NotificationMessages.exhibitionDeleted("움직임의 기록", 0)))
+        .isEqualTo("“움직임의 기록” 전시가 삭제됐어요.");
+  }
+
+  @Test
+  void artistNewExhibitionShowsOneArtistWithPeriodAndPlace() {
+    NotificationMessage message =
+        NotificationMessages.artistNewExhibition(
+            "송하윤",
+            0,
+            "재생 중",
+            LocalDate.of(2026, 12, 2),
+            LocalDate.of(2026, 12, 7),
+            "미온미디어관 B1",
+            5L);
+
+    assertThat(text(message)).isEqualTo("송하윤님이 참여한 “재생 중” 전시가 공개됐어요. 12.02 - 12.07 · 미온미디어관 B1");
+    assertThat(boldTexts(message)).containsExactly("송하윤", "재생 중");
+    assertThat(message.target())
+        .isEqualTo(new NotificationTarget(NotificationTargetType.DISPLAY_DETAIL, 5L));
+  }
+
+  @Test
+  void artistNewExhibitionShowsOthersCountWhenManySavedArtistsJoined() {
+    NotificationMessage message =
+        NotificationMessages.artistNewExhibition(
+            "송하윤", 1, "재생 중", LocalDate.of(2026, 12, 2), LocalDate.of(2026, 12, 7), null, 5L);
+
+    assertThat(text(message)).isEqualTo("송하윤님 외 1명이 참여한 “재생 중” 전시가 공개됐어요. 12.02 - 12.07");
+    assertThat(boldTexts(message)).containsExactly("송하윤", "1명", "재생 중");
+  }
+
+  @Test
   void exhibitionStartedShowsPeriodAndPlaceAndMovesToDisplayDetail() {
     NotificationMessage message =
         NotificationMessages.exhibitionStarted(

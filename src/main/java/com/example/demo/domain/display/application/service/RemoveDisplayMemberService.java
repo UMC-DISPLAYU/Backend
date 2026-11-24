@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.service;
 
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.result.RemoveDisplayMemberResult;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -21,12 +22,15 @@ public class RemoveDisplayMemberService {
   private final DisplayPermissionChecker permissionChecker;
   private final DisplayArtworkCleanupService artworkCleanupService;
   private final Clock clock;
+  private final DisplayNotifier displayNotifier;
 
   public RemoveDisplayMemberService(
       DisplayRepository displayRepository,
       DisplayPermissionChecker permissionChecker,
       DisplayArtworkCleanupService artworkCleanupService,
-      Clock clock) {
+      Clock clock,
+      DisplayNotifier displayNotifier) {
+    this.displayNotifier = displayNotifier;
     this.displayRepository = displayRepository;
     this.permissionChecker = permissionChecker;
     this.artworkCleanupService = artworkCleanupService;
@@ -43,6 +47,8 @@ public class RemoveDisplayMemberService {
     Long removedUserId = removedMember.getUserId().value();
     int deletedArtworkCount =
         artworkCleanupService.deleteByArtistAccount(displayId, removedUserId, requesterUserId);
+    displayNotifier.notifyMemberRemoved(
+        display, removedUserId, requesterUserId, deletedArtworkCount);
 
     return new RemoveDisplayMemberResult(
         displayId, removedMember.getId(), removedUserId, deletedArtworkCount);

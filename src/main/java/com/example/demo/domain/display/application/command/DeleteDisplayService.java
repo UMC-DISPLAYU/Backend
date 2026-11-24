@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.command;
 
 import com.example.demo.domain.display.application.event.DisplayDeletedEvent;
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.application.permission.DisplayPermissionChecker;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -23,13 +24,16 @@ public class DeleteDisplayService {
   private final DisplayPermissionChecker displayPermissionChecker;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
+  private final DisplayNotifier displayNotifier;
 
   public DeleteDisplayService(
       DisplayRepository displayRepository,
       DisplayListCacheEvictionPort displayListCacheEvictionPort,
       DisplayPermissionChecker displayPermissionChecker,
       ApplicationEventPublisher eventPublisher,
-      Clock clock) {
+      Clock clock,
+      DisplayNotifier displayNotifier) {
+    this.displayNotifier = displayNotifier;
     this.displayRepository = displayRepository;
     this.displayListCacheEvictionPort = displayListCacheEvictionPort;
     this.displayPermissionChecker = displayPermissionChecker;
@@ -50,6 +54,7 @@ public class DeleteDisplayService {
 
     LocalDateTime deletedAt = LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
     display.delete();
+    displayNotifier.notifyDisplayDeleted(display, command.userId());
     displayListCacheEvictionPort.evictAfterCommit();
     eventPublisher.publishEvent(new DisplayDeletedEvent(display.getId(), deletedAt));
   }

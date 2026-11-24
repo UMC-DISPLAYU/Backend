@@ -1,6 +1,7 @@
 package com.example.demo.domain.archive.infrastructure.persistence;
 
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,8 @@ public interface SpringDataArchiveArtistJpaRepository extends JpaRepository<Arch
 
   Optional<ArchiveArtist> findByUserIdAndArtistUserIdAndDeletedAtIsNull(
       Long userId, Long artistUserId);
+
+  List<ArchiveArtist> findByArtistUserIdInAndDeletedAtIsNull(Collection<Long> artistUserIds);
 
   @Query(
       """

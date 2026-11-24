@@ -60,6 +60,21 @@ public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<Dis
   List<DisplayArtwork> findAllActiveByDisplayIdAndArtistUserId(
       @Param("displayId") Long displayId, @Param("userId") Long userId);
 
+  @Query(
+      """
+      SELECT new com.example.demo.domain.displayartwork.infrastructure.persistence.ArtistArtworkCountRow(
+        creator.userId, COUNT(DISTINCT artwork.id))
+      FROM DisplayArtwork artwork, Creator creator
+      WHERE creator.displayArtworkId = artwork.id
+        AND artwork.display.id = :displayId
+        AND artwork.deletedAt IS NULL
+        AND creator.userId IS NOT NULL
+        AND creator.role <> com.example.demo.domain.displayartwork.domain.type.CreatorRole.QA_ONLY
+      GROUP BY creator.userId
+      """)
+  List<ArtistArtworkCountRow> countActiveByArtistUserIdInDisplay(
+      @Param("displayId") Long displayId);
+
   /**
    * 해당 유저가 <b>작가로</b> 참여한 출품작을 등록순으로 조회한다.
    *
