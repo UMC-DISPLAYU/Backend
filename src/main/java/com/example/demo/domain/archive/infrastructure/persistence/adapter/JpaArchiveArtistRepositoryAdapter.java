@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.infrastructure.persistence.adapter;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveArtist;
 import com.example.demo.domain.archive.domain.repository.ArchiveArtistRepository;
 import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveArtistJpaRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +31,14 @@ public class JpaArchiveArtistRepositoryAdapter implements ArchiveArtistRepositor
   @Override
   public Optional<ArchiveArtist> findByUserIdAndArtistUserId(Long userId, Long artistUserId) {
     return jpaRepository.findByUserIdAndArtistUserIdAndDeletedAtIsNull(userId, artistUserId);
+  }
+
+  @Override
+  public List<ArchiveArtist> findActiveByArtistUserIds(Collection<Long> artistUserIds) {
+    if (artistUserIds.isEmpty()) {
+      return List.of();
+    }
+    return jpaRepository.findByArtistUserIdInAndDeletedAtIsNull(artistUserIds);
   }
 
   @Override

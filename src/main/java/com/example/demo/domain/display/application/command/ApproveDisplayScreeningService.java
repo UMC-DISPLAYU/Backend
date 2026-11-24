@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.command;
 
+import com.example.demo.domain.display.application.notification.DisplayNotifier;
 import com.example.demo.domain.display.application.port.DisplayListCacheEvictionPort;
 import com.example.demo.domain.display.application.service.DisplayContentPublicationService;
 import com.example.demo.domain.display.domain.aggregate.Display;
@@ -23,13 +24,16 @@ public class ApproveDisplayScreeningService {
   private final DisplayContentPublicationService publicationService;
   private final DisplayListCacheEvictionPort cacheEvictionPort;
   private final Clock clock;
+  private final DisplayNotifier displayNotifier;
 
   public ApproveDisplayScreeningService(
       DisplayRepository displayRepository,
       DisplayScreeningRepository screeningRepository,
       DisplayContentPublicationService publicationService,
       DisplayListCacheEvictionPort cacheEvictionPort,
-      Clock clock) {
+      Clock clock,
+      DisplayNotifier displayNotifier) {
+    this.displayNotifier = displayNotifier;
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.publicationService = publicationService;
@@ -47,6 +51,7 @@ public class ApproveDisplayScreeningService {
     screening.approve(reviewerId, processedAt);
     publicationService.publishForDisplay(displayId);
     cacheEvictionPort.evictAfterCommit();
+    displayNotifier.notifyReviewApproved(display, reviewerId);
   }
 
   private Display findDisplay(Long displayId) {

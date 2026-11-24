@@ -138,6 +138,32 @@ class SpringDataDisplayArtworkJpaRepositoryTest {
   }
 
   @Test
+  void countActiveByArtistUserIdInDisplayCountsEachArtistAccountOnce() {
+    Display display = persistedDisplay();
+    Display otherDisplay = persistedDisplay();
+    DisplayArtwork together = persistArtwork(display, "함께 만든 작품", 0);
+    DisplayArtwork alone = persistArtwork(display, "혼자 만든 작품", 1);
+    DisplayArtwork proxy = persistArtwork(display, "대리 등록한 작품", 2);
+    DisplayArtwork deleted = persistArtwork(display, "이미 삭제된 작품", 3);
+    DisplayArtwork other = persistArtwork(otherDisplay, "다른 전시 작품", 0);
+    persistCreator(together.getId(), "대표", CreatorRole.LEAD_ARTIST, DISPLAY_OWNER);
+    persistCreator(together.getId(), "참여 작가", CreatorRole.CO_AUTHOR, PARTICIPANT);
+    persistCreator(alone.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(proxy.getId(), "계정 없는 작가", CreatorRole.LEAD_ARTIST, null);
+    persistCreator(proxy.getId(), "QnA 담당자", CreatorRole.QA_ONLY, DISPLAY_OWNER);
+    persistCreator(deleted.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    persistCreator(other.getId(), "참여 작가", CreatorRole.LEAD_ARTIST, PARTICIPANT);
+    jpaRepository.findById(deleted.getId()).orElseThrow().delete();
+    jpaRepository.flush();
+
+    // 삭제된 작품·다른 전시 작품·QnA 담당 전용·계정 없는 작가는 세지 않는다.
+    assertThat(jpaRepository.countActiveByArtistUserIdInDisplay(display.getId()))
+        .containsExactlyInAnyOrder(
+            new ArtistArtworkCountRow(DISPLAY_OWNER, 1L),
+            new ArtistArtworkCountRow(PARTICIPANT, 2L));
+  }
+
+  @Test
   void findPreviewReturnsAllArtworksWhenFieldFilterIsIgnored() {
     Display display = persistedDisplay();
     persistArtwork(display, "회화 작품", List.of(ArtworkType.PAINTING), 0);
