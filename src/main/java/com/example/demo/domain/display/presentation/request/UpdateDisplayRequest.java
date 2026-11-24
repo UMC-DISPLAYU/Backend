@@ -101,9 +101,15 @@ public record UpdateDisplayRequest(
             description =
                 "원본 이미지 기준 표시 범위. 생략 또는 null이면 기존 범위 유지. 대표 URL을 다른 값으로 바꾸면 초기화. 전체 이미지는 x=0, y=0, w=1, h=1.")
         PosterCropRequest posterCrop,
-    @Schema(description = "포스터 표시 방식. 생략하거나 null이면 기존 값을 유지합니다.") PosterFit posterFit,
-    @Schema(description = "전체 보이기(FIT)에서 여백을 채울 색상. 생략하거나 null이면 기존 값을 유지합니다.", example = "#a1b2c3")
-        @Pattern(regexp = "#[0-9a-fA-F]{6}") String posterEdgeColor,
+    @Schema(
+            types = {"string", "null"},
+            description = "포스터 표시 방식. 생략하거나 null이면 기존 값을 유지합니다.")
+        PosterFit posterFit,
+    @Schema(
+            types = {"string", "null"},
+            description = "전체 보이기(FIT)에서 여백을 채울 색상. 생략하거나 null이면 기존 값을 유지합니다.",
+            example = "#a1b2c3")
+        @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String posterEdgeColor,
     @Valid @Schema(
             description =
                 "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생략 또는 null은 유지하며 대표 미디어 변경 시 기존 크롭을 초기화합니다.")

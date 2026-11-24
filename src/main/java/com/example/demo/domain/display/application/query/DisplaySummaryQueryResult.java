@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.query;
 
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 
@@ -12,4 +13,6 @@ public record DisplaySummaryQueryResult(
     LocalDate startDate,
     LocalDate endDate,
     String posterImageUrl,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {}

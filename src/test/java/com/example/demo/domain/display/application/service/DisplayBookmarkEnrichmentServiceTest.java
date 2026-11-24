@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,6 +45,8 @@ class DisplayBookmarkEnrichmentServiceTest {
         9,
         false,
         null,
+        null,
+        PosterFit.FILL,
         null,
         null);
   }

@@ -263,6 +263,8 @@ public class DisplayPresentationMapper {
         result.isArchived(),
         result.placeName(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.posterVideoUrl());
   }
 
@@ -279,6 +281,8 @@ public class DisplayPresentationMapper {
         result.isArchived(),
         result.placeName(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.posterVideoUrl());
   }
 
@@ -295,6 +299,8 @@ public class DisplayPresentationMapper {
         result.isArchived(),
         result.placeName(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.posterVideoUrl());
   }
 
@@ -311,6 +317,8 @@ public class DisplayPresentationMapper {
         result.isArchived(),
         result.placeName(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.posterVideoUrl());
   }
 
@@ -326,7 +334,9 @@ public class DisplayPresentationMapper {
         result.latitude(),
         result.longitude(),
         result.isArchived(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 
   private MyDisplayListResponse.MyDisplayResponse toResponse(
@@ -345,6 +355,8 @@ public class DisplayPresentationMapper {
         result.isLeader(),
         result.role(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.posterVideoUrl());
   }
 
@@ -362,7 +374,9 @@ public class DisplayPresentationMapper {
         result.placeName(),
         result.postImageUrl(),
         result.isLeader(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 
   private DisplayDetailResponse.LocationResponse toResponse(

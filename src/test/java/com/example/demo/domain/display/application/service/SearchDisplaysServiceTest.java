@@ -6,6 +6,7 @@ import com.example.demo.domain.display.application.query.SearchDisplayQuery;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryRepository;
 import com.example.demo.domain.display.application.query.SearchDisplayQueryResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,6 +50,8 @@ class SearchDisplaysServiceTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
+        PosterFit.FILL,
         null,
         null,
         0L);

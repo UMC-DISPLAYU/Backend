@@ -40,6 +40,7 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -320,6 +321,8 @@ class DisplayCacheIntegrationTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
+        PosterFit.FILL,
         null,
         null);
   }

@@ -14,6 +14,7 @@ import com.example.demo.domain.admin.application.service.AdminReviewService;
 import com.example.demo.domain.admin.infrastructure.config.AdminReviewConfiguration;
 import com.example.demo.domain.admin.presentation.AdminReviewController;
 import com.example.demo.domain.admin.presentation.mapper.AdminReviewMapper;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.global.error.*;
 import com.example.demo.global.file.domain.MediaType;
 import com.example.demo.global.security.AuthUser;
@@ -121,13 +122,17 @@ class AdminReviewTest {
                         LocalDate.of(2026, 10, 1),
                         LocalDate.of(2026, 10, 7),
                         "https://example.com/poster.png",
-                        null)),
+                        null,
+                        PosterFit.FIT,
+                        "#123456")),
                 3L,
                 true));
     mvc.perform(get("/api/v1/admin/displays"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.items[0].displayId").value(3))
         .andExpect(jsonPath("$.success.data.items[0].requesterId").value(2))
+        .andExpect(jsonPath("$.success.data.items[0].posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.items[0].posterEdgeColor").value("#123456"))
         .andExpect(jsonPath("$.success.data.items[0].school").value("전시대학교"))
         .andExpect(jsonPath("$.success.data.items[0].leaderName").value("전시 대표자"))
         .andExpect(jsonPath("$.success.data.items[0].startDate").value("2026-10-01"))
@@ -153,6 +158,8 @@ class AdminReviewTest {
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
             null,
+            null,
+            PosterFit.FILL,
             null);
     when(reviews.search(new ReviewSearchQuery(null, "REJECTED", 3L, 10)))
         .thenReturn(new ReviewPage(List.of(summary), null, false));
