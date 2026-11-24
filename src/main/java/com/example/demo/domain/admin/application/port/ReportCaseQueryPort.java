@@ -4,7 +4,7 @@ import com.example.demo.domain.admin.application.query.ReportCaseSearchQuery;
 import com.example.demo.domain.admin.application.result.ReportCaseDetail;
 import com.example.demo.domain.admin.application.result.ReportCasePage;
 
-/** 신고 묶음 조회 계약. 실제 접수·묶음 저장소 연동 및 검증 후 활성화한다. */
+/** 댓글 신고 묶음 조회. 접수 내역(ContentReport)과 종결 결과(AdminReportCase)로 계산한다. */
 public interface ReportCaseQueryPort {
   /**
    *
@@ -30,10 +30,13 @@ public interface ReportCaseQueryPort {
    *   <li>처리 전 resolution=null. reports와 attachments는 값이 없으면 []이다.
    * </ul>
    *
-   * <p>연동 전 확정할 것
+   * <p>묶음 기준
    *
    * <ul>
-   *   <li>shortcut: 묶음 생성·재신고 회차·접수 내역 전체 반환 범위는 미정이며 실제 어댑터 연동 전에 확정한다.
+   *   <li>묶음은 댓글 하나(commentType+commentId)에 쌓인 미종결 신고 모음이며, 묶음 ID는 그 회차 첫 신고의 reportId다.
+   *   <li>종결 뒤 같은 댓글에 들어온 신고는 새 묶음(다음 회차)이 된다. 종결된 묶음의 범위와 건수는 바뀌지 않는다.
+   *   <li>reports는 해당 회차의 접수 내역 전체를 reportId 오름차순으로 반환한다.
+   *   <li>회차 첫 신고가 아닌 reportId는 묶음 ID가 아니므로 NOT_FOUND다.
    * </ul>
    */
   ReportCaseDetail getDetail(Long reportCaseId);
