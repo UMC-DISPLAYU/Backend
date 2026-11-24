@@ -73,6 +73,9 @@ import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.I
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUCCESS_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUCCESS_EXAMPLE_NAME;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_ISSUE_SUMMARY;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_LINK_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_LINK_SUCCESS_DESCRIPTION;
+import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_LINK_SUMMARY;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_TOKEN_DESCRIPTION;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.INVITATION_TOKEN_EXAMPLE;
 import static com.example.demo.domain.display.presentation.docs.DisplayApiDocs.LIKE_CANCEL_DESCRIPTION;
@@ -220,7 +223,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -672,6 +677,32 @@ public class DisplayController {
     DisplayLikeStatusResult result =
         getDisplayLikeStatusService.getLikeStatus(displayId, requireUserId(user));
     return ApiResponseBody.success(mapper.toResponse(result), request);
+  }
+
+  @GetMapping(value = "/api/v1/display/{displayId}/invitation", produces = "application/json")
+  @Operation(summary = INVITATION_LINK_SUMMARY, description = INVITATION_LINK_DESCRIPTION)
+  @SecurityRequirement(name = "Authorization")
+  @ApiResponse(
+      responseCode = "200",
+      useReturnTypeSchema = true,
+      description = INVITATION_LINK_SUCCESS_DESCRIPTION,
+      content =
+          @Content(
+              mediaType = "application/json",
+              examples = @ExampleObject(value = INVITATION_ISSUE_SUCCESS_EXAMPLE)))
+  public ResponseEntity<ApiResponseBody<DisplayInvitationResponse>> getDisplayInvitation(
+      @Parameter(
+              description = INVITATION_DISPLAY_ID_DESCRIPTION,
+              example = INVITATION_DISPLAY_ID_EXAMPLE)
+          @PathVariable
+          Long displayId,
+      @AuthenticationPrincipal AuthUser user,
+      HttpServletRequest request) {
+    DisplayInvitationResult result =
+        displayInvitationCommandService.getOrCreateInvitation(requireUserId(user), displayId);
+    return ResponseEntity.ok()
+        .cacheControl(CacheControl.noStore())
+        .body(ApiResponseBody.success(mapper.toResponse(result), request));
   }
 
   @PostMapping("/api/v1/display/{displayId}/invitation")

@@ -83,6 +83,16 @@ public final class DisplayApiDocs {
   public static final String LIKE_STATUS_SUCCESS_DESCRIPTION = "전시 좋아요 여부 조회 성공";
   public static final String LIKE_STATUS_SUCCESS_EXAMPLE_NAME = "Display like status success";
 
+  public static final String INVITATION_LINK_SUMMARY = "복사용 전시 초대 링크 조회";
+  public static final String INVITATION_LINK_DESCRIPTION =
+      "전시 팀장이 복사할 초대 링크를 조회합니다. 요청 본문은 없습니다. "
+          + "발급 이력이 없으면 최초 한 번 원본 토큰과 해시를 저장하고, 이후에는 같은 링크를 반환합니다. "
+          + "응답은 캐시하지 않습니다. 비활성화된 링크는 410 DISPLAY_INVITATION_DISABLED를 반환합니다. "
+          + "원본 토큰이 없는 기존 링크는 409 DISPLAY_INVITATION_REISSUE_REQUIRED를 반환하며 "
+          + "기존 링크를 변경하지 않습니다. 이 경우 POST로 명시적으로 재발급해야 합니다. "
+          + "미인증은 401, 팀장 권한 없음은 403, 전시 없음 또는 삭제는 404입니다.";
+  public static final String INVITATION_LINK_SUCCESS_DESCRIPTION = "복사용 전시 초대 링크 조회 성공";
+
   public static final String INVITATION_ISSUE_SUMMARY = "전시 초대 링크 생성";
   public static final String INVITATION_ISSUE_DESCRIPTION =
       "전시 팀장이 초대 링크를 생성하거나 재발급합니다. 기존 활성 링크가 있으면 새 토큰으로 교체되어 이전 링크는 즉시 사용할 수 없습니다.";
@@ -171,7 +181,10 @@ public final class DisplayApiDocs {
 
   public static final String DETAIL_SUMMARY = "전시 상세 조회";
   public static final String DETAIL_DESCRIPTION =
-      "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다. currentScreeningId는 현재 심사 중인 요청 ID이며, 심사 중이 아니면 null입니다.";
+      "displayId에 해당하는 전시의 전체 상세 데이터를 조회합니다. currentScreeningId는 현재 심사 중인 요청 ID이며, 심사 중이 아니면 null입니다. "
+          + "artworkContentVisible과 exhibitionContentVisible은 일반 관람객의 현재 공개 가능 여부입니다. "
+          + "PUBLISHED 전시에서 IMMEDIATELY는 즉시, ON_EXHIBITION은 한국 시간 전시 시작일 00시부터 공개합니다. "
+          + "소유자·팀원의 미리보기 권한과 무관하며 종료 후에도 공개 상태를 유지합니다.";
   public static final String DETAIL_SUCCESS_DESCRIPTION = "전시 상세 조회 성공";
   public static final String DETAIL_SUCCESS_EXAMPLE_NAME = "Display detail success";
   public static final String DETAIL_DISPLAY_ID_DESCRIPTION = "전시 ID";
@@ -192,6 +205,8 @@ public final class DisplayApiDocs {
       {
         "title": "FORM 2026",
         "posterImageUrl": "https://cdn...",
+        "posterFit": "FIT",
+        "posterEdgeColor": "#28405a",
         "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
         "_posterImageUrlRule": "대표 이미지는 서버에서 imageType=MAIN, sortOrder=0으로 저장됩니다.",
         "displayImageUrl": [
@@ -244,6 +259,8 @@ public final class DisplayApiDocs {
             "contract": "Instagram DM",
             "instagramUrl": "https://www.instagram.com/displayu",
             "websiteUrl": "https://displayu.com",
+            "posterFit": "FIT",
+            "posterEdgeColor": "#28405a",
             "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
@@ -261,6 +278,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -366,6 +385,8 @@ public final class DisplayApiDocs {
         "displayId": 12,
         "title": "FORM 2026 (수정본)",
         "posterImageUrl": "https://cdn...",
+        "posterFit": "FIT",
+        "posterEdgeColor": "#28405a",
         "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
         "_posterImageUrlRule": "posterImageUrl을 전달하면 imageType=MAIN, sortOrder=0 대표 이미지 URL을 교체합니다.",
         "type": "GRADUATION",
@@ -413,6 +434,8 @@ public final class DisplayApiDocs {
             "contract": "Email",
             "instagramUrl": "https://www.instagram.com/displayu",
             "websiteUrl": "https://displayu.com",
+            "posterFit": "FIT",
+            "posterEdgeColor": "#28405a",
             "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
             "note": "물품 보관소를 운영하지 않습니다.",
             "organization": "중앙대학교",
@@ -430,6 +453,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -474,6 +499,8 @@ public final class DisplayApiDocs {
             "qnaAccount": "",
             "instagramUrl": null,
             "websiteUrl": null,
+            "posterFit": "FILL",
+            "posterEdgeColor": null,
             "posterCrop": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
@@ -491,6 +518,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "PENDING_REVIEW",
             "currentScreeningId": 42,
             "invitationToken": null,
@@ -528,6 +557,8 @@ public final class DisplayApiDocs {
             "qnaAccount": "",
             "instagramUrl": null,
             "websiteUrl": null,
+            "posterFit": "FILL",
+            "posterEdgeColor": null,
             "posterCrop": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
@@ -545,6 +576,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": false,
+            "exhibitionContentVisible": false,
             "status": "DRAFT",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -605,6 +638,8 @@ public final class DisplayApiDocs {
             "qnaAccount": "",
             "instagramUrl": null,
             "websiteUrl": null,
+            "posterFit": "FILL",
+            "posterEdgeColor": null,
             "posterCrop": null,
             "note": "전시장 내 음료 반입 금지",
             "organization": "중앙대학교",
@@ -622,6 +657,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "ON_EXHIBITION",
             "exhibitionContentOpen": "IMMEDIATELY",
+            "artworkContentVisible": true,
+            "exhibitionContentVisible": true,
             "status": "PUBLISHED",
             "currentScreeningId": null,
             "invitationToken": null,
@@ -752,6 +789,8 @@ public final class DisplayApiDocs {
                 "endDate": "2026-05-28",
                 "locationName": "홍익대학교 현대미술관",
                 "posterImageUrl": "https://cdn.displayu.com/posters/inner_view.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "latitude": 37.5513,
@@ -785,6 +824,8 @@ public final class DisplayApiDocs {
                 "displayId": 5,
                 "title": "ABOUT THE FLOW OF TIME",
                 "posterImageUrl": "https://cdn.displayu.com/posters/flow_time.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
@@ -820,6 +861,8 @@ public final class DisplayApiDocs {
                 "displayId": 15,
                 "title": "2026 디자인 졸업전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
@@ -855,6 +898,8 @@ public final class DisplayApiDocs {
                 "displayId": 7,
                 "title": "2026 졸업 전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "전시장",
                 "schoolDepartmentName": "중앙대학교 디자인학부",
@@ -925,6 +970,8 @@ public final class DisplayApiDocs {
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
                 "isLeader": true,
                 "role": "TEAM_LEADER",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7}
               }
             ],
@@ -942,6 +989,8 @@ public final class DisplayApiDocs {
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
                 "isLeader": false,
                 "role": "MANAGER",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7}
               },
               {
@@ -957,6 +1006,8 @@ public final class DisplayApiDocs {
                 "postImageUrl": "https://cdn.displayu.com/posters/member.png",
                 "isLeader": false,
                 "role": "TEAM_MEM",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7}
               }
             ]
@@ -1078,6 +1129,8 @@ public final class DisplayApiDocs {
             "contract": "Instagram DM",
             "instagramUrl": "https://www.instagram.com/displayu",
             "websiteUrl": "https://displayu.com",
+            "posterFit": "FIT",
+            "posterEdgeColor": "#28405a",
             "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
             "note": "입장 무료",
             "organization": "디스플레이유",
@@ -1095,6 +1148,8 @@ public final class DisplayApiDocs {
             },
             "artworkContentOpen": "IMMEDIATELY",
             "exhibitionContentOpen": "ON_EXHIBITION",
+            "artworkContentVisible": true,
+            "exhibitionContentVisible": true,
             "status": "PUBLISHED",
             "currentScreeningId": null,
             "invitationToken": "token-value",
@@ -1183,6 +1238,8 @@ public final class DisplayApiDocs {
                 "displayId": 7,
                 "title": "2026 졸업 전시",
                 "posterImageUrl": "https://cdn.displayu.com/posters/graduation.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "placeName": "디유 갤러리",
                 "schoolDepartmentName": "중앙대학교 디자인학부",

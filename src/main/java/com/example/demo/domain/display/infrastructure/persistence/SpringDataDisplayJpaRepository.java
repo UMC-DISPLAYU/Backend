@@ -3,6 +3,7 @@ package com.example.demo.domain.display.infrastructure.persistence;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import jakarta.persistence.LockModeType;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, Long> {
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select display from Display display where display.id = :displayId")
+  Optional<Display> findByIdForUpdate(@Param("displayId") Long displayId);
 
   @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
   Optional<Display> findWithOptimisticLockById(Long displayId);
@@ -70,6 +75,18 @@ public interface SpringDataDisplayJpaRepository extends JpaRepository<Display, L
       """)
   List<Display> findPublishedCreatedDisplaysByUserId(
       @Param("userId") Long userId, @Param("status") DisplayStatus status);
+
+  @Query(
+      """
+      SELECT display
+      FROM Display display
+      WHERE display.period.startDate = :startDate
+        AND display.status = :status
+        AND display.deletedAt IS NULL
+      ORDER BY display.id ASC
+      """)
+  List<Display> findByStartDateAndStatus(
+      @Param("startDate") LocalDate startDate, @Param("status") DisplayStatus status);
 
   default List<Display> findPublishedCreatedDisplaysByUserId(Long userId) {
     return findPublishedCreatedDisplaysByUserId(userId, DisplayStatus.PUBLISHED);

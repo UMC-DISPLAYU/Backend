@@ -41,6 +41,8 @@ public class JpaDisplayInvitationDisplayQueryRepositoryAdapter
                 display.period.endDate,
                 display.location.placeName,
                 display.posterCrop,
+                display.posterFit,
+                display.posterEdgeColor,
                 QDisplayImageConditions.videoUrl(image)))
         .from(invitation)
         .join(invitation.display, display)

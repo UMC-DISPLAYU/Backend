@@ -57,14 +57,15 @@ public class DisplayArtworkPermissionChecker {
   public void requireProxyRegistrationAllowed(
       Long requesterUserId, Display display, Long artistUserId) {
     if (!Objects.equals(requesterUserId, artistUserId)
-        && !isDisplayLeader(display, requesterUserId)) {
+        && !isDisplayArtworkManager(display, requesterUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.FORBIDDEN_PROXY_ARTWORK_REGISTRATION);
     }
   }
 
   public void requireQnaHandlerAssignable(
       Display display, Long handlerUserId, Set<Long> artistUserIds) {
-    if (!artistUserIds.contains(handlerUserId) && !isDisplayLeader(display, handlerUserId)) {
+    if (!artistUserIds.contains(handlerUserId)
+        && !isDisplayArtworkManager(display, handlerUserId)) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
     }
   }

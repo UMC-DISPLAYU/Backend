@@ -1,9 +1,11 @@
 package com.example.demo.domain.display.application.query;
 
 import com.example.demo.domain.display.application.result.DisplayDetailResult;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface DisplayDetailQueryRepository {
 
-  Optional<DisplayDetailResult> findDisplayDetail(Long displayId, Long requesterUserId);
+  Optional<DisplayDetailResult> findDisplayDetail(
+      Long displayId, Long requesterUserId, LocalDate today);
 }

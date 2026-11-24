@@ -10,6 +10,7 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -48,6 +49,7 @@ class DisplayControllerPublishTest {
   @Test
   void publishDisplayRequestsReviewWhenRequesterIsTeamLeader() throws Exception {
     Display display = displayWithTeamMembers();
+    display.changePosterPresentation(PosterFit.FIT, "#13579b");
     displayJpaRepository.saveAndFlush(display);
 
     mockMvc
@@ -59,6 +61,8 @@ class DisplayControllerPublishTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.resultType").value("SUCCESS"))
         .andExpect(jsonPath("$.success.data.displayId").value(display.getId()))
+        .andExpect(jsonPath("$.success.data.posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#13579b"))
         .andExpect(jsonPath("$.success.data.status").value("PENDING_REVIEW"))
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display/publish"));
 

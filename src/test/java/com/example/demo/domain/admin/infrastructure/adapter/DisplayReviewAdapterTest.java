@@ -18,6 +18,7 @@ import com.example.demo.domain.display.application.result.DisplayScreeningHistor
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.application.result.DisplayScreeningSummaryResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.global.file.domain.MediaType;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -53,7 +54,9 @@ class DisplayReviewAdapterTest {
             LocalDate.of(2026, 10, 1),
             LocalDate.of(2026, 10, 7),
             "poster",
-            null);
+            null,
+            PosterFit.FIT,
+            "#112233");
     when(searchService.search(displayQuery))
         .thenReturn(new DisplayScreeningPageResult(List.of(item), 9L, true));
 

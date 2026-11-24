@@ -17,6 +17,7 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
   }
 
   @Override
-  public Optional<DisplayDetailResult> findDisplayDetail(Long displayId, Long requesterUserId) {
+  public Optional<DisplayDetailResult> findDisplayDetail(
+      Long displayId, Long requesterUserId, LocalDate today) {
     Tuple base = fetchBase(displayId);
     if (base == null) {
       return Optional.empty();
@@ -62,7 +64,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         fetchContentCategories(displayId, canViewDraft);
     List<DisplayDetailResult.InvitationResult> invitations = fetchInvitations(displayId);
 
-    return Optional.of(toResult(base, fields, images, contentCategories, teamMembers, invitations));
+    return Optional.of(
+        toResult(base, fields, images, contentCategories, teamMembers, invitations, today));
   }
 
   private Tuple fetchBase(Long displayId) {
@@ -82,6 +85,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.instagramUrl,
             display.websiteUrl,
             display.posterCrop,
+            display.posterFit,
+            display.posterEdgeColor,
             display.note,
             display.organization,
             display.department,
@@ -249,7 +254,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
       List<DisplayDetailResult.ImageResult> images,
       List<DisplayDetailResult.ContentCategoryResult> contentCategories,
       List<DisplayDetailResult.TeamMemberResult> teamMembers,
-      List<DisplayDetailResult.InvitationResult> invitations) {
+      List<DisplayDetailResult.InvitationResult> invitations,
+      LocalDate today) {
     return new DisplayDetailResult(
         base.get(display.id),
         base.get(display.ownerUserId.value),
@@ -290,7 +296,13 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
         base.get(display.status) == DisplayStatus.PENDING_REVIEW
             ? currentScreeningId(base.get(display.id))
             : null,
-        base.get(display.posterCrop));
+        base.get(display.posterCrop),
+        base.get(display.posterFit),
+        base.get(display.posterEdgeColor),
+        base.get(display.artworkContentOpen)
+            .isVisibleOn(base.get(display.status), base.get(display.period.startDate), today),
+        base.get(display.exhibitionContentOpen)
+            .isVisibleOn(base.get(display.status), base.get(display.period.startDate), today));
   }
 
   private Long currentScreeningId(Long displayId) {

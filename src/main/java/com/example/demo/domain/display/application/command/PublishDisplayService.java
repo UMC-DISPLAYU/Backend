@@ -10,6 +10,7 @@ import com.example.demo.domain.display.domain.repository.DisplayScreeningReposit
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
@@ -57,6 +58,9 @@ public class PublishDisplayService {
                 command.userId(),
                 LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC)));
     return DisplayDetailResult.from(
-        display, displayLikeRepository.countByDisplayId(display.getId()), screening.getId());
+        display,
+        displayLikeRepository.countByDisplayId(display.getId()),
+        screening.getId(),
+        LocalDate.now(clock));
   }
 }

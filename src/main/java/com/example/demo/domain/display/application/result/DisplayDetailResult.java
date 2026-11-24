@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.global.file.domain.MediaType;
 import java.math.BigDecimal;
@@ -47,13 +48,18 @@ public record DisplayDetailResult(
     String instagramUrl,
     String websiteUrl,
     Long currentScreeningId,
-    PosterCrop posterCrop) {
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor,
+    boolean artworkContentVisible,
+    boolean exhibitionContentVisible) {
 
-  public static DisplayDetailResult from(Display display, long likeCount) {
-    return from(display, likeCount, null);
+  public static DisplayDetailResult from(Display display, long likeCount, LocalDate today) {
+    return from(display, likeCount, null, today);
   }
 
-  public static DisplayDetailResult from(Display display, long likeCount, Long currentScreeningId) {
+  public static DisplayDetailResult from(
+      Display display, long likeCount, Long currentScreeningId, LocalDate today) {
     return new DisplayDetailResult(
         display.getId(),
         display.getOwnerUserId().value(),
@@ -93,7 +99,15 @@ public record DisplayDetailResult(
         display.getInstagramUrl(),
         display.getWebsiteUrl(),
         currentScreeningId,
-        display.getPosterCrop());
+        display.getPosterCrop(),
+        display.getPosterFit(),
+        display.getPosterEdgeColor(),
+        display
+            .getArtworkContentOpen()
+            .isVisibleOn(display.getStatus(), display.getPeriod().startDate(), today),
+        display
+            .getExhibitionContentOpen()
+            .isVisibleOn(display.getStatus(), display.getPeriod().startDate(), today));
   }
 
   public DisplayDetailResult withArchived(boolean isArchived) {
@@ -127,7 +141,11 @@ public record DisplayDetailResult(
         instagramUrl,
         websiteUrl,
         currentScreeningId,
-        posterCrop);
+        posterCrop,
+        posterFit,
+        posterEdgeColor,
+        artworkContentVisible,
+        exhibitionContentVisible);
   }
 
   public record LocationResult(

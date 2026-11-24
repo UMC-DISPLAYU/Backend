@@ -156,6 +156,20 @@ class NotificationMessagesTest {
     assertThat(boldTexts(message)).containsExactly("송하윤", "1명", "재생 중");
   }
 
+  @Test
+  void exhibitionStartedShowsPeriodAndPlaceAndMovesToDisplayDetail() {
+    NotificationMessage message =
+        NotificationMessages.exhibitionStarted(
+            "빛이 지나간 자리", LocalDate.of(2026, 12, 4), LocalDate.of(2026, 12, 6), "스튜디오 여백 B1", 5L);
+
+    assertThat(message.type()).isEqualTo(NotificationType.EXHIBITION_STARTED);
+    assertThat(message.title()).isEqualTo("저장한 전시 시작");
+    assertThat(text(message)).isEqualTo("저장한 “빛이 지나간 자리” 전시가 시작됐어요. 12.04 - 12.06 · 스튜디오 여백 B1");
+    assertThat(boldTexts(message)).containsExactly("빛이 지나간 자리");
+    assertThat(message.target())
+        .isEqualTo(new NotificationTarget(NotificationTargetType.DISPLAY_DETAIL, 5L));
+  }
+
   private static String text(NotificationMessage message) {
     return message.body().stream().map(NotificationBodySegment::text).collect(Collectors.joining());
   }

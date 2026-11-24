@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:displayu_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:displayu_test_${random.uuid};MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -70,3 +70,8 @@ jwt:
   access-expiration: 1800000
   refresh-expiration: 7200000
   signup-expiration: 600000
+
+notification:
+  exhibition-started:
+    # 테스트 컨텍스트가 뜰 때마다 시작 알림 보완 실행이 돌지 않게 끈다.
+    catch-up-on-startup: false

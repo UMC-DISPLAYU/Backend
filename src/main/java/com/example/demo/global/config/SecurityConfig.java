@@ -58,6 +58,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.HEAD, "/api/v1/lounge/me/**")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/display/*/invitation")
+                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/display/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.PUT, "/api/v1/display/**")

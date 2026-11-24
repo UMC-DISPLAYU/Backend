@@ -22,6 +22,28 @@ class DisplayOpenApiTest {
   @Autowired private MockMvc mvc;
 
   @Test
+  void documentsPublicVisibilityAndNullableProfileImages() throws Exception {
+    JsonNode document = document();
+    JsonNode detail = responseData(document, "/api/v1/display/{displayId}", "get");
+    for (String field : List.of("artworkContentVisible", "exhibitionContentVisible")) {
+      assertThat(property(document, detail, field).path("type").asText()).isEqualTo("boolean");
+    }
+    JsonNode detailMember =
+        resolve(document, property(document, detail, "teamMembers").path("items"));
+    assertThat(property(document, detailMember, "profileImageUrl").isMissingNode()).isTrue();
+
+    JsonNode members = responseData(document, "/api/v1/display/{displayId}/members", "get");
+    for (String list : List.of("memberAccept", "memberPending")) {
+      JsonNode member = resolve(document, property(document, members, list).path("items"));
+      assertNullable(property(document, member, "profileImageUrl"));
+    }
+    JsonNode nickname = responseData(document, "/api/v1/display/me/nickname", "patch");
+    assertNullable(property(document, nickname, "profileImageUrl"));
+    JsonNode user = responseData(document, "/api/v1/users/search", "get");
+    assertNullable(property(document, user, "profileImageUrl"));
+  }
+
+  @Test
   void generatedSchemasDescribeStructuredMediaAndDoNotMixPersonalQuestionImages() throws Exception {
     JsonNode document = document();
     for (String method : List.of("post", "patch")) {
@@ -126,6 +148,7 @@ class DisplayOpenApiTest {
       JsonNode card = resolve(document, property(document, data, "exhibitions").path("items"));
       assertThat(property(document, card, "placeName").isMissingNode()).as(path).isFalse();
       assertCrop(document, property(document, card, "posterCrop"));
+      assertPosterPresentation(document, card);
     }
 
     JsonNode preview = responseData(document, "/api/v1/artworks/preview", "get");
@@ -138,6 +161,12 @@ class DisplayOpenApiTest {
     assertDetailFields(document, responseData(document, "/api/v1/display", "patch"));
     assertDetailFields(document, responseData(document, "/api/v1/display/{displayId}", "get"));
     assertDetailFields(document, responseData(document, "/api/v1/display/publish", "patch"));
+    assertDetailFields(
+        document, responseData(document, "/api/v1/display/{displayId}/draft", "patch"));
+    assertDetailFields(
+        document, responseData(document, "/api/v1/display/{displayId}/reservation", "patch"));
+    assertDetailFields(
+        document, responseData(document, "/api/v1/display/invitation/{token}", "get"));
 
     JsonNode request =
         resolve(
@@ -167,6 +196,7 @@ class DisplayOpenApiTest {
         assertThat(writeRequest.path("properties").has(helper)).as(helper).isFalse();
       }
       assertCrop(document, property(document, writeRequest, "posterCrop"));
+      assertPosterPresentation(document, writeRequest);
       for (String dimension : List.of("w", "h")) {
         assertThat(
                 property(document, property(document, writeRequest, "posterCrop"), dimension)
@@ -268,6 +298,7 @@ class DisplayOpenApiTest {
           .as("%s schema: %s", route, card)
           .isFalse();
       assertCrop(document, property(document, card, "posterCrop"));
+      assertPosterPresentation(document, card);
     }
   }
 
@@ -539,6 +570,11 @@ class DisplayOpenApiTest {
             || value.has("thumbnailUrl")
             || value.has("displayFields"))) {
       assertThat(value.has("posterCrop")).as("poster example: %s", value).isTrue();
+      assertThat(value.path("posterFit").asText()).isIn("FILL", "FIT");
+      assertThat(value.has("posterEdgeColor")).isTrue();
+      if (!value.path("posterEdgeColor").isNull()) {
+        assertThat(value.path("posterEdgeColor").asText()).matches("#[0-9a-fA-F]{6}");
+      }
       JsonNode crop = value.path("posterCrop");
       if (!crop.isNull()) {
         for (String coordinate : List.of("x", "y", "w", "h")) {
@@ -557,6 +593,12 @@ class DisplayOpenApiTest {
     }
   }
 
+  private void assertPosterPresentation(JsonNode document, JsonNode schema) {
+    assertThat(property(document, schema, "posterFit").path("enum").toString())
+        .contains("\"FILL\"", "\"FIT\"");
+    assertNullable(property(document, schema, "posterEdgeColor"));
+  }
+
   private void assertCrop(JsonNode document, JsonNode crop) {
     assertNullable(crop);
     JsonNode schema = resolve(document, crop);
@@ -569,6 +611,7 @@ class DisplayOpenApiTest {
 
   private void assertDetailFields(JsonNode document, JsonNode data) {
     assertCrop(document, property(document, data, "posterCrop"));
+    assertPosterPresentation(document, data);
     for (String field : List.of("instagramUrl", "websiteUrl", "currentScreeningId")) {
       JsonNode schema = property(document, data, field);
       assertThat(schema.isMissingNode()).as(field).isFalse();
@@ -591,6 +634,9 @@ class DisplayOpenApiTest {
     JsonNode content =
         operation(document, path, method).path("responses").path(code).path("content");
     JsonNode media = content.path("application/json");
+    if (!media.has("schema")) {
+      media = content.path("*/*");
+    }
     JsonNode envelope = resolve(document, media.path("schema"));
     return resolve(document, property(document, property(document, envelope, "success"), "data"));
   }

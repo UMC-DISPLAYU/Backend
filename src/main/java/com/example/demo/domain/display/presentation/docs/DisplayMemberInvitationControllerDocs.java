@@ -234,6 +234,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "전시 멤버 목록 조회 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -257,6 +258,7 @@ public interface DisplayMemberInvitationControllerDocs {
   @ApiResponse(
       responseCode = "200",
       description = "내 전시 닉네임 수정 성공",
+      useReturnTypeSchema = true,
       content =
           @Content(
               mediaType = "application/json",
@@ -353,6 +355,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "teamMemberId": 1,
                 "userId": 10,
                 "displayNickname": "도현",
+                "profileImageUrl": "https://cdn.displayu.co.kr/users/10/profile.jpg",
                 "loggedIn": true,
                 "artistVerified": true,
                 "accepted": true,
@@ -364,6 +367,7 @@ public interface DisplayMemberInvitationControllerDocs {
                 "teamMemberId": null,
                 "userId": 11,
                 "displayNickname": "민지",
+                "profileImageUrl": null,
                 "loggedIn": true,
                 "artistVerified": false,
                 "accepted": false,
@@ -391,6 +395,8 @@ public interface DisplayMemberInvitationControllerDocs {
                 "displayId": 1,
                 "title": "FORM 2026",
                 "posterImageUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "schoolDepartmentName": "중앙대학교 디자인학부",
                 "startedAt": "2026-05-28",
@@ -511,6 +517,7 @@ public interface DisplayMemberInvitationControllerDocs {
             "teamMemberId": 1,
             "userId": 10,
             "displayNickname": "도현",
+            "profileImageUrl": "https://cdn.displayu.co.kr/users/10/profile.jpg",
             "loggedIn": true,
             "artistVerified": true,
             "accepted": true,
@@ -536,6 +543,8 @@ public interface DisplayMemberInvitationControllerDocs {
                 "invitationId": 1,
                 "displayId": 1,
                 "thumbnailUrl": "https://cdn.displayu.com/posters/form.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "startDate": "2026-05-28",
                 "endDate": "2026-06-05",

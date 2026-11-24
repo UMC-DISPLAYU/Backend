@@ -21,7 +21,8 @@ class SearchUserServiceTest {
 
   @Test
   void trimsNicknameAndMapsExactSearchResult() {
-    UserSearchQueryResult queryResult = new UserSearchQueryResult(12L, "홍길동", "quietroom");
+    UserSearchQueryResult queryResult =
+        new UserSearchQueryResult(12L, "홍길동", "quietroom", "https://cdn.displayu.com/profile.jpg");
     when(userSearchQueryRepository.findByNickname("quietroom"))
         .thenReturn(Optional.of(queryResult));
 
@@ -30,6 +31,7 @@ class SearchUserServiceTest {
     assertThat(result.userId()).isEqualTo(12L);
     assertThat(result.name()).isEqualTo("홍길동");
     assertThat(result.nickname()).isEqualTo("quietroom");
+    assertThat(result.profileImageUrl()).isEqualTo("https://cdn.displayu.com/profile.jpg");
     verify(userSearchQueryRepository).findByNickname("quietroom");
   }
 

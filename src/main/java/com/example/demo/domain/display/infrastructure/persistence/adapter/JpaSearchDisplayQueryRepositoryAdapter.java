@@ -52,6 +52,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
                 display.period.endDate,
                 display.location.placeName,
                 display.posterCrop,
+                display.posterFit,
+                display.posterEdgeColor,
                 QDisplayImageConditions.videoUrl(image),
                 like.id.count()))
         .from(display)
@@ -80,6 +82,8 @@ public class JpaSearchDisplayQueryRepositoryAdapter implements SearchDisplayQuer
             display.posterCrop.y,
             display.posterCrop.w,
             display.posterCrop.h,
+            display.posterFit,
+            display.posterEdgeColor,
             image.imageUrl,
             image.thumbnailUrl,
             image.mediaType)

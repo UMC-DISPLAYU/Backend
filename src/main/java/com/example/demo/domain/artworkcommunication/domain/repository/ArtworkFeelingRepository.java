@@ -9,6 +9,8 @@ public interface ArtworkFeelingRepository {
 
   Optional<ArtworkFeeling> findById(Long feelingId);
 
+  Optional<ArtworkFeeling> findActiveByIdForUpdate(Long feelingId);
+
   List<ArtworkFeeling> findActiveByDisplayArtworkId(Long displayArtworkId);
 
   List<ArtworkFeeling> findByDisplayArtworkIdWithCursorIncludingDeleted(

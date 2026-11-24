@@ -14,5 +14,6 @@ public record DisplayMemberListResult(
       boolean accepted,
       String role,
       String nickname,
-      Long invitationId) {}
+      Long invitationId,
+      String profileImageUrl) {}
 }

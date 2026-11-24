@@ -13,6 +13,8 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.display.infrastructure.DisplayInvitationTokenHasher;
 import com.example.demo.global.error.BusinessException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Locale;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -29,18 +31,21 @@ public class GetDisplayByInvitationService {
   private final DisplayLikeRepository displayLikeRepository;
   private final DisplayInvitationRepository invitationRepository;
   private final DisplayInvitationTokenHasher tokenHasher;
+  private final Clock clock;
 
   public GetDisplayByInvitationService(
       DisplayRepository displayRepository,
       DisplayScreeningRepository screeningRepository,
       DisplayLikeRepository displayLikeRepository,
       DisplayInvitationRepository invitationRepository,
-      DisplayInvitationTokenHasher tokenHasher) {
+      DisplayInvitationTokenHasher tokenHasher,
+      Clock clock) {
     this.displayRepository = displayRepository;
     this.screeningRepository = screeningRepository;
     this.displayLikeRepository = displayLikeRepository;
     this.invitationRepository = invitationRepository;
     this.tokenHasher = tokenHasher;
+    this.clock = clock;
   }
 
   @Transactional
@@ -61,7 +66,8 @@ public class GetDisplayByInvitationService {
                           .findLatestByDisplayId(display.getId())
                           .map(DisplayScreening::getId)
                           .orElse(null)
-                      : null);
+                      : null,
+                  LocalDate.now(clock));
             })
         .orElseThrow(
             () -> new BusinessException(DisplayErrorCode.INVALID_DISPLAY_INVITATION_TOKEN));

@@ -81,7 +81,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.accepted(),
         result.role(),
         result.nickname(),
-        result.invitationId());
+        result.invitationId(),
+        result.profileImageUrl());
   }
 
   public MyDisplayInvitationListResponse toResponse(MyDisplayInvitationListResult result) {
@@ -106,7 +107,8 @@ public class DisplayMemberInvitationPresentationMapper {
         result.accepted(),
         result.role(),
         result.nickname(),
-        result.invitationId());
+        result.invitationId(),
+        result.profileImageUrl());
   }
 
   private MyDisplayInvitationListResponse.InvitationResponse toResponse(
@@ -123,7 +125,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.title(),
         schoolDepartmentName(result.school(), result.department()),
         result.placeName(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 
   private DisplayInvitationDisplayResponse.ExhibitionResponse toInvitationDisplayResponse(
@@ -137,7 +141,9 @@ public class DisplayMemberInvitationPresentationMapper {
         result.endedAt(),
         result.dayLeft(),
         result.isArchived(),
-        PosterCropResponse.from(result.posterCrop()));
+        PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 
   private String schoolDepartmentName(String organization, String department) {

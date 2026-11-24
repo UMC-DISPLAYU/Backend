@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation.request;
 
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -77,6 +78,15 @@ public record CreateDisplayRequest(
             types = {"object", "null"},
             description = "원본 이미지 기준 표시 범위. 생략 또는 null이면 생성 시 조정 없음, 수정 시 기존 값 유지.")
         PosterCropRequest posterCrop,
+    @Schema(
+            types = {"string", "null"},
+            description = "포스터 표시 방식. 생략하면 FILL.")
+        PosterFit posterFit,
+    @Schema(
+            types = {"string", "null"},
+            description = "전체 보이기(FIT)에서 여백을 채울 색상.",
+            example = "#a1b2c3")
+        @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String posterEdgeColor,
     @Valid @Schema(
             description =
                 "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생성 시 대표 미디어 또는 기존 대표 이미지 URL은 필수입니다.")

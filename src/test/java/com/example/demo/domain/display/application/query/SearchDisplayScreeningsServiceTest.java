@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.display.application.result.DisplayScreeningPageResult;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +44,8 @@ class SearchDisplayScreeningsServiceTest {
         LocalDate.of(2026, 10, 1),
         LocalDate.of(2026, 10, 7),
         "poster",
+        null,
+        PosterFit.FILL,
         null);
   }
 }

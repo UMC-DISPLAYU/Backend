@@ -172,6 +172,18 @@ class DisplayArtworkPermissionCheckerTest {
   }
 
   @Test
+  void managerCanRegisterArtworkForAnotherArtist() {
+    assertThatCode(() -> checker.requireProxyRegistrationAllowed(MANAGER, display(), ARTIST))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void managerCanRegisterArtworkForAccountlessArtist() {
+    assertThatCode(() -> checker.requireProxyRegistrationAllowed(MANAGER, display(), null))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
   void teamMemberCannotRegisterArtworkForAnotherArtist() {
     assertThatThrownBy(() -> checker.requireProxyRegistrationAllowed(MEMBER, display(), ARTIST))
         .isInstanceOf(BusinessException.class)
@@ -187,6 +199,15 @@ class DisplayArtworkPermissionCheckerTest {
         .isInstanceOf(BusinessException.class)
         .extracting(exception -> ((BusinessException) exception).errorCode())
         .isEqualTo(DisplayArtworkErrorCode.INVALID_QA_HANDLER);
+  }
+
+  @Test
+  void displayLeaderAndManagerCanBeQnaHandlerWithoutBeingArtist() {
+    assertThatCode(
+            () -> checker.requireQnaHandlerAssignable(display(), TEAM_LEADER, Set.of(ARTIST)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> checker.requireQnaHandlerAssignable(display(), MANAGER, Set.of(ARTIST)))
+        .doesNotThrowAnyException();
   }
 
   @Test

@@ -3,6 +3,7 @@ package com.example.demo.domain.archive.infrastructure.persistence.adapter;
 import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepository;
 import com.example.demo.domain.archive.infrastructure.persistence.SpringDataArchiveDisplayJpaRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
@@ -56,5 +57,11 @@ public class JpaArchiveDisplayRepositoryAdapter implements ArchiveDisplayReposit
   @Override
   public void delete(ArchiveDisplay archiveDisplay) {
     jpaRepository.delete(archiveDisplay);
+  }
+
+  @Override
+  public List<Long> findSaverUserIdsByDisplayIdSavedBefore(
+      Long displayId, LocalDateTime savedBefore) {
+    return jpaRepository.findSaverUserIdsByDisplayIdSavedBefore(displayId, savedBefore);
   }
 }

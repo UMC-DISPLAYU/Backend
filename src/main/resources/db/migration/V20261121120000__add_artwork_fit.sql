@@ -1,0 +1,2 @@
+ALTER TABLE DisplayArtwork
+    ADD COLUMN artworkFit VARCHAR(10) NOT NULL DEFAULT 'FILL';
