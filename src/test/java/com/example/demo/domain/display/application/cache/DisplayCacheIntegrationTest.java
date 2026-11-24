@@ -363,6 +363,8 @@ class DisplayCacheIntegrationTest {
         ContentOpenPolicy.ON_EXHIBITION,
         null,
         null,
+        null,
+        null,
         null);
   }
 
@@ -393,7 +395,9 @@ class DisplayCacheIntegrationTest {
         null,
         null,
         null,
-        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE));
+        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE),
+        null,
+        null);
   }
 
   private static Display displayWithTeamLeader() {

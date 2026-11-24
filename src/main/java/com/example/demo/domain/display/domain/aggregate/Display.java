@@ -15,6 +15,7 @@ import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -51,6 +52,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -104,6 +106,14 @@ public class Display extends SoftDeleteBaseEntity {
   private String websiteUrl;
 
   @Embedded private PosterCrop posterCrop;
+
+  @Enumerated(EnumType.STRING)
+  @ColumnDefault("'FILL'")
+  @Column(nullable = false, length = 10)
+  private PosterFit posterFit = PosterFit.FILL;
+
+  @Column(length = 7)
+  private String posterEdgeColor;
 
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
@@ -825,6 +835,15 @@ public class Display extends SoftDeleteBaseEntity {
     }
     imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
     changeMedia(null, imageUrls.stream().map(MediaContent::image).toList(), null);
+  }
+
+  public void changePosterPresentation(PosterFit fit, String edgeColor) {
+    if (fit != null) {
+      this.posterFit = fit;
+    }
+    if (edgeColor != null) {
+      this.posterEdgeColor = edgeColor;
+    }
   }
 
   public void changePosterCrop(PosterCrop posterCrop) {

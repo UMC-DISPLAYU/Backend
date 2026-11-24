@@ -82,7 +82,9 @@ public class DisplayPresentationMapper {
         ContentOpenPolicy.ON_EXHIBITION,
         request.instagramUrl(),
         request.websiteUrl(),
-        toPosterCrop(request.posterCrop()));
+        toPosterCrop(request.posterCrop()),
+        request.posterFit(),
+        request.posterEdgeColor());
   }
 
   public UpdateDisplayCommand toCommand(UpdateDisplayRequest request, Long userId) {
@@ -112,7 +114,9 @@ public class DisplayPresentationMapper {
         request.longitude(),
         request.region(),
         resolveDetails(request.displayImageUrls(), request.displayMedia()),
-        toPosterCrop(request.posterCrop()));
+        toPosterCrop(request.posterCrop()),
+        request.posterFit(),
+        request.posterEdgeColor());
   }
 
   public DuPickResponse toResponse(DuPickResult result) {
@@ -230,6 +234,8 @@ public class DisplayPresentationMapper {
         result.websiteUrl(),
         result.currentScreeningId(),
         PosterCropResponse.from(result.posterCrop()),
+        result.posterFit(),
+        result.posterEdgeColor(),
         result.artworkContentVisible(),
         result.exhibitionContentVisible());
   }

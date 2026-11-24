@@ -8,6 +8,7 @@ import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.entity.TeamMember;
 import com.example.demo.domain.display.domain.type.DisplayContentStatus;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.global.file.domain.MediaType;
 import java.math.BigDecimal;
@@ -48,6 +49,8 @@ public record DisplayDetailResult(
     String websiteUrl,
     Long currentScreeningId,
     PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor,
     boolean artworkContentVisible,
     boolean exhibitionContentVisible) {
 
@@ -97,6 +100,8 @@ public record DisplayDetailResult(
         display.getWebsiteUrl(),
         currentScreeningId,
         display.getPosterCrop(),
+        display.getPosterFit(),
+        display.getPosterEdgeColor(),
         display
             .getArtworkContentOpen()
             .isVisibleOn(display.getStatus(), display.getPeriod().startDate(), today),
@@ -137,6 +142,8 @@ public record DisplayDetailResult(
         websiteUrl,
         currentScreeningId,
         posterCrop,
+        posterFit,
+        posterEdgeColor,
         artworkContentVisible,
         exhibitionContentVisible);
   }

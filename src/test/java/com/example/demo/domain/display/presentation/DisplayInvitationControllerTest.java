@@ -17,6 +17,7 @@ import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -99,7 +100,9 @@ class DisplayInvitationControllerTest {
   @Test
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void getInvitationCreatesLinkOnceAndReusesPersistedToken() throws Exception {
-    Display display = displayJpaRepository.saveAndFlush(display());
+    Display display = display();
+    display.changePosterPresentation(PosterFit.FIT, "#13579b");
+    displayJpaRepository.saveAndFlush(display);
     try {
       String firstUrl = invitationUrl(copy(display.getId()));
       Display firstSaved = displayJpaRepository.findById(display.getId()).orElseThrow();
@@ -116,7 +119,9 @@ class DisplayInvitationControllerTest {
           .perform(
               get("/api/v1/display/invitation/{token}", rawToken(firstUrl))
                   .header(HttpHeaders.AUTHORIZATION, bearer(1L)))
-          .andExpect(status().isOk());
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.posterFit").value("FIT"))
+          .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#13579b"));
     } finally {
       displayJpaRepository.deleteById(display.getId());
     }

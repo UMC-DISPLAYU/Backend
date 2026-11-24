@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
@@ -107,6 +108,8 @@ class DisplayMediaControllerTest {
   void legacyImageWritesRemainCompatible() throws Exception {
     create("\"posterImageUrl\":\"" + IMAGE + "\",\"displayImageUrl\":[\"detail.jpg\"]")
         .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.posterFit").value("FILL"))
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value(nullValue()))
         .andExpect(jsonPath("$.success.data.images[0].mediaType").value("IMAGE"))
         .andExpect(jsonPath("$.success.data.images[0].thumbnailUrl").isEmpty());
     Display display = reload();
@@ -114,6 +117,35 @@ class DisplayMediaControllerTest {
         .andExpect(status().isOk());
     assertThat(reload().getImages()).hasSize(1);
     assertThat(reload().getPosterImageUrl()).isEqualTo("new.jpg");
+  }
+
+  @Test
+  void posterPresentationPersistsAndEachFieldCanBeUpdatedIndependently() throws Exception {
+    create(
+            """
+            "posterImageUrl":"poster.jpg","posterFit":"FIT","posterEdgeColor":"#12AbEF"
+            """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#12AbEF"));
+    Long id = reload().getId();
+
+    update(id, "\"posterFit\":null,\"posterEdgeColor\":null")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#12AbEF"));
+    update(id, "\"posterEdgeColor\":\"#000000\"")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterFit").value("FIT"));
+    update(id, "\"posterFit\":\"FILL\"")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#000000"));
+    entityManager.flush();
+    entityManager.clear();
+    mvc.perform(get("/api/v1/display/{id}", id).header("Authorization", authorization))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.posterFit").value("FILL"))
+        .andExpect(jsonPath("$.success.data.posterEdgeColor").value("#000000"));
   }
 
   @Test
@@ -186,6 +218,8 @@ class DisplayMediaControllerTest {
       strings = {
         "\"displayMedia\":[{\"imageUrl\":\"other.mp4\",\"mediaType\":\"VIDEO\",\"thumbnailUrl\":\"other.jpg\"}]",
         "\"posterCrop\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1}",
+        "\"posterFit\":\"STRETCH\"",
+        "\"posterEdgeColor\":\"#123\"",
         "\"posterImageUrl\":\"https://cdn.displayu.com/display/poster.mp4\""
       })
   void invalidPartialUpdatesLeaveExistingMediaUntouched(String fields) throws Exception {
@@ -202,6 +236,8 @@ class DisplayMediaControllerTest {
       strings = {
         "",
         "\"posterImageUrl\":\" \"",
+        "\"posterImageUrl\":\"poster.jpg\",\"posterFit\":\"STRETCH\"",
+        "\"posterImageUrl\":\"poster.jpg\",\"posterEdgeColor\":\"ff0000\"",
         "\"posterMedia\":{\"imageUrl\":\"poster.jpg\"}",
         "\"posterMedia\":{\"imageUrl\":null,\"mediaType\":\"IMAGE\"}",
         "\"posterMedia\":{\"imageUrl\":\"poster.mp4\",\"mediaType\":\"VIDEO\"}",

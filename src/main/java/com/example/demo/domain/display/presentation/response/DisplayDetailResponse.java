@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.presentation.response;
 
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.global.file.domain.MediaType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,6 +55,8 @@ public record DisplayDetailResponse(
             types = {"object", "null"},
             description = "대표 포스터 표시 범위. null이면 조정 없음.")
         PosterCropResponse posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor,
     @Schema(
             description =
                 "일반 관람객의 작품 탭 공개 가능 여부. PUBLISHED 전시만 공개하며, ON_EXHIBITION은 한국 시간 전시 시작일 00시부터 true입니다. 종료 후에도 유지됩니다.")
