@@ -20,6 +20,7 @@ import com.example.demo.domain.user.domain.type.AccountStatus;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.security.TokenProvider;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -177,5 +178,54 @@ class AuthServiceTest {
                 assertThat(exception.errorCode()).isEqualTo(AuthErrorCode.ACCOUNT_SUSPENDED));
     verify(tokenProvider).validateRefreshTokenOrThrow("refresh-token");
     verify(refreshTokenRepository, never()).findByUserId(1L);
+  }
+
+  @Test
+  void allowsLoginAfterSuspensionIsReleased() {
+    SocialUserInfo socialUserInfo =
+        new SocialUserInfo(Provider.Kakao, "kakao-user", "user", "kakao@example.com");
+    User user =
+        User.builder()
+            .id(1L)
+            .provider(Provider.Kakao)
+            .providerId("kakao-user")
+            .accountStatus(AccountStatus.SUSPENDED)
+            .build();
+    user.releaseSuspension();
+    when(kakaoOAuthVerifier.verify(SOCIAL_TOKEN)).thenReturn(socialUserInfo);
+    when(userRepository.findByProviderAndProviderId(Provider.Kakao, "kakao-user"))
+        .thenReturn(Optional.of(user));
+    when(tokenProvider.createAccessToken(user)).thenReturn("access-token");
+    when(tokenProvider.createRefreshToken(user)).thenReturn("refresh-token");
+    when(refreshTokenRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+    LoginResult result = authService.login(Provider.Kakao, SOCIAL_TOKEN);
+
+    assertThat(result.accessToken()).isEqualTo("access-token");
+    assertThat(result.refreshToken()).isEqualTo("refresh-token");
+  }
+
+  @Test
+  void allowsExistingValidRefreshTokenAfterSuspensionIsReleased() {
+    User user =
+        User.builder()
+            .id(1L)
+            .provider(Provider.Kakao)
+            .providerId("kakao-user")
+            .accountStatus(AccountStatus.ACTIVE)
+            .build();
+    user.suspend(LocalDateTime.parse("2026-11-18T01:02:03"), 9L, "policy violation");
+    user.releaseSuspension();
+    RefreshToken savedToken =
+        RefreshToken.builder().user(user).refreshToken("refresh-token").build();
+    when(tokenProvider.getUserId("refresh-token")).thenReturn(1L);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(refreshTokenRepository.findByUserId(1L)).thenReturn(Optional.of(savedToken));
+    when(tokenProvider.createAccessToken(user)).thenReturn("new-access-token");
+
+    String result = authService.refresh("refresh-token");
+
+    assertThat(result).isEqualTo("new-access-token");
+    verify(tokenProvider).validateRefreshTokenOrThrow("refresh-token");
   }
 }

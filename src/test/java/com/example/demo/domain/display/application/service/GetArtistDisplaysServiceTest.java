@@ -123,6 +123,11 @@ class GetArtistDisplaysServiceTest {
     }
 
     @Override
+    public Optional<Display> findByIdForUpdate(Long displayId) {
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<Display> findByIdWithOptimisticLock(Long displayId) {
       return Optional.empty();
     }
@@ -161,6 +166,11 @@ class GetArtistDisplaysServiceTest {
 
     @Override
     public List<Display> findAll() {
+      return List.of();
+    }
+
+    @Override
+    public List<Display> findPublishedStartingOn(LocalDate startDate) {
       return List.of();
     }
 

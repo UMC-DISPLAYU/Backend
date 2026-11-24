@@ -11,6 +11,7 @@ import com.example.demo.domain.archive.domain.repository.ArchiveDisplayRepositor
 import com.example.demo.domain.archive.domain.type.ArchiveDisplayStatus;
 import com.example.demo.domain.display.application.result.DisplaySummaryResult;
 import com.example.demo.domain.display.application.usecase.GetDisplaySummariesUseCase;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.memo.domain.aggregate.Memo;
 import com.example.demo.domain.memo.domain.repository.MemoRepository;
 import java.time.LocalDate;
@@ -45,6 +46,8 @@ class GetArchivedDisplaysServiceTest {
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
             "https://cdn.displayu.com/posters/main.png",
+            null,
+            PosterFit.FILL,
             null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(archiveDisplay));
@@ -115,6 +118,8 @@ class GetArchivedDisplaysServiceTest {
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
             null,
+            null,
+            PosterFit.FILL,
             null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(archiveDisplay));
@@ -144,6 +149,8 @@ class GetArchivedDisplaysServiceTest {
             LocalDate.now().minusDays(1),
             LocalDate.now().plusDays(10),
             "https://cdn.displayu.com/posters/100.png",
+            null,
+            PosterFit.FILL,
             null);
     DisplaySummaryResult summaryForSecond =
         new DisplaySummaryResult(
@@ -155,6 +162,8 @@ class GetArchivedDisplaysServiceTest {
             LocalDate.now().minusDays(30),
             LocalDate.now().minusDays(20),
             "https://cdn.displayu.com/posters/200.png",
+            null,
+            PosterFit.FILL,
             null);
     when(archiveDisplayRepository.findByUserIdBeforeCursorOrderBySavedAtDescIdDesc(7L, null, 21))
         .thenReturn(List.of(first, second));

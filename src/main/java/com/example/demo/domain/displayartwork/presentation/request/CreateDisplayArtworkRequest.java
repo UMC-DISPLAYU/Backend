@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.presentation.request;
 
+import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.global.file.domain.MediaType;
@@ -35,7 +36,11 @@ public record CreateDisplayArtworkRequest(
     @Schema(
             description =
                 "대표 사진 또는 영상 썸네일의 비율 크롭. 생략/null이면 같은 표시 이미지에서 유지하고 이미지 변경 시 초기화합니다. 전체 영역은 {x:0,y:0,w:1,h:1}입니다.")
-        @Valid ArtworkCropRequest artworkCrop) {
+        @Valid ArtworkCropRequest artworkCrop,
+    @Schema(
+            description = "대표 사진 표시 방식. FILL: 꽉 채우기, FIT: 전체 보이기. 생략/null이면 FILL입니다.",
+            allowableValues = {"FILL", "FIT"})
+        ArtworkFit artworkFit) {
 
   /**
    * 실제로 사용할 분야 목록.

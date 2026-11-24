@@ -1,5 +1,6 @@
 package com.example.demo.domain.display.application.query;
 
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,4 +16,6 @@ public record DisplayMapQueryResult(
     String department,
     BigDecimal latitude,
     BigDecimal longitude,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {}

@@ -42,6 +42,9 @@ public class ContentReportJpaEntity {
   @Column(name = "reason", nullable = false, length = 50, columnDefinition = "VARCHAR(50)")
   private ReportReason reason;
 
+  @Column(name = "description", length = 1000)
+  private String description;
+
   @Column(name = "createdAt", nullable = false)
   private LocalDateTime createdAt;
 }

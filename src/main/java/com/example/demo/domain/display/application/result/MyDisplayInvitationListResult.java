@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.entity.DisplayImage;
 import com.example.demo.domain.display.domain.entity.DisplayInvitation;
 import com.example.demo.domain.display.domain.type.DisplayImageType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.user.domain.aggregate.User;
 import java.time.LocalDate;
@@ -37,7 +38,9 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
       String school,
       String department,
       String placeName,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      PosterFit posterFit,
+      String posterEdgeColor) {
 
     private static InvitationResult from(
         DisplayInvitation invitation,
@@ -58,7 +61,9 @@ public record MyDisplayInvitationListResult(List<InvitationResult> invitations) 
           display.getOrganization(),
           display.getDepartment(),
           display.getLocation().placeName(),
-          display.getPosterCrop());
+          display.getPosterCrop(),
+          display.getPosterFit(),
+          display.getPosterEdgeColor());
     }
 
     private static String thumbnailUrl(Display display) {

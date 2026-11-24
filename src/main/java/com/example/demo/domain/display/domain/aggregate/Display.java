@@ -15,6 +15,7 @@ import com.example.demo.domain.display.domain.type.DisplayInvitationStatus;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -51,6 +52,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Entity
@@ -105,6 +107,14 @@ public class Display extends SoftDeleteBaseEntity {
 
   @Embedded private PosterCrop posterCrop;
 
+  @Enumerated(EnumType.STRING)
+  @ColumnDefault("'FILL'")
+  @Column(nullable = false, length = 10)
+  private PosterFit posterFit = PosterFit.FILL;
+
+  @Column(length = 7)
+  private String posterEdgeColor;
+
   // 장소/일정/분류 정보: 전시 위치, 기간, 유형, 분야를 저장한다.
   @Embedded
   @AttributeOverrides({
@@ -144,6 +154,9 @@ public class Display extends SoftDeleteBaseEntity {
 
   // 팀원 초대 정보: 초대 토큰과 비활성화 시점을 저장한다.
   private String invitationToken;
+
+  @Column(length = 43)
+  private String invitationRawToken;
 
   private LocalDateTime invitationDisabledAt;
 
@@ -582,9 +595,19 @@ public class Display extends SoftDeleteBaseEntity {
   }
 
   // 초대 토큰 해시를 새로 발급하고 기존 비활성화 상태를 해제한다.
-  public void issueInvitationToken(String invitationToken) {
-    this.invitationToken = requireNonBlank(invitationToken, "invitationToken");
+  public void issueInvitationToken(String rawToken, String tokenHash) {
+    String validatedRawToken = requireNonBlank(rawToken, "rawToken");
+    this.invitationToken = requireNonBlank(tokenHash, "tokenHash");
+    this.invitationRawToken = validatedRawToken;
     this.invitationDisabledAt = null;
+  }
+
+  public String invitationTokenForSharing() {
+    validateInvitationAccessible();
+    if (invitationRawToken == null) {
+      throw new BusinessException(DisplayErrorCode.DISPLAY_INVITATION_REISSUE_REQUIRED);
+    }
+    return invitationRawToken;
   }
 
   // 초대 링크가 발급된 경우에만 비활성화하며, 이미 비활성화된 링크는 기존 시각을 유지한다.
@@ -812,6 +835,15 @@ public class Display extends SoftDeleteBaseEntity {
     }
     imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
     changeMedia(null, imageUrls.stream().map(MediaContent::image).toList(), null);
+  }
+
+  public void changePosterPresentation(PosterFit fit, String edgeColor) {
+    if (fit != null) {
+      this.posterFit = fit;
+    }
+    if (edgeColor != null) {
+      this.posterEdgeColor = edgeColor;
+    }
   }
 
   public void changePosterCrop(PosterCrop posterCrop) {

@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.DisplaySummaryQueryResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.LocalDate;
 
@@ -13,7 +14,9 @@ public record DisplaySummaryResult(
     LocalDate startDate,
     LocalDate endDate,
     String posterImageUrl,
-    PosterCrop posterCrop) {
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {
 
   public static DisplaySummaryResult from(DisplaySummaryQueryResult queryResult) {
     return new DisplaySummaryResult(
@@ -25,6 +28,8 @@ public record DisplaySummaryResult(
         queryResult.startDate(),
         queryResult.endDate(),
         queryResult.posterImageUrl(),
-        queryResult.posterCrop());
+        queryResult.posterCrop(),
+        queryResult.posterFit(),
+        queryResult.posterEdgeColor());
   }
 }

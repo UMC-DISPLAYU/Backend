@@ -40,6 +40,7 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -321,6 +322,8 @@ class DisplayCacheIntegrationTest {
         endedAt,
         null,
         null,
+        PosterFit.FILL,
+        null,
         null);
   }
 
@@ -363,6 +366,8 @@ class DisplayCacheIntegrationTest {
         ContentOpenPolicy.ON_EXHIBITION,
         null,
         null,
+        null,
+        null,
         null);
   }
 
@@ -393,7 +398,9 @@ class DisplayCacheIntegrationTest {
         null,
         null,
         null,
-        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE));
+        new PosterCrop(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.ONE),
+        null,
+        null);
   }
 
   private static Display displayWithTeamLeader() {

@@ -1,6 +1,7 @@
 package com.example.demo.domain.admin.presentation.mapper;
 
 import com.example.demo.domain.admin.application.result.CommentDetail;
+import com.example.demo.domain.admin.application.result.CommentReportPage;
 import com.example.demo.domain.admin.presentation.response.CommentResponses;
 import org.mapstruct.Mapper;
 
@@ -13,4 +14,8 @@ public interface AdminCommentMapper {
   CommentResponses.Parent toResponse(CommentDetail.Parent result);
 
   CommentResponses.Attachment toResponse(CommentDetail.Attachment result);
+
+  CommentResponses.ReportPage toResponse(CommentReportPage result);
+
+  CommentResponses.Report toResponse(CommentReportPage.Item result);
 }

@@ -1,5 +1,6 @@
 package com.example.demo.domain.displayartwork.application.result;
 
+import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +15,8 @@ public record DisplayArtworkByArtistResult(List<ArtworkCardResult> artworks) {
       int imageWidth,
       int imageHeight,
       LocalDateTime createdAt,
-      ExhibitionInfoResult exhibitionInfo) {}
+      ExhibitionInfoResult exhibitionInfo,
+      ArtworkFit artworkFit) {}
 
   public record ExhibitionInfoResult(
       Long displayId, String exhibitionTitle, String exhibitionPeriod, String exhibitionLocation) {}

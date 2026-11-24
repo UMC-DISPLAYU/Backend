@@ -4,6 +4,7 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.global.file.domain.MediaContent;
 import java.math.BigDecimal;
@@ -39,4 +40,6 @@ public record CreateDisplayCommand(
     ContentOpenPolicy exhibitionContentOpen,
     String instagramUrl,
     String websiteUrl,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {}

@@ -85,6 +85,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             display.instagramUrl,
             display.websiteUrl,
             display.posterCrop,
+            display.posterFit,
+            display.posterEdgeColor,
             display.note,
             display.organization,
             display.department,
@@ -295,6 +297,8 @@ public class JpaDisplayDetailQueryRepositoryAdapter implements DisplayDetailQuer
             ? currentScreeningId(base.get(display.id))
             : null,
         base.get(display.posterCrop),
+        base.get(display.posterFit),
+        base.get(display.posterEdgeColor),
         base.get(display.artworkContentOpen)
             .isVisibleOn(base.get(display.status), base.get(display.period.startDate), today),
         base.get(display.exhibitionContentOpen)

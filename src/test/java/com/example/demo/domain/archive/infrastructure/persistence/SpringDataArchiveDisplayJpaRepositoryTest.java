@@ -6,6 +6,7 @@ import com.example.demo.domain.archive.domain.aggregate.ArchiveDisplay;
 import com.example.demo.domain.display.domain.aggregate.Display;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
+import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -57,6 +58,48 @@ class SpringDataArchiveDisplayJpaRepositoryTest {
             7L, cursor.getId(), PageRequest.of(0, 10));
 
     assertThat(results).extracting(ArchiveDisplay::getId).containsExactly(next.getId());
+  }
+
+  @Test
+  void findSaverUserIdsReturnsOnlyActiveSavesMadeBeforeGivenTime() {
+    Display display = display("시작하는 전시");
+    Display other = display("다른 전시");
+    displayRepository.saveAllAndFlush(List.of(display, other));
+    ArchiveDisplay early = repository.saveAndFlush(ArchiveDisplay.create(display.getId(), 7L));
+    ArchiveDisplay late = repository.saveAndFlush(ArchiveDisplay.create(display.getId(), 8L));
+    ArchiveDisplay cancelled = repository.saveAndFlush(ArchiveDisplay.create(display.getId(), 9L));
+    ArchiveDisplay otherSave = repository.saveAndFlush(ArchiveDisplay.create(other.getId(), 10L));
+    updateSavedAt(early.getId(), LocalDateTime.of(2026, 7, 31, 14, 59));
+    updateSavedAt(late.getId(), LocalDateTime.of(2026, 7, 31, 15, 0));
+    updateSavedAt(cancelled.getId(), LocalDateTime.of(2026, 7, 30, 0, 0));
+    updateSavedAt(otherSave.getId(), LocalDateTime.of(2026, 7, 30, 0, 0));
+    cancelled.delete();
+    repository.saveAndFlush(cancelled);
+
+    assertThat(
+            repository.findSaverUserIdsByDisplayIdSavedBefore(
+                display.getId(), LocalDateTime.of(2026, 7, 31, 15, 0)))
+        .containsExactly(7L);
+  }
+
+  @Test
+  void findByStartDateAndStatusReturnsOnlyPublishedDisplaysStartingThatDay() {
+    Display published = display("오늘 시작");
+    Display hidden = display("비공개로 돌린 전시");
+    hidden.changeToDraft();
+    Display deleted = display("삭제된 전시");
+    deleted.delete();
+    displayRepository.saveAllAndFlush(List.of(published, hidden, deleted));
+
+    assertThat(
+            displayRepository.findByStartDateAndStatus(
+                LocalDate.of(2026, 8, 1), DisplayStatus.PUBLISHED))
+        .extracting(Display::getId)
+        .containsExactly(published.getId());
+    assertThat(
+            displayRepository.findByStartDateAndStatus(
+                LocalDate.of(2026, 8, 2), DisplayStatus.PUBLISHED))
+        .isEmpty();
   }
 
   private void updateSavedAt(Long id, LocalDateTime savedAt) {

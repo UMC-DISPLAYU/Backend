@@ -3,7 +3,9 @@ package com.example.demo.domain.report.presentation;
 import com.example.demo.domain.report.application.command.CreateContentReportService;
 import com.example.demo.domain.report.presentation.docs.ContentReportApiDocs;
 import com.example.demo.domain.report.presentation.mapper.ContentReportPresentationMapper;
+import com.example.demo.domain.report.presentation.request.CreateCommentReportRequest;
 import com.example.demo.domain.report.presentation.request.CreateContentReportRequest;
+import com.example.demo.domain.report.presentation.response.CreateCommentReportResponse;
 import com.example.demo.domain.report.presentation.response.CreateContentReportResponse;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.error.GlobalErrorCode;
@@ -49,6 +51,21 @@ public class ContentReportController implements ContentReportApiDocs {
         mapper.toResponse(
             service.reportFeeling(
                 mapper.toFeelingCommand(artworkId, feelingId, requireUserId(user), request))),
+        servletRequest);
+  }
+
+  @Override
+  @PostMapping("/api/v1/comments/{commentType}/{commentId}/reports")
+  public ApiResponseBody<CreateCommentReportResponse> reportComment(
+      @PathVariable String commentType,
+      @PathVariable Long commentId,
+      @AuthenticationPrincipal AuthUser user,
+      @RequestBody CreateCommentReportRequest request,
+      HttpServletRequest servletRequest) {
+    return ApiResponseBody.success(
+        mapper.toCommentResponse(
+            service.reportComment(
+                mapper.toCommentCommand(commentType, commentId, requireUserId(user), request))),
         servletRequest);
   }
 

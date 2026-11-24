@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.DisplayScreeningSummaryQueryResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -17,7 +18,9 @@ public record DisplayScreeningSummaryResult(
     LocalDate startDate,
     LocalDate endDate,
     String posterImageUrl,
-    PosterCrop posterCrop) {
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {
 
   public static DisplayScreeningSummaryResult from(DisplayScreeningSummaryQueryResult result) {
     return new DisplayScreeningSummaryResult(
@@ -31,6 +34,8 @@ public record DisplayScreeningSummaryResult(
         result.startDate(),
         result.endDate(),
         result.posterImageUrl(),
-        result.posterCrop());
+        result.posterCrop(),
+        result.posterFit(),
+        result.posterEdgeColor());
   }
 }

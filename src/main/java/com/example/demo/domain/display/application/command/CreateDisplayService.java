@@ -92,6 +92,7 @@ public class CreateDisplayService {
             command.artworkContentOpen(),
             command.exhibitionContentOpen());
     display.changeMedia(command.posterMedia(), command.displayMedia(), command.posterCrop());
+    display.changePosterPresentation(command.posterFit(), command.posterEdgeColor());
     display.changeExternalLinks(command.instagramUrl(), command.websiteUrl());
     display.addTeamMember(
         new TeamMember(

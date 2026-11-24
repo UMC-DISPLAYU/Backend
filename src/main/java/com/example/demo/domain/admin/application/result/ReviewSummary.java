@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.application.result;
 
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,4 +16,6 @@ public record ReviewSummary(
     LocalDate startDate,
     LocalDate endDate,
     String posterImageUrl,
-    PosterCrop posterCrop) {}
+    PosterCrop posterCrop,
+    PosterFit posterFit,
+    String posterEdgeColor) {}

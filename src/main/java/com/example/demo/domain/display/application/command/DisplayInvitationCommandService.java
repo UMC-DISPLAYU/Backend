@@ -42,11 +42,23 @@ public class DisplayInvitationCommandService {
   }
 
   @Transactional
+  public DisplayInvitationResult getOrCreateInvitation(Long requesterUserId, Long displayId) {
+    Display display = findDisplay(displayId);
+    displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
+    if (display.getInvitationToken() == null) {
+      String rawToken = tokenGenerator.generate();
+      display.issueInvitationToken(rawToken, tokenHasher.hash(rawToken));
+    }
+    return new DisplayInvitationResult(
+        display.getId(), invitationUrl(display.invitationTokenForSharing()));
+  }
+
+  @Transactional
   public DisplayInvitationResult issueInvitation(Long requesterUserId, Long displayId) {
     Display display = findDisplay(displayId);
     displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
     String rawToken = tokenGenerator.generate();
-    display.issueInvitationToken(tokenHasher.hash(rawToken));
+    display.issueInvitationToken(rawToken, tokenHasher.hash(rawToken));
     return new DisplayInvitationResult(display.getId(), invitationUrl(rawToken));
   }
 
@@ -57,7 +69,7 @@ public class DisplayInvitationCommandService {
     displayPermissionChecker.requireInvitationTokenManager(display, requesterUserId);
     if (enabled) {
       String rawToken = tokenGenerator.generate();
-      display.issueInvitationToken(tokenHasher.hash(rawToken));
+      display.issueInvitationToken(rawToken, tokenHasher.hash(rawToken));
       return new DisplayInvitationStatusResult(
           display.getId(), true, invitationUrl(rawToken), display.getInvitationDisabledAt());
     }
@@ -69,7 +81,7 @@ public class DisplayInvitationCommandService {
 
   private Display findDisplay(Long displayId) {
     return displayRepository
-        .findById(displayId)
+        .findByIdForUpdate(displayId)
         .filter(display -> !display.isDeleted())
         .orElseThrow(() -> new BusinessException(DisplayErrorCode.DISPLAY_NOT_FOUND));
   }

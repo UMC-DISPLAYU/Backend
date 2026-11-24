@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.demo.domain.display.application.query.ClosingSoonDisplayQueryResult;
 import com.example.demo.domain.display.application.query.GraduationDisplayQueryRepository;
 import com.example.demo.domain.display.application.result.GraduationDisplayResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,6 +43,8 @@ class GetRandomGraduationDisplaysServiceTest {
         endedAt.minusDays(7),
         endedAt,
         null,
+        null,
+        PosterFit.FILL,
         null,
         null);
   }

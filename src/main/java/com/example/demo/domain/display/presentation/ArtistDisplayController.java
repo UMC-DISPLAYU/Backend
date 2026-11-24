@@ -41,6 +41,8 @@ public class ArtistDisplayController {
                 "department": "디자인학부",
                 "placeName": "디유 갤러리",
                 "postImageUrl": "https://cdn.displayu.com/posters/main.png",
+                "posterFit": "FIT",
+                "posterEdgeColor": "#28405a",
                 "posterCrop": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.7},
                 "isLeader": true
               }

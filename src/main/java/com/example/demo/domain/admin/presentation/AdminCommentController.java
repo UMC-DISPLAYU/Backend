@@ -1,5 +1,6 @@
 package com.example.demo.domain.admin.presentation;
 
+import com.example.demo.domain.admin.application.query.CommentReportSearchQuery;
 import com.example.demo.domain.admin.application.service.AdminCommentService;
 import com.example.demo.domain.admin.presentation.mapper.AdminCommentMapper;
 import com.example.demo.domain.admin.presentation.response.CommentResponses;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,6 +37,25 @@ public class AdminCommentController {
       HttpServletRequest request) {
     return ApiResponseBody.success(
         mapper.toResponse(service.getDetail(adminId(admin), commentType, commentId)), request);
+  }
+
+  @GetMapping("/{commentType}/{commentId}/reports")
+  @Operation(summary = "관리자 댓글 신고 접수 내역 조회")
+  public ApiResponseBody<CommentResponses.ReportPage> reports(
+      @AuthenticationPrincipal AuthUser admin,
+      @Parameter(description = "댓글 소유 도메인의 대문자 타입 코드") @PathVariable String commentType,
+      @PathVariable Long commentId,
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "20") int size,
+      HttpServletRequest request) {
+    return ApiResponseBody.success(
+        mapper.toResponse(
+            service.getReports(
+                adminId(admin),
+                commentType,
+                commentId,
+                new CommentReportSearchQuery(cursor, size))),
+        request);
   }
 
   private Long adminId(AuthUser admin) {

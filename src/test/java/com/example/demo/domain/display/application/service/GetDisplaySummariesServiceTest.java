@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.demo.domain.display.application.query.DisplaySummaryQueryRepository;
 import com.example.demo.domain.display.application.query.DisplaySummaryQueryResult;
 import com.example.demo.domain.display.application.result.DisplaySummaryResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,8 @@ class GetDisplaySummariesServiceTest {
                     LocalDate.of(2026, 7, 1),
                     LocalDate.of(2026, 7, 10),
                     "https://cdn.displayu.com/posters/main.png",
+                    null,
+                    PosterFit.FILL,
                     null)));
     GetDisplaySummariesService service = new GetDisplaySummariesService(queryRepository);
 

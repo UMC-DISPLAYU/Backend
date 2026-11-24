@@ -1,6 +1,7 @@
 package com.example.demo.domain.display.application.result;
 
 import com.example.demo.domain.display.application.query.DisplayMapQueryResult;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +21,9 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
       BigDecimal latitude,
       BigDecimal longitude,
       boolean isArchived,
-      PosterCrop posterCrop) {
+      PosterCrop posterCrop,
+      PosterFit posterFit,
+      String posterEdgeColor) {
 
     public static MarkerResult from(DisplayMapQueryResult queryResult) {
       return new MarkerResult(
@@ -35,7 +38,9 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           queryResult.latitude(),
           queryResult.longitude(),
           false,
-          queryResult.posterCrop());
+          queryResult.posterCrop(),
+          queryResult.posterFit(),
+          queryResult.posterEdgeColor());
     }
 
     public MarkerResult withArchived(boolean isArchived) {
@@ -51,7 +56,9 @@ public record DisplayMapResult(List<MarkerResult> markers, PaginationResult pagi
           latitude,
           longitude,
           isArchived,
-          posterCrop);
+          posterCrop,
+          posterFit,
+          posterEdgeColor);
     }
   }
 

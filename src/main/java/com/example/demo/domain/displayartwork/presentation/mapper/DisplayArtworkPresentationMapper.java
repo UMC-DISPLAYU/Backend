@@ -74,7 +74,8 @@ public class DisplayArtworkPresentationMapper {
                     new DisplayArtworkPreviewResponse.ArtistResponse(
                         artist.userId(), artist.name()))
             .toList(),
-        ArtworkCropResponse.from(result.artworkCrop()));
+        ArtworkCropResponse.from(result.artworkCrop()),
+        result.artworkFit());
   }
 
   private DisplayArtworkPreviewResponse.ExhibitionInfoResponse toResponse(
@@ -102,7 +103,8 @@ public class DisplayArtworkPresentationMapper {
         result.imageWidth(),
         result.imageHeight(),
         result.createdAt(),
-        toResponse(result.exhibitionInfo()));
+        toResponse(result.exhibitionInfo()),
+        result.artworkFit());
   }
 
   private DisplayArtworkByArtistResponse.ExhibitionInfoResponse toResponse(
@@ -137,7 +139,8 @@ public class DisplayArtworkPresentationMapper {
                     new DisplayArtworkPreviewResponse.ArtistResponse(
                         artist.userId(), artist.name()))
             .toList(),
-        ArtworkCropResponse.from(result.artworkCrop()));
+        ArtworkCropResponse.from(result.artworkCrop()),
+        result.artworkFit());
   }
 
   public DisplayArtworkDetailResponse toResponse(DisplayArtworkDetailResult result) {
@@ -164,7 +167,8 @@ public class DisplayArtworkPresentationMapper {
         result.likeCount(),
         result.isLiked(),
         result.isArchived(),
-        ArtworkCropResponse.from(result.artworkCrop()));
+        ArtworkCropResponse.from(result.artworkCrop()),
+        result.artworkFit());
   }
 
   private DisplayArtworkDetailResponse.ImageResponse toResponse(
@@ -212,7 +216,8 @@ public class DisplayArtworkPresentationMapper {
         result.artistUserId(),
         result.coAuthorCount(),
         result.qaHandlerUserIds(),
-        ArtworkCropResponse.from(result.artworkCrop()));
+        ArtworkCropResponse.from(result.artworkCrop()),
+        result.artworkFit());
   }
 
   private DisplayArtworkResponse.ImageResponse toResponse(DisplayArtworkResult.ImageResult result) {
@@ -265,7 +270,8 @@ public class DisplayArtworkPresentationMapper {
                         coAuthor.userId(), coAuthor.name()))
             .toList(),
         result.qaHandlerUserIds(),
-        ArtworkCropResponse.from(result.artworkCrop()));
+        ArtworkCropResponse.from(result.artworkCrop()),
+        result.artworkFit());
   }
 
   public CreateDisplayArtworkCommand toCommand(CreateDisplayArtworkRequest request) {
@@ -284,7 +290,8 @@ public class DisplayArtworkPresentationMapper {
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
         request.qaHandlerUserIds(),
-        toCrop(request.artworkCrop()));
+        toCrop(request.artworkCrop()),
+        request.artworkFit());
   }
 
   private ArtworkCrop toCrop(ArtworkCropRequest crop) {
@@ -326,7 +333,8 @@ public class DisplayArtworkPresentationMapper {
         request.coAuthors().userIds(),
         request.coAuthors().rawNames(),
         request.qaHandlerUserIds(),
-        toCrop(request.artworkCrop()));
+        toCrop(request.artworkCrop()),
+        request.artworkFit());
   }
 
   private ArtworkImageCommand toCommand(UpdateDisplayArtworkRequest.ImageRequest image) {

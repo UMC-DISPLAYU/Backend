@@ -5,6 +5,7 @@ import com.example.demo.domain.notification.application.message.NotificationMess
 import com.example.demo.domain.notification.domain.aggregate.Notification;
 import com.example.demo.domain.notification.domain.repository.NotificationRepository;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +22,12 @@ public class CreateNotificationsService {
   @Transactional
   public void create(NotificationRequestedEvent event) {
     NotificationMessage message = event.message();
+    List<Long> recipientUserIds = excludeAlreadyNotified(event.recipientUserIds(), message);
+    if (recipientUserIds.isEmpty()) {
+      return;
+    }
     List<Notification> notifications =
-        event.recipientUserIds().stream()
+        recipientUserIds.stream()
             .map(
                 recipientUserId ->
                     Notification.create(
@@ -33,5 +38,17 @@ public class CreateNotificationsService {
                         message.target()))
             .toList();
     notificationRepository.saveAll(notifications);
+  }
+
+  /** 대상마다 한 번만 보내는 종류면, 같은 대상으로 이미 받은 사람을 뺀다. 그래서 같은 요청이 여러 번 와도 결과가 같다. */
+  private List<Long> excludeAlreadyNotified(
+      List<Long> recipientUserIds, NotificationMessage message) {
+    if (!message.type().isOncePerTarget() || message.target() == null) {
+      return recipientUserIds;
+    }
+    Set<Long> alreadyNotified =
+        notificationRepository.findRecipientsAlreadyNotified(
+            message.type(), message.target().id(), recipientUserIds);
+    return recipientUserIds.stream().filter(userId -> !alreadyNotified.contains(userId)).toList();
   }
 }

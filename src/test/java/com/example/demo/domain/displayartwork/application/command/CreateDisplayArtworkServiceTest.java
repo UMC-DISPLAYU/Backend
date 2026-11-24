@@ -145,6 +145,7 @@ class CreateDisplayArtworkServiceTest {
         List.of(),
         List.of(),
         List.of(1L),
+        null,
         null);
   }
 

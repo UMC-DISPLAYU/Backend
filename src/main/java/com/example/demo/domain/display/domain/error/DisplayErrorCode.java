@@ -8,6 +8,8 @@ public enum DisplayErrorCode implements BaseErrorCode {
   DISPLAY_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "DISPLAY_LIKE_NOT_FOUND", "전시 좋아요를 찾을 수 없습니다."),
   DISPLAY_INVITATION_NOT_ISSUED(
       HttpStatus.BAD_REQUEST, "DISPLAY_INVITATION_NOT_ISSUED", "초대 링크가 아직 발급되지 않았습니다."),
+  DISPLAY_INVITATION_REISSUE_REQUIRED(
+      HttpStatus.CONFLICT, "DISPLAY_INVITATION_REISSUE_REQUIRED", "초대 링크를 복사하려면 초대 링크를 재발급해주세요."),
   INVALID_DISPLAY_INVITATION_TOKEN(
       HttpStatus.NOT_FOUND, "INVALID_DISPLAY_INVITATION_TOKEN", "유효하지 않은 초대 링크입니다."),
   DISPLAY_INVITATION_DISABLED(HttpStatus.GONE, "DISPLAY_INVITATION_DISABLED", "비활성화된 초대 링크입니다."),

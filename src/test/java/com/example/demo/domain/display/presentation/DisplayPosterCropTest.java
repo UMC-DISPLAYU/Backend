@@ -23,6 +23,7 @@ import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
+import com.example.demo.domain.display.domain.type.PosterFit;
 import com.example.demo.domain.display.domain.type.TeamMemberRole;
 import com.example.demo.domain.display.domain.vo.DisplayLocation;
 import com.example.demo.domain.display.domain.vo.DisplayPeriod;
@@ -77,8 +78,9 @@ class DisplayPosterCropTest {
   }
 
   @Test
-  void persistedCropReachesEveryCardPathAndCachedResponses() throws Exception {
+  void persistedPosterSettingsReachEveryCardPathAndCachedResponses() throws Exception {
     Display display = display();
+    display.changePosterPresentation(PosterFit.FIT, "#13579b");
     display.changePosterCrop(
         new PosterCrop(
             new BigDecimal("0.1"),
@@ -105,6 +107,8 @@ class DisplayPosterCropTest {
         }
         mvc.perform(requestBuilder)
             .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success.data.exhibitions[0].posterFit").value("FIT"))
+            .andExpect(jsonPath("$.success.data.exhibitions[0].posterEdgeColor").value("#13579b"))
             .andExpect(jsonPath("$.success.data.exhibitions[0].posterCrop.x").value(0.1))
             .andExpect(jsonPath("$.success.data.exhibitions[0].posterCrop.h").value(0.7));
       }
@@ -116,12 +120,20 @@ class DisplayPosterCropTest {
                 .param("westLongitude", "126")
                 .param("eastLongitude", "128"))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.markers[0].posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.markers[0].posterEdgeColor").value("#13579b"))
         .andExpect(jsonPath("$.success.data.markers[0].posterCrop.w").value(0.8));
     mvc.perform(
             get("/api/v1/display/me")
                 .header("Authorization", "Bearer " + jwtFactory.create("1", 3600000L, "ACCESS")))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].posterEdgeColor").value("#13579b"))
         .andExpect(jsonPath("$.success.data.createdDisplays[0].posterCrop.y").value(0.2));
+    mvc.perform(get("/api/v1/display/artists/{userId}", 1L))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].posterFit").value("FIT"))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].posterEdgeColor").value("#13579b"));
     mvc.perform(get("/api/v1/display/{displayId}", id))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success.data.posterCrop.w").value(0.8));
@@ -258,6 +270,44 @@ class DisplayPosterCropTest {
                 .getFirst()
                 .posterImageUrl())
         .isEqualTo(thumbnail);
+  }
+
+  @Test
+  void savedPosterSettingsReachArchiveInvitationsAndReviewList() throws Exception {
+    Display display = display();
+    display.changePosterPresentation(PosterFit.FIT, "#123456");
+    display.addInvitation(
+        new DisplayInvitation(
+            null, new UserId(1L), new UserId(2L), LocalDateTime.now(clock), null));
+    repository.saveAndFlush(display);
+    entityManager.persist(ArchiveDisplay.create(display.getId(), 2L));
+    entityManager.flush();
+    entityManager.clear();
+
+    String authorization = "Bearer " + jwtFactory.create("2", 3600000L, "ACCESS");
+    var lists =
+        Map.of(
+            "/api/v1/archives/exhibitions", "displays",
+            "/api/v1/display-invitations", "exhibitions",
+            "/api/v1/display-invitations/me", "invitations");
+    for (var list : lists.entrySet()) {
+      String item = "$.success.data." + list.getValue() + "[0]";
+      mvc.perform(get(list.getKey()).header("Authorization", authorization))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath(item + ".displayId").value(display.getId()))
+          .andExpect(jsonPath(item + ".posterFit").value("FIT"))
+          .andExpect(jsonPath(item + ".posterEdgeColor").value("#123456"));
+    }
+
+    var review =
+        reviewMapper
+            .toResponse(
+                reviews.search(
+                    new ReviewSearchQuery(display.getId().toString(), "PUBLISHED", null, 10)))
+            .items()
+            .getFirst();
+    assertThat(review.posterFit()).isEqualTo(PosterFit.FIT);
+    assertThat(review.posterEdgeColor()).isEqualTo("#123456");
   }
 
   @Test

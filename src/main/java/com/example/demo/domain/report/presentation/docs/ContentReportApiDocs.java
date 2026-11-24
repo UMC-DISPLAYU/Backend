@@ -1,6 +1,8 @@
 package com.example.demo.domain.report.presentation.docs;
 
+import com.example.demo.domain.report.presentation.request.CreateCommentReportRequest;
 import com.example.demo.domain.report.presentation.request.CreateContentReportRequest;
+import com.example.demo.domain.report.presentation.response.CreateCommentReportResponse;
 import com.example.demo.domain.report.presentation.response.CreateContentReportResponse;
 import com.example.demo.global.response.ApiResponseBody;
 import com.example.demo.global.security.AuthUser;
@@ -46,5 +48,17 @@ public interface ContentReportApiDocs {
       @Positive Long feelingId,
       @Parameter(hidden = true) AuthUser user,
       @Valid CreateContentReportRequest request,
+      @Parameter(hidden = true) HttpServletRequest servletRequest);
+
+  @Operation(
+      summary = "댓글 신고 접수",
+      description =
+          "로그인 사용자가 후기·방명록 답글을 신고합니다. 지원 타입: DISPLAY_REVIEW_REPLY, ARTWORK_FEELING_REPLY, PERSONAL_ARTWORK_FEELING_REPLY")
+  @ApiResponse(responseCode = "200", description = "신고 접수 성공", useReturnTypeSchema = true)
+  ApiResponseBody<CreateCommentReportResponse> reportComment(
+      String commentType,
+      @Positive Long commentId,
+      @Parameter(hidden = true) AuthUser user,
+      @Valid CreateCommentReportRequest request,
       @Parameter(hidden = true) HttpServletRequest servletRequest);
 }
