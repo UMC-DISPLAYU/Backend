@@ -45,7 +45,7 @@ public class UpdateDisplayArtworkService {
 
     DisplayArtwork artwork =
         displayArtworkRepository
-            .findById(command.artworkId())
+            .findByIdForUpdate(command.artworkId())
             .filter(a -> !a.isDeleted() && !a.getDisplay().isDeleted())
             .orElseThrow(
                 () -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_ARTWORK_NOT_FOUND));
@@ -57,7 +57,8 @@ public class UpdateDisplayArtworkService {
         .images()
         .forEach(image -> mediaStorageVerifier.verifyVideo(image.media(), MediaUsage.ARTWORK));
     List<String> previousFileUrls = artwork.getMediaFileUrls();
-    artwork.replaceImages(toImages(command.images()), command.artworkCrop());
+    artwork.replacePartsAndImages(
+        command.parts(), toImages(command.images()), command.artworkCrop());
     artwork.fitRepresentativeImage(command.artworkFit());
 
     artwork.changeContent(
@@ -101,7 +102,8 @@ public class UpdateDisplayArtworkService {
                     image.sortOrder(),
                     image.caption(),
                     image.width(),
-                    image.height()))
+                    image.height(),
+                    image.partIndex()))
         .toList();
   }
 }

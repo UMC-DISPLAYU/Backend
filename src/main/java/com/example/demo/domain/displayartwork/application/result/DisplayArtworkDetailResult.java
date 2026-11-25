@@ -4,6 +4,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkPart;
 import com.example.demo.global.file.domain.MediaType;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,7 +29,8 @@ public record DisplayArtworkDetailResult(
     boolean isLiked,
     boolean isArchived,
     ArtworkCrop artworkCrop,
-    ArtworkFit artworkFit) {
+    ArtworkFit artworkFit,
+    List<ArtworkPart> parts) {
 
   public record QaHandlerResult(Long userId, String name) {}
 
@@ -64,7 +66,8 @@ public record DisplayArtworkDetailResult(
         isLiked,
         isArchived,
         displayArtwork.getArtworkCrop(),
-        displayArtwork.getArtworkFit());
+        displayArtwork.getArtworkFit(),
+        List.copyOf(displayArtwork.getParts()));
   }
 
   public record ImageResult(
@@ -77,7 +80,8 @@ public record DisplayArtworkDetailResult(
       int width,
       int height,
       MediaType mediaType,
-      String thumbnailUrl) {
+      String thumbnailUrl,
+      Integer partIndex) {
 
     private static ImageResult from(ArtworkImage image) {
       return new ImageResult(
@@ -90,7 +94,8 @@ public record DisplayArtworkDetailResult(
           image.getWidth(),
           image.getHeight(),
           image.getMediaType(),
-          image.getThumbnailUrl());
+          image.getThumbnailUrl(),
+          image.getPartIndex());
     }
   }
 

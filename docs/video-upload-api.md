@@ -6,8 +6,8 @@
 
 | 항목 | 전시 포스터 | 작품 |
 | --- | --- | --- |
-| 미디어 개수 | 대표 1개와 추가 최대 4개 | ARTWORK 최대 10개 |
-| 영상 개수 | 최종 전체 목록에서 최대 1개 | 최종 전체 목록에서 최대 1개 |
+| 미디어 개수 | 대표 1개와 추가 최대 4개 | 연작 전체에서 ARTWORK 최대 10개 |
+| 영상 개수 | 최종 전체 목록에서 최대 1개 | ARTWORK 10개 안에서 여러 개 허용 |
 | 영상 크기 | 200,000,000 bytes 이하 | 500,000,000 bytes 이하 |
 | 길이 | 프론트에서 30초 이하 검사 | 프론트에서 180초 이하 검사 |
 | 업로드 domain | display | artwork |
@@ -86,6 +86,17 @@ POST /api/v1/artworks와 PATCH /api/v1/artworks/{artworkId}의 기존 images 항
 ```
 
 기존 요청에서 mediaType을 생략하면 IMAGE이다. imageType은 ARTWORK와 WORK_PROCESS 용도를 구분한다. isThumbnail은 대표 항목 선택이다. thumbnailUrl은 영상 미리보기 이미지다. 영상의 width와 height는 카드에 표시할 썸네일 크기다. 작품 PATCH는 기존과 같이 최종 목록 전체를 교체한다. 이미 저장된 영상 원본을 mediaType 없이 다시 보내 이미지로 바꾸는 요청은 거절한다.
+
+### 연작 등록과 수정
+
+작품 1의 작품명·제작 연도·재료/매체·규격은 기존 최상위 필드에 보낸다. 작품 2부터는 화면에 표시할 순서대로 `parts`에 담는다. 각 항목의 `artworkName`은 필수이고 `productionYear`, `materialMedia`, `size`는 선택이다. 작가·작품 설명·분야·작업 과정은 출품작 전체가 공유한다.
+
+- `ARTWORK`의 `partIndex`는 0부터 시작한다. 생략하거나 0이면 작품 1, 1이면 `parts[0]`이다. `WORK_PROCESS`에는 인덱스를 보내지 않는다.
+- 작품 2부터는 각 작품에 `ARTWORK` 사진(`IMAGE`)을 1장 이상 넣는다. 영상 썸네일과 작업 과정 사진은 이 장수에서 제외한다. 같은 작품에 영상 여러 개를 올릴 수 있다.
+- `isThumbnail`은 작품 1의 미디어에 지정한다. `artworkCrop`과 `artworkFit`은 이 대표 이미지에 적용한다.
+- PATCH는 화면에 남은 작품과 미디어를 `parts`와 `images`에 보낸다. 중간 작품을 지우거나 순서를 바꾸면 `partIndex`도 새 순서에 맞춘다. `parts`를 생략하면 기존 추가 작품을 유지하고, `[]`를 보내면 모두 제거한다.
+
+등록·수정 응답과 상세·수정 화면 조회에서 같은 인덱스를 쓴다. 예를 들어 상세 화면에서 `partIndex: 1`인 사진을 보여 줄 때는 `parts[0].artworkName`을 표시한다. 단일 작품의 응답에는 `parts: []`가 온다.
 
 ## 조회 규칙
 

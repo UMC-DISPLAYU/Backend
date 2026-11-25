@@ -9,11 +9,14 @@ import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
 import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkPart;
 import com.example.demo.global.entity.SoftDeleteBaseEntity;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.file.domain.MediaType;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,13 +29,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
@@ -100,6 +106,11 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   @BatchSize(size = 50)
   private final List<ArtworkField> fields = new ArrayList<>();
 
+  @ElementCollection
+  @CollectionTable(name = "ArtworkPart", joinColumns = @JoinColumn(name = "displayArtworkId"))
+  @OrderColumn(name = "partOrder")
+  private final List<ArtworkPart> parts = new ArrayList<>();
+
   private static final int MAX_FIELDS = 3;
 
   protected DisplayArtwork() {}
@@ -128,7 +139,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
         workSortOrder,
         registeredByUserId,
         DisplayArtworkStatus.PUBLISHED,
-        images);
+        images,
+        List.of());
   }
 
   public static DisplayArtwork create(
@@ -143,7 +155,8 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       int workSortOrder,
       Long registeredByUserId,
       DisplayArtworkStatus status,
-      List<ArtworkImage> images) {
+      List<ArtworkImage> images,
+      List<ArtworkPart> parts) {
     DisplayArtwork displayArtwork =
         new DisplayArtwork(
             display,
@@ -157,7 +170,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
             workSortOrder,
             registeredByUserId,
             status);
-    displayArtwork.replaceImages(images);
+    displayArtwork.replacePartsAndImages(parts, images, null);
     return displayArtwork;
   }
 
@@ -186,7 +199,16 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   }
 
   public List<ArtworkImage> getImages() {
-    return Collections.unmodifiableList(images);
+    return images.stream()
+        .sorted(
+            Comparator.comparing(
+                    ArtworkImage::getPartIndex, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparingInt(ArtworkImage::getSortOrder))
+        .toList();
+  }
+
+  public List<ArtworkPart> getParts() {
+    return Collections.unmodifiableList(parts);
   }
 
   public void changeContent(
@@ -223,7 +245,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     ArtworkImage artworkImage = Objects.requireNonNull(image, "image must not be null.");
     List<ArtworkImage> candidates = new ArrayList<>(images);
     candidates.add(artworkImage);
-    validateMediaLimits(candidates);
+    validateMedia(candidates, parts.size());
     artworkImage.assignDisplayArtwork(this);
     images.add(artworkImage);
   }
@@ -284,13 +306,14 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   }
 
   public void replaceImages(List<ArtworkImage> newImages) {
-    replaceImages(newImages, null);
+    replacePartsAndImages(null, newImages, null);
   }
 
-  public void replaceImages(List<ArtworkImage> newImages, ArtworkCrop requestedCrop) {
-    requireAtLeastOneArtworkImage(newImages);
+  public void replacePartsAndImages(
+      List<ArtworkPart> newParts, List<ArtworkImage> newImages, ArtworkCrop requestedCrop) {
+    List<ArtworkPart> finalParts = newParts == null ? parts : List.copyOf(newParts);
     List<ArtworkImage> replacement = List.copyOf(newImages);
-    validateMediaLimits(replacement);
+    validateMedia(replacement, finalParts.size());
     boolean reclassifiedVideo =
         replacement.stream()
             .filter(image -> image.getMediaType() == MediaType.IMAGE)
@@ -304,49 +327,72 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
     if (reclassifiedVideo) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
     }
-    String previousCardImageUrl = representativeImageUrl(images);
+    String previousCardImageUrl = representativeImageUrl();
+    if (newParts != null) {
+      parts.clear();
+      parts.addAll(finalParts);
+    }
     images.clear();
-    replacement.forEach(this::addImage);
+    replacement.forEach(image -> image.assignDisplayArtwork(this));
+    images.addAll(replacement);
     if (requestedCrop != null) {
       artworkCrop = requestedCrop;
-    } else if (!Objects.equals(previousCardImageUrl, representativeImageUrl(images))) {
+    } else if (!Objects.equals(previousCardImageUrl, representativeImageUrl())) {
       artworkCrop = null;
     }
   }
 
-  private static String representativeImageUrl(List<ArtworkImage> images) {
+  public ArtworkImage representativeImage() {
     return images.stream()
-        .sorted(
+        .filter(ArtworkImage::belongsToFirstPart)
+        .min(
             Comparator.comparing(ArtworkImage::isThumbnail)
                 .reversed()
                 .thenComparingInt(ArtworkImage::getSortOrder))
-        .map(ArtworkImage::cardImageUrl)
-        .findFirst()
         .orElse(null);
   }
 
-  private static void requireAtLeastOneArtworkImage(List<ArtworkImage> images) {
-    boolean hasArtworkImage =
-        images != null
-            && images.stream().anyMatch(image -> image.getImageType() == ArtworkImageType.ARTWORK);
-    if (!hasArtworkImage) {
-      throw new BusinessException(DisplayArtworkErrorCode.AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED);
-    }
+  private String representativeImageUrl() {
+    ArtworkImage image = representativeImage();
+    return image == null ? null : image.cardImageUrl();
   }
 
-  private static void validateMediaLimits(List<ArtworkImage> images) {
-    long artworkCount =
-        images.stream().filter(image -> image.getImageType() == ArtworkImageType.ARTWORK).count();
-    long videoCount =
-        images.stream().filter(image -> image.getMediaType() == MediaType.VIDEO).count();
-    boolean processVideo =
-        images.stream()
-            .anyMatch(
-                image ->
-                    image.getImageType() == ArtworkImageType.WORK_PROCESS
-                        && image.getMediaType() == MediaType.VIDEO);
-    if (artworkCount > 10 || videoCount > 1 || processVideo) {
+  private static void validateMedia(List<ArtworkImage> images, int partCount) {
+    int artworkMediaCount = 0;
+    boolean firstPartHasMedia = false;
+    Set<Integer> additionalPartsWithPhoto = new HashSet<>();
+    for (ArtworkImage image : images) {
+      Integer partIndex = image.getPartIndex();
+      if (image.isThumbnail() && !image.belongsToFirstPart()) {
+        throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_THUMBNAIL);
+      }
+      if (image.getImageType() == ArtworkImageType.WORK_PROCESS) {
+        if (partIndex != null) {
+          throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_PART_INDEX);
+        }
+        if (image.getMediaType() == MediaType.VIDEO) {
+          throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
+        }
+        continue;
+      }
+      if (partIndex < 0 || partIndex > partCount) {
+        throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_PART_INDEX);
+      }
+      artworkMediaCount++;
+      if (partIndex == 0) {
+        firstPartHasMedia = true;
+      } else if (image.getMediaType() == MediaType.IMAGE) {
+        additionalPartsWithPhoto.add(partIndex);
+      }
+    }
+    if (artworkMediaCount > 10) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
+    }
+    if (!firstPartHasMedia) {
+      throw new BusinessException(DisplayArtworkErrorCode.AT_LEAST_ONE_ARTWORK_IMAGE_REQUIRED);
+    }
+    if (additionalPartsWithPhoto.size() != partCount) {
+      throw new BusinessException(DisplayArtworkErrorCode.ARTWORK_PART_PHOTO_REQUIRED);
     }
   }
 

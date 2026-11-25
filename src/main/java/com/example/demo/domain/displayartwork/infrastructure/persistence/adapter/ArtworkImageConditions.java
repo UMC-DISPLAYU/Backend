@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.infrastructure.persistence.adapter;
 
 import com.example.demo.domain.displayartwork.domain.entity.QArtworkImage;
+import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.global.file.domain.MediaType;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -18,6 +19,10 @@ final class ArtworkImageConditions {
   }
 
   static BooleanExpression thumbnailImage(QArtworkImage image) {
-    return image.isThumbnail.isTrue();
+    return image
+        .isThumbnail
+        .isTrue()
+        .and(image.imageType.eq(ArtworkImageType.ARTWORK))
+        .and(image.partIndex.isNull().or(image.partIndex.eq(0)));
   }
 }

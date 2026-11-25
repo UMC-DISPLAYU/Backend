@@ -11,6 +11,8 @@ public interface DisplayArtworkRepository {
 
   Optional<DisplayArtwork> findById(Long displayArtworkId);
 
+  Optional<DisplayArtwork> findByIdForUpdate(Long displayArtworkId);
+
   int countByDisplayId(Long displayId);
 
   Optional<Integer> findMaxWorkSortOrderByDisplayId(Long displayId);

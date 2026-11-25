@@ -220,6 +220,9 @@ public interface DisplayArtworkControllerDocs {
       description =
           """
           전시 팀원이 작품 정보와 대표 작가/공동 작업자/내부 Q&A 담당자를 한 번에 등록합니다.
+          연작은 작품 2부터 parts에 넣고 ARTWORK 미디어의 partIndex로 연결합니다. 작품 1의 인덱스는 0입니다.
+          추가 작품마다 작품명과 사진(IMAGE) 1장 이상이 필요합니다. 영상은 여러 개 올릴 수 있고, 사진과 영상을 합쳐 전체 10개까지 허용합니다.
+          WORK_PROCESS 사진은 출품작 전체가 공유합니다. 대표 사진과 크롭, 표시 방식은 작품 1에 적용합니다.
           내부 Q&A 담당자(qaHandlerUserIds)는 최소 1명이 필요하며 여러 명을 지정할 수 있습니다.
           담당자는 대표 작가, 계정이 연결된 공동 작업자, 전시 대표자 중에서만 지정할 수 있습니다.
           """)
@@ -249,9 +252,13 @@ public interface DisplayArtworkControllerDocs {
                                 "size": "72.7 x 90.9 cm",
                                 "point": "겹겹이 쌓인 색의 레이어",
                                 "workSortOrder": 1,
+                                "parts": [
+                                  {"artworkName": "Blue Moment II", "productionYear": 2026, "materialMedia": "Oil on canvas", "size": "45 x 60 cm"}
+                                ],
                                 "images": [
                                   {
                                     "imageId": 1,
+                                    "partIndex": 0,
                                     "imageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "mediaType": "IMAGE",
                                     "thumbnailUrl": null,
@@ -261,6 +268,19 @@ public interface DisplayArtworkControllerDocs {
                                     "caption": "대표 이미지",
                                     "width": 1200,
                                     "height": 1600
+                                  },
+                                  {
+                                    "imageId": 2,
+                                    "imageUrl": "https://cdn.displayu.com/artworks/blue-2.png",
+                                    "mediaType": "IMAGE",
+                                    "thumbnailUrl": null,
+                                    "isThumbnail": false,
+                                    "imageType": "ARTWORK",
+                                    "partIndex": 1,
+                                    "sortOrder": 1,
+                                    "caption": null,
+                                    "width": 900,
+                                    "height": 1200
                                   }
                                 ],
                                 "artistName": "김마야",
@@ -336,9 +356,13 @@ public interface DisplayArtworkControllerDocs {
                                 "size": "72.7 x 90.9 cm",
                                 "materialMedia": "Oil on canvas",
                                 "point": "겹겹이 쌓인 색의 레이어",
+                                "parts": [
+                                  {"artworkName": "Blue Moment II", "productionYear": 2026, "materialMedia": "Oil on canvas", "size": "45 x 60 cm"}
+                                ],
                                 "images": [
                                   {
                                     "imageId": 1,
+                                    "partIndex": 0,
                                     "imageUrl": "https://cdn.displayu.com/artworks/blue.png",
                                     "mediaType": "IMAGE",
                                     "thumbnailUrl": null,
@@ -348,6 +372,19 @@ public interface DisplayArtworkControllerDocs {
                                     "caption": "대표 이미지",
                                     "width": 1200,
                                     "height": 1600
+                                  },
+                                  {
+                                    "imageId": 2,
+                                    "imageUrl": "https://cdn.displayu.com/artworks/blue-2.png",
+                                    "mediaType": "IMAGE",
+                                    "thumbnailUrl": null,
+                                    "isThumbnail": false,
+                                    "imageType": "ARTWORK",
+                                    "partIndex": 1,
+                                    "sortOrder": 1,
+                                    "caption": null,
+                                    "width": 900,
+                                    "height": 1200
                                   }
                                 ],
                                 "artistName": "김마야",
@@ -397,6 +434,7 @@ public interface DisplayArtworkControllerDocs {
       description =
           """
           수정 화면 진입 시 등록 당시 상태를 그대로 복원하기 위한 전체 필드를 조회합니다.
+          추가 작품은 parts에 등록 순서대로 담깁니다. ARTWORK 미디어의 partIndex가 1이면 parts[0]의 사진 또는 영상입니다.
           관람객용 상세 조회와 달리 공동 작업자 목록과 Q&A 담당자 ID를 포함합니다.
           전시 대표자, 작품의 작가, 공동 작업자만 조회할 수 있습니다.
           """)
@@ -413,8 +451,9 @@ public interface DisplayArtworkControllerDocs {
           작품 정보, 이미지, 작가 정보(대표 작가/공동 작업자/Q&A 담당자)를 수정합니다.
           전시 대표자, 작품의 작가, 공동 작업자만 수정할 수 있습니다.
 
-          이미지는 화면에서 최종적으로 남은 목록을 그대로 보내면 그 상태로 저장됩니다.
-          작품 이미지(ARTWORK) 최소 1장이 필요합니다.
+          images와 parts에는 화면에 남은 전체 목록을 보냅니다. parts를 생략하면 기존 추가 작품을 유지하고 빈 배열이면 모두 삭제합니다.
+          작품을 삭제하거나 순서를 변경하면 최종 parts 순서에 맞춰 ARTWORK 미디어의 partIndex도 보냅니다.
+          작품 2부터는 작품명과 사진(IMAGE) 1장 이상이 필요합니다. 작품 1의 미디어는 partIndex를 생략할 수 있습니다.
           """)
   ApiResponseBody<DisplayArtworkResponse> updateDisplayArtwork(
       @Parameter(description = "수정할 작품 ID") @PathVariable @Positive Long artworkId,

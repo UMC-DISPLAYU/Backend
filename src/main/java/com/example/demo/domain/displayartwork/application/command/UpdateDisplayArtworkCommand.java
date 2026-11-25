@@ -3,6 +3,7 @@ package com.example.demo.domain.displayartwork.application.command;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkPart;
 import java.util.List;
 
 public record UpdateDisplayArtworkCommand(
@@ -21,4 +22,5 @@ public record UpdateDisplayArtworkCommand(
     List<String> coAuthorRawNames,
     List<Long> qaHandlerUserIds,
     ArtworkCrop artworkCrop,
-    ArtworkFit artworkFit) {}
+    ArtworkFit artworkFit,
+    List<ArtworkPart> parts) {}

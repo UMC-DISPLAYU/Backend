@@ -10,7 +10,8 @@ public record ArtworkImageCommand(
     int sortOrder,
     String caption,
     int width,
-    int height) {
+    int height,
+    Integer partIndex) {
   public ArtworkImageCommand(
       String imageUrl,
       boolean isThumbnail,
@@ -19,6 +20,14 @@ public record ArtworkImageCommand(
       String caption,
       int width,
       int height) {
-    this(MediaContent.image(imageUrl), isThumbnail, imageType, sortOrder, caption, width, height);
+    this(
+        MediaContent.image(imageUrl),
+        isThumbnail,
+        imageType,
+        sortOrder,
+        caption,
+        width,
+        height,
+        null);
   }
 }
