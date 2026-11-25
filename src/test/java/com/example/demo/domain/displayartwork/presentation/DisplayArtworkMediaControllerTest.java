@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(
@@ -482,9 +484,223 @@ class DisplayArtworkMediaControllerTest {
         .satisfies(summary -> assertThat(summary.artworkImageUrl()).isEqualTo(THUMBNAIL));
   }
 
+  private static final String SECOND_PART =
+      """
+      {"artworkName":"두 번째","productionYear":2024,"materialMedia":"목탄","size":"30x40"}
+      """;
+  private static final String THIRD_PART =
+      """
+      {"artworkName":"세 번째"}
+      """;
+
+  private static String partPhoto(String filename, int partIndex) {
+    return """
+        {"imageUrl":"https://cdn.example/%s","imageType":"ARTWORK","partIndex":%d,
+         "sortOrder":0,"isThumbnail":false,"width":800,"height":600}
+        """
+        .formatted(filename, partIndex);
+  }
+
+  private ResultActions writeSeries(
+      MockHttpServletRequestBuilder request, String parts, String images) throws Exception {
+    String content = body(images).replace("\"images\":", "\"parts\":[" + parts + "],\"images\":");
+    return mvc.perform(
+        request
+            .header(HttpHeaders.AUTHORIZATION, bearer(ownerId))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(content));
+  }
+
+  @Test
+  void seriesMetadataAndMediaRoundTripThroughAllFourEndpoints() throws Exception {
+    String first =
+        legacyImageJson()
+            .replace("\"sortOrder\":0", "\"sortOrder\":4")
+            .replace("\"isThumbnail\":true", "\"isThumbnail\":false");
+    String second = partPhoto("two.png", 1);
+    String third = partPhoto("three.png", 2);
+    String process =
+        """
+        {"imageUrl":"https://cdn.example/process.png","imageType":"WORK_PROCESS",
+         "sortOrder":10,"isThumbnail":false,"width":800,"height":600}
+        """;
+    String images = String.join(",", third, second, first, process);
+    writeSeries(post("/api/v1/artworks"), SECOND_PART + "," + THIRD_PART, images)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.parts.length()").value(2))
+        .andExpect(jsonPath("$.success.data.images[2].partIndex").value(2));
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+
+    for (String suffix : List.of("", "/edit")) {
+      mvc.perform(
+              get("/api/v1/artworks/" + id + suffix)
+                  .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.success.data.artworkName").value("영상 작품"))
+          .andExpect(jsonPath("$.success.data.parts[0].artworkName").value("두 번째"))
+          .andExpect(jsonPath("$.success.data.parts[0].productionYear").value(2024))
+          .andExpect(jsonPath("$.success.data.parts[0].materialMedia").value("목탄"))
+          .andExpect(jsonPath("$.success.data.parts[0].size").value("30x40"))
+          .andExpect(jsonPath("$.success.data.parts[1].artworkName").value("세 번째"))
+          .andExpect(jsonPath("$.success.data.images[0].imageUrl").value(IMAGE))
+          .andExpect(jsonPath("$.success.data.images[0].partIndex").value(0))
+          .andExpect(
+              jsonPath("$.success.data.images[1].imageUrl").value("https://cdn.example/two.png"))
+          .andExpect(jsonPath("$.success.data.images[1].partIndex").value(1))
+          .andExpect(
+              jsonPath("$.success.data.images[2].imageUrl").value("https://cdn.example/three.png"))
+          .andExpect(jsonPath("$.success.data.images[2].partIndex").value(2))
+          .andExpect(jsonPath("$.success.data.images[3].imageType").value("WORK_PROCESS"))
+          .andExpect(jsonPath("$.success.data.images[3].partIndex").doesNotExist());
+    }
+    mvc.perform(get("/api/v1/artworks").param("displayId", displayId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.artworks.length()").value(1))
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkName").value("영상 작품"))
+        .andExpect(jsonPath("$.success.data.artworks[0].artworkImageUrl").value(IMAGE));
+    update(id, images)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts.length()").value(2));
+
+    writeSeries(
+            patch("/api/v1/artworks/{id}", id),
+            THIRD_PART,
+            String.join(",", first, partPhoto("three.png", 1), process))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.parts[0].artworkName").value("세 번째"))
+        .andExpect(jsonPath("$.success.data.images[1].partIndex").value(1));
+    entityManager.flush();
+    entityManager.clear();
+    mvc.perform(get("/api/v1/artworks/{id}", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts.length()").value(1))
+        .andExpect(jsonPath("$.success.data.parts[0].artworkName").value("세 번째"))
+        .andExpect(jsonPath("$.success.data.images.length()").value(3))
+        .andExpect(
+            jsonPath("$.success.data.images[1].imageUrl").value("https://cdn.example/three.png"))
+        .andExpect(jsonPath("$.success.data.images[1].partIndex").value(1));
+
+    writeSeries(patch("/api/v1/artworks/{id}", id), "", first)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts").isEmpty());
+    entityManager.flush();
+    entityManager.clear();
+    mvc.perform(
+            get("/api/v1/artworks/{id}/edit", id)
+                .header(HttpHeaders.AUTHORIZATION, bearer(ownerId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts").isEmpty())
+        .andExpect(jsonPath("$.success.data.images.length()").value(1));
+  }
+
+  @Test
+  void videoWithoutAPhotoCannotReplaceAnAdditionalArtwork() throws Exception {
+    String first = legacyImageJson();
+    writeSeries(post("/api/v1/artworks"), SECOND_PART, first + "," + partPhoto("two.png", 1))
+        .andExpect(status().isCreated());
+    Long id = artworkId();
+    entityManager.flush();
+    entityManager.clear();
+
+    String extraVideo =
+        videoJson().replace("\"isThumbnail\":true", "\"partIndex\":1,\"isThumbnail\":false");
+    writeSeries(patch("/api/v1/artworks/{id}", id), THIRD_PART, first + "," + extraVideo)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("ARTWORK_PART_PHOTO_REQUIRED"));
+    entityManager.clear();
+    mvc.perform(get("/api/v1/artworks/{id}", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.parts[0].artworkName").value("두 번째"))
+        .andExpect(
+            jsonPath("$.success.data.images[1].imageUrl").value("https://cdn.example/two.png"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{}", "{\"artworkName\":\"   \"}"})
+  void eachAdditionalArtworkRequiresANonblankName(String invalidPart) throws Exception {
+    writeSeries(
+            post("/api/v1/artworks"),
+            invalidPart,
+            legacyImageJson() + "," + partPhoto("two.png", 1))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidSeriesImages")
+  void seriesImagesMustBelongToAnExistingArtworkAndOnlyTheFirstMayBeTheThumbnail(
+      String image, String errorCode) throws Exception {
+    writeSeries(
+            post("/api/v1/artworks"),
+            SECOND_PART,
+            String.join(",", legacyImageJson(), partPhoto("valid.png", 1), image))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value(errorCode));
+  }
+
+  private static Stream<Arguments> invalidSeriesImages() {
+    return Stream.of(
+        Arguments.of(partPhoto("two.png", -1), "INVALID_INPUT_VALUE"),
+        Arguments.of(partPhoto("two.png", 2), "INVALID_ARTWORK_PART_INDEX"),
+        Arguments.of(
+            partPhoto("two.png", 1).replace("\"isThumbnail\":false", "\"isThumbnail\":true"),
+            "INVALID_ARTWORK_THUMBNAIL"));
+  }
+
+  @Test
+  void tenArtworkPhotosAndVideosCanShareAProcessPhotoAcrossTheSeries() throws Exception {
+    String photos =
+        String.join(
+            ",", IntStream.range(0, 8).mapToObj(i -> partPhoto("photo-" + i + ".png", 1)).toList());
+    String process =
+        partPhoto("studio.png", 1)
+            .replace("ARTWORK", "WORK_PROCESS")
+            .replace("\"partIndex\":1,", "");
+    String video = videoJson().replace("\"isThumbnail\":true", "\"isThumbnail\":false");
+    String tenAndProcess = String.join(",", legacyImageJson(), video, photos, process);
+    writeSeries(post("/api/v1/artworks"), SECOND_PART, tenAndProcess)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.images.length()").value(11));
+    writeSeries(
+            patch("/api/v1/artworks/{id}", artworkId()),
+            SECOND_PART,
+            tenAndProcess + "," + partPhoto("eleventh.png", 1))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_ARTWORK_MEDIA"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"두 번째", "목탄", "30x40"})
+  void additionalArtworkTextMustFitTheStoredField(String value) throws Exception {
+    String part = SECOND_PART.replace(value, "가".repeat(256));
+    writeSeries(post("/api/v1/artworks"), part, legacyImageJson() + "," + partPhoto("two.png", 1))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"));
+  }
+
+  @Test
+  void severalVideosCanBelongToOneArtwork() throws Exception {
+    String secondVideo =
+        videoJson()
+            .replace(VIDEO, "https://cdn.example/artwork/another.mp4")
+            .replace("\"isThumbnail\":true", "\"isThumbnail\":false");
+    create(videoJson() + "," + secondVideo)
+        .andExpect(jsonPath("$.success.data.images.length()").value(2));
+    update(artworkId(), secondVideo + "," + videoJson())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.images[0].mediaType").value("VIDEO"))
+        .andExpect(jsonPath("$.success.data.images[1].mediaType").value("VIDEO"));
+  }
+
   @Test
   void legacyImageJsonStillCreatesAndProjectsAnImage() throws Exception {
     create(legacyImageJson())
+        .andExpect(jsonPath("$.success.data.parts").isArray())
+        .andExpect(jsonPath("$.success.data.parts").isEmpty())
+        .andExpect(jsonPath("$.success.data.images[0].partIndex").value(0))
         .andExpect(jsonPath("$.success.data.images[0].imageUrl").value(IMAGE))
         .andExpect(jsonPath("$.success.data.images[0].mediaType").value("IMAGE"))
         .andExpect(jsonPath("$.success.data.images[0].thumbnailUrl").isEmpty());
@@ -574,7 +790,8 @@ class DisplayArtworkMediaControllerTest {
   @Test
   void rejectedVideoReplacementCannotScheduleCleanup() throws Exception {
     create(videoJson());
-    update(artworkId(), videoJson() + "," + videoJson()).andExpect(status().isBadRequest());
+    update(artworkId(), legacyImageJson() + "," + videoJson().replace("ARTWORK", "WORK_PROCESS"))
+        .andExpect(status().isBadRequest());
     assertThat(events.stream(MediaFilesRemovedEvent.class)).isEmpty();
   }
 
@@ -632,7 +849,6 @@ class DisplayArtworkMediaControllerTest {
 
   private static Stream<String> invalidImages() {
     return Stream.of(
-        videoJson() + "," + videoJson(),
         legacyImageJson() + "," + videoJson().replace("ARTWORK", "WORK_PROCESS"),
         videoJson().replace("\"thumbnailUrl\":\"" + THUMBNAIL + "\",", ""),
         String.join(",", IntStream.range(0, 11).mapToObj(i -> legacyImageJson()).toList()),

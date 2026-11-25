@@ -4,6 +4,7 @@ import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.domain.displayartwork.domain.vo.ArtworkCrop;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkPart;
 import com.example.demo.global.file.domain.MediaType;
 import java.util.List;
 
@@ -25,7 +26,8 @@ public record DisplayArtworkEditResult(
     List<CoAuthorResult> coAuthors,
     List<Long> qaHandlerUserIds,
     ArtworkCrop artworkCrop,
-    ArtworkFit artworkFit) {
+    ArtworkFit artworkFit,
+    List<ArtworkPart> parts) {
 
   public record CoAuthorResult(Long userId, String name) {}
 
@@ -39,7 +41,8 @@ public record DisplayArtworkEditResult(
       int width,
       int height,
       MediaType mediaType,
-      String thumbnailUrl) {
+      String thumbnailUrl,
+      Integer partIndex) {
 
     public static ImageResult from(ArtworkImage image) {
       return new ImageResult(
@@ -52,7 +55,8 @@ public record DisplayArtworkEditResult(
           image.getWidth(),
           image.getHeight(),
           image.getMediaType(),
-          image.getThumbnailUrl());
+          image.getThumbnailUrl(),
+          image.getPartIndex());
     }
   }
 
@@ -79,6 +83,7 @@ public record DisplayArtworkEditResult(
         coAuthors,
         qaHandlerUserIds,
         artwork.getArtworkCrop(),
-        artwork.getArtworkFit());
+        artwork.getArtworkFit(),
+        List.copyOf(artwork.getParts()));
   }
 }

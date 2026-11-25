@@ -87,7 +87,8 @@ public class CreateDisplayArtworkService {
             nextWorkSortOrder,
             requesterUserId,
             initialArtworkStatus(display),
-            toImages(command.images()));
+            toImages(command.images()),
+            command.parts());
 
     if (displayArtwork.getStatus() == DisplayArtworkStatus.PUBLISHED) {
       displayArtwork.publish(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
@@ -130,7 +131,8 @@ public class CreateDisplayArtworkService {
                     image.sortOrder(),
                     image.caption(),
                     image.width(),
-                    image.height()))
+                    image.height(),
+                    image.partIndex()))
         .toList();
   }
 

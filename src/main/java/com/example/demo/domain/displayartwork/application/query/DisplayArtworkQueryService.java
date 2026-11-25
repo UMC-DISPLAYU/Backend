@@ -220,7 +220,7 @@ public class DisplayArtworkQueryService {
       DisplayArtwork displayArtwork,
       Map<Long, Creator> leadersByArtworkId,
       Map<Long, List<Creator>> artistsByArtworkId) {
-    ArtworkImage thumbnail = findThumbnail(displayArtwork);
+    ArtworkImage thumbnail = displayArtwork.representativeImage();
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
     String formattedPeriod =
@@ -296,7 +296,7 @@ public class DisplayArtworkQueryService {
 
   private DisplayArtworkByArtistResult.ArtworkCardResult toArtistCard(
       DisplayArtwork displayArtwork, Map<Long, Creator> leadersByArtworkId) {
-    ArtworkImage thumbnail = findThumbnail(displayArtwork);
+    ArtworkImage thumbnail = displayArtwork.representativeImage();
     var display = displayArtwork.getDisplay();
     var period = display.getPeriod();
     String formattedPeriod =
@@ -342,7 +342,7 @@ public class DisplayArtworkQueryService {
       DisplayArtwork displayArtwork,
       Map<Long, Creator> leadersByArtworkId,
       Map<Long, List<Creator>> artistsByArtworkId) {
-    ArtworkImage thumbnail = findThumbnail(displayArtwork);
+    ArtworkImage thumbnail = displayArtwork.representativeImage();
     return new ArtworkItemResult(
         displayArtwork.getId(),
         displayArtwork.getArtworkName(),
@@ -376,15 +376,5 @@ public class DisplayArtworkQueryService {
   private static Long leaderUserId(Map<Long, Creator> leaders, DisplayArtwork artwork) {
     Creator leader = leaders.get(artwork.getId());
     return leader == null ? null : leader.getUserId();
-  }
-
-  private ArtworkImage findThumbnail(DisplayArtwork displayArtwork) {
-    return displayArtwork.getImages().stream()
-        .sorted(
-            Comparator.comparing(ArtworkImage::isThumbnail)
-                .reversed()
-                .thenComparingInt(ArtworkImage::getSortOrder))
-        .findFirst()
-        .orElse(null);
   }
 }

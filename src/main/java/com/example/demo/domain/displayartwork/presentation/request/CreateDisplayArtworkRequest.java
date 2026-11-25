@@ -40,7 +40,8 @@ public record CreateDisplayArtworkRequest(
     @Schema(
             description = "대표 사진 표시 방식. FILL: 꽉 채우기, FIT: 전체 보이기. 생략/null이면 FILL입니다.",
             allowableValues = {"FILL", "FIT"})
-        ArtworkFit artworkFit) {
+        ArtworkFit artworkFit,
+    @Schema(description = "작품 2부터 표시 순서대로 보냅니다. 생략하면 단일 작품으로 등록합니다.") @Valid List<@NotNull ArtworkPartRequest> parts) {
 
   /**
    * 실제로 사용할 분야 목록.
@@ -65,7 +66,12 @@ public record CreateDisplayArtworkRequest(
       @Positive int width,
       @Positive int height,
       @Schema(description = "생략하면 IMAGE. VIDEO의 width와 height는 썸네일 크기입니다.") MediaType mediaType,
-      @Schema(description = "VIDEO일 때 필수인 썸네일 이미지 URL") String thumbnailUrl) {}
+      @Schema(description = "VIDEO일 때 필수인 썸네일 이미지 URL") String thumbnailUrl,
+      @Schema(
+              description =
+                  "ARTWORK의 작품 순서. 생략 또는 0이면 작품 1, 1이면 parts의 첫 항목입니다. WORK_PROCESS에서는 생략합니다.",
+              example = "0")
+          @PositiveOrZero Integer partIndex) {}
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
 

@@ -73,6 +73,7 @@ public class JpaArtworkSummaryQueryRepositoryAdapter implements ArtworkSummaryQu
             .where(
                 image.displayArtwork.id.in(displayArtworkIds),
                 ArtworkImageConditions.thumbnailImage(image))
+            .orderBy(image.sortOrder.asc(), image.id.asc())
             .fetch();
     return rows.stream()
         .collect(
