@@ -5,17 +5,23 @@ import com.example.demo.domain.display.domain.type.DisplayStatus;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SpringDataDisplayArtworkJpaRepository extends JpaRepository<DisplayArtwork, Long> {
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT artwork FROM DisplayArtwork artwork WHERE artwork.id = :id")
+  Optional<DisplayArtwork> findByIdForUpdate(@Param("id") Long id);
 
   @Query(
       """

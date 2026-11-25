@@ -28,6 +28,11 @@ public class JpaDisplayArtworkRepositoryAdapter implements DisplayArtworkReposit
   }
 
   @Override
+  public Optional<DisplayArtwork> findByIdForUpdate(Long displayArtworkId) {
+    return jpaRepository.findByIdForUpdate(displayArtworkId);
+  }
+
+  @Override
   public int countByDisplayId(Long displayId) {
     return jpaRepository.countByDisplayId(displayId);
   }

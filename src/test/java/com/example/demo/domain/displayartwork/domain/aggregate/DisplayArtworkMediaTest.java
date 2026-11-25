@@ -14,6 +14,7 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.displayartwork.domain.entity.ArtworkImage;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
+import com.example.demo.domain.displayartwork.domain.vo.ArtworkPart;
 import com.example.demo.global.error.BusinessException;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.file.domain.MediaType;
@@ -47,13 +48,41 @@ class DisplayArtworkMediaTest {
   void invalidReplacementKeepsExistingChildrenAndAssociations() {
     DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     ArtworkImage original = artwork.getImages().getFirst();
+    ArtworkPart second = new ArtworkPart("두 번째", null, null, null);
+    ArtworkImage photo =
+        new ArtworkImage(
+            null,
+            MediaContent.image("second.png"),
+            false,
+            ArtworkImageType.ARTWORK,
+            0,
+            null,
+            800,
+            600,
+            1);
+    artwork.replacePartsAndImages(List.of(second), List.of(original, photo), null);
+
+    ArtworkImage secondVideo =
+        new ArtworkImage(
+            null,
+            MediaContent.video("clip.mp4", "poster.png"),
+            false,
+            ArtworkImageType.ARTWORK,
+            0,
+            null,
+            800,
+            600,
+            1);
     assertThatThrownBy(
             () ->
-                artwork.replaceImages(
-                    List.of(video(ArtworkImageType.ARTWORK), video(ArtworkImageType.ARTWORK))))
+                artwork.replacePartsAndImages(
+                    List.of(new ArtworkPart("다른 작품", null, null, null)),
+                    List.of(original, secondVideo),
+                    null))
         .isInstanceOf(BusinessException.class);
-    assertThat(artwork.getImages()).containsExactly(original);
-    assertThat(original.getDisplayArtwork()).isSameAs(artwork);
+    assertThat(artwork.getParts()).containsExactly(second);
+    assertThat(artwork.getImages()).containsExactly(original, photo);
+    assertThat(photo.getDisplayArtwork()).isSameAs(artwork);
   }
 
   @Test
@@ -79,12 +108,24 @@ class DisplayArtworkMediaTest {
   }
 
   @Test
-  void directAdditionCannotBypassVideoLimit() {
+  void allowsMultipleVideosOnTheSameWork() {
     DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     artwork.addImage(video(ArtworkImageType.ARTWORK));
-    assertThatThrownBy(() -> artwork.addImage(video(ArtworkImageType.ARTWORK)))
-        .isInstanceOf(BusinessException.class);
-    assertThat(artwork.getImages()).hasSize(2);
+    ArtworkImage secondVideo =
+        new ArtworkImage(
+            null,
+            MediaContent.video("clip.mp4", "poster.png"),
+            false,
+            ArtworkImageType.ARTWORK,
+            1,
+            null,
+            800,
+            600,
+            0);
+    artwork.addImage(secondVideo);
+    assertThat(artwork.getImages())
+        .extracting(ArtworkImage::getMediaType)
+        .containsExactly(MediaType.IMAGE, MediaType.VIDEO, MediaType.VIDEO);
   }
 
   @Test

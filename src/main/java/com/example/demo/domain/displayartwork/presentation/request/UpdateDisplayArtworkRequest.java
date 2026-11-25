@@ -39,7 +39,8 @@ public record UpdateDisplayArtworkRequest(
     @Schema(
             description = "대표 사진 표시 방식. FILL: 꽉 채우기, FIT: 전체 보이기. 생략/null이면 기존 값을 유지합니다.",
             allowableValues = {"FILL", "FIT"})
-        ArtworkFit artworkFit) {
+        ArtworkFit artworkFit,
+    @Schema(description = "작품 2부터 화면에 남은 순서대로 보냅니다. 생략하면 기존 목록을 유지하고 빈 배열이면 모두 삭제합니다.") @Valid List<@NotNull ArtworkPartRequest> parts) {
 
   /** 등록과 같은 규칙으로, types가 있으면 그것을 쓰고 없으면 기존 단일 type을 1개짜리 목록으로 취급한다. */
   public List<ArtworkType> resolvedTypes() {
@@ -59,7 +60,12 @@ public record UpdateDisplayArtworkRequest(
       @Positive int width,
       @Positive int height,
       @Schema(description = "생략하면 IMAGE. VIDEO의 width와 height는 썸네일 크기입니다.") MediaType mediaType,
-      @Schema(description = "VIDEO일 때 필수인 썸네일 이미지 URL") String thumbnailUrl) {}
+      @Schema(description = "VIDEO일 때 필수인 썸네일 이미지 URL") String thumbnailUrl,
+      @Schema(
+              description =
+                  "ARTWORK의 작품 순서. 생략 또는 0이면 작품 1, 1이면 parts의 첫 항목입니다. WORK_PROCESS에서는 생략합니다.",
+              example = "0")
+          @PositiveOrZero Integer partIndex) {}
 
   public record CoAuthorsRequest(List<@NotNull Long> userIds, List<@NotBlank String> rawNames) {
 

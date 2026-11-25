@@ -2,6 +2,7 @@ package com.example.demo.domain.displayartwork.presentation.response;
 
 import com.example.demo.domain.displayartwork.domain.type.ArtworkFit;
 import com.example.demo.global.file.domain.MediaType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -28,7 +29,8 @@ public record DisplayArtworkDetailResponse(
     @Schema(
             description = "대표 사진 표시 방식. FILL: 꽉 채우기, FIT: 전체 보이기",
             allowableValues = {"FILL", "FIT"})
-        ArtworkFit artworkFit) {
+        ArtworkFit artworkFit,
+    @Schema(description = "작품 2부터의 정보. 배열 순서는 작품 표시 순서입니다.") List<ArtworkPartResponse> parts) {
 
   public record QaHandlerResponse(Long userId, String name) {}
 
@@ -46,7 +48,12 @@ public record DisplayArtworkDetailResponse(
       int width,
       int height,
       MediaType mediaType,
-      String thumbnailUrl) {}
+      String thumbnailUrl,
+      @Schema(
+              description = "ARTWORK의 작품 순서. 0은 작품 1, 1은 parts의 첫 항목입니다. WORK_PROCESS에서는 생략됩니다.",
+              example = "0")
+          @JsonInclude(JsonInclude.Include.NON_NULL)
+          Integer partIndex) {}
 
   public record ExhibitionInfoResponse(
       Long displayId,

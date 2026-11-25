@@ -53,6 +53,8 @@ public class ArtworkImage extends BaseTimeEntity {
   @Column(nullable = false)
   private int sortOrder;
 
+  private Integer partIndex;
+
   private String caption;
 
   @Column(nullable = false)
@@ -92,6 +94,19 @@ public class ArtworkImage extends BaseTimeEntity {
       String caption,
       int width,
       int height) {
+    this(id, media, isThumbnail, imageType, sortOrder, caption, width, height, null);
+  }
+
+  public ArtworkImage(
+      Long id,
+      MediaContent media,
+      boolean isThumbnail,
+      ArtworkImageType imageType,
+      int sortOrder,
+      String caption,
+      int width,
+      int height,
+      Integer partIndex) {
     this.id = id;
     this.imageUrl = media.imageUrl();
     this.mediaType = media.mediaType();
@@ -99,6 +114,10 @@ public class ArtworkImage extends BaseTimeEntity {
     this.isThumbnail = isThumbnail;
     this.imageType = Objects.requireNonNull(imageType, "imageType must not be null.");
     this.sortOrder = requireNonNegative(sortOrder, "sortOrder");
+    this.partIndex =
+        imageType == ArtworkImageType.ARTWORK
+            ? Objects.requireNonNullElse(partIndex, 0)
+            : partIndex;
     this.caption = caption;
     this.width = requirePositive(width, "width");
     this.height = requirePositive(height, "height");
@@ -107,6 +126,17 @@ public class ArtworkImage extends BaseTimeEntity {
   public void assignDisplayArtwork(DisplayArtwork displayArtwork) {
     this.displayArtwork =
         Objects.requireNonNull(displayArtwork, "displayArtwork must not be null.");
+  }
+
+  public Integer getPartIndex() {
+    if (imageType == ArtworkImageType.ARTWORK && partIndex == null) {
+      return 0;
+    }
+    return partIndex;
+  }
+
+  public boolean belongsToFirstPart() {
+    return imageType == ArtworkImageType.ARTWORK && getPartIndex() == 0;
   }
 
   public MediaContent media() {
