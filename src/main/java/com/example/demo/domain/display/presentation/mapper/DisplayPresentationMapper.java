@@ -18,7 +18,6 @@ import com.example.demo.domain.display.application.result.PopularDisplayResult;
 import com.example.demo.domain.display.application.result.SearchDisplayResult;
 import com.example.demo.domain.display.domain.type.ContentOpenPolicy;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
-import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.vo.PosterCrop;
 import com.example.demo.domain.display.presentation.request.CreateDisplayRequest;
 import com.example.demo.domain.display.presentation.request.DisplayMediaRequest;
@@ -453,11 +452,7 @@ public class DisplayPresentationMapper {
   }
 
   private String department(CreateDisplayRequest request) {
-    return requiresSchoolInfo(request.type()) ? request.departmentOrClub() : "";
-  }
-
-  private boolean requiresSchoolInfo(DisplayType type) {
-    return type == DisplayType.GRADUATION || type == DisplayType.ASSIGNMENTS;
+    return request.type().supportsDepartment() ? request.departmentOrClub() : "";
   }
 
   private DisplayRegion toDisplayRegion(CreateDisplayRequest.Region region) {

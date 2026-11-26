@@ -49,7 +49,8 @@ public record CreateDisplayRequest(
             description = "지역. ALL은 허용하지 않습니다.")
         Region region,
     @NotBlank String schoolOrOrganization,
-    String departmentOrClub,
+    @Schema(description = "졸업전·과제전에서는 필수이며, 학과전은 학과 또는 학회명을 선택 입력할 수 있습니다.")
+        String departmentOrClub,
     String qnaAccount,
     @NotBlank String displayNickname,
     @Size(max = 50) String contract,
