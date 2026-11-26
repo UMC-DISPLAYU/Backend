@@ -48,8 +48,12 @@ public record UpdateDisplayRequest(
                       "OTHERS"
                     }))
         List<DisplayField> fields,
-    String schoolOrOrganization,
-    String departmentOrClub,
+    @Schema(
+            description =
+                "졸업전·과제전의 학교명 또는 기타 단체 전시의 단체명. 기타 단체 전시에서는 hostOrganizationName보다 우선합니다.")
+        String schoolOrOrganization,
+    @Schema(description = "졸업전·과제전·학과전의 학과 또는 학회명. 생략하거나 null이면 기존 값을 유지합니다.")
+        String departmentOrClub,
     String hostOrganizationName,
     @Size(max = 50) String contract,
     String subtitle,

@@ -6,5 +6,9 @@ public enum DisplayType {
   DEPARTMENTS,
   SMALL_GROUP,
   INTER_GROUP,
-  OTHERS
+  OTHERS;
+
+  public boolean supportsDepartment() {
+    return this == GRADUATION || this == ASSIGNMENTS || this == DEPARTMENTS;
+  }
 }

@@ -2,6 +2,7 @@ package com.example.demo.domain.display.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,6 +12,7 @@ import com.example.demo.domain.user.domain.aggregate.User;
 import com.example.demo.domain.user.domain.type.Provider;
 import com.example.demo.domain.user.infrastructure.persistence.UserJpaRepository;
 import com.example.demo.global.security.JwtFactory;
+import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -315,7 +317,100 @@ class DisplayControllerCreateTest {
         .andExpect(jsonPath("$.meta.path").value("/api/v1/display"));
   }
 
+  @Test
+  void departmentDisplaysRetainTheirDepartmentAcrossEdits() throws Exception {
+    String auth = bearer(userJpaRepository.save(user("학과전 대표")).getId());
+    long id = createDisplay(auth, requestBody("SEOUL", "DEPARTMENTS", "중앙대학교", "디자인학부"));
+    assertAffiliation(auth, id, "중앙대학교", "디자인학부");
+
+    updateDisplay(
+        auth,
+        """
+        {"displayId": %d, "departmentOrClub": "시각디자인학과"}
+        """
+            .formatted(id));
+    assertAffiliation(auth, id, "중앙대학교", "시각디자인학과");
+
+    updateDisplay(
+        auth,
+        """
+        {"displayId": %d, "title": "수정한 전시 제목"}
+        """
+            .formatted(id));
+    assertAffiliation(auth, id, "중앙대학교", "시각디자인학과");
+  }
+
+  @Test
+  void otherDisplaysUseSchoolOrOrganizationInDetailAndManagementList() throws Exception {
+    String auth = bearer(userJpaRepository.save(user("단체전 대표")).getId());
+    long id = createDisplay(auth, requestBody("SEOUL", "OTHERS", "디자인 모임", ""));
+    assertAffiliation(auth, id, "디자인 모임", "");
+
+    updateDisplay(
+        auth,
+        """
+        {"displayId": %d, "hostOrganizationName": "창작 모임"}
+        """
+            .formatted(id));
+    assertAffiliation(auth, id, "창작 모임", "");
+
+    updateDisplay(
+        auth,
+        """
+        {"displayId": %d, "schoolOrOrganization": "작가 연합"}
+        """
+            .formatted(id));
+    assertAffiliation(auth, id, "작가 연합", "");
+  }
+
+  private long createDisplay(String auth, String request) throws Exception {
+    var response =
+        mockMvc
+            .perform(
+                post("/api/v1/display")
+                    .header(HttpHeaders.AUTHORIZATION, auth)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse();
+    Number displayId = JsonPath.read(response.getContentAsString(), "$.success.data.displayId");
+    return displayId.longValue();
+  }
+
+  private void updateDisplay(String auth, String request) throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/v1/display")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isOk());
+  }
+
+  private void assertAffiliation(String auth, long id, String organization, String department)
+      throws Exception {
+    entityManager.flush();
+    entityManager.clear();
+    mockMvc
+        .perform(get("/api/v1/display/{id}", id).header(HttpHeaders.AUTHORIZATION, auth))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.organization").value(organization))
+        .andExpect(jsonPath("$.success.data.department").value(department));
+    mockMvc
+        .perform(get("/api/v1/display/me").header(HttpHeaders.AUTHORIZATION, auth))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].displayId").value(id))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].school").value(organization))
+        .andExpect(jsonPath("$.success.data.createdDisplays[0].department").value(department));
+  }
+
   private static String requestBody(String region) {
+    return requestBody(region, "GRADUATION", "중앙대학교", "디자인학부");
+  }
+
+  private static String requestBody(
+      String region, String type, String organization, String department) {
     return """
         {
           "title": "FORM 2026",
@@ -324,11 +419,11 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-1.png",
             "https://cdn.displayu.com/display/detail-2.png"
           ],
-          "type": "GRADUATION",
+          "type": "%s",
           "fields": ["GRAPHIC", "VIDEO"],
           "region": "%s",
-          "schoolOrOrganization": "중앙대학교",
-          "departmentOrClub": "디자인학부",
+          "schoolOrOrganization": "%s",
+          "departmentOrClub": "%s",
           "qnaAccount": "@displayu",
           "displayNickname": "전시 리더",
           "contract": "Instagram DM",
@@ -345,7 +440,7 @@ class DisplayControllerCreateTest {
           "precautions": "전시장 내 음료 반입 금지"
         }
         """
-        .formatted(region);
+        .formatted(type, region, organization, department);
   }
 
   private static String requestBodyWithoutQnaAccount() {
