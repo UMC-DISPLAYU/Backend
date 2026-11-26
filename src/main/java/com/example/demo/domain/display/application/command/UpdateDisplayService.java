@@ -145,12 +145,15 @@ public class UpdateDisplayService {
     if (displayType == DisplayType.GRADUATION || displayType == DisplayType.ASSIGNMENTS) {
       return valueOrCurrent(command.schoolOrOrganization(), currentOrganization);
     }
+    if (displayType == DisplayType.OTHERS && command.schoolOrOrganization() != null) {
+      return command.schoolOrOrganization();
+    }
     return valueOrCurrent(command.hostOrganizationName(), currentOrganization);
   }
 
   private String department(
       UpdateDisplayCommand command, DisplayType displayType, String currentDepartment) {
-    if (displayType == DisplayType.GRADUATION || displayType == DisplayType.ASSIGNMENTS) {
+    if (displayType.supportsDepartment()) {
       return valueOrCurrent(command.departmentOrClub(), currentDepartment);
     }
     return "";
