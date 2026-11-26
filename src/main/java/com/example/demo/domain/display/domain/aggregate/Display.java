@@ -59,7 +59,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Table(name = "Display")
 public class Display extends SoftDeleteBaseEntity {
 
-  private static final int MAX_DETAIL_IMAGE_COUNT = 4;
+  public static final int MAX_DETAIL_IMAGE_COUNT = 9;
   private static final int MAIN_IMAGE_SORT_ORDER = 0;
 
   // 식별자와 소유자 정보: 전시 Aggregate의 정체성과 생성/관리 주체를 나타낸다.
@@ -831,7 +831,8 @@ public class Display extends SoftDeleteBaseEntity {
   public void changeDetailImages(List<String> imageUrls) {
     Objects.requireNonNull(imageUrls, "imageUrls must not be null.");
     if (imageUrls.size() > MAX_DETAIL_IMAGE_COUNT) {
-      throw new IllegalArgumentException("displayImageUrls must contain at most 4 images.");
+      throw new IllegalArgumentException(
+          "displayImageUrls must contain at most " + MAX_DETAIL_IMAGE_COUNT + " images.");
     }
     imageUrls.forEach(url -> requireNonBlank(url, "imageUrl"));
     changeMedia(null, imageUrls.stream().map(MediaContent::image).toList(), null);
@@ -879,7 +880,7 @@ public class Display extends SoftDeleteBaseEntity {
         || finalDetails.size() > MAX_DETAIL_IMAGE_COUNT
         || finalDetails.stream().anyMatch(Objects::isNull)) {
       throw new BusinessException(
-          GlobalErrorCode.INVALID_INPUT_VALUE, "대표 미디어와 최대 4개의 추가 미디어가 필요합니다.");
+          GlobalErrorCode.INVALID_INPUT_VALUE, "대표 미디어는 필수이며 추가 미디어는 최대 9개까지 등록할 수 있습니다.");
     }
     long videos =
         finalDetails.stream().filter(media -> media.mediaType() == MediaType.VIDEO).count()

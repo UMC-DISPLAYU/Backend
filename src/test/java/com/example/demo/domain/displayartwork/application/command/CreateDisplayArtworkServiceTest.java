@@ -1,6 +1,7 @@
 package com.example.demo.domain.displayartwork.application.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -18,12 +19,14 @@ import com.example.demo.domain.display.domain.vo.UserId;
 import com.example.demo.domain.displayartwork.application.permission.DisplayArtworkPermissionChecker;
 import com.example.demo.domain.displayartwork.application.result.AuthorSetupResult;
 import com.example.demo.domain.displayartwork.domain.aggregate.DisplayArtwork;
+import com.example.demo.domain.displayartwork.domain.error.DisplayArtworkErrorCode;
 import com.example.demo.domain.displayartwork.domain.repository.ArtistVerificationRepository;
 import com.example.demo.domain.displayartwork.domain.repository.CreatorRepository;
 import com.example.demo.domain.displayartwork.domain.repository.DisplayArtworkRepository;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkImageType;
 import com.example.demo.domain.displayartwork.domain.type.ArtworkType;
 import com.example.demo.domain.displayartwork.domain.type.DisplayArtworkStatus;
+import com.example.demo.global.error.BusinessException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -60,8 +63,8 @@ class CreateDisplayArtworkServiceTest {
   @Test
   void createDisplayArtworkCreatesDraftWhenDisplayIsDraftEvenIfImmediateOpen() {
     Display display = display(ContentOpenPolicy.IMMEDIATELY);
-    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
-    when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(0);
+    when(displayRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(display));
+    when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(99);
     when(artistVerificationRepository.isVerifiedArtist(1L)).thenReturn(true);
     when(displayArtworkRepository.save(any(DisplayArtwork.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -80,7 +83,7 @@ class CreateDisplayArtworkServiceTest {
   void immediatePublicationRecordsClockInstantInUtc() {
     Display display = display(ContentOpenPolicy.IMMEDIATELY);
     display.publish();
-    when(displayRepository.findById(1L)).thenReturn(Optional.of(display));
+    when(displayRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(display));
     when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(0);
     when(artistVerificationRepository.isVerifiedArtist(1L)).thenReturn(true);
     when(displayArtworkRepository.save(any(DisplayArtwork.class)))
@@ -95,6 +98,20 @@ class CreateDisplayArtworkServiceTest {
     assertThat(artworkCaptor.getValue().getStatus()).isEqualTo(DisplayArtworkStatus.PUBLISHED);
     assertThat(artworkCaptor.getValue().getFirstPublishedAt())
         .isEqualTo(java.time.LocalDateTime.of(2026, 8, 1, 15, 0));
+  }
+
+  @Test
+  void rejectsRegistrationWhenTheDisplayHasOneHundredArtworks() {
+    when(displayRepository.findByIdForUpdate(1L))
+        .thenReturn(Optional.of(display(ContentOpenPolicy.IMMEDIATELY)));
+    when(artistVerificationRepository.isVerifiedArtist(1L)).thenReturn(true);
+    when(displayArtworkRepository.countByDisplayId(1L)).thenReturn(100);
+    assertThatThrownBy(() -> service.createDisplayArtwork(1L, command()))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            exception ->
+                assertThat(exception.errorCode())
+                    .isEqualTo(DisplayArtworkErrorCode.ARTWORK_REGISTRATION_LIMIT_EXCEEDED));
   }
 
   private static Display display(ContentOpenPolicy artworkContentOpen) {

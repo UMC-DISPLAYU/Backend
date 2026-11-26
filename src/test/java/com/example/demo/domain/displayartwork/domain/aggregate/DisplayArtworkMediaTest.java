@@ -137,7 +137,7 @@ class DisplayArtworkMediaTest {
   }
 
   @Test
-  void allowsTenArtworkItemsButRejectsElevenWithoutChangingTheTen() {
+  void allowsTenArtworkPhotosButRejectsAnEleventhPhoto() {
     DisplayArtwork artwork = artwork(List.of(ArtworkType.VIDEO));
     List<ArtworkImage> images =
         IntStream.range(0, 10)
@@ -154,7 +154,11 @@ class DisplayArtworkMediaTest {
                         600))
             .toList();
     artwork.replaceImages(images);
-    assertThatThrownBy(() -> artwork.addImage(video(ArtworkImageType.ARTWORK)))
+    assertThatThrownBy(
+            () ->
+                artwork.addImage(
+                    new ArtworkImage(
+                        null, "extra.png", false, ArtworkImageType.ARTWORK, 10, null, 800, 600)))
         .isInstanceOf(BusinessException.class);
     assertThat(artwork.getImages()).containsExactlyElementsOf(images);
   }

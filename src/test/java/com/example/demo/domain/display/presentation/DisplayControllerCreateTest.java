@@ -235,7 +235,7 @@ class DisplayControllerCreateTest {
   }
 
   @Test
-  void createDisplayReturnsBadRequestWhenDisplayImageUrlHasMoreThanFourItems() throws Exception {
+  void createDisplayReturnsBadRequestWhenDisplayImageUrlHasMoreThanNineItems() throws Exception {
     User user = userJpaRepository.save(user("홍길동"));
 
     mockMvc
@@ -243,7 +243,7 @@ class DisplayControllerCreateTest {
             post("/api/v1/display")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBodyWithFiveDisplayImages()))
+                .content(requestBodyWithTenDisplayImages()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.resultType").value("FAIL"))
         .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
@@ -505,7 +505,7 @@ class DisplayControllerCreateTest {
         """;
   }
 
-  private static String requestBodyWithFiveDisplayImages() {
+  private static String requestBodyWithTenDisplayImages() {
     return """
         {
           "title": "FORM 2026",
@@ -515,7 +515,12 @@ class DisplayControllerCreateTest {
             "https://cdn.displayu.com/display/detail-2.png",
             "https://cdn.displayu.com/display/detail-3.png",
             "https://cdn.displayu.com/display/detail-4.png",
-            "https://cdn.displayu.com/display/detail-5.png"
+            "https://cdn.displayu.com/display/detail-5.png",
+            "https://cdn.displayu.com/display/detail-6.png",
+            "https://cdn.displayu.com/display/detail-7.png",
+            "https://cdn.displayu.com/display/detail-8.png",
+            "https://cdn.displayu.com/display/detail-9.png",
+            "https://cdn.displayu.com/display/detail-10.png"
           ],
           "type": "GRADUATION",
           "fields": ["GRAPHIC", "VIDEO"],

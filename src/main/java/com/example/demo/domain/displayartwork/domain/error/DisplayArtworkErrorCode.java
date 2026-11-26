@@ -15,7 +15,7 @@ public enum DisplayArtworkErrorCode implements BaseErrorCode {
   INVALID_ARTWORK_MEDIA(
       HttpStatus.BAD_REQUEST,
       "INVALID_ARTWORK_MEDIA",
-      "작품 사진·영상은 합계 10개까지 등록할 수 있으며 작업 과정에는 사진만 등록할 수 있습니다."),
+      "작품 사진은 10장까지 등록할 수 있으며 작업 과정에는 사진만 등록할 수 있습니다."),
   ARTWORK_PART_NAME_REQUIRED(
       HttpStatus.BAD_REQUEST, "ARTWORK_PART_NAME_REQUIRED", "추가 작품의 작품명을 입력해 주세요."),
   ARTWORK_PART_PHOTO_REQUIRED(

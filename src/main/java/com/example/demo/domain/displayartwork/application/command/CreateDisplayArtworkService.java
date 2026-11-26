@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CreateDisplayArtworkService {
 
-  private static final int MAX_ARTWORKS_PER_DISPLAY = 50;
+  private static final int MAX_ARTWORKS_PER_DISPLAY = 100;
 
   private final DisplayRepository displayRepository;
   private final DisplayArtworkRepository displayArtworkRepository;
@@ -58,7 +58,7 @@ public class CreateDisplayArtworkService {
 
     Display display =
         displayRepository
-            .findById(command.displayId())
+            .findByIdForUpdate(command.displayId())
             .filter(candidate -> !candidate.isDeleted())
             .orElseThrow(() -> new BusinessException(DisplayArtworkErrorCode.DISPLAY_NOT_FOUND));
 

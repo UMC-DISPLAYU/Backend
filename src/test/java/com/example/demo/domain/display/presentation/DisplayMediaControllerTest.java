@@ -27,6 +27,8 @@ import com.example.demo.global.file.application.port.MediaStorageVerifier;
 import com.example.demo.global.file.domain.MediaContent;
 import com.example.demo.global.security.JwtFactory;
 import jakarta.persistence.EntityManager;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -102,6 +104,28 @@ class DisplayMediaControllerTest {
         .andExpect(jsonPath("$.success.data.images[0].imageUrl").value(VIDEO))
         .andExpect(jsonPath("$.success.data.images[0].mediaType").value("VIDEO"))
         .andExpect(jsonPath("$.success.data.images[0].thumbnailUrl").value(THUMBNAIL));
+  }
+
+  @Test
+  void acceptsNineAdditionalPostersAndRejectsATenth() throws Exception {
+    String urls =
+        IntStream.range(0, 9)
+            .mapToObj(i -> "\"detail-" + i + ".jpg\"")
+            .collect(Collectors.joining(","));
+    String media =
+        IntStream.range(0, 9)
+            .mapToObj(i -> IMAGE_MEDIA.replace(IMAGE, "other-" + i + ".jpg"))
+            .collect(Collectors.joining(","));
+    create("\"posterImageUrl\":\"poster.jpg\",\"displayMedia\":[" + media + "," + IMAGE_MEDIA + "]")
+        .andExpect(status().isBadRequest());
+    create("\"posterImageUrl\":\"poster.jpg\",\"displayImageUrl\":[" + urls + "]")
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.success.data.images.length()").value(10));
+    Long id = reload().getId();
+    update(id, "\"displayMedia\":[" + media + "]").andExpect(status().isOk());
+    update(id, "\"displayMedia\":[" + media + "," + IMAGE_MEDIA + "]")
+        .andExpect(status().isBadRequest());
+    assertThat(reload().getImages()).hasSize(10);
   }
 
   @Test
@@ -245,8 +269,7 @@ class DisplayMediaControllerTest {
         "\"posterImageUrl\":\"legacy.jpg\",\"posterMedia\":{\"imageUrl\":\"poster.jpg\",\"mediaType\":\"IMAGE\"}",
         "\"posterImageUrl\":\"legacy.jpg\",\"displayImageUrl\":[],\"displayMedia\":[]",
         "\"posterImageUrl\":\"legacy.jpg\",\"displayMedia\":[null]",
-        "\"posterImageUrl\":\"legacy.jpg\",\"displayMedia\":[{\"imageUrl\":\" \",\"mediaType\":\"IMAGE\"}]",
-        "\"posterImageUrl\":\"legacy.jpg\",\"displayMedia\":[{\"imageUrl\":\"1\",\"mediaType\":\"IMAGE\"},{\"imageUrl\":\"2\",\"mediaType\":\"IMAGE\"},{\"imageUrl\":\"3\",\"mediaType\":\"IMAGE\"},{\"imageUrl\":\"4\",\"mediaType\":\"IMAGE\"},{\"imageUrl\":\"5\",\"mediaType\":\"IMAGE\"}]"
+        "\"posterImageUrl\":\"legacy.jpg\",\"displayMedia\":[{\"imageUrl\":\" \",\"mediaType\":\"IMAGE\"}]"
       })
   void rejectsInvalidCreatePayloadsWithoutPersistingDisplay(String fields) throws Exception {
     create(fields).andExpect(status().isBadRequest());

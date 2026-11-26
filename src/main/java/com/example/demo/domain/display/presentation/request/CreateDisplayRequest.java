@@ -1,5 +1,7 @@
 package com.example.demo.domain.display.presentation.request;
 
+import static com.example.demo.domain.display.domain.aggregate.Display.MAX_DETAIL_IMAGE_COUNT;
+
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayType;
 import com.example.demo.domain.display.domain.type.PosterFit;
@@ -24,7 +26,7 @@ public record CreateDisplayRequest(
     @NotBlank String title,
     @Schema(description = "기존 이미지 전용 대표 URL. posterMedia와 동시에 전달할 수 없습니다. 생성 시 둘 중 하나는 필수입니다.")
         String posterImageUrl,
-    @JsonProperty("displayImageUrl") @Size(max = 4) List<@NotBlank String> displayImageUrls,
+    @JsonProperty("displayImageUrl") @Size(max = MAX_DETAIL_IMAGE_COUNT) List<@NotBlank String> displayImageUrls,
     @NotNull DisplayType type,
     @NotEmpty @ArraySchema(
             schema =
@@ -90,10 +92,10 @@ public record CreateDisplayRequest(
         @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String posterEdgeColor,
     @Valid @Schema(
             description =
-                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생성 시 대표 미디어 또는 기존 대표 이미지 URL은 필수입니다.")
+                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 10개까지 허용합니다. 생성 시 대표 미디어 또는 기존 대표 이미지 URL은 필수입니다.")
         DisplayMediaRequest posterMedia,
-    @Valid @Schema(description = "추가 미디어 최대 4개. displayImageUrl과 동시 입력 불가. 빈 배열 또는 생략은 추가 미디어 없음.")
-        @Size(max = 4) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
+    @Valid @Schema(description = "추가 미디어 최대 9개. displayImageUrl과 동시 입력 불가. 빈 배열 또는 생략은 추가 미디어 없음.")
+        @Size(max = MAX_DETAIL_IMAGE_COUNT) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
 
   @Schema(hidden = true)
   @AssertTrue(message = "GRADUATION, ASSIGNMENTS 타입은 departmentOrClub이 필수입니다.") public boolean isDepartmentOrClubValid() {

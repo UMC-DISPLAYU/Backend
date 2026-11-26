@@ -14,7 +14,7 @@
 | `latitude` | number | -90 이상 90 이하 |
 | `longitude` | number | -180 이상 180 이하 |
 | `region` | string | `SEOUL`, `GYEONGGI_INCHEON`, `OTHERS`. `ALL`은 허용하지 않음 |
-| `displayImageUrl` | string[] | 대표 이미지 외 이미지 최대 4장. 전달한 배열로 전체 교체. 빈 배열은 전체 삭제 |
+| `displayImageUrl` | string[] | 대표 이미지 외 이미지 최대 9장. 전달한 배열로 전체 교체. 빈 배열은 전체 삭제 |
 
 생성 요청의 외부 링크는 생략과 `null`을 허용하고 빈 문자열은 허용하지 않습니다. 수정 요청의 빈 문자열만 삭제 의미로 사용합니다. 추가 이미지의 각 URL은 빈 값일 수 없습니다.
 

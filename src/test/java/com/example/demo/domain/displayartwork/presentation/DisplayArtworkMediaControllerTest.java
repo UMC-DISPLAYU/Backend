@@ -651,23 +651,23 @@ class DisplayArtworkMediaControllerTest {
   }
 
   @Test
-  void tenArtworkPhotosAndVideosCanShareAProcessPhotoAcrossTheSeries() throws Exception {
+  void tenArtworkPhotosCanAccompanyVideosAndAProcessPhotoAcrossTheSeries() throws Exception {
     String photos =
         String.join(
-            ",", IntStream.range(0, 8).mapToObj(i -> partPhoto("photo-" + i + ".png", 1)).toList());
+            ",", IntStream.range(0, 9).mapToObj(i -> partPhoto("photo-" + i + ".png", 1)).toList());
     String process =
         partPhoto("studio.png", 1)
             .replace("ARTWORK", "WORK_PROCESS")
             .replace("\"partIndex\":1,", "");
     String video = videoJson().replace("\"isThumbnail\":true", "\"isThumbnail\":false");
-    String tenAndProcess = String.join(",", legacyImageJson(), video, photos, process);
-    writeSeries(post("/api/v1/artworks"), SECOND_PART, tenAndProcess)
+    String seriesMedia = String.join(",", legacyImageJson(), video, photos, process);
+    writeSeries(post("/api/v1/artworks"), SECOND_PART, seriesMedia)
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.success.data.images.length()").value(11));
+        .andExpect(jsonPath("$.success.data.images.length()").value(12));
     writeSeries(
             patch("/api/v1/artworks/{id}", artworkId()),
             SECOND_PART,
-            tenAndProcess + "," + partPhoto("eleventh.png", 1))
+            seriesMedia + "," + partPhoto("eleventh.png", 1))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("INVALID_ARTWORK_MEDIA"));
   }
@@ -683,16 +683,20 @@ class DisplayArtworkMediaControllerTest {
 
   @Test
   void severalVideosCanBelongToOneArtwork() throws Exception {
-    String secondVideo =
-        videoJson()
-            .replace(VIDEO, "https://cdn.example/artwork/another.mp4")
-            .replace("\"isThumbnail\":true", "\"isThumbnail\":false");
-    create(videoJson() + "," + secondVideo)
-        .andExpect(jsonPath("$.success.data.images.length()").value(2));
-    update(artworkId(), secondVideo + "," + videoJson())
+    String videos =
+        String.join(
+            ",",
+            IntStream.range(0, 12)
+                .mapToObj(
+                    i ->
+                        videoJson()
+                            .replace(VIDEO, "https://cdn.example/artwork/" + i + ".mp4")
+                            .replace("\"isThumbnail\":true", "\"isThumbnail\":" + (i == 0)))
+                .toList());
+    create(videos).andExpect(jsonPath("$.success.data.images.length()").value(12));
+    update(artworkId(), videos)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success.data.images[0].mediaType").value("VIDEO"))
-        .andExpect(jsonPath("$.success.data.images[1].mediaType").value("VIDEO"));
+        .andExpect(jsonPath("$.success.data.images.length()").value(12));
   }
 
   @Test

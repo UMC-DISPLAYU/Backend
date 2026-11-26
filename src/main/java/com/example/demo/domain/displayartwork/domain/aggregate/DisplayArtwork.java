@@ -358,7 +358,7 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
   }
 
   private static void validateMedia(List<ArtworkImage> images, int partCount) {
-    int artworkMediaCount = 0;
+    int artworkPhotoCount = 0;
     boolean firstPartHasMedia = false;
     Set<Integer> additionalPartsWithPhoto = new HashSet<>();
     for (ArtworkImage image : images) {
@@ -378,14 +378,16 @@ public class DisplayArtwork extends SoftDeleteBaseEntity {
       if (partIndex < 0 || partIndex > partCount) {
         throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_PART_INDEX);
       }
-      artworkMediaCount++;
+      if (image.getMediaType() == MediaType.IMAGE) {
+        artworkPhotoCount++;
+      }
       if (partIndex == 0) {
         firstPartHasMedia = true;
       } else if (image.getMediaType() == MediaType.IMAGE) {
         additionalPartsWithPhoto.add(partIndex);
       }
     }
-    if (artworkMediaCount > 10) {
+    if (artworkPhotoCount > 10) {
       throw new BusinessException(DisplayArtworkErrorCode.INVALID_ARTWORK_MEDIA);
     }
     if (!firstPartHasMedia) {

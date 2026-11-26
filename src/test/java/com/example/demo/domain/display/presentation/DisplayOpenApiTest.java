@@ -61,7 +61,7 @@ class DisplayOpenApiTest {
           .contains("IMAGE", "VIDEO");
       assertThat(property(document, media, "thumbnailUrl").isMissingNode()).isFalse();
       assertThat(media.path("required").toString()).contains("imageUrl", "mediaType");
-      assertThat(property(document, request, "displayMedia").path("maxItems").asInt()).isEqualTo(4);
+      assertThat(property(document, request, "displayMedia").path("maxItems").asInt()).isEqualTo(9);
       assertThat(request.path("required").toString()).doesNotContain("posterImageUrl");
     }
     JsonNode data = responseData(document, "/api/v1/display/{displayId}", "get");
@@ -276,7 +276,7 @@ class DisplayOpenApiTest {
         .contains("SEOUL", "GYEONGGI_INCHEON", "OTHERS")
         .doesNotContain("ALL");
     JsonNode images = property(document, patch, "displayImageUrl");
-    assertThat(images.path("maxItems").asInt()).isEqualTo(4);
+    assertThat(images.path("maxItems").asInt()).isEqualTo(9);
     assertThat(property(document, patch, "fields").path("minItems").asInt()).isEqualTo(1);
     assertThat(images.path("items").path("type").asText()).isEqualTo("string");
     assertThat(images.path("description").asText()).contains("빈 배열", "삭제");

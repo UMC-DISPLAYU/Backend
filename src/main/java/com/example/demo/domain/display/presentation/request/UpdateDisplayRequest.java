@@ -1,5 +1,7 @@
 package com.example.demo.domain.display.presentation.request;
 
+import static com.example.demo.domain.display.domain.aggregate.Display.MAX_DETAIL_IMAGE_COUNT;
+
 import com.example.demo.domain.display.domain.type.DisplayField;
 import com.example.demo.domain.display.domain.type.DisplayRegion;
 import com.example.demo.domain.display.domain.type.DisplayType;
@@ -97,9 +99,9 @@ public record UpdateDisplayRequest(
         DisplayRegion region,
     @Schema(
             types = {"array", "null"},
-            description = "대표 이미지 외 최대 4장. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
+            description = "대표 이미지 외 최대 9장. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
         @JsonProperty("displayImageUrl")
-        @Size(max = 4) List<@NotBlank String> displayImageUrls,
+        @Size(max = MAX_DETAIL_IMAGE_COUNT) List<@NotBlank String> displayImageUrls,
     @Valid @Schema(
             types = {"object", "null"},
             description =
@@ -116,11 +118,11 @@ public record UpdateDisplayRequest(
         @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String posterEdgeColor,
     @Valid @Schema(
             description =
-                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 5개까지 허용합니다. 생략 또는 null은 유지하며 대표 미디어 변경 시 기존 크롭을 초기화합니다.")
+                "대표 미디어. posterImageUrl과 동시 입력 불가. VIDEO는 썸네일 필수, posterCrop 입력 불가. 대표와 추가 미디어를 합쳐 영상 1개, 미디어 10개까지 허용합니다. 생략 또는 null은 유지하며 대표 미디어 변경 시 기존 크롭을 초기화합니다.")
         DisplayMediaRequest posterMedia,
     @Valid @Schema(
-            description = "추가 미디어 최대 4개. displayImageUrl과 동시 입력 불가. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
-        @Size(max = 4) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
+            description = "추가 미디어 최대 9개. displayImageUrl과 동시 입력 불가. 생략 또는 null은 유지, 빈 배열은 전체 삭제.")
+        @Size(max = MAX_DETAIL_IMAGE_COUNT) List<@NotNull @Valid DisplayMediaRequest> displayMedia) {
 
   @Schema(hidden = true)
   @AssertTrue(message = "region은 ALL이 될 수 없습니다.") public boolean isRegionValid() {

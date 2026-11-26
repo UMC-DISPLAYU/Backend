@@ -220,7 +220,7 @@ class DisplayControllerUpdateTest {
         "\"longitude\": -181",
         "\"region\": \"ALL\"",
         "\"roadAddress\": \" \"",
-        "\"displayImageUrl\": [\"1\", \"2\", \"3\", \"4\", \"5\"]",
+        "\"displayImageUrl\": [\"1\", \"2\", \"3\", \"4\", \"5\", \"6\", \"7\", \"8\", \"9\", \"10\"]",
         "\"displayImageUrl\": [\"\"]"
       })
   void rejectsInvalidNewFields(String field) throws Exception {

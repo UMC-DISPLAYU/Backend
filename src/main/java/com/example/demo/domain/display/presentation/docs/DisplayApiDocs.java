@@ -9,14 +9,14 @@ public final class DisplayApiDocs {
   public static final String DISPLAY_MEDIA_DESCRIPTION =
       "posterMedia/displayMedia에는 imageUrl, mediaType(IMAGE 또는 VIDEO), thumbnailUrl을 전달할 수 있습니다. "
           + "기존 posterImageUrl/displayImageUrl도 지원하며 같은 그룹의 신구 필드는 동시에 전달할 수 없습니다. "
-          + "대표 포함 미디어 최대 5개, 영상 최대 1개입니다. 영상은 썸네일 필수이며 서버가 업로드 원본의 200MB 제한을 확인합니다. "
+          + "대표 포함 미디어 최대 10개, 영상 최대 1개입니다. 영상은 썸네일 필수이며 서버가 업로드 원본의 200MB 제한을 확인합니다. "
           + "영상 30초 제한은 프론트에서 검증합니다. 영상 대표에는 posterCrop을 전달할 수 없고 영상 전환 시 기존 크롭을 초기화합니다. "
           + "영상 대표의 목록 이미지 URL은 썸네일이며 posterVideoUrl은 재생할 원본입니다. 상세 images는 원본 imageUrl과 mediaType, thumbnailUrl을 반환합니다. ";
   public static final String CREATE_DESCRIPTION =
       DISPLAY_MEDIA_DESCRIPTION
           + "인증된 사용자가 전시 기본 정보와 일정/장소 정보를 생성합니다. region은 SEOUL, GYEONGGI_INCHEON, OTHERS 중 하나를 사용합니다. "
           + "posterImageUrl은 전시 목록/지도/큐레이션에서 사용하는 대표 이미지로 저장되며, 서버는 imageType=MAIN, sortOrder=0으로 생성합니다. "
-          + "displayImageUrl은 최대 4개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다. "
+          + "displayImageUrl은 최대 9개까지 전달할 수 있고, 전달 순서대로 imageType=DETAIL, sortOrder=0부터 저장됩니다. "
           + "instagramUrl과 websiteUrl은 생략하거나 null로 전달할 수 있습니다. 입력할 때는 공백 없는 HTTP(S) URL을 최대 255자로 전달하며 빈 문자열은 허용하지 않습니다. "
           + "posterCrop은 원본 이미지 기준 x/y/w/h 비율이며 소수점 이하 최대 10자리입니다. 생략하면 조정 없음으로 저장합니다.";
   public static final String CREATE_REQUEST_DESCRIPTION =
@@ -33,7 +33,7 @@ public final class DisplayApiDocs {
   public static final String UPDATE_REQUEST_DESCRIPTION =
       "생략 또는 null인 필드는 유지합니다. instagramUrl/websiteUrl은 빈 문자열로 삭제할 수 있습니다. "
           + "roadAddress, latitude, longitude, region을 수정할 수 있으며 region=ALL은 허용하지 않습니다. "
-          + "displayImageUrl은 대표 이미지 외 최대 4장이며 빈 배열은 전체 삭제합니다.";
+          + "displayImageUrl은 대표 이미지 외 최대 9장이며 빈 배열은 전체 삭제합니다.";
   public static final String UPDATE_REQUEST_EXAMPLE_NAME = "Display update request";
   public static final String UPDATE_SUCCESS_DESCRIPTION = "전시 수정 성공";
   public static final String UPDATE_SUCCESS_EXAMPLE_NAME = "Display update success";
@@ -213,7 +213,7 @@ public final class DisplayApiDocs {
           "https://cdn.../detail-1.jpg",
           "https://cdn.../detail-2.jpg"
         ],
-        "_displayImageUrlRule": "최대 4개까지 전달할 수 있으며 imageType=DETAIL, sortOrder=0부터 순서대로 저장됩니다.",
+        "_displayImageUrlRule": "최대 9개까지 전달할 수 있으며 imageType=DETAIL, sortOrder=0부터 순서대로 저장됩니다.",
         "type": "GRADUATION",
         "fields": ["GRAPHIC", "VIDEO"],
         "region": "SEOUL",
